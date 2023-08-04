@@ -1,5 +1,7 @@
 version: '3'
 
+name: gitlab-clickhouse-exporter-dev
+
 services:
   clickhouse:
     container_name: clickhouse
