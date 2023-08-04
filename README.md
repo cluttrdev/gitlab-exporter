@@ -44,6 +44,10 @@ for configuration options.
 | `CLICKHOUSE_PASSWORD` | `""`                        |
 
 
+## License
+
+This project is licensed under the [MIT License](./LICENSE)
+
 [gitlab-api]: https://docs.gitlab.com/ee/api/rest/
 [clickhouse]: https://clickhouse.com/
 [go-install]: https://go.dev/doc/install
