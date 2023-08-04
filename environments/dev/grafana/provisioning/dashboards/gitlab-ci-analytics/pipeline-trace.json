@@ -1,0 +1,178 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "clickhouse"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 1,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "gridPos": {
+        "h": 24,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "format": 3,
+          "meta": {
+            "builderOptions": {
+              "fields": [],
+              "limit": 100,
+              "mode": "list"
+            }
+          },
+          "queryType": "sql",
+          "rawSql": "SELECT * FROM gitlab_ci.trace_view(trace_id = '${pipeline_id}')\n  WHERE serviceName in (${service_names})\n    AND duration >= (${duration_min_s} * 1000)",
+          "refId": "A",
+          "selectedFormat": 3
+        }
+      ],
+      "title": "Pipeline Trace",
+      "type": "traces"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "selected": false,
+          "text": "208",
+          "value": "208"
+        },
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "clickhouse"
+        },
+        "definition": "SELECT DISTINCT project_id FROM gitlab_ci.pipelines",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Project ID",
+        "multi": false,
+        "name": "project_id",
+        "options": [],
+        "query": "SELECT DISTINCT project_id FROM gitlab_ci.pipelines",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 3,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": "542503",
+          "value": "542503"
+        },
+        "datasource": {
+          "type": "grafana-clickhouse-datasource",
+          "uid": "clickhouse"
+        },
+        "definition": "SELECT id FROM gitlab_ci.pipelines WHERE project_id = ${project_id}",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Pipeline ID",
+        "multi": false,
+        "name": "pipeline_id",
+        "options": [],
+        "query": "SELECT id FROM gitlab_ci.pipelines WHERE project_id = ${project_id}",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 4,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": true,
+          "text": [
+            "bridge",
+            "job",
+            "pipeline",
+            "section"
+          ],
+          "value": [
+            "gitlab_ci.bridge",
+            "gitlab_ci.job",
+            "gitlab_ci.pipeline",
+            "gitlab_ci.section"
+          ]
+        },
+        "definition": "SELECT DISTINCT ServiceName FROM gitlab_ci.traces",
+        "hide": 0,
+        "includeAll": false,
+        "label": "Services",
+        "multi": true,
+        "name": "service_names",
+        "options": [],
+        "query": "SELECT DISTINCT ServiceName FROM gitlab_ci.traces",
+        "refresh": 1,
+        "regex": "/(?<value>gitlab_ci\\.(?<text>.+))/",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "0",
+          "value": "0"
+        },
+        "description": "",
+        "hide": 0,
+        "label": "Min Duration [s]",
+        "name": "duration_min_s",
+        "options": [
+          {
+            "selected": true,
+            "text": "0",
+            "value": "0"
+          }
+        ],
+        "query": "0",
+        "skipUrlSync": false,
+        "type": "textbox"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-30d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Pipeline Trace",
+  "uid": "glcia-pipeline-trace",
+  "version": 1,
+  "weekStart": ""
+}
