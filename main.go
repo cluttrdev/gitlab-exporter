@@ -23,7 +23,7 @@ func main() {
         cancel()
     }()
 
-    if err = cmd.Run(ctx, *cfg); err != nil {
+    if err = cmd.Run(ctx, *cfg, os.Stdout); err != nil {
         fmt.Fprintf(os.Stderr, "%s\n", err)
         os.Exit(1)
     }
