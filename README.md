@@ -6,8 +6,8 @@ from the [GitLab API][gitlab-api] to [ClickHouse][clickhouse].
 
 ---
 
-**Note:** This project is in an early development stage, so configuration options
-and functionality is limited.
+**Note:** This project is in an early development stage, so functionality and
+configuration options are limited.
 
 ---
 
@@ -17,7 +17,7 @@ and functionality is limited.
 Make sure you have [Go][go-install] installed on your machine and run
 
 ```shell
-go install https://github.com/cluttrdev/gitlab-clickhouse-exporter
+go install https://github.com/cluttrdev/gitlab-clickhouse-exporter@latest
 ```
 
 ## Usage
