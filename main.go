@@ -11,20 +11,15 @@ import (
 )
 
 func main() {
-    ctx := context.Background()
-    ctx, cancel := context.WithCancel(ctx)
+	ctx := context.Background()
 
-    cfg, err := config.LoadEnv()
-    if err != nil {
-        log.Fatal(err)
-    }
+	cfg, err := config.LoadEnv()
+	if err != nil {
+		log.Fatal(err)
+	}
 
-    defer func() {
-        cancel()
-    }()
-
-    if err = cmd.Run(ctx, *cfg, os.Stdout); err != nil {
-        fmt.Fprintf(os.Stderr, "%s\n", err)
-        os.Exit(1)
-    }
+	if err = cmd.Run(ctx, *cfg, os.Stdout); err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+		os.Exit(1)
+	}
 }
