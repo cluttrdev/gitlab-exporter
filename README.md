@@ -25,11 +25,11 @@ go install https://github.com/cluttrdev/gitlab-clickhouse-exporter@latest
 After [installation](#installation) simply run
 
 ```shell
-gitlab-clickhouse-exporter PROJECT_ID PIPELINE_ID
+gitlab-clickhouse-exporter PROJECT_ID
 ```
 
-This will export data for the specified pipeline, see [Configuration](#configuration)
-for configuration options.
+This will periodically export data for updated pipelines of the specified project,
+see [Configuration](#configuration) for configuration options.
 
 ## Configuration
 
