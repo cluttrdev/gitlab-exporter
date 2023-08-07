@@ -6,7 +6,7 @@ import (
 )
 
 const (
-    createPipelinesTableSQL = `
+	createPipelinesTableSQL = `
 CREATE TABLE IF NOT EXISTS %s.%s (
     id Int64,
     iid Int64,
@@ -33,7 +33,7 @@ ORDER BY id
 ;
     `
 
-    createJobsTableSQL = `
+	createJobsTableSQL = `
 CREATE TABLE IF NOT EXISTS %s.%s (
     coverage Float64,
     allow_failure Bool,
@@ -65,7 +65,7 @@ ORDER BY id
 ;
     `
 
-    createBridgesTableSQL = `
+	createBridgesTableSQL = `
 CREATE TABLE IF NOT EXISTS %s.%s (
     coverage Float64,
     allow_failure Bool,
@@ -113,7 +113,7 @@ ORDER BY id
 ;
     `
 
-    createSectionsTableSQL = `
+	createSectionsTableSQL = `
 CREATE TABLE IF NOT EXISTS %s.%s (
     id Int64,
     name String,
@@ -140,10 +140,10 @@ ORDER BY id
 )
 
 const (
-    // OpenTelemetry Traces
-    // schemas taken from https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/clickhouseexporter/exporter_traces.go
+	// OpenTelemetry Traces
+	// schemas taken from https://github.com/open-telemetry/opentelemetry-collector-contrib/blob/main/exporter/clickhouseexporter/exporter_traces.go
 
-    createTracesTableSQL = `
+	createTracesTableSQL = `
 CREATE TABLE IF NOT EXISTS %s.%s (
      Timestamp DateTime64(9) CODEC(Delta, ZSTD(1)),
      TraceId String CODEC(ZSTD(1)),
@@ -184,7 +184,7 @@ SETTINGS index_granularity=8192, ttl_only_drop_parts = 1
 ;
     `
 
-    createTraceIdTsTableSQL = `
+	createTraceIdTsTableSQL = `
 CREATE TABLE IF NOT EXISTS %s.%s_trace_id_ts (
      TraceId String CODEC(ZSTD(1)),
      Start DateTime64(9) CODEC(Delta, ZSTD(1)),
@@ -196,7 +196,7 @@ SETTINGS index_granularity=8192
 ;
     `
 
-    createTraceIdTsMaterializedViewSQL = `
+	createTraceIdTsMaterializedViewSQL = `
 CREATE MATERIALIZED VIEW IF NOT EXISTS %s.%s_trace_id_ts_mv
 TO %s.%s_trace_id_ts
 AS SELECT
@@ -209,18 +209,18 @@ GROUP BY TraceId
 ;
     `
 
-    createTraceViewSQL = `
+	createTraceViewSQL = `
 CREATE VIEW IF NOT EXISTS %s.%s AS
 SELECT
-	TraceId AS traceID,
-	SpanId AS spanID,
-	SpanName AS operationName,
-	ParentSpanId AS parentSpanID,
-	ServiceName AS serviceName,
-	Duration / 1000000 AS duration,
-	Timestamp AS startTime,
-	arrayMap(key -> map('key', key, 'value', SpanAttributes[key]), mapKeys(SpanAttributes)) AS tags,
-	arrayMap(key -> map('key', key, 'value', ResourceAttributes[key]), mapKeys(ResourceAttributes)) AS serviceTags
+    TraceId AS traceID,
+    SpanId AS spanID,
+    SpanName AS operationName,
+    ParentSpanId AS parentSpanID,
+    ServiceName AS serviceName,
+    Duration / 1000000 AS duration,
+    Timestamp AS startTime,
+    arrayMap(key -> map('key', key, 'value', SpanAttributes[key]), mapKeys(SpanAttributes)) AS tags,
+    arrayMap(key -> map('key', key, 'value', ResourceAttributes[key]), mapKeys(ResourceAttributes)) AS serviceTags
 FROM %s.%s
 WHERE TraceId = {trace_id:String}
 ;
@@ -228,89 +228,89 @@ WHERE TraceId = {trace_id:String}
 )
 
 func createTables(ctx context.Context, client *Client) error {
-    if err := client.Conn.Exec(ctx, renderCreatePipelinesTableSQL()); err != nil {
-        return fmt.Errorf("exec create pipelines table: %w", err)
-    }
-    if err := client.Conn.Exec(ctx, renderCreateJobsTableSQL()); err != nil {
-        return fmt.Errorf("exec create jobs table: %w", err)
-    }
-    if err := client.Conn.Exec(ctx, renderCreateSectionsTableSQL()); err != nil {
-        return fmt.Errorf("exec create sections table: %w", err)
-    }
-    if err := client.Conn.Exec(ctx, renderCreateBridgesTableSQL()); err != nil {
-        return fmt.Errorf("exec create bridges table: %w", err)
-    }
+	if err := client.Conn.Exec(ctx, renderCreatePipelinesTableSQL()); err != nil {
+		return fmt.Errorf("exec create pipelines table: %w", err)
+	}
+	if err := client.Conn.Exec(ctx, renderCreateJobsTableSQL()); err != nil {
+		return fmt.Errorf("exec create jobs table: %w", err)
+	}
+	if err := client.Conn.Exec(ctx, renderCreateSectionsTableSQL()); err != nil {
+		return fmt.Errorf("exec create sections table: %w", err)
+	}
+	if err := client.Conn.Exec(ctx, renderCreateBridgesTableSQL()); err != nil {
+		return fmt.Errorf("exec create bridges table: %w", err)
+	}
 
-    if err := client.Conn.Exec(ctx, renderCreateTracesTableSQL()); err != nil {
-        return fmt.Errorf("exec create traces table: %w", err)
-    }
-    if err := client.Conn.Exec(ctx, renderCreateTraceIdTsTableSQL()); err != nil {
-        return fmt.Errorf("exec create traceIdTs table: %w", err)
-    }
-    if err := client.Conn.Exec(ctx, renderCreateTraceIdTsMaterializedViewSQL()); err != nil {
-        return fmt.Errorf("exec create traceIdTs view: %w", err)
-    }
-    if err := client.Conn.Exec(ctx, renderTraceViewSQL()); err != nil {
-        return fmt.Errorf("exec create trace view: %w", err)
-    }
+	if err := client.Conn.Exec(ctx, renderCreateTracesTableSQL()); err != nil {
+		return fmt.Errorf("exec create traces table: %w", err)
+	}
+	if err := client.Conn.Exec(ctx, renderCreateTraceIdTsTableSQL()); err != nil {
+		return fmt.Errorf("exec create traceIdTs table: %w", err)
+	}
+	if err := client.Conn.Exec(ctx, renderCreateTraceIdTsMaterializedViewSQL()); err != nil {
+		return fmt.Errorf("exec create traceIdTs view: %w", err)
+	}
+	if err := client.Conn.Exec(ctx, renderTraceViewSQL()); err != nil {
+		return fmt.Errorf("exec create trace view: %w", err)
+	}
 
-    return nil
+	return nil
 }
 
 func renderCreatePipelinesTableSQL() string {
-    dbName := "gitlab_ci"
-    tableName := "pipelines"
-    return fmt.Sprintf(createPipelinesTableSQL, dbName, tableName)
+	dbName := "gitlab_ci"
+	tableName := "pipelines"
+	return fmt.Sprintf(createPipelinesTableSQL, dbName, tableName)
 }
 
 func renderCreateJobsTableSQL() string {
-    dbName := "gitlab_ci"
-    tableName := "jobs"
-    return fmt.Sprintf(createJobsTableSQL, dbName, tableName)
+	dbName := "gitlab_ci"
+	tableName := "jobs"
+	return fmt.Sprintf(createJobsTableSQL, dbName, tableName)
 }
 
 func renderCreateBridgesTableSQL() string {
-    dbName := "gitlab_ci"
-    tableName := "bridges"
-    return fmt.Sprintf(createBridgesTableSQL, dbName, tableName)
+	dbName := "gitlab_ci"
+	tableName := "bridges"
+	return fmt.Sprintf(createBridgesTableSQL, dbName, tableName)
 }
 
 func renderCreateSectionsTableSQL() string {
-    dbName := "gitlab_ci"
-    tableName := "sections"
-    return fmt.Sprintf(createSectionsTableSQL, dbName, tableName)
+	dbName := "gitlab_ci"
+	tableName := "sections"
+	return fmt.Sprintf(createSectionsTableSQL, dbName, tableName)
 }
 
 func renderCreateTracesTableSQL() string {
-    dbName := "gitlab_ci"
-    tableName := "traces"
-    return fmt.Sprintf(createTracesTableSQL, dbName, tableName)
+	dbName := "gitlab_ci"
+	tableName := "traces"
+	return fmt.Sprintf(createTracesTableSQL, dbName, tableName)
 }
 
 func renderCreateTraceIdTsTableSQL() string {
-    dbName := "gitlab_ci"
-    tableName := "traces"
-    return fmt.Sprintf(createTraceIdTsTableSQL, dbName, tableName)
+	dbName := "gitlab_ci"
+	tableName := "traces"
+	return fmt.Sprintf(createTraceIdTsTableSQL, dbName, tableName)
 }
 
 func renderCreateTraceIdTsMaterializedViewSQL() string {
-    dbName := "gitlab_ci"
-    tableName := "traces"
-    return fmt.Sprintf(
-        createTraceIdTsMaterializedViewSQL,
-        dbName, tableName,
-        dbName, tableName,
-        dbName, tableName,
-    )
+	dbName := "gitlab_ci"
+	tableName := "traces"
+	return fmt.Sprintf(
+		createTraceIdTsMaterializedViewSQL,
+		dbName, tableName,
+		dbName, tableName,
+		dbName, tableName,
+	)
 }
 
 func renderTraceViewSQL() string {
-    dbName := "gitlab_ci"
-    viewName := "trace_view"
-    tableName := "traces"
-    return fmt.Sprintf(
-        createTraceViewSQL,
-        dbName, viewName,
-        dbName, tableName,
-    )
+	dbName := "gitlab_ci"
+	viewName := "trace_view"
+	tableName := "traces"
+	return fmt.Sprintf(
+		createTraceViewSQL,
+		dbName, viewName,
+		dbName, tableName,
+	)
 }
