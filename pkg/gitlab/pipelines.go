@@ -1,39 +1,79 @@
 package gitlabclient
 
 import (
-    "context"
-    "fmt"
+	"context"
+	"fmt"
+	"time"
 
-    "github.com/xanzy/go-gitlab"
+	"github.com/xanzy/go-gitlab"
 
-    "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
 )
 
-func (c *Client) ListProjectPipelines(ctx context.Context, pid int) ([]*models.PipelineInfo, error) {
-    opts := &gitlab.ListProjectPipelinesOptions{
-        Sort: gitlab.String("desc"),
-    }
+type ListProjectPipelineOptions struct {
+	Page    int
+	PerPage int
 
-    ps, _, err := c.client.Pipelines.ListProjectPipelines(pid, opts, gitlab.WithContext(ctx))
-    if err != nil {
-        return nil, err
-    }
-
-    pipelines := []*models.PipelineInfo{}
-    for _, pi := range ps {
-        pipelines = append(pipelines, models.NewPipelineInfo(pi))
-    }
-
-    return pipelines, nil
+	Scope         *string
+	Status        *string
+	Source        *string
+	Ref           *string
+	SHA           *string
+	YamlErrors    *bool
+	Username      *string
+	UpdatedAfter  *time.Time
+	UpdatedBefore *time.Time
+	Name          *string
+	OrderBy       *string
+	Sort          *string
 }
 
-func (c *Client) GetPipeline(ctx context.Context, projectID int, pipelineID int) (*models.Pipeline, error) {
+func (c *Client) ListProjectPipelines(ctx context.Context, projectID int64, opt *ListProjectPipelineOptions) ([]*models.PipelineInfo, error) {
+	gitlabOpts := &gitlab.ListProjectPipelinesOptions{
+		ListOptions: gitlab.ListOptions{
+			Page:    opt.Page,
+			PerPage: opt.PerPage,
+		},
+		Scope:         opt.Scope,
+		Status:        (*gitlab.BuildStateValue)(opt.Status),
+		Source:        opt.Source,
+		Ref:           opt.Ref,
+		SHA:           opt.SHA,
+		YamlErrors:    opt.YamlErrors,
+		Username:      opt.Username,
+		UpdatedAfter:  opt.UpdatedAfter,
+		UpdatedBefore: opt.UpdatedBefore,
+		Name:          opt.Name,
+		OrderBy:       opt.OrderBy,
+		Sort:          opt.Sort,
+	}
 
+	pipelines := []*models.PipelineInfo{}
+	for {
+		ps, resp, err := c.client.Pipelines.ListProjectPipelines(int(projectID), gitlabOpts, gitlab.WithContext(ctx))
+		if err != nil {
+			return nil, err
+		}
 
-    pipeline, _, err := c.client.Pipelines.GetPipeline(projectID, pipelineID, gitlab.WithContext(ctx))
-    if err != nil {
-        return nil, fmt.Errorf("[gitlab.Client.GetPipeline] %w", err)
-    }
+		for _, pi := range ps {
+			pipelines = append(pipelines, models.NewPipelineInfo(pi))
+		}
 
-    return models.NewPipeline(pipeline), nil
+		if resp.NextPage == 0 {
+			break
+		}
+		gitlabOpts.Page = resp.NextPage
+	}
+
+	return pipelines, nil
+}
+
+func (c *Client) GetPipeline(ctx context.Context, projectID int64, pipelineID int64) (*models.Pipeline, error) {
+
+	pipeline, _, err := c.client.Pipelines.GetPipeline(int(projectID), int(pipelineID), gitlab.WithContext(ctx))
+	if err != nil {
+		return nil, fmt.Errorf("[gitlab.Client.GetPipeline] %w", err)
+	}
+
+	return models.NewPipeline(pipeline), nil
 }
