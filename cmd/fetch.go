@@ -10,38 +10,38 @@ import (
 )
 
 type FetchConfig struct {
-    rootConfig *RootConfig
+	rootConfig *RootConfig
 
-    out io.Writer
+	out io.Writer
 }
 
 func NewFetchCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
-    config := FetchConfig{
-        rootConfig: rootConfig,
-        out: out,
-    }
+	config := FetchConfig{
+		rootConfig: rootConfig,
+		out:        out,
+	}
 
-    fs := flag.NewFlagSet(fmt.Sprintf("%s fetch", exeName), flag.ExitOnError)
-    config.rootConfig.RegisterFlags(fs)
+	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch", exeName), flag.ExitOnError)
+	config.rootConfig.RegisterFlags(fs)
 
-    var (
-        fetchPipelineCmd = NewFetchPipelineCmd(&config)
-        fetchTestReportCmd = NewFetchTestReportCmd(&config)
-    )
+	var (
+		fetchPipelineCmd   = NewFetchPipelineCmd(&config)
+		fetchTestReportCmd = NewFetchTestReportCmd(&config)
+	)
 
-    return &ffcli.Command{
-        Name: "fetch",
-        ShortUsage: fmt.Sprintf("%s [flags] fetch <subcommand> [flags] [<args>...]", exeName),
-        ShortHelp: "Fetch data from the GitLab API",
-        FlagSet: fs,
-        Subcommands: []*ffcli.Command{
-            fetchPipelineCmd,
-            fetchTestReportCmd,
-        },
-        Exec: config.Exec,
-    }
+	return &ffcli.Command{
+		Name:       "fetch",
+		ShortUsage: fmt.Sprintf("%s [flags] fetch <subcommand> [flags] [<args>...]", exeName),
+		ShortHelp:  "Fetch data from the GitLab API",
+		FlagSet:    fs,
+		Subcommands: []*ffcli.Command{
+			fetchPipelineCmd,
+			fetchTestReportCmd,
+		},
+		Exec: config.Exec,
+	}
 }
 
 func (c *FetchConfig) Exec(ctx context.Context, _ []string) error {
-    return flag.ErrHelp
+	return flag.ErrHelp
 }

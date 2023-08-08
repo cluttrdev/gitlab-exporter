@@ -21,62 +21,61 @@ import (
 )
 
 type RunConfig struct {
-    rootConfig *RootConfig
-    out io.Writer
-    projects projectList
+	rootConfig *RootConfig
+	out        io.Writer
+	projects   projectList
 }
 
 type projectList []int64
 
 func (f *projectList) String() string {
-    return fmt.Sprintf("%v", []int64(*f))
+	return fmt.Sprintf("%v", []int64(*f))
 }
 
 func (f *projectList) Set(value string) error {
-    values := strings.Split(value, ",")
-    for _, s := range values {
-        v, err := strconv.ParseInt(s, 10, 64)
-        if err != nil {
-            return err
-        }
-        *f = append(*f, v)
-    }
-    return nil
+	values := strings.Split(value, ",")
+	for _, s := range values {
+		v, err := strconv.ParseInt(s, 10, 64)
+		if err != nil {
+			return err
+		}
+		*f = append(*f, v)
+	}
+	return nil
 }
 
-
 func NewRunCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
-    config := RunConfig{
-        rootConfig: rootConfig,
-        out: out,
-    }
+	config := RunConfig{
+		rootConfig: rootConfig,
+		out:        out,
+	}
 
-    fs := flag.NewFlagSet(fmt.Sprintf("%s run", exeName), flag.ExitOnError)
-    config.RegisterFlags(fs)
-    config.rootConfig.RegisterFlags(fs)
+	fs := flag.NewFlagSet(fmt.Sprintf("%s run", exeName), flag.ExitOnError)
+	config.RegisterFlags(fs)
+	config.rootConfig.RegisterFlags(fs)
 
-    return &ffcli.Command{
-        Name: "run",
-        ShortUsage: fmt.Sprintf("%s run [flags]", exeName),
-        ShortHelp: "Run in daemon mode",
-        FlagSet: fs,
-        Options: []ff.Option{ff.WithEnvVarPrefix(envVarPrefix)},
-        Exec: config.Exec,
-    }
+	return &ffcli.Command{
+		Name:       "run",
+		ShortUsage: fmt.Sprintf("%s run [flags]", exeName),
+		ShortHelp:  "Run in daemon mode",
+		FlagSet:    fs,
+		Options:    []ff.Option{ff.WithEnvVarPrefix(envVarPrefix)},
+		Exec:       config.Exec,
+	}
 }
 
 func (c *RunConfig) RegisterFlags(fs *flag.FlagSet) {
-    fs.Var(&c.projects, "projects", "Comma separated list of project ids.")
+	fs.Var(&c.projects, "projects", "Comma separated list of project ids.")
 }
 
 func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 	// configure logging
 	log.SetOutput(c.out)
 
-    ctl := c.rootConfig.Controller
+	ctl := c.rootConfig.Controller
 
 	// init controller
-    if err := ctl.Init(ctx); err != nil {
+	if err := ctl.Init(ctx); err != nil {
 		return err
 	}
 
@@ -101,9 +100,9 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 		}
 	}()
 
-    // log configuration
-    printRunConfig(c, c.out)
-    
+	// log configuration
+	printRunConfig(c, c.out)
+
 	// run daemon
 	var firstRun bool = true
 	ticker := time.NewTicker(1 * time.Second)
@@ -155,20 +154,20 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 }
 
 func printRunConfig(cfg *RunConfig, out io.Writer) {
-    fmt.Fprintf(out, "GitLab URL: %s\n", cfg.rootConfig.Config.GitLab.URL)
-    fmt.Fprintf(out, "GitLab Token: %x\n", sha256String(cfg.rootConfig.Config.GitLab.Token))
-    fmt.Fprintln(out, "---")
-    fmt.Fprintf(out, "ClickHouse Host: %s\n", cfg.rootConfig.Config.ClickHouse.Host)
-    fmt.Fprintf(out, "ClickHouse Port: %d\n", cfg.rootConfig.Config.ClickHouse.Port)
-    fmt.Fprintf(out, "ClickHouse Database: %s\n", cfg.rootConfig.Config.ClickHouse.Database)
-    fmt.Fprintf(out, "ClickHouse User: %s\n", cfg.rootConfig.Config.ClickHouse.User)
-    fmt.Fprintf(out, "ClickHouse Password: %x\n", sha256String(cfg.rootConfig.Config.ClickHouse.Password))
-    fmt.Fprintln(out, "---")
-    fmt.Fprintf(out, "Projects: %v\n", cfg.projects)
+	fmt.Fprintf(out, "GitLab URL: %s\n", cfg.rootConfig.Config.GitLab.URL)
+	fmt.Fprintf(out, "GitLab Token: %x\n", sha256String(cfg.rootConfig.Config.GitLab.Token))
+	fmt.Fprintln(out, "---")
+	fmt.Fprintf(out, "ClickHouse Host: %s\n", cfg.rootConfig.Config.ClickHouse.Host)
+	fmt.Fprintf(out, "ClickHouse Port: %d\n", cfg.rootConfig.Config.ClickHouse.Port)
+	fmt.Fprintf(out, "ClickHouse Database: %s\n", cfg.rootConfig.Config.ClickHouse.Database)
+	fmt.Fprintf(out, "ClickHouse User: %s\n", cfg.rootConfig.Config.ClickHouse.User)
+	fmt.Fprintf(out, "ClickHouse Password: %x\n", sha256String(cfg.rootConfig.Config.ClickHouse.Password))
+	fmt.Fprintln(out, "---")
+	fmt.Fprintf(out, "Projects: %v\n", cfg.projects)
 }
 
 func sha256String(s string) []byte {
-    h := sha256.New()
-    h.Write([]byte(s))
-    return h.Sum(nil)
+	h := sha256.New()
+	h.Write([]byte(s))
+	return h.Sum(nil)
 }
