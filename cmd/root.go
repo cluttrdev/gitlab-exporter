@@ -13,7 +13,7 @@ import (
 )
 
 const (
-    exeName string = "glche"
+    exeName string = "gitlab-clickhouse-exporter"
     envVarPrefix string = "GLCHE"
 )
 
@@ -30,7 +30,7 @@ func NewRootCmd() (*ffcli.Command, *RootConfig) {
 
     return &ffcli.Command{
         Name: exeName,
-        ShortUsage: fmt.Sprintf("%s [flags] <subcommand> [flags]", exeName),
+        ShortUsage: fmt.Sprintf("%s [flags] <subcommand> [flags] [<args>...]", exeName),
         FlagSet: fs,
         Options: []ff.Option{ff.WithEnvVarPrefix(envVarPrefix)},
         Exec: config.Exec,

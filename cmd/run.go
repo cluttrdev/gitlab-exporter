@@ -10,9 +10,11 @@ import (
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
+	"github.com/peterbourgon/ff/v3"
 	"github.com/peterbourgon/ff/v3/ffcli"
 
 	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
@@ -31,11 +33,14 @@ func (f *projectList) String() string {
 }
 
 func (f *projectList) Set(value string) error {
-    v, err := strconv.ParseInt(value, 10, 64)
-    if err != nil {
-        return err
+    values := strings.Split(value, ",")
+    for _, s := range values {
+        v, err := strconv.ParseInt(s, 10, 64)
+        if err != nil {
+            return err
+        }
+        *f = append(*f, v)
     }
-    *f = append(*f, v)
     return nil
 }
 
@@ -46,7 +51,7 @@ func NewRunCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
         out: out,
     }
 
-    fs := flag.NewFlagSet("glche run", flag.ExitOnError)
+    fs := flag.NewFlagSet(fmt.Sprintf("%s run", exeName), flag.ExitOnError)
     config.RegisterFlags(fs)
     config.rootConfig.RegisterFlags(fs)
 
@@ -55,12 +60,13 @@ func NewRunCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
         ShortUsage: fmt.Sprintf("%s run [flags]", exeName),
         ShortHelp: "Run in daemon mode",
         FlagSet: fs,
+        Options: []ff.Option{ff.WithEnvVarPrefix(envVarPrefix)},
         Exec: config.Exec,
     }
 }
 
 func (c *RunConfig) RegisterFlags(fs *flag.FlagSet) {
-    fs.Var(&c.projects, "project", "A project id to export data from.")
+    fs.Var(&c.projects, "projects", "Comma separated list of project ids.")
 }
 
 func (c *RunConfig) Exec(ctx context.Context, _ []string) error {

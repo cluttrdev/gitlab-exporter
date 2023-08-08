@@ -16,10 +16,12 @@ func main() {
         out = os.Stdout
         rootCmd, rootConfig = cmd.NewRootCmd()
         runCmd = cmd.NewRunCmd(rootConfig, out)
+        fetchCmd = cmd.NewFetchCmd(rootConfig, out)
     )
 
     rootCmd.Subcommands =[]*ffcli.Command{
         runCmd,
+        fetchCmd,
     }
 
     if err := rootCmd.Parse(os.Args[1:]); err != nil {

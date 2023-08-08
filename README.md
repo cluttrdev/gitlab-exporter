@@ -22,31 +22,46 @@ go install https://github.com/cluttrdev/gitlab-clickhouse-exporter@latest
 
 ## Usage
 
-After [installation](#installation) simply run
+`gitlab-clickhouse-exporter` can either run in daemon mode or execute one-off
+commands.
+
+### Daemon Mode
+
+To run `gitlab-clickhouse-exporter` in daemon mode use:
 
 ```shell
-gitlab-clickhouse-exporter PROJECT_ID
+gitlab-clickhouse-exporter run
 ```
 
-This will periodically export data for updated pipelines of the specified project,
+This will periodically export data for updated pipelines of the configured projects,
 see [Configuration](#configuration) for configuration options.
+
+### Command Mode
+
+`gitlab-clickhouse-exporter` supports a number of commands that can be excuted
+individually. Use the following to get an overview of available command:
+
+```shell
+gitlab-clickhouse-exporter -h
+```
 
 ## Configuration
 
-| Environment Variable  | Default Value               |
-| ---                   | ---                         |
-| `GITLAB_API_URL`      | `https://gitlab.com/api/v4` |
-| `GITLAB_API_TOKEN`    | **required**                |
-| `CLICKHOUSE_HOST`     | `localhost`                 |
-| `CLICKHOUSE_PORT`     | `9000`                      |
-| `CLICKHOUSE_DATABASE` | `default`                   |
-| `CLICKHOUSE_USER`     | `default`                   |
-| `CLICKHOUSE_PASSWORD` | `""`                        |
+| Environment Variable        | Default Value                 |
+| ---                         | ---                           |
+| `GLCHE_GITLAB_API_URL`      | `"https://gitlab.com/api/v4"` |
+| `GLCHE_GITLAB_API_TOKEN`    | **required**                  |
+| `GLCHE_CLICKHOUSE_HOST`     | `"localhost"`                 |
+| `GLCHE_CLICKHOUSE_PORT`     | `9000`                        |
+| `GLCHE_CLICKHOUSE_DATABASE` | `"default"`                   |
+| `GLCHE_CLICKHOUSE_USER`     | `"default"`                   |
+| `GLCHE_CLICKHOUSE_PASSWORD` | `""`                          |
+| `GLCHE_PROJECTS`            | `[]`                          |
 
 
 ## License
 
-This project is licensed under the [MIT License](./LICENSE)
+This project is licensed under the [MIT License](./LICENSE).
 
 [gitlab-api]: https://docs.gitlab.com/ee/api/rest/
 [clickhouse]: https://clickhouse.com/
