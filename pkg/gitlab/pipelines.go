@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/xanzy/go-gitlab"
+	gogitlab "github.com/xanzy/go-gitlab"
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
 )
@@ -29,13 +29,13 @@ type ListProjectPipelineOptions struct {
 }
 
 func (c *Client) ListProjectPipelines(ctx context.Context, projectID int64, opt *ListProjectPipelineOptions) ([]*models.PipelineInfo, error) {
-	gitlabOpts := &gitlab.ListProjectPipelinesOptions{
-		ListOptions: gitlab.ListOptions{
+	gitlabOpts := &gogitlab.ListProjectPipelinesOptions{
+		ListOptions: gogitlab.ListOptions{
 			Page:    opt.Page,
 			PerPage: opt.PerPage,
 		},
 		Scope:         opt.Scope,
-		Status:        (*gitlab.BuildStateValue)(opt.Status),
+		Status:        (*gogitlab.BuildStateValue)(opt.Status),
 		Source:        opt.Source,
 		Ref:           opt.Ref,
 		SHA:           opt.SHA,
@@ -50,7 +50,7 @@ func (c *Client) ListProjectPipelines(ctx context.Context, projectID int64, opt 
 
 	pipelines := []*models.PipelineInfo{}
 	for {
-		ps, resp, err := c.client.Pipelines.ListProjectPipelines(int(projectID), gitlabOpts, gitlab.WithContext(ctx))
+		ps, resp, err := c.client.Pipelines.ListProjectPipelines(int(projectID), gitlabOpts, gogitlab.WithContext(ctx))
 		if err != nil {
 			return nil, err
 		}
@@ -69,8 +69,7 @@ func (c *Client) ListProjectPipelines(ctx context.Context, projectID int64, opt 
 }
 
 func (c *Client) GetPipeline(ctx context.Context, projectID int64, pipelineID int64) (*models.Pipeline, error) {
-
-	pipeline, _, err := c.client.Pipelines.GetPipeline(int(projectID), int(pipelineID), gitlab.WithContext(ctx))
+	pipeline, _, err := c.client.Pipelines.GetPipeline(int(projectID), int(pipelineID), gogitlab.WithContext(ctx))
 	if err != nil {
 		return nil, fmt.Errorf("[gitlab.Client.GetPipeline] %w", err)
 	}
