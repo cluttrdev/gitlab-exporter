@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"crypto/sha256"
 	"flag"
 	"fmt"
 	"io"
@@ -12,33 +13,64 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
+	"github.com/peterbourgon/ff/v3/ffcli"
+
 	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
 )
 
-func Run(ctx context.Context, cfg config.Config, out io.Writer) error {
+type RunConfig struct {
+    rootConfig *RootConfig
+    out io.Writer
+    projects projectList
+}
+
+type projectList []int64
+
+func (f *projectList) String() string {
+    return fmt.Sprintf("%v", []int64(*f))
+}
+
+func (f *projectList) Set(value string) error {
+    v, err := strconv.ParseInt(value, 10, 64)
+    if err != nil {
+        return err
+    }
+    *f = append(*f, v)
+    return nil
+}
+
+
+func NewRunCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
+    config := RunConfig{
+        rootConfig: rootConfig,
+        out: out,
+    }
+
+    fs := flag.NewFlagSet("glche run", flag.ExitOnError)
+    config.RegisterFlags(fs)
+    config.rootConfig.RegisterFlags(fs)
+
+    return &ffcli.Command{
+        Name: "run",
+        ShortUsage: fmt.Sprintf("%s run [flags]", exeName),
+        ShortHelp: "Run in daemon mode",
+        FlagSet: fs,
+        Exec: config.Exec,
+    }
+}
+
+func (c *RunConfig) RegisterFlags(fs *flag.FlagSet) {
+    fs.Var(&c.projects, "project", "A project id to export data from.")
+}
+
+func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 	// configure logging
-	log.SetOutput(out)
+	log.SetOutput(c.out)
 
-	// parse commandline arguments and flags
-	flag.Parse()
-	if flag.NArg() != 1 {
-		return fmt.Errorf("usage: gitlab-clickhouse-exporter PROJECT_ID")
-	}
+    ctl := c.rootConfig.Controller
 
-	projectID, err := strconv.ParseInt(flag.Arg(0), 10, 64)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	// setup controller
-	ctl, err := controller.NewController(cfg)
-	if err != nil {
-		return err
-	}
-
-	if err = ctl.Init(ctx); err != nil {
+	// init controller
+    if err := ctl.Init(ctx); err != nil {
 		return err
 	}
 
@@ -63,6 +95,9 @@ func Run(ctx context.Context, cfg config.Config, out io.Writer) error {
 		}
 	}()
 
+    // log configuration
+    printRunConfig(c, c.out)
+    
 	// run daemon
 	var firstRun bool = true
 	ticker := time.NewTicker(1 * time.Second)
@@ -90,8 +125,7 @@ func Run(ctx context.Context, cfg config.Config, out io.Writer) error {
 				Scope: &scope,
 			}
 
-			projects := []int64{projectID}
-			for _, project := range projects {
+			for _, project := range c.projects {
 				pis, err := ctl.GitLab.ListProjectPipelines(ctx, project, opt)
 				if err != nil {
 					log.Println(err)
@@ -111,4 +145,24 @@ func Run(ctx context.Context, cfg config.Config, out io.Writer) error {
 			}
 		}
 	}
+
+}
+
+func printRunConfig(cfg *RunConfig, out io.Writer) {
+    fmt.Fprintf(out, "GitLab URL: %s\n", cfg.rootConfig.Config.GitLab.URL)
+    fmt.Fprintf(out, "GitLab Token: %x\n", sha256String(cfg.rootConfig.Config.GitLab.Token))
+    fmt.Fprintln(out, "---")
+    fmt.Fprintf(out, "ClickHouse Host: %s\n", cfg.rootConfig.Config.ClickHouse.Host)
+    fmt.Fprintf(out, "ClickHouse Port: %d\n", cfg.rootConfig.Config.ClickHouse.Port)
+    fmt.Fprintf(out, "ClickHouse Database: %s\n", cfg.rootConfig.Config.ClickHouse.Database)
+    fmt.Fprintf(out, "ClickHouse User: %s\n", cfg.rootConfig.Config.ClickHouse.User)
+    fmt.Fprintf(out, "ClickHouse Password: %x\n", sha256String(cfg.rootConfig.Config.ClickHouse.Password))
+    fmt.Fprintln(out, "---")
+    fmt.Fprintf(out, "Projects: %v\n", cfg.projects)
+}
+
+func sha256String(s string) []byte {
+    h := sha256.New()
+    h.Write([]byte(s))
+    return h.Sum(nil)
 }

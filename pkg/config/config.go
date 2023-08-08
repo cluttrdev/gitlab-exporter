@@ -25,13 +25,13 @@ type ClickHouse struct {
 }
 
 const (
-	DEFAULT_GITLAB_API_URL string = "https://gitlab.com/api/v4"
+	DefaultGitLabApiUrl string = "https://gitlab.com/api/v4"
 
-	DEFAULT_CLICKHOUSE_HOST     string = "localhost"
-	DEFAULT_CLICKHOUSE_PORT     string = "9000"
-	DEFAULT_CLICKHOUSE_DATABASE string = "default"
-	DEFAULT_CLICKHOUSE_USER     string = "default"
-	DEFAULT_CLICKHOUSE_PASSWORD string = ""
+	DefaultClickHouseHost     string = "localhost"
+	DefaultClickHousePort     int    = 9000
+	DefaultClickHouseDatabase string = "default"
+	DefaultClickHouseUser     string = "default"
+	DefaultClickHousePassword string = ""
 )
 
 func LoadEnv() (*Config, error) {
@@ -51,14 +51,14 @@ func LoadEnv() (*Config, error) {
 		Token: gl_token,
 	}
 
-	ch_host := getEnv("CLICKHOUSE_HOST", DEFAULT_CLICKHOUSE_HOST)
-	ch_port, err := strconv.ParseInt(getEnv("CLICKHOUSE_PORT", DEFAULT_CLICKHOUSE_PORT), 10, 16)
+	ch_host := getEnv("CLICKHOUSE_HOST", DefaultClickHouseHost)
+	ch_port, err := strconv.ParseInt(getEnv("CLICKHOUSE_PORT", fmt.Sprintf("%d", DefaultClickHousePort)), 10, 16)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to load clickhouse port: %w", err)
 	}
-	ch_database := getEnv("CLICKHOUSE_DATABASE", DEFAULT_CLICKHOUSE_DATABASE)
-	ch_user := getEnv("CLICKHOUSE_USER", DEFAULT_CLICKHOUSE_USER)
-	ch_password := getEnv("CLICKHOUSE_PASSWORD", DEFAULT_CLICKHOUSE_PASSWORD)
+	ch_database := getEnv("CLICKHOUSE_DATABASE", DefaultClickHouseDatabase)
+	ch_user := getEnv("CLICKHOUSE_USER", DefaultClickHouseUser)
+	ch_password := getEnv("CLICKHOUSE_PASSWORD", DefaultClickHousePassword)
 
 	ch := ClickHouse{
 		Host:     ch_host,

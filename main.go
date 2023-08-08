@@ -2,24 +2,39 @@ package main
 
 import (
 	"context"
-	"fmt"
 	"log"
 	"os"
 
+	"github.com/peterbourgon/ff/v3/ffcli"
+
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/cmd"
-	config "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
+    "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
 )
 
 func main() {
-	ctx := context.Background()
+    var (
+        out = os.Stdout
+        rootCmd, rootConfig = cmd.NewRootCmd()
+        runCmd = cmd.NewRunCmd(rootConfig, out)
+    )
 
-	cfg, err := config.LoadEnv()
+    rootCmd.Subcommands =[]*ffcli.Command{
+        runCmd,
+    }
+
+    if err := rootCmd.Parse(os.Args[1:]); err != nil {
+        log.Fatalf("error parsing args: %v\n", err)
+    }
+
+	ctl, err := controller.NewController(rootConfig.Config)
 	if err != nil {
-		log.Fatal(err)
+        log.Fatalf("error constructing controller: %v", err)
 	}
 
-	if err = cmd.Run(ctx, *cfg, os.Stdout); err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
-		os.Exit(1)
-	}
+    rootConfig.Controller = &ctl
+
+	ctx := context.Background()
+    if err := rootCmd.Run(ctx); err != nil {
+        log.Fatalf("%v", err)
+    }
 }
