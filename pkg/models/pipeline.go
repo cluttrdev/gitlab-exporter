@@ -97,11 +97,11 @@ func NewPipeline(p *gogitlab.Pipeline) *Pipeline {
 }
 
 type PipelineHierarchy struct {
-	Pipeline            *Pipeline
-	Jobs                []*Job
-	Sections            []*Section
-	Bridges             []*Bridge
-	DownstreamPipelines []*PipelineHierarchy
+    Pipeline            *Pipeline `json:"pipeline"`
+    Jobs                []*Job `json:"jobs"`
+    Sections            []*Section `json:"sections"`
+    Bridges             []*Bridge `json:"bridges"`
+    DownstreamPipelines []*PipelineHierarchy `json:"downstream_pipelines"`
 }
 
 func (ph *PipelineHierarchy) GetAllPipelines() []*Pipeline {
