@@ -51,7 +51,7 @@ func (c *FetchTestReportConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("error parsing `pipeline_id` argument: %w", err)
 	}
 
-	tr, err := ctl.GitLab.GetPipelineReport(ctx, projectID, pipelineID)
+	tr, err := ctl.GitLab.GetPipelineTestReport(ctx, projectID, pipelineID)
 	if err != nil {
 		return fmt.Errorf("error fetching pipeline testreport: %w", err)
 	}

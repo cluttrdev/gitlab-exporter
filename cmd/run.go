@@ -144,7 +144,7 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 
 					log.Printf("Exporting projects/%d/pipelines/%d\n", project, pi.ID)
 					if err := ctl.ExportPipeline(ctx, project, pi.ID); err != nil {
-						log.Printf("Error: %s\n", err)
+						log.Printf("error exporting pipeline: %s\n", err)
 					}
 				}
 			}
