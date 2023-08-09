@@ -8,6 +8,7 @@ import (
 	clickhouse "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
 	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
 )
 
 type Controller struct {
@@ -98,6 +99,28 @@ func (c *Controller) ExportPipeline(ctx context.Context, projectID int64, pipeli
 
 	if err = clickhouse.InsertTraces(ctx, pts, c.ClickHouse); err != nil {
 		return fmt.Errorf("[controller.ExportPipeline/InsertTraces] %w", err)
+	}
+
+	trs, err := c.GitLab.GetPipelineHierarchyTestReports(ctx, ph)
+	if err != nil {
+		return fmt.Errorf("[controller.ExportPipeline/GetTestRerports] %w", err)
+	}
+	tss := []*models.PipelineTestSuite{}
+	tcs := []*models.PipelineTestCase{}
+	for _, tr := range trs {
+		tss = append(tss, tr.TestSuites...)
+		for _, ts := range tr.TestSuites {
+			tcs = append(tcs, ts.TestCases...)
+		}
+	}
+	if err = clickhouse.InsertTestReports(ctx, trs, c.ClickHouse); err != nil {
+		return fmt.Errorf("[controller.ExportPipeline/InsertTestReports] %w", err)
+	}
+	if err = clickhouse.InsertTestSuites(ctx, tss, c.ClickHouse); err != nil {
+		return fmt.Errorf("[controller.ExportPipeline/InsertTestSuites] %w", err)
+	}
+	if err = clickhouse.InsertTestCases(ctx, tcs, c.ClickHouse); err != nil {
+		return fmt.Errorf("[controller.ExportPipeline/InsertTestCases] %w", err)
 	}
 
 	return nil
