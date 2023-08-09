@@ -94,10 +94,6 @@ func (c *Controller) ExportPipeline(ctx context.Context, projectID int64, pipeli
 
 	pts := ph.GetAllTraces()
 	if err = clickhouse.InsertTraces(ctx, pts, c.ClickHouse); err != nil {
-		return fmt.Errorf("[controller.ExportPipeline/GetTraces] %w", err)
-	}
-
-	if err = clickhouse.InsertTraces(ctx, pts, c.ClickHouse); err != nil {
 		return fmt.Errorf("[controller.ExportPipeline/InsertTraces] %w", err)
 	}
 
