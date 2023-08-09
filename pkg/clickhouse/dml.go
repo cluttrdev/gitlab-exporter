@@ -204,6 +204,129 @@ func InsertPipelineHierarchy(ctx context.Context, hierarchy *models.PipelineHier
 	return nil
 }
 
+func InsertTestReports(ctx context.Context, reports []*models.PipelineTestReport, client *Client) error {
+	batch, err := client.PrepareBatch(ctx, "INSERT INTO gitlab_ci.testreports")
+	if err != nil {
+		return fmt.Errorf("[clickhouse.Client.InsertTestReports] %w", err)
+	}
+
+	for _, tr := range reports {
+		ids, names, times, counts := convertTestSuitesSummary(tr.TestSuites)
+
+		err = batch.Append(
+			tr.ID,
+			tr.PipelineID,
+			tr.TotalTime,
+			tr.TotalCount,
+			tr.SuccessCount,
+			tr.FailedCount,
+			tr.SkippedCount,
+			tr.ErrorCount,
+			ids,
+			names,
+			times,
+			counts,
+		)
+		if err != nil {
+			return fmt.Errorf("[clickhouse.Client.InsertTestReports] %w", err)
+		}
+	}
+
+	return batch.Send()
+}
+
+func convertTestSuitesSummary(suites []*models.PipelineTestSuite) (ids []string, names []string, times []float64, counts []int64) {
+	for _, ts := range suites {
+		ids = append(ids, ts.ID)
+		names = append(names, ts.Name)
+		times = append(times, ts.TotalTime)
+		counts = append(counts, ts.TotalCount)
+	}
+
+	return
+}
+
+func InsertTestSuites(ctx context.Context, suites []*models.PipelineTestSuite, client *Client) error {
+	batch, err := client.PrepareBatch(ctx, "INSERT INTO gitlab_ci.testreports")
+	if err != nil {
+		return fmt.Errorf("[clickhouse.Client.InsertTestReports] %w", err)
+	}
+
+	for _, ts := range suites {
+		ids, statuses, names := convertTestCasesSummary(ts.TestCases)
+
+		err = batch.Append(
+			ts.ID,
+			map[string]interface{}{
+				"id":          ts.TestReport.ID,
+				"pipeline_id": ts.TestReport.PipelineID,
+			},
+			ts.Name,
+			ts.TotalTime,
+			ts.TotalCount,
+			ts.SuccessCount,
+			ts.FailedCount,
+			ts.SkippedCount,
+			ts.ErrorCount,
+			ids,
+			statuses,
+			names,
+		)
+		if err != nil {
+			return fmt.Errorf("[clickhouse.Client.InsertTestSuites] %w", err)
+		}
+	}
+
+	return batch.Send()
+}
+
+func convertTestCasesSummary(cases []*models.PipelineTestCase) (ids []string, statuses []string, names []string) {
+	for _, tc := range cases {
+		ids = append(ids, tc.ID)
+		statuses = append(statuses, tc.Status)
+		names = append(names, tc.Name)
+	}
+
+	return
+}
+
+func InsertTestCases(ctx context.Context, cases []*models.PipelineTestCase, client *Client) error {
+	batch, err := client.PrepareBatch(ctx, "INSERT INTO gitlab_ci.testreports")
+	if err != nil {
+		return fmt.Errorf("[clickhouse.Client.InsertTestReports] %w", err)
+	}
+
+	for _, tc := range cases {
+		err = batch.Append(
+			tc.ID,
+			map[string]interface{}{
+				"id": tc.TestSuite.ID,
+			},
+			map[string]interface{}{
+				"id":          tc.TestReport.ID,
+				"pipeline_id": tc.TestReport.PipelineID,
+			},
+			tc.Status,
+			tc.Name,
+			tc.Classname,
+			tc.File,
+			tc.ExecutionTime,
+			tc.SystemOutput,
+			tc.StackTrace,
+			tc.AttachmentURL,
+			map[string]interface{}{
+				"count":       tc.RecentFailures.Count,
+				"base_branch": tc.RecentFailures.BaseBranch,
+			},
+		)
+		if err != nil {
+			return fmt.Errorf("[clickhouse.Client.InsertTestCases] %w", err)
+		}
+	}
+
+	return batch.Send()
+}
+
 func timeFromUnixNano(ts int64) time.Time {
 	const nsecPerSecond int64 = 1e09
 	sec := ts / nsecPerSecond

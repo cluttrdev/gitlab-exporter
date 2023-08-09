@@ -6,6 +6,10 @@ import (
 )
 
 const (
+	dbName string = "gitlab_ci"
+)
+
+const (
 	createPipelinesTableSQL = `
 CREATE TABLE IF NOT EXISTS %s.%s (
     id Int64,
@@ -137,6 +141,81 @@ ENGINE ReplacingMergeTree()
 ORDER BY id
 ;
     `
+
+	createTestReportsTableSQL = `
+CREATE TABLE IF NOT EXISTS %s.%s (
+    id FixedString(16),
+    pipeline_id Int64,
+    total_time Float64,
+    total_count Int64,
+    success_count Int64,
+    failed_count Int64,
+    skipped_count Int64,
+    error_count Int64,
+    test_suites Nested(
+        id FixedString(16),
+        name string,
+        total_time Float64,
+        total_count Int64
+    )
+)
+ENGINE ReplacingMergeTree()
+ORDER BY id
+;
+    `
+
+	createTestSuitesTableSQL = `
+CREATE TABLE IF NOT EXISTS %s.%s (
+    id FixedString(16),
+    testreport Tuple(
+        id FixedString(16),
+        pipeline_id Int64
+    ),
+    name string,
+    total_time Float64,
+    total_count Int64,
+    success_count Int64,
+    failed_count Int64,
+    skipped_count Int64,
+    error_count Int64,
+    test_cases Nested(
+        id FixedString(16),
+        status string,
+        name string
+    )
+)
+ENGINE ReplacingMergeTree()
+ORDER BY id
+;
+    `
+
+	createTestCasesTableSQL = `
+CREATE TABLE IF NOT EXISTS %s.%s (
+    id FixedString(16),
+    testsuite Tuple(
+        id FixedString(16),
+    ),
+    testreport Tuple(
+        id FixedString(16),
+        pipeline_id Int64
+    ),
+    status string,
+    name string,
+    classname string,
+    file string,
+    execution_time Float64,
+    system_output string,
+    stack_trace string,
+    attachment_url string,
+    recent_failures Tuple(
+        count Int64,
+        base_branch string
+    )
+)
+ENGINE ReplacingMergeTree()
+ORDER BY id
+;
+    `
 )
 
 const (
@@ -240,6 +319,15 @@ func createTables(ctx context.Context, client *Client) error {
 	if err := client.Conn.Exec(ctx, renderCreateBridgesTableSQL()); err != nil {
 		return fmt.Errorf("exec create bridges table: %w", err)
 	}
+	if err := client.Conn.Exec(ctx, renderCreateTestReportsTableSQL()); err != nil {
+		return fmt.Errorf("exec create testreports table: %w", err)
+	}
+	if err := client.Conn.Exec(ctx, renderCreateTestSuitesTableSQL()); err != nil {
+		return fmt.Errorf("exec create testsuites table: %w", err)
+	}
+	if err := client.Conn.Exec(ctx, renderCreateTestCasesTableSQL()); err != nil {
+		return fmt.Errorf("exec create testcases table: %w", err)
+	}
 
 	if err := client.Conn.Exec(ctx, renderCreateTracesTableSQL()); err != nil {
 		return fmt.Errorf("exec create traces table: %w", err)
@@ -258,43 +346,51 @@ func createTables(ctx context.Context, client *Client) error {
 }
 
 func renderCreatePipelinesTableSQL() string {
-	dbName := "gitlab_ci"
 	tableName := "pipelines"
 	return fmt.Sprintf(createPipelinesTableSQL, dbName, tableName)
 }
 
 func renderCreateJobsTableSQL() string {
-	dbName := "gitlab_ci"
 	tableName := "jobs"
 	return fmt.Sprintf(createJobsTableSQL, dbName, tableName)
 }
 
 func renderCreateBridgesTableSQL() string {
-	dbName := "gitlab_ci"
 	tableName := "bridges"
 	return fmt.Sprintf(createBridgesTableSQL, dbName, tableName)
 }
 
 func renderCreateSectionsTableSQL() string {
-	dbName := "gitlab_ci"
 	tableName := "sections"
 	return fmt.Sprintf(createSectionsTableSQL, dbName, tableName)
 }
 
+func renderCreateTestReportsTableSQL() string {
+	tableName := "testreports"
+	return fmt.Sprintf(createTestReportsTableSQL, dbName, tableName)
+}
+
+func renderCreateTestSuitesTableSQL() string {
+	tableName := "testsuites"
+	return fmt.Sprintf(createTestSuitesTableSQL, dbName, tableName)
+}
+
+func renderCreateTestCasesTableSQL() string {
+	tableName := "testcases"
+	return fmt.Sprintf(createTestCasesTableSQL, dbName, tableName)
+}
+
 func renderCreateTracesTableSQL() string {
-	dbName := "gitlab_ci"
 	tableName := "traces"
 	return fmt.Sprintf(createTracesTableSQL, dbName, tableName)
 }
 
 func renderCreateTraceIdTsTableSQL() string {
-	dbName := "gitlab_ci"
 	tableName := "traces"
 	return fmt.Sprintf(createTraceIdTsTableSQL, dbName, tableName)
 }
 
 func renderCreateTraceIdTsMaterializedViewSQL() string {
-	dbName := "gitlab_ci"
 	tableName := "traces"
 	return fmt.Sprintf(
 		createTraceIdTsMaterializedViewSQL,
@@ -305,7 +401,6 @@ func renderCreateTraceIdTsMaterializedViewSQL() string {
 }
 
 func renderTraceViewSQL() string {
-	dbName := "gitlab_ci"
 	viewName := "trace_view"
 	tableName := "traces"
 	return fmt.Sprintf(
