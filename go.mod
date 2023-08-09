@@ -4,6 +4,7 @@ go 1.19
 
 require (
 	github.com/ClickHouse/clickhouse-go/v2 v2.12.0
+	github.com/peterbourgon/ff/v3 v3.4.0
 	github.com/xanzy/go-gitlab v0.88.0
 	golang.org/x/exp v0.0.0-20230801115018-d63ba01acd4b
 )
@@ -20,7 +21,6 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.7.4 // indirect
 	github.com/klauspost/compress v1.15.15 // indirect
 	github.com/paulmach/orb v0.9.0 // indirect
-	github.com/peterbourgon/ff/v3 v3.4.0 // indirect
 	github.com/pierrec/lz4/v4 v4.1.17 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
