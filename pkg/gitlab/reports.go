@@ -9,11 +9,29 @@ import (
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
 )
 
-func (c *Client) GetPipelineReport(ctx context.Context, projectID int64, pipelineID int64) (*models.PipelineTestReport, error) {
+func (c *Client) GetPipelineTestReport(ctx context.Context, projectID int64, pipelineID int64) (*models.PipelineTestReport, error) {
 	report, _, err := c.client.Pipelines.GetPipelineTestReport(int(projectID), int(pipelineID), gogitlab.WithContext(ctx))
 	if err != nil {
 		return nil, fmt.Errorf("[gitlab.Client.GetPipelineTestReport] %w", err)
 	}
 
 	return models.NewPipelineTestReport(pipelineID, report), nil
+}
+
+func (c *Client) GetPipelineHierarchyTestReports(ctx context.Context, ph *models.PipelineHierarchy) ([]*models.PipelineTestReport, error) {
+	tr, err := c.GetPipelineTestReport(ctx, ph.Pipeline.ProjectID, ph.Pipeline.ID)
+	if err != nil {
+		return nil, fmt.Errorf("[gitlab.Client.GetPipelineHierarchyTestReports] %w", err)
+	}
+
+	reports := []*models.PipelineTestReport{tr}
+	for _, dph := range ph.DownstreamPipelines {
+		trs, err := c.GetPipelineHierarchyTestReports(ctx, dph)
+		if err != nil {
+			return nil, err
+		}
+		reports = append(reports, trs...)
+	}
+
+	return reports, nil
 }
