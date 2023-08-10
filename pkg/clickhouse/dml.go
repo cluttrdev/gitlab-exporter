@@ -235,7 +235,7 @@ func InsertTestReports(ctx context.Context, reports []*models.PipelineTestReport
 	return batch.Send()
 }
 
-func convertTestSuitesSummary(suites []*models.PipelineTestSuite) (ids []string, names []string, times []float64, counts []int64) {
+func convertTestSuitesSummary(suites []*models.PipelineTestSuite) (ids []int64, names []string, times []float64, counts []int64) {
 	for _, ts := range suites {
 		ids = append(ids, ts.ID)
 		names = append(names, ts.Name)
@@ -247,7 +247,7 @@ func convertTestSuitesSummary(suites []*models.PipelineTestSuite) (ids []string,
 }
 
 func InsertTestSuites(ctx context.Context, suites []*models.PipelineTestSuite, client *Client) error {
-	batch, err := client.PrepareBatch(ctx, "INSERT INTO gitlab_ci.testreports")
+	batch, err := client.PrepareBatch(ctx, "INSERT INTO gitlab_ci.testsuites")
 	if err != nil {
 		return fmt.Errorf("[clickhouse.Client.InsertTestReports] %w", err)
 	}
@@ -280,7 +280,7 @@ func InsertTestSuites(ctx context.Context, suites []*models.PipelineTestSuite, c
 	return batch.Send()
 }
 
-func convertTestCasesSummary(cases []*models.PipelineTestCase) (ids []string, statuses []string, names []string) {
+func convertTestCasesSummary(cases []*models.PipelineTestCase) (ids []int64, statuses []string, names []string) {
 	for _, tc := range cases {
 		ids = append(ids, tc.ID)
 		statuses = append(statuses, tc.Status)
@@ -291,7 +291,7 @@ func convertTestCasesSummary(cases []*models.PipelineTestCase) (ids []string, st
 }
 
 func InsertTestCases(ctx context.Context, cases []*models.PipelineTestCase, client *Client) error {
-	batch, err := client.PrepareBatch(ctx, "INSERT INTO gitlab_ci.testreports")
+	batch, err := client.PrepareBatch(ctx, "INSERT INTO gitlab_ci.testcases")
 	if err != nil {
 		return fmt.Errorf("[clickhouse.Client.InsertTestReports] %w", err)
 	}
