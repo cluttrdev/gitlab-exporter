@@ -1,15 +1,14 @@
 package models
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"fmt"
+	"hash/adler32"
 
 	gogitlab "github.com/xanzy/go-gitlab"
 )
 
 type PipelineTestReport struct {
-	ID           string
+	ID           int64
 	PipelineID   int64
 	TotalTime    float64              `json:"total_time"`
 	TotalCount   int64                `json:"total_count"`
@@ -21,7 +20,7 @@ type PipelineTestReport struct {
 }
 
 type PipelineTestSuite struct {
-	ID           string
+	ID           int64
 	TestReport   *TestReportReference
 	Name         string              `json:"name"`
 	TotalTime    float64             `json:"total_time"`
@@ -34,7 +33,7 @@ type PipelineTestSuite struct {
 }
 
 type PipelineTestCase struct {
-	ID             string
+	ID             int64
 	TestSuite      *TestSuiteReference
 	TestReport     *TestReportReference
 	Status         string          `json:"status"`
@@ -49,22 +48,22 @@ type PipelineTestCase struct {
 }
 
 type RecentFailures struct {
-	Count      int    `json:"count"`
+	Count      int64  `json:"count"`
 	BaseBranch string `json:"base_branch"`
 }
 
 type TestReportReference struct {
-	ID         string
+	ID         int64
 	PipelineID int64
 }
 
 type TestSuiteReference struct {
-	ID string
+	ID int64
 }
 
 func NewPipelineTestReport(pipelineID int64, tr *gogitlab.PipelineTestReport) *PipelineTestReport {
 	report := &TestReportReference{
-		ID:         hashString(fmt.Sprint(pipelineID)),
+		ID:         hashStringID(fmt.Sprint(pipelineID)),
 		PipelineID: pipelineID,
 	}
 
@@ -73,7 +72,7 @@ func NewPipelineTestReport(pipelineID int64, tr *gogitlab.PipelineTestReport) *P
 		suites = append(suites, NewPipelineTestSuites(report, ts))
 	}
 	return &PipelineTestReport{
-		ID:           hashString(fmt.Sprint(pipelineID)),
+		ID:           report.ID,
 		PipelineID:   pipelineID,
 		TotalTime:    tr.TotalTime,
 		TotalCount:   int64(tr.TotalCount),
@@ -87,7 +86,7 @@ func NewPipelineTestReport(pipelineID int64, tr *gogitlab.PipelineTestReport) *P
 
 func NewPipelineTestSuites(report *TestReportReference, ts *gogitlab.PipelineTestSuites) *PipelineTestSuite {
 	suite := &TestSuiteReference{
-		ID: hashString(report.ID),
+		ID: hashStringID(fmt.Sprint(report.ID) + ts.Name),
 	}
 
 	cases := []*PipelineTestCase{}
@@ -111,7 +110,7 @@ func NewPipelineTestSuites(report *TestReportReference, ts *gogitlab.PipelineTes
 
 func NewPipelineTestCases(report *TestReportReference, suite *TestSuiteReference, tc *gogitlab.PipelineTestCases) *PipelineTestCase {
 	return &PipelineTestCase{
-		ID:             hashString(suite.ID),
+		ID:             hashStringID(fmt.Sprint(suite.ID) + tc.Name),
 		TestSuite:      suite,
 		TestReport:     report,
 		Status:         tc.Status,
@@ -127,14 +126,15 @@ func NewPipelineTestCases(report *TestReportReference, suite *TestSuiteReference
 }
 
 func NewRecentFailures(rf *gogitlab.RecentFailures) *RecentFailures {
+    if rf == nil {
+        return &RecentFailures{}
+    }
 	return &RecentFailures{
-		Count:      rf.Count,
+		Count:      int64(rf.Count),
 		BaseBranch: rf.BaseBranch,
 	}
 }
 
-func hashString(s string) string {
-	h := md5.New()
-	h.Write([]byte(s))
-	return hex.EncodeToString(h.Sum([]byte(s)))
+func hashStringID(s string) int64 {
+    return int64(adler32.Checksum([]byte(s)))
 }
