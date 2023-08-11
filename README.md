@@ -11,6 +11,10 @@ configuration options are limited.
 
 ---
 
+<p>
+    <img src="./assets/project-overview.webp" />
+    <img src="./assets/pipeline-trace.webp" />
+</p>
 
 ## Installation
 
