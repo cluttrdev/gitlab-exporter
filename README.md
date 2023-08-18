@@ -42,8 +42,8 @@ see [Configuration](#configuration) for configuration options.
 
 ### Command Mode
 
-`gitlab-clickhouse-exporter` supports a number of commands that can be excuted
-individually. Use the following to get an overview of available command:
+`gitlab-clickhouse-exporter` supports a number of commands that can be executed
+individually. Use the following to get an overview of available commands:
 
 ```shell
 gitlab-clickhouse-exporter -h
@@ -51,16 +51,19 @@ gitlab-clickhouse-exporter -h
 
 ## Configuration
 
-| Environment Variable        | Default Value                 |
-| ---                         | ---                           |
-| `GLCHE_GITLAB_API_URL`      | `"https://gitlab.com/api/v4"` |
-| `GLCHE_GITLAB_API_TOKEN`    | **required**                  |
-| `GLCHE_CLICKHOUSE_HOST`     | `"localhost"`                 |
-| `GLCHE_CLICKHOUSE_PORT`     | `9000`                        |
-| `GLCHE_CLICKHOUSE_DATABASE` | `"default"`                   |
-| `GLCHE_CLICKHOUSE_USER`     | `"default"`                   |
-| `GLCHE_CLICKHOUSE_PASSWORD` | `""`                          |
-| `GLCHE_PROJECTS`            | `[]`                          |
+Configuration options can be passed as command line flags and/or environment
+variables, with flags taking precedence.
+
+| Flag                  | Environment Variable        | Default Value                 |
+| ---                   | ---                         | ---                           |
+| --gitlab-api-url      | `GLCHE_GITLAB_API_URL`      | `"https://gitlab.com/api/v4"` |
+| --gitlab-api-token    | `GLCHE_GITLAB_API_TOKEN`    | **required**                  |
+| --clickhouse-host     | `GLCHE_CLICKHOUSE_HOST`     | `"localhost"`                 |
+| --clickhouse-port     | `GLCHE_CLICKHOUSE_PORT`     | `9000`                        |
+| --clickhouse-database | `GLCHE_CLICKHOUSE_DATABASE` | `"default"`                   |
+| --clickhouse-user     | `GLCHE_CLICKHOUSE_USER`     | `"default"`                   |
+| --clickhouse-password | `GLCHE_CLICKHOUSE_PASSWORD` | `""`                          |
+| --projects            | `GLCHE_PROJECTS`            | `[]`                          |
 
 ## Development Environment
 
@@ -76,7 +79,7 @@ docker compose up -d
 ```
 
 Then, set the necessary environment variables and run `gitlab-clickhouse-exporter`
-(either in daemon mode or using one-of commands):
+(either in daemon mode or using one-off commands):
 ```shell
 export GLCHE_GITLAB_API_TOKEN=<your-gitlab-token>
 
