@@ -126,9 +126,9 @@ func NewPipelineTestCases(report *TestReportReference, suite *TestSuiteReference
 }
 
 func NewRecentFailures(rf *gogitlab.RecentFailures) *RecentFailures {
-    if rf == nil {
-        return &RecentFailures{}
-    }
+	if rf == nil {
+		return &RecentFailures{}
+	}
 	return &RecentFailures{
 		Count:      int64(rf.Count),
 		BaseBranch: rf.BaseBranch,
@@ -136,5 +136,5 @@ func NewRecentFailures(rf *gogitlab.RecentFailures) *RecentFailures {
 }
 
 func hashStringID(s string) int64 {
-    return int64(adler32.Checksum([]byte(s)))
+	return int64(adler32.Checksum([]byte(s)))
 }

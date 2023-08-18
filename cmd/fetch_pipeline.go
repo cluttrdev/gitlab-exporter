@@ -60,10 +60,11 @@ func (c *FetchPipelineConfig) Exec(ctx context.Context, args []string) error {
 
 	var b []byte
 	if c.all {
-		ph, err := ctl.GitLab.GetPipelineHierarchy(ctx, projectID, pipelineID)
-		if err != nil {
+		phr := <-ctl.GitLab.GetPipelineHierarchy(ctx, projectID, pipelineID)
+		if err := phr.Error; err != nil {
 			return fmt.Errorf("error fetching pipeline hierarchy: %w", err)
 		}
+		ph := phr.PipelineHierarchy
 
 		b, err = json.Marshal(ph)
 		if err != nil {

@@ -3,7 +3,6 @@ package gitlabclient
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/xanzy/go-gitlab"
 
@@ -34,51 +33,84 @@ func NewGitLabClient(cfg ClientConfig) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipelineID int64) (*models.PipelineHierarchy, error) {
-	pipeline, err := c.GetPipeline(ctx, projectID, pipelineID)
-	if err != nil {
-		return nil, fmt.Errorf("[gitlab.Client.GetPipelineFull] %w", err)
-	}
+type GetPipelineHierarchyResult struct {
+	PipelineHierarchy *models.PipelineHierarchy
+	Error             error
+}
 
-	jobs, err := c.GetJobs(ctx, projectID, pipelineID)
-	if err != nil {
-		return nil, fmt.Errorf("[gitlab.Client.GetPipelineFull] %w", err)
-	}
+func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipelineID int64) <-chan GetPipelineHierarchyResult {
+	ch := make(chan GetPipelineHierarchyResult)
 
-	sections := []*models.Section{}
-	for _, job := range jobs {
-		log.Printf("job %s\n", job.WebURL)
-		s, err := c.GetSections(ctx, projectID, job.ID)
+	go func() {
+		defer close(ch)
+
+		pipeline, err := c.GetPipeline(ctx, projectID, pipelineID)
 		if err != nil {
-			return nil, fmt.Errorf("[gitlab.Client.GetPipelineFull] %w", err)
+			ch <- GetPipelineHierarchyResult{
+				Error: err,
+			}
+			return
 		}
-		sections = append(sections, s...)
-	}
 
-	bridges, err := c.GetBridges(ctx, projectID, pipelineID)
-	if err != nil {
-		return nil, fmt.Errorf("[gitlab.Client.GetPipelineFull] %w", err)
-	}
+		jobs := []*models.Job{}
+		sections := []*models.Section{}
+		for jr := range c.ListPipelineJobs(ctx, projectID, pipelineID) {
+			if jr.Error != nil {
+				ch <- GetPipelineHierarchyResult{
+					Error: fmt.Errorf("[ListPipelineJobs] %w", jr.Error),
+				}
+				return
+			}
+			jobs = append(jobs, jr.Job)
 
-	dps := []*models.PipelineHierarchy{}
-	for _, bridge := range bridges {
-		if bridge.DownstreamPipeline == nil {
-			continue
+			jobID := jr.Job.ID
+			for sr := range c.ListJobSections(ctx, projectID, jobID) {
+				if sr.Error != nil {
+					ch <- GetPipelineHierarchyResult{
+						Error: fmt.Errorf("[ListJobSections] %w", sr.Error),
+					}
+					return
+				}
+				sections = append(sections, sr.Section)
+			}
 		}
-		ph, err := c.GetPipelineHierarchy(
-			ctx, bridge.DownstreamPipeline.ProjectID, bridge.DownstreamPipeline.ID,
-		)
-		if err != nil {
-			return nil, fmt.Errorf("[gitlab.Client.GetPipelineFull] %w", err)
-		}
-		dps = append(dps, ph)
-	}
 
-	return &models.PipelineHierarchy{
-		Pipeline:            pipeline,
-		Jobs:                jobs,
-		Sections:            sections,
-		Bridges:             bridges,
-		DownstreamPipelines: dps,
-	}, nil
+		bridges := []*models.Bridge{}
+		dps := []*models.PipelineHierarchy{}
+		for br := range c.ListPipelineBridges(ctx, projectID, pipelineID) {
+			if br.Error != nil {
+				ch <- GetPipelineHierarchyResult{
+					Error: fmt.Errorf("[ListPipelineBridges] %w", br.Error),
+				}
+				return
+			}
+			bridges = append(bridges, br.Bridge)
+
+			dp := br.Bridge.DownstreamPipeline
+			if dp == nil || dp.ID == 0 {
+				continue
+			}
+
+			dpr := <-c.GetPipelineHierarchy(ctx, dp.ProjectID, dp.ID)
+			if dpr.Error != nil {
+				ch <- GetPipelineHierarchyResult{
+					Error: fmt.Errorf("[GetPipelineHierarchy] %w", dpr.Error),
+				}
+				return
+			}
+			dps = append(dps, dpr.PipelineHierarchy)
+		}
+
+		ch <- GetPipelineHierarchyResult{
+			PipelineHierarchy: &models.PipelineHierarchy{
+				Pipeline:            pipeline,
+				Jobs:                jobs,
+				Sections:            sections,
+				Bridges:             bridges,
+				DownstreamPipelines: dps,
+			},
+		}
+	}()
+
+	return ch
 }

@@ -58,10 +58,11 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 
 	ctl := c.exportConfig.rootConfig.Controller
 
-	ph, err := ctl.GitLab.GetPipelineHierarchy(ctx, projectID, pipelineID)
-	if err != nil {
+	phr := <-ctl.GitLab.GetPipelineHierarchy(ctx, projectID, pipelineID)
+	if err := phr.Error; err != nil {
 		return fmt.Errorf("error fetching pipeline hierarchy: %w", err)
 	}
+	ph := phr.PipelineHierarchy
 
 	pts := [][]*models.Span{}
 	if c.exportTrace {

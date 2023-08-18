@@ -28,51 +28,88 @@ type ListProjectPipelineOptions struct {
 	Sort          *string
 }
 
-func (c *Client) ListProjectPipelines(ctx context.Context, projectID int64, opt *ListProjectPipelineOptions) ([]*models.PipelineInfo, error) {
-	gitlabOpts := &gogitlab.ListProjectPipelinesOptions{
-		ListOptions: gogitlab.ListOptions{
-			Page:    opt.Page,
-			PerPage: opt.PerPage,
-		},
-		Scope:         opt.Scope,
-		Status:        (*gogitlab.BuildStateValue)(opt.Status),
-		Source:        opt.Source,
-		Ref:           opt.Ref,
-		SHA:           opt.SHA,
-		YamlErrors:    opt.YamlErrors,
-		Username:      opt.Username,
-		UpdatedAfter:  opt.UpdatedAfter,
-		UpdatedBefore: opt.UpdatedBefore,
-		Name:          opt.Name,
-		OrderBy:       opt.OrderBy,
-		Sort:          opt.Sort,
-	}
+type ListProjectPipelinesResult struct {
+	Pipeline *models.PipelineInfo
+	Error    error
+}
 
-	pipelines := []*models.PipelineInfo{}
-	for {
-		ps, resp, err := c.client.Pipelines.ListProjectPipelines(int(projectID), gitlabOpts, gogitlab.WithContext(ctx))
-		if err != nil {
-			return nil, err
+func (c *Client) ListProjectPipelines(ctx context.Context, projectID int64, opt *ListProjectPipelineOptions) <-chan ListProjectPipelinesResult {
+	out := make(chan ListProjectPipelinesResult)
+
+	go func() {
+		defer close(out)
+
+		gitlabOpts := &gogitlab.ListProjectPipelinesOptions{
+			ListOptions: gogitlab.ListOptions{
+				Page:    opt.Page,
+				PerPage: opt.PerPage,
+			},
+			Scope:         opt.Scope,
+			Status:        (*gogitlab.BuildStateValue)(opt.Status),
+			Source:        opt.Source,
+			Ref:           opt.Ref,
+			SHA:           opt.SHA,
+			YamlErrors:    opt.YamlErrors,
+			Username:      opt.Username,
+			UpdatedAfter:  opt.UpdatedAfter,
+			UpdatedBefore: opt.UpdatedBefore,
+			Name:          opt.Name,
+			OrderBy:       opt.OrderBy,
+			Sort:          opt.Sort,
 		}
 
-		for _, pi := range ps {
-			pipelines = append(pipelines, models.NewPipelineInfo(pi))
+		for {
+			ps, resp, err := c.client.Pipelines.ListProjectPipelines(int(projectID), gitlabOpts, gogitlab.WithContext(ctx))
+			if err != nil {
+				out <- ListProjectPipelinesResult{
+					Error: err,
+				}
+				return
+			}
+
+			for _, pi := range ps {
+				out <- ListProjectPipelinesResult{
+					Pipeline: models.NewPipelineInfo(pi),
+				}
+			}
+
+			if resp.NextPage == 0 {
+				break
+			}
+			gitlabOpts.Page = resp.NextPage
 		}
 
-		if resp.NextPage == 0 {
-			break
-		}
-		gitlabOpts.Page = resp.NextPage
-	}
+	}()
 
-	return pipelines, nil
+	return out
 }
 
 func (c *Client) GetPipeline(ctx context.Context, projectID int64, pipelineID int64) (*models.Pipeline, error) {
-	pipeline, _, err := c.client.Pipelines.GetPipeline(int(projectID), int(pipelineID), gogitlab.WithContext(ctx))
-	if err != nil {
-		return nil, fmt.Errorf("[gitlab.Client.GetPipeline] %w", err)
+	p := new(models.Pipeline)
+	if err := <-c.getPipeline(ctx, projectID, pipelineID, p); err != nil {
+		return nil, err
 	}
+	return p, nil
+}
 
-	return models.NewPipeline(pipeline), nil
+type GetPipelineResult struct {
+	Pipeline *models.Pipeline
+	Error    error
+}
+
+func (c *Client) getPipeline(ctx context.Context, projectID int64, pipelineID int64, p *models.Pipeline) <-chan error {
+	out := make(chan error)
+	go func() {
+		defer close(out)
+
+		pipeline, _, err := c.client.Pipelines.GetPipeline(int(projectID), int(pipelineID), gogitlab.WithContext(ctx))
+		if err != nil {
+			out <- fmt.Errorf("[gitlab.Client.GetPipeline] %w", err)
+			return
+		}
+
+		*p = *models.NewPipeline(pipeline)
+	}()
+
+	return out
 }

@@ -11,12 +11,14 @@ import (
 	"os/signal"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 	"time"
 
 	"github.com/peterbourgon/ff/v3"
 	"github.com/peterbourgon/ff/v3/ffcli"
 
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
 	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
 )
 
@@ -117,40 +119,59 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 				firstRun = false
 			}
 
-			pu, err := ctl.QueryLatestProjectPipelineUpdate(ctx)
-			if err != nil {
-				log.Println(err)
-			}
-
-			scope := "finished"
-			opt := &gitlab.ListProjectPipelineOptions{
-				PerPage: 100,
-				Page:    1,
-
-				Scope: &scope,
-			}
-
-			for _, project := range c.projects {
-				pis, err := ctl.GitLab.ListProjectPipelines(ctx, project, opt)
+			var wg sync.WaitGroup
+			for _, projectID := range c.projects {
+				pu, err := ctl.QueryLatestProjectPipelineUpdates(ctx, projectID)
 				if err != nil {
 					log.Println(err)
 					continue
 				}
 
-				for _, pi := range pis {
-					if pi.UpdatedAt.Before(pu[project]) {
-						continue
-					}
-
-					log.Printf("Exporting projects/%d/pipelines/%d\n", project, pi.ID)
-					if err := ctl.ExportPipeline(ctx, project, pi.ID); err != nil {
-						log.Printf("error exporting pipeline: %s\n", err)
-					}
-				}
+				wg.Add(1)
+				go func(projectID int64) {
+					defer wg.Done()
+					exportProjectPipelines(ctx, projectID, pu, ctl)
+				}(projectID)
 			}
+			wg.Wait()
 		}
 	}
+}
 
+func exportProjectPipelines(ctx context.Context, projectID int64, pipelineUpdates map[int64]time.Time, ctl *controller.Controller) {
+	scope := "finished"
+	opt := &gitlab.ListProjectPipelineOptions{
+		PerPage: 100,
+		Page:    1,
+
+		Scope: &scope,
+	}
+
+	var wg sync.WaitGroup
+	for r := range ctl.GitLab.ListProjectPipelines(ctx, projectID, opt) {
+		if r.Error != nil {
+			log.Println(r.Error)
+			continue
+		}
+		pi := r.Pipeline
+
+		lastUpdatedAt, ok := pipelineUpdates[pi.ID]
+		if ok && pi.UpdatedAt.Compare(lastUpdatedAt) <= 0 {
+			continue
+		}
+
+		wg.Add(1)
+		go func(pipelineID int64) {
+			defer wg.Done()
+
+			if err := ctl.ExportPipeline(ctx, projectID, pipelineID); err != nil {
+				log.Printf("error exporting pipeline: %s\n", err)
+				return
+			}
+			log.Printf("Exporting projects/%d/pipelines/%d ... done\n", projectID, pipelineID)
+		}(pi.ID)
+	}
+	wg.Wait()
 }
 
 func printRunConfig(cfg *RunConfig, out io.Writer) {
