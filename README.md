@@ -62,6 +62,28 @@ gitlab-clickhouse-exporter -h
 | `GLCHE_CLICKHOUSE_PASSWORD` | `""`                          |
 | `GLCHE_PROJECTS`            | `[]`                          |
 
+## Development Environment
+
+To test the application during development or just to see what it has to offer,
+a [docker-compose.yaml](./environments/dev/docker-compose.yaml) file is provided
+that can be used to set up a simple environment consisting of a ClickHouse server
+and a Grafana instance that includes some predefined dashboards.
+
+To use this, simply change directory to `environments/dev/` and run:
+
+```shell
+docker compose up -d
+```
+
+Then, set the necessary environment variables and run `gitlab-clickhouse-exporter`
+(either in daemon mode or using one-of commands):
+```shell
+export GLCHE_GITLAB_API_TOKEN=<your-gitlab-token>
+
+gitlab-clickhouse-exporter run --projects <project-ids>
+```
+
+You can then login to Grafana on <http://localhost:3000> to explore the data.
 
 ## License
 
