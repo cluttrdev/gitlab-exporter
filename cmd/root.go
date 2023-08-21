@@ -52,7 +52,7 @@ func (c *RootConfig) RegisterFlags(fs *flag.FlagSet) {
 	fs.StringVar(&c.Config.GitLab.Token, "gitlab-api-token", "", "The GitLab API Token.")
 
 	fs.StringVar(&c.Config.ClickHouse.Host, "clickhouse-host", config.DefaultClickHouseHost, "The ClickHouse server name (default: 'localhost').")
-	fs.IntVar(&c.Config.ClickHouse.Port, "clickhouse-port", config.DefaultClickHousePort, "The ClickHouse port to connect to (default: 9000)")
+	fs.StringVar(&c.Config.ClickHouse.Port, "clickhouse-port", config.DefaultClickHousePort, "The ClickHouse port to connect to (default: 9000)")
 	fs.StringVar(&c.Config.ClickHouse.Database, "clickhouse-database", config.DefaultClickHouseDatabase, "Select the current default ClickHouse database (default: 'default').")
 	fs.StringVar(&c.Config.ClickHouse.User, "clickhouse-user", config.DefaultClickHouseUser, "The ClickHouse username to connect with (default: 'default').")
 	fs.StringVar(&c.Config.ClickHouse.Password, "clickhouse-password", config.DefaultClickHousePassword, "The ClickHouse password (default: '').")

@@ -1,9 +1,7 @@
 package config
 
 import (
-	"fmt"
 	"os"
-	"strconv"
 )
 
 type Config struct {
@@ -18,7 +16,7 @@ type GitLab struct {
 
 type ClickHouse struct {
 	Host     string `yaml:"host"`
-	Port     int    `yaml:"port"`
+	Port     string `yaml:"port"`
 	Database string `yaml:"database"`
 	User     string `yaml:"user"`
 	Password string `yaml:"password"`
@@ -28,7 +26,7 @@ const (
 	DefaultGitLabApiUrl string = "https://gitlab.com/api/v4"
 
 	DefaultClickHouseHost     string = "localhost"
-	DefaultClickHousePort     int    = 9000
+	DefaultClickHousePort     string = "9000"
 	DefaultClickHouseDatabase string = "default"
 	DefaultClickHouseUser     string = "default"
 	DefaultClickHousePassword string = ""
@@ -52,17 +50,14 @@ func LoadEnv() (*Config, error) {
 	}
 
 	ch_host := getEnv("CLICKHOUSE_HOST", DefaultClickHouseHost)
-	ch_port, err := strconv.ParseInt(getEnv("CLICKHOUSE_PORT", fmt.Sprintf("%d", DefaultClickHousePort)), 10, 16)
-	if err != nil {
-		return nil, fmt.Errorf("Failed to load clickhouse port: %w", err)
-	}
+	ch_port := getEnv("CLICKHOUSE_PORT", DefaultClickHousePort)
 	ch_database := getEnv("CLICKHOUSE_DATABASE", DefaultClickHouseDatabase)
 	ch_user := getEnv("CLICKHOUSE_USER", DefaultClickHouseUser)
 	ch_password := getEnv("CLICKHOUSE_PASSWORD", DefaultClickHousePassword)
 
 	ch := ClickHouse{
 		Host:     ch_host,
-		Port:     int(ch_port),
+		Port:     ch_port,
 		Database: ch_database,
 		User:     ch_user,
 		Password: ch_password,

@@ -178,7 +178,7 @@ func printRunConfig(cfg *RunConfig, out io.Writer) {
 	fmt.Fprintf(out, "GitLab Token: %x\n", sha256String(cfg.rootConfig.Config.GitLab.Token))
 	fmt.Fprintln(out, "---")
 	fmt.Fprintf(out, "ClickHouse Host: %s\n", cfg.rootConfig.Config.ClickHouse.Host)
-	fmt.Fprintf(out, "ClickHouse Port: %d\n", cfg.rootConfig.Config.ClickHouse.Port)
+	fmt.Fprintf(out, "ClickHouse Port: %s\n", cfg.rootConfig.Config.ClickHouse.Port)
 	fmt.Fprintf(out, "ClickHouse Database: %s\n", cfg.rootConfig.Config.ClickHouse.Database)
 	fmt.Fprintf(out, "ClickHouse User: %s\n", cfg.rootConfig.Config.ClickHouse.User)
 	fmt.Fprintf(out, "ClickHouse Password: %x\n", sha256String(cfg.rootConfig.Config.ClickHouse.Password))
