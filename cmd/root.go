@@ -10,11 +10,21 @@ import (
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
+
+    "github.com/cluttrdev/gitlab-clickhouse-exporter/internal/ffyaml"
 )
 
 const (
 	exeName      string = "gitlab-clickhouse-exporter"
 	envVarPrefix string = "GLCHE"
+)
+
+var (
+    rootCmdOptions = []ff.Option{
+        ff.WithEnvVarPrefix(envVarPrefix),
+        ff.WithConfigFileFlag("config"),
+        ff.WithConfigFileParser(ffyaml.Parser),
+    }
 )
 
 type RootConfig struct {
@@ -32,7 +42,7 @@ func NewRootCmd() (*ffcli.Command, *RootConfig) {
 		Name:       exeName,
 		ShortUsage: fmt.Sprintf("%s [flags] <subcommand> [flags] [<args>...]", exeName),
 		FlagSet:    fs,
-		Options:    []ff.Option{ff.WithEnvVarPrefix(envVarPrefix)},
+		Options:    rootCmdOptions,
 		Exec:       config.Exec,
 	}, &config
 }
@@ -46,8 +56,11 @@ func (c *RootConfig) RegisterFlags(fs *flag.FlagSet) {
 	fs.StringVar(&c.Config.ClickHouse.Database, "clickhouse-database", config.DefaultClickHouseDatabase, "Select the current default ClickHouse database (default: 'default').")
 	fs.StringVar(&c.Config.ClickHouse.User, "clickhouse-user", config.DefaultClickHouseUser, "The ClickHouse username to connect with (default: 'default').")
 	fs.StringVar(&c.Config.ClickHouse.Password, "clickhouse-password", config.DefaultClickHousePassword, "The ClickHouse password (default: '').")
+
+    fs.String("config", "", "A Configuration file.")
 }
 
 func (c *RootConfig) Exec(context.Context, []string) error {
 	return flag.ErrHelp
 }
+

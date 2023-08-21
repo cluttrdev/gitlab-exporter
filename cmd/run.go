@@ -15,7 +15,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/peterbourgon/ff/v3"
 	"github.com/peterbourgon/ff/v3/ffcli"
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
@@ -61,7 +60,7 @@ func NewRunCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 		ShortUsage: fmt.Sprintf("%s run [flags]", exeName),
 		ShortHelp:  "Run in daemon mode",
 		FlagSet:    fs,
-		Options:    []ff.Option{ff.WithEnvVarPrefix(envVarPrefix)},
+		Options:    rootCmdOptions,
 		Exec:       config.Exec,
 	}
 }
