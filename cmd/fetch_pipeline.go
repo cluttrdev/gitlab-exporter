@@ -22,7 +22,7 @@ func NewFetchPipelineCmd(fetchConfig *FetchConfig) *ffcli.Command {
 		fetchConfig: fetchConfig,
 	}
 
-	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch pipeline", exeName), flag.ExitOnError)
+    fs := flag.NewFlagSet(fmt.Sprintf("%s fetch pipeline", exeName), flag.ContinueOnError)
 	config.RegisterFlags(fs)
 	config.fetchConfig.rootConfig.RegisterFlags(fs)
 

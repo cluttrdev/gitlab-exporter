@@ -21,7 +21,7 @@ func NewFetchCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 		out:        out,
 	}
 
-	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch", exeName), flag.ExitOnError)
+	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch", exeName), flag.ContinueOnError)
 	config.rootConfig.RegisterFlags(fs)
 
 	var (

@@ -20,7 +20,7 @@ func NewFetchTestReportCmd(fetchConfig *FetchConfig) *ffcli.Command {
 		fetchConfig: fetchConfig,
 	}
 
-	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch testreport", exeName), flag.ExitOnError)
+	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch testreport", exeName), flag.ContinueOnError)
 	config.fetchConfig.rootConfig.RegisterFlags(fs)
 
 	return &ffcli.Command{

@@ -52,7 +52,7 @@ func NewRunCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 		out:        out,
 	}
 
-	fs := flag.NewFlagSet(fmt.Sprintf("%s run", exeName), flag.ExitOnError)
+	fs := flag.NewFlagSet(fmt.Sprintf("%s run", exeName), flag.ContinueOnError)
 	config.RegisterFlags(fs)
 	config.rootConfig.RegisterFlags(fs)
 

@@ -25,7 +25,7 @@ type RootConfig struct {
 func NewRootCmd() (*ffcli.Command, *RootConfig) {
 	var config RootConfig
 
-	fs := flag.NewFlagSet(exeName, flag.ExitOnError)
+	fs := flag.NewFlagSet(exeName, flag.ContinueOnError)
 	config.RegisterFlags(fs)
 
 	return &ffcli.Command{
