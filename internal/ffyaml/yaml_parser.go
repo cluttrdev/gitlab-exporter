@@ -11,24 +11,24 @@ import (
 )
 
 func Parser(r io.Reader, set func(name string, value string) error) error {
-    var m map[string]interface{}
-    if err := yaml.NewDecoder(r).Decode(&m); err != nil && !errors.Is(err, io.EOF) {
-        return fmt.Errorf("error parsing yaml: %w", err)
-    }
+	var m map[string]interface{}
+	if err := yaml.NewDecoder(r).Decode(&m); err != nil && !errors.Is(err, io.EOF) {
+		return fmt.Errorf("error parsing yaml: %w", err)
+	}
 
-    if err := traverseMap("", m, set); err != nil {
-        return fmt.Errorf("error parsing config: %w", err)
-    }
+	if err := traverseMap("", m, set); err != nil {
+		return fmt.Errorf("error parsing config: %w", err)
+	}
 
-    return nil
+	return nil
 }
 
 const (
-    delimiter string = "-"
+	delimiter string = "-"
 )
 
 func traverseMap(key string, val any, set func(name string, value string) error) error {
-    switch v := val.(type) {
+	switch v := val.(type) {
 	case string:
 		return set(key, v)
 	case json.Number:

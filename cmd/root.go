@@ -11,7 +11,7 @@ import (
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
 
-    "github.com/cluttrdev/gitlab-clickhouse-exporter/internal/ffyaml"
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/internal/ffyaml"
 )
 
 const (
@@ -20,11 +20,11 @@ const (
 )
 
 var (
-    rootCmdOptions = []ff.Option{
-        ff.WithEnvVarPrefix(envVarPrefix),
-        ff.WithConfigFileFlag("config"),
-        ff.WithConfigFileParser(ffyaml.Parser),
-    }
+	rootCmdOptions = []ff.Option{
+		ff.WithEnvVarPrefix(envVarPrefix),
+		ff.WithConfigFileFlag("config"),
+		ff.WithConfigFileParser(ffyaml.Parser),
+	}
 )
 
 type RootConfig struct {
@@ -57,10 +57,9 @@ func (c *RootConfig) RegisterFlags(fs *flag.FlagSet) {
 	fs.StringVar(&c.Config.ClickHouse.User, "clickhouse-user", config.DefaultClickHouseUser, "The ClickHouse username to connect with (default: 'default').")
 	fs.StringVar(&c.Config.ClickHouse.Password, "clickhouse-password", config.DefaultClickHousePassword, "The ClickHouse password (default: '').")
 
-    fs.String("config", "", "A Configuration file.")
+	fs.String("config", "", "A Configuration file.")
 }
 
 func (c *RootConfig) Exec(context.Context, []string) error {
 	return flag.ErrHelp
 }
-
