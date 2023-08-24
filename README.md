@@ -18,10 +18,24 @@ configuration options are limited.
 
 ## Installation
 
-Make sure you have [Go][go-install] installed on your machine and run
+To install `gitlab-clickhouse-exporter` you can download a 
+[prebuilt binary][prebuilt-binaries] that matches your system, e.g.
 
 ```shell
-go install https://github.com/cluttrdev/gitlab-clickhouse-exporter@latest
+# Download
+OS=linux
+ARCH=amd64
+RELEASE_TAG=$(curl -sSL https://api.github.com/repos/cluttrdev/gitlab-clickhouse-exporter/releases/latest | jq -r '.tag_name')
+curl -sSL -O https://github.com/cluttrdev/gitlab-clickhouse-exporter/releases/download/${RELEASE_TAG}/gitlab-clickhouse-exporter_${RELEASE_TAG}_${OS}_${ARCH}.tar.gz
+# Install
+tar -xf gitlab-clickhouse-exporter_*.tar.gz gitlab-clickhouse-exporter
+install gitlab-clickhouse-exporter ~/.local/bin/gitlab-clickhouse-exporter
+```
+
+Alternatively, if you have [Go][go-install] installed on your machine, you can use
+
+```shell
+go install github.com/cluttrdev/gitlab-clickhouse-exporter@latest
 ```
 
 ## Usage
@@ -95,3 +109,4 @@ This project is licensed under the [MIT License](./LICENSE).
 [gitlab-api]: https://docs.gitlab.com/ee/api/rest/
 [clickhouse]: https://clickhouse.com/
 [go-install]: https://go.dev/doc/install
+[prebuilt-binaries]: https://github.com/cluttrdev/gitlab-clickhouse-exporter/releases/latest
