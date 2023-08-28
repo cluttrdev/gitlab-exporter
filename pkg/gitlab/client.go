@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	"golang.org/x/time/rate"
+
 	"github.com/xanzy/go-gitlab"
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
@@ -16,11 +18,21 @@ type Client struct {
 type ClientConfig struct {
 	URL   string
 	Token string
+
+	RequestsPerSecond int64
 }
 
 func NewGitLabClient(cfg ClientConfig) (*Client, error) {
 	opts := []gitlab.ClientOptionFunc{
 		gitlab.WithBaseURL(cfg.URL),
+	}
+
+	if cfg.RequestsPerSecond > 0 {
+		limit := rate.Limit(float64(cfg.RequestsPerSecond) * 0.66)
+		burst := float64(cfg.RequestsPerSecond) * 0.33
+		limiter := rate.NewLimiter(limit, int(burst))
+
+		opts = append(opts, gitlab.WithCustomLimiter(limiter))
 	}
 
 	client, err := gitlab.NewOAuthClient(cfg.Token, opts...)

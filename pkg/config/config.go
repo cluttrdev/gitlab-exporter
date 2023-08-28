@@ -1,7 +1,9 @@
 package config
 
 import (
+	"fmt"
 	"os"
+	"strconv"
 )
 
 type Config struct {
@@ -10,8 +12,14 @@ type Config struct {
 }
 
 type GitLab struct {
-	URL   string `yaml:"url"`
-	Token string `yaml:"token"`
+	Api struct {
+		URL   string `yaml:"url"`
+		Token string `yaml:"token"`
+	} `yaml:"api"`
+
+	Client struct {
+		RequestsPerSecond int64 `yaml:"requests_per_second"`
+	} `yaml:"client"`
 }
 
 type ClickHouse struct {
@@ -23,7 +31,10 @@ type ClickHouse struct {
 }
 
 const (
-	DefaultGitLabApiUrl string = "https://gitlab.com/api/v4"
+	DefaultGitLabApiUrl   string = "https://gitlab.com/api/v4"
+	DefaultGitLabApiToken string = ""
+
+	DefaultGitLabClientRequestsPerSecond int64 = 0
 
 	DefaultClickHouseHost     string = "localhost"
 	DefaultClickHousePort     string = "9000"
@@ -41,19 +52,22 @@ func LoadEnv() (*Config, error) {
 		return val
 	}
 
-	gl_url := getEnv("GITLAB_API_URL", "https://gitlab.com/api/v4")
-	gl_token := getEnv("GITLAB_API_TOKEN", "")
+	gl := GitLab{}
+	gl.Api.URL = getEnv("GLCHE_GITLAB_API_URL", DefaultGitLabApiUrl)
+	gl.Api.Token = getEnv("GLCHE_GITLAB_API_TOKEN", DefaultGitLabApiToken)
 
-	gl := GitLab{
-		URL:   gl_url,
-		Token: gl_token,
+	gl_rps := getEnv("GLCHE_GITLAB_CLIENT_REQUESTSPERSECOND", "0")
+	val, err := strconv.ParseInt(gl_rps, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("error parsing environment variables: %w", err)
 	}
+	gl.Client.RequestsPerSecond = val
 
-	ch_host := getEnv("CLICKHOUSE_HOST", DefaultClickHouseHost)
-	ch_port := getEnv("CLICKHOUSE_PORT", DefaultClickHousePort)
-	ch_database := getEnv("CLICKHOUSE_DATABASE", DefaultClickHouseDatabase)
-	ch_user := getEnv("CLICKHOUSE_USER", DefaultClickHouseUser)
-	ch_password := getEnv("CLICKHOUSE_PASSWORD", DefaultClickHousePassword)
+	ch_host := getEnv("GLCHE_CLICKHOUSE_HOST", DefaultClickHouseHost)
+	ch_port := getEnv("GLCHE_CLICKHOUSE_PORT", DefaultClickHousePort)
+	ch_database := getEnv("GLCHE_CLICKHOUSE_DATABASE", DefaultClickHouseDatabase)
+	ch_user := getEnv("GLCHE_CLICKHOUSE_USER", DefaultClickHouseUser)
+	ch_password := getEnv("GLCHE_CLICKHOUSE_PASSWORD", DefaultClickHousePassword)
 
 	ch := ClickHouse{
 		Host:     ch_host,

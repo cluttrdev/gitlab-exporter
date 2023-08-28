@@ -33,8 +33,10 @@ func NewController(cfg config.Config) (c Controller, err error) {
 
 func (c *Controller) configureGitLabClient(cfg config.GitLab) (err error) {
 	c.GitLab, err = gitlab.NewGitLabClient(gitlab.ClientConfig{
-		URL:   cfg.URL,
-		Token: cfg.Token,
+		URL:   cfg.Api.URL,
+		Token: cfg.Api.Token,
+
+		RequestsPerSecond: cfg.Client.RequestsPerSecond,
 	})
 	return
 }

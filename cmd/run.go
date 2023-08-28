@@ -19,6 +19,8 @@ import (
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
 	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
+
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/internal/util"
 )
 
 type RunConfig struct {
@@ -129,7 +131,9 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 				wg.Add(1)
 				go func(projectID int64) {
 					defer wg.Done()
-					exportProjectPipelines(ctx, projectID, pu, ctl)
+					if err := exportProjectPipelines(ctx, projectID, pu, ctl); err != nil {
+						log.Printf("%v", err)
+					}
 				}(projectID)
 			}
 			wg.Wait()
@@ -137,7 +141,14 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 	}
 }
 
-func exportProjectPipelines(ctx context.Context, projectID int64, pipelineUpdates map[int64]time.Time, ctl *controller.Controller) {
+func exportProjectPipelines(ctx context.Context, projectID int64, pipelineUpdates map[int64]time.Time, ctl *controller.Controller) error {
+	wp, err := util.NewPool(10, 10)
+	if err != nil {
+		return err
+	}
+	wp.Start()
+	defer wp.Stop()
+
 	scope := "finished"
 	opt := &gitlab.ListProjectPipelineOptions{
 		PerPage: 100,
@@ -160,30 +171,35 @@ func exportProjectPipelines(ctx context.Context, projectID int64, pipelineUpdate
 		}
 
 		wg.Add(1)
-		go func(pipelineID int64) {
+		wp.AddWork(util.NewTask(func() error {
 			defer wg.Done()
 
-			if err := ctl.ExportPipeline(ctx, projectID, pipelineID); err != nil {
+			if err := ctl.ExportPipeline(ctx, projectID, pi.ID); err != nil {
 				log.Printf("error exporting pipeline: %s\n", err)
-				return
+				return err
 			}
-			log.Printf("Exporting projects/%d/pipelines/%d ... done\n", projectID, pipelineID)
-		}(pi.ID)
+			log.Printf("Exporting projects/%d/pipelines/%d ... done\n", projectID, pi.ID)
+			return nil
+		}))
 	}
 	wg.Wait()
+
+	return nil
 }
 
 func printRunConfig(cfg *RunConfig, out io.Writer) {
-	fmt.Fprintf(out, "GitLab URL: %s\n", cfg.rootConfig.Config.GitLab.URL)
-	fmt.Fprintf(out, "GitLab Token: %x\n", sha256String(cfg.rootConfig.Config.GitLab.Token))
-	fmt.Fprintln(out, "---")
+	fmt.Fprintln(out, "----")
+	fmt.Fprintf(out, "GitLab URL: %s\n", cfg.rootConfig.Config.GitLab.Api.URL)
+	fmt.Fprintf(out, "GitLab Token: %x\n", sha256String(cfg.rootConfig.Config.GitLab.Api.Token))
+	fmt.Fprintln(out, "----")
 	fmt.Fprintf(out, "ClickHouse Host: %s\n", cfg.rootConfig.Config.ClickHouse.Host)
 	fmt.Fprintf(out, "ClickHouse Port: %s\n", cfg.rootConfig.Config.ClickHouse.Port)
 	fmt.Fprintf(out, "ClickHouse Database: %s\n", cfg.rootConfig.Config.ClickHouse.Database)
 	fmt.Fprintf(out, "ClickHouse User: %s\n", cfg.rootConfig.Config.ClickHouse.User)
 	fmt.Fprintf(out, "ClickHouse Password: %x\n", sha256String(cfg.rootConfig.Config.ClickHouse.Password))
-	fmt.Fprintln(out, "---")
+	fmt.Fprintln(out, "----")
 	fmt.Fprintf(out, "Projects: %v\n", cfg.projects)
+	fmt.Fprintln(out, "----")
 }
 
 func sha256String(s string) []byte {

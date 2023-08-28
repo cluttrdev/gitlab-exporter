@@ -48,8 +48,8 @@ func NewRootCmd() (*ffcli.Command, *RootConfig) {
 }
 
 func (c *RootConfig) RegisterFlags(fs *flag.FlagSet) {
-	fs.StringVar(&c.Config.GitLab.URL, "gitlab-api-url", config.DefaultGitLabApiUrl, "The GitLab API URL.")
-	fs.StringVar(&c.Config.GitLab.Token, "gitlab-api-token", "", "The GitLab API Token.")
+	fs.StringVar(&c.Config.GitLab.Api.URL, "gitlab-api-url", config.DefaultGitLabApiUrl, "The GitLab API URL.")
+	fs.StringVar(&c.Config.GitLab.Api.Token, "gitlab-api-token", "", "The GitLab API Token.")
 
 	fs.StringVar(&c.Config.ClickHouse.Host, "clickhouse-host", config.DefaultClickHouseHost, "The ClickHouse server name (default: 'localhost').")
 	fs.StringVar(&c.Config.ClickHouse.Port, "clickhouse-port", config.DefaultClickHousePort, "The ClickHouse port to connect to (default: 9000)")
