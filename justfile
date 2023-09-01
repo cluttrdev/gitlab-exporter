@@ -70,10 +70,39 @@ release: _check-tag
     ./.github/release.sh
 
 clean:
+    @echo "rm {{BIN_DIR}}/{{BIN_NAME}}"
     @rm {{BIN_DIR}}/{{BIN_NAME}} 2>/dev/null || true
+    @echo "rmdir {{BIN_DIR}}"
     @rmdir {{BIN_DIR}} 2>/dev/null || true
 
+    @echo "rm -r {{DIST_DIR}}"
     @rm -r {{DIST_DIR}} 2>/dev/null || true
+
+docker-build:
+    #!/bin/sh
+    set -euo pipefail
+
+    image=cluttrdev/{{BIN_NAME}}
+    version=$(just _version)
+
+    docker build . -f build/Dockerfile -t ${image}:${version}
+
+    if just _check-tag > /dev/null 2>&1; then
+        docker tag ${image}:${version} ${image}:latest
+    fi
+
+docker-push: _check-dirty && docker-build
+    #!/bin/sh
+    set -euo pipefail
+
+    image=cluttrdev/{{BIN_NAME}}
+    version=$(just _version)
+
+    docker push ${image}:${version}
+
+    if just _check-tag > /dev/null 2>&1; then
+        docker push ${image}:latest
+    fi
 
 # ---
 
