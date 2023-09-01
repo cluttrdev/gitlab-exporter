@@ -9,8 +9,6 @@ BIN_NAME := "gitlab-clickhouse-exporter"
 BIN_DIR := "bin"
 DIST_DIR := "dist"
 
-VERSION := if GIT_TAG != "" { GIT_TAG } else { "devel" }
-
 # list available recipes
 default:
     @just --list --unsorted
@@ -25,14 +23,16 @@ vet:
 
 # build application
 build: vet
-    go build -o {{BIN_DIR}}/
+    go build -o {{BIN_DIR}}/{{BIN_NAME}}
 
 # create binary distribution
 dist:
     #!/usr/bin/env bash
     set -euo pipefail
 
-    version={{VERSION}}
+    dist_dir={{DIST_DIR}}
+    bin_name={{BIN_NAME}}
+    version=$(just _version)
 
     declare -A OSARCHMAP=(
         [linux]="amd64,arm,arm64"
@@ -40,13 +40,13 @@ dist:
     )
     for os in ${!OSARCHMAP[@]}; do
         for arch in ${OSARCHMAP[$os]//,/ }; do
-            tmp_dir={{DIST_DIR}}/{{BIN_NAME}}_${version}_${os}_${arch}
+            tmp_dir=${dist_dir}/${bin_name}_${version}_${os}_${arch}
 
-            GOOS=${os} GOARCH=${arch} go build -o ${tmp_dir}/{{BIN_NAME}}
+            GOOS=${os} GOARCH=${arch} go build -o ${tmp_dir}/${bin_name}
         done
     done
 
-    for dir in $(find {{DIST_DIR}}/ -mindepth 1 -maxdepth 1 -type d); do 
+    for dir in $(find ${dist_dir}/ -mindepth 1 -maxdepth 1 -type d -name ${bin_name}_${version}_*); do 
         find $dir -printf "%P\n" \
         | tar -czf ${dir}.tar.gz --no-recursion -C ${dir} -T -
 
@@ -61,45 +61,19 @@ release: _check-tag
     dist_dir={{DIST_DIR}}
     bin_name={{BIN_NAME}}
 
-    echo "creating release for ${tag}"
-    response=$(curl -L -s \
-        -H "Accept: application/vnd.github+json" \
-        -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-        -H "X-GitHub-Api-Version 2022-11-28" \
-        -d "{\"tag_name\": \"${tag}\", \"name\": \"${tag}\", \"body\": \"\"}" \
-        https://api.github.com/repos/cluttrdev/gitlab-clickhouse-exporter/releases \
-        2>/dev/null
-    )
-
-    error=$(jq -r '.errors[0].code // empty' <<< $response)
-    [ -n "$error" ] && {
-        echo $error
-        exit 1
-    }
-
-    release_id=$(jq -r '.id // empty' <<< $response)
-    [ -n "$release_id" ] || {
-        echo "No release with tag: ${tag}"
-        exit 2
-    }
-
     echo "creating binary distributions"
     just dist
+    assets=$(find ${dist_dir}/ -type f -name ${bin_name}_${tag}_*.tar.gz)
 
-    archives=$(find ${dist_dir}/ -type f -name ${bin_name}_*.tar.gz)
-    upload_url=https://uploads.github.com/repos/cluttrdev/gitlab-clickhouse-exporter/releases/${release_id}/assets
-    for archive in ${archives}; do
-        echo "uploading asset: ${archive}"
-        name=$(basename ${archive})
-        response=$(curl -L -s \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-            -H "X-GitHub-Api-Version 2022-11-28" \
-            -H "Content-Type: application/octet-stream" \
-            ${upload_url}?name=${name} \
-            --data-binary "@${archive}"
-        )
-    done
+    export RELEASE_TAG=${tag}
+    export RELEASE_ASSETS=${assets}
+    ./.github/release.sh
+
+clean:
+    @rm {{BIN_DIR}}/{{BIN_NAME}} 2>/dev/null || true
+    @rmdir {{BIN_DIR}} 2>/dev/null || true
+
+    @rm -r {{DIST_DIR}} 2>/dev/null || true
 
 # ---
 
@@ -121,5 +95,29 @@ _check-tag:
         exit 2
     }
 
+_version:
+    @if [ -n "{{GIT_TAG}}" ]; then echo "{{GIT_TAG}}"; else just _pseudo-version; fi
+
+_pseudo-version prefix="" object="HEAD":
+    #!/bin/sh
+
+    latest_tag=$(git describe --tags --abbrev=0 || true)
+
+    if [ -n "{{prefix}}" ]; then
+        prefix={{prefix}}
+    elif [ -n "${latest_tag}" ]; then
+        prefix=${latest_tag}-$(git rev-list ${latest_tag}..{{object}} --count)
+    else
+        prefix=v0.0.0
+    fi
+
+    # UTC time the revision was created (yymmddhhmmss).
+    timestamp=$(date -u +%y%m%d%H%M%S -d @$(git log -n 1 --format=%ct {{object}}))
+
+    # 12-character prefix of the commit hash
+    revision=$(git rev-parse --short=12 --verify {{object}})
+
+    echo "${prefix}-${timestamp}-${revision}"
+
 _system-info:
-    @echo "{{os()}}-{{arch()}}"
+    @echo "{{os()}}_{{arch()}}"
