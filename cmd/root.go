@@ -40,7 +40,8 @@ func NewRootCmd() (*ffcli.Command, *RootConfig) {
 
 	return &ffcli.Command{
 		Name:       exeName,
-		ShortUsage: fmt.Sprintf("%s [flags] <subcommand> [flags] [<args>...]", exeName),
+		ShortUsage: fmt.Sprintf("%s <subcommand> [flags] [<args>...]", exeName),
+		UsageFunc:  usageFunc,
 		FlagSet:    fs,
 		Options:    rootCmdOptions,
 		Exec:       config.Exec,
@@ -57,7 +58,7 @@ func (c *RootConfig) RegisterFlags(fs *flag.FlagSet) {
 	fs.StringVar(&c.Config.ClickHouse.User, "clickhouse-user", config.DefaultClickHouseUser, "The ClickHouse username to connect with (default: 'default').")
 	fs.StringVar(&c.Config.ClickHouse.Password, "clickhouse-password", config.DefaultClickHousePassword, "The ClickHouse password (default: '').")
 
-	fs.String("config", "", "A Configuration file.")
+	fs.String("config", "", "A configuration file.")
 }
 
 func (c *RootConfig) Exec(context.Context, []string) error {

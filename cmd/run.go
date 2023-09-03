@@ -53,7 +53,7 @@ func NewRunCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 		out:        out,
 	}
 
-	fs := flag.NewFlagSet(fmt.Sprintf("%s run", exeName), flag.ContinueOnError)
+	fs := flag.NewFlagSet(fmt.Sprintf("%s run [flags]", exeName), flag.ContinueOnError)
 	config.RegisterFlags(fs)
 	config.rootConfig.RegisterFlags(fs)
 
@@ -61,6 +61,7 @@ func NewRunCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 		Name:       "run",
 		ShortUsage: fmt.Sprintf("%s run [flags]", exeName),
 		ShortHelp:  "Run in daemon mode",
+		UsageFunc:  usageFunc,
 		FlagSet:    fs,
 		Options:    rootCmdOptions,
 		Exec:       config.Exec,

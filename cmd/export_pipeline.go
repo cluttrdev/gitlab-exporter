@@ -29,8 +29,9 @@ func NewExportPipelineCmd(exportConfig *ExportConfig) *ffcli.Command {
 
 	return &ffcli.Command{
 		Name:       "pipeline",
-		ShortUsage: fmt.Sprintf("%s [flags] export pipeline [flags] project_id pipeline_id", exeName),
+		ShortUsage: fmt.Sprintf("%s export pipeline [flags] project_id pipeline_id", exeName),
 		ShortHelp:  "Export pipeline data",
+		UsageFunc:  usageFunc,
 		FlagSet:    fs,
 		Options:    rootCmdOptions,
 		Exec:       config.Exec,

@@ -31,8 +31,9 @@ func NewFetchCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 
 	return &ffcli.Command{
 		Name:       "fetch",
-		ShortUsage: fmt.Sprintf("%s [flags] fetch <subcommand> [flags] [<args>...]", exeName),
+		ShortUsage: fmt.Sprintf("%s fetch <subcommand> [flags] [<args>...]", exeName),
 		ShortHelp:  "Fetch data from the GitLab API",
+		UsageFunc:  usageFunc,
 		FlagSet:    fs,
 		Subcommands: []*ffcli.Command{
 			fetchPipelineCmd,
@@ -43,5 +44,6 @@ func NewFetchCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 }
 
 func (c *FetchConfig) Exec(ctx context.Context, _ []string) error {
-	return flag.ErrHelp
+	// return flag.ErrHelp
+	return nil
 }

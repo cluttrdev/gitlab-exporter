@@ -2,7 +2,7 @@ package main
 
 import (
 	"context"
-	"log"
+	"fmt"
 	"os"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
@@ -27,18 +27,26 @@ func main() {
 	}
 
 	if err := rootCmd.Parse(os.Args[1:]); err != nil {
-		log.Fatalf("error parsing args: %v\n", err)
+		fmt.Fprintf(os.Stderr, "error parsing args: %v\n", err)
+		os.Exit(1)
+	}
+
+	if len(os.Args[1:]) == 0 {
+		fmt.Fprintf(out, rootCmd.UsageFunc(rootCmd))
+		os.Exit(0)
 	}
 
 	ctl, err := controller.NewController(rootConfig.Config)
 	if err != nil {
-		log.Fatalf("error constructing controller: %v", err)
+		fmt.Fprintf(os.Stderr, "error constructing controller: %v", err)
+		os.Exit(1)
 	}
 
 	rootConfig.Controller = &ctl
 
 	ctx := context.Background()
 	if err := rootCmd.Run(ctx); err != nil {
-		log.Fatalf("%v", err)
+		fmt.Fprintf(os.Stderr, "%v\n", err)
+		os.Exit(1)
 	}
 }

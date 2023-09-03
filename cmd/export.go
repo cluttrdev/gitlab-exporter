@@ -30,7 +30,7 @@ func NewExportCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 
 	return &ffcli.Command{
 		Name:       "export",
-		ShortUsage: fmt.Sprintf("%s [flags] export <subcommand> [flags] [<args>...]", exeName),
+		ShortUsage: fmt.Sprintf("%s export <subcommand> [flags] [<args>...]", exeName),
 		ShortHelp:  "Export data from the GitLab API to ClickHouse",
 		FlagSet:    fs,
 		Subcommands: []*ffcli.Command{
@@ -41,5 +41,6 @@ func NewExportCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 }
 
 func (c *ExportConfig) Exec(ctx context.Context, _ []string) error {
-	return flag.ErrHelp
+	// return flag.ErrHelp
+	return nil
 }

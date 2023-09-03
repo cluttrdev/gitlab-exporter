@@ -28,8 +28,9 @@ func NewFetchPipelineCmd(fetchConfig *FetchConfig) *ffcli.Command {
 
 	return &ffcli.Command{
 		Name:       "pipeline",
-		ShortUsage: fmt.Sprintf("%s [flags] fetch pipeline [flags] project_id pipeline_id", exeName),
+		ShortUsage: fmt.Sprintf("%s fetch pipeline [flags] project_id pipeline_id", exeName),
 		ShortHelp:  "Fetch pipeline data",
+		UsageFunc:  usageFunc,
 		FlagSet:    fs,
 		Options:    rootCmdOptions,
 		Exec:       config.Exec,

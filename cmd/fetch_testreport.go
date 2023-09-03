@@ -25,8 +25,9 @@ func NewFetchTestReportCmd(fetchConfig *FetchConfig) *ffcli.Command {
 
 	return &ffcli.Command{
 		Name:       "testreport",
-		ShortUsage: fmt.Sprintf("%s [flags] fetch testreport [flags] project_id pipeline_id", exeName),
+		ShortUsage: fmt.Sprintf("%s fetch testreport [flags] project_id pipeline_id", exeName),
 		ShortHelp:  "Fetch pipeline testreport",
+		UsageFunc:  usageFunc,
 		FlagSet:    fs,
 		Options:    rootCmdOptions,
 		Exec:       config.Exec,
