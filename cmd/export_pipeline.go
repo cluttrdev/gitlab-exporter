@@ -58,7 +58,10 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("error parsing `pipeline_id` argument: %w", err)
 	}
 
-	ctl := c.exportConfig.rootConfig.Controller
+	ctl, err := c.exportConfig.rootConfig.newController()
+	if err != nil {
+		return err
+	}
 
 	phr := <-ctl.GitLab.GetPipelineHierarchy(ctx, projectID, pipelineID)
 	if err := phr.Error; err != nil {

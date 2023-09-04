@@ -48,7 +48,10 @@ func (c *FetchPipelineConfig) Exec(ctx context.Context, args []string) error {
 
 	log.SetOutput(c.fetchConfig.out)
 
-	ctl := c.fetchConfig.rootConfig.Controller
+	ctl, err := c.fetchConfig.rootConfig.newController()
+	if err != nil {
+		return err
+	}
 
 	projectID, err := strconv.ParseInt(args[0], 10, 64)
 	if err != nil {

@@ -28,8 +28,7 @@ var (
 )
 
 type RootConfig struct {
-	Config     config.Config
-	Controller *controller.Controller
+	Config config.Config
 }
 
 func NewRootCmd() (*ffcli.Command, *RootConfig) {
@@ -63,4 +62,12 @@ func (c *RootConfig) RegisterFlags(fs *flag.FlagSet) {
 
 func (c *RootConfig) Exec(context.Context, []string) error {
 	return flag.ErrHelp
+}
+
+func (c *RootConfig) newController() (*controller.Controller, error) {
+	ctl, err := controller.NewController(c.Config)
+	if err != nil {
+		return nil, fmt.Errorf("error constructing controller: %w", err)
+	}
+	return &ctl, nil
 }

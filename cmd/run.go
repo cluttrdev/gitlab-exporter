@@ -76,7 +76,10 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 	// configure logging
 	log.SetOutput(c.out)
 
-	ctl := c.rootConfig.Controller
+	ctl, err := c.rootConfig.newController()
+	if err != nil {
+		return err
+	}
 
 	// init controller
 	if err := ctl.Init(ctx); err != nil {
