@@ -8,19 +8,24 @@ import (
 	"github.com/peterbourgon/ff/v3/ffcli"
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/cmd"
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
+)
+
+var (
+	version = "(devel)"
 )
 
 func main() {
 	var (
 		out                 = os.Stdout
 		rootCmd, rootConfig = cmd.NewRootCmd()
+		versionCmd          = cmd.NewVersionCmd(out, version)
 		runCmd              = cmd.NewRunCmd(rootConfig, out)
 		fetchCmd            = cmd.NewFetchCmd(rootConfig, out)
 		exportCmd           = cmd.NewExportCmd(rootConfig, out)
 	)
 
 	rootCmd.Subcommands = []*ffcli.Command{
+		versionCmd,
 		runCmd,
 		fetchCmd,
 		exportCmd,
@@ -35,14 +40,6 @@ func main() {
 		fmt.Fprintf(out, rootCmd.UsageFunc(rootCmd))
 		os.Exit(0)
 	}
-
-	ctl, err := controller.NewController(rootConfig.Config)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "error constructing controller: %v", err)
-		os.Exit(1)
-	}
-
-	rootConfig.Controller = &ctl
 
 	ctx := context.Background()
 	if err := rootCmd.Run(ctx); err != nil {

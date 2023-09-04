@@ -22,8 +22,21 @@ vet:
     go vet ./...
 
 # build application
-build: vet
-    go build -o {{BIN_DIR}}/{{BIN_NAME}}
+build out="" os=GOHOSTOS arch=GOHOSTARCH:
+    #!/bin/sh
+    set -euo pipefail
+
+    version=$(just _version)
+
+    output={{out}}
+    [ -z "${output}" ] && output={{BIN_DIR}}/{{BIN_NAME}}
+
+    goos={{os}}
+    goarch={{arch}}
+
+    GOOS=${goos} GOARCH=${goarch} go build \
+        -o "${output}" \
+        -ldflags "-X 'main.version=${version}'"
 
 # create binary distribution
 dist:
@@ -42,7 +55,9 @@ dist:
         for arch in ${OSARCHMAP[$os]//,/ }; do
             tmp_dir=${dist_dir}/${bin_name}_${version}_${os}_${arch}
 
-            GOOS=${os} GOARCH=${arch} go build -o ${tmp_dir}/${bin_name}
+            out="${tmp_dir}/${bin_name}"
+
+            just build ${out} ${os} ${arch}
         done
     done
 
