@@ -19,7 +19,7 @@ type ClientConfig struct {
 	URL   string
 	Token string
 
-	RequestsPerSecond int64
+	RateLimit float64
 }
 
 func NewGitLabClient(cfg ClientConfig) (*Client, error) {
@@ -27,9 +27,9 @@ func NewGitLabClient(cfg ClientConfig) (*Client, error) {
 		gitlab.WithBaseURL(cfg.URL),
 	}
 
-	if cfg.RequestsPerSecond > 0 {
-		limit := rate.Limit(float64(cfg.RequestsPerSecond) * 0.66)
-		burst := float64(cfg.RequestsPerSecond) * 0.33
+	if cfg.RateLimit > 0 {
+		limit := rate.Limit(cfg.RateLimit * 0.66)
+		burst := cfg.RateLimit * 0.33
 		limiter := rate.NewLimiter(limit, int(burst))
 
 		opts = append(opts, gitlab.WithCustomLimiter(limiter))

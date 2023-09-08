@@ -18,7 +18,9 @@ type GitLab struct {
 	} `yaml:"api"`
 
 	Client struct {
-		RequestsPerSecond int64 `yaml:"requests_per_second"`
+		Rate struct {
+			Limit float64 `yaml:"limit"`
+		} `yaml:"rate"`
 	} `yaml:"client"`
 }
 
@@ -34,7 +36,7 @@ const (
 	DefaultGitLabApiUrl   string = "https://gitlab.com/api/v4"
 	DefaultGitLabApiToken string = ""
 
-	DefaultGitLabClientRequestsPerSecond int64 = 0
+	DefaultGitLabClientRateLimit float64 = 0
 
 	DefaultClickHouseHost     string = "localhost"
 	DefaultClickHousePort     string = "9000"
@@ -56,12 +58,12 @@ func LoadEnv() (*Config, error) {
 	gl.Api.URL = getEnv("GLCHE_GITLAB_API_URL", DefaultGitLabApiUrl)
 	gl.Api.Token = getEnv("GLCHE_GITLAB_API_TOKEN", DefaultGitLabApiToken)
 
-	gl_rps := getEnv("GLCHE_GITLAB_CLIENT_REQUESTSPERSECOND", "0")
-	val, err := strconv.ParseInt(gl_rps, 10, 64)
+	gl_rps := getEnv("GLCHE_GITLAB_CLIENT_RATE_LIMIT", "0")
+	val, err := strconv.ParseFloat(gl_rps, 64)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing environment variables: %w", err)
 	}
-	gl.Client.RequestsPerSecond = val
+	gl.Client.Rate.Limit = val
 
 	ch_host := getEnv("GLCHE_CLICKHOUSE_HOST", DefaultClickHouseHost)
 	ch_port := getEnv("GLCHE_CLICKHOUSE_PORT", DefaultClickHousePort)

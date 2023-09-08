@@ -36,7 +36,7 @@ func (c *Controller) configureGitLabClient(cfg config.GitLab) (err error) {
 		URL:   cfg.Api.URL,
 		Token: cfg.Api.Token,
 
-		RequestsPerSecond: cfg.Client.RequestsPerSecond,
+		RateLimit: cfg.Client.Rate.Limit,
 	})
 	return
 }
