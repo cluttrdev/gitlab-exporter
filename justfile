@@ -22,17 +22,17 @@ vet:
     go vet ./...
 
 # build application
-build out="" os=GOHOSTOS arch=GOHOSTARCH:
+build out="":
     #!/bin/sh
     set -euo pipefail
 
     version=$(just _version)
 
+    goos=${GOOS:-{{GOHOSTOS}}}
+    goarch=${GOARCH:-{{GOHOSTARCH}}}
+
     output={{out}}
     [ -z "${output}" ] && output={{BIN_DIR}}/{{BIN_NAME}}
-
-    goos={{os}}
-    goarch={{arch}}
 
     GOOS=${goos} GOARCH=${goarch} go build \
         -o "${output}" \
@@ -57,7 +57,7 @@ dist:
 
             out="${tmp_dir}/${bin_name}"
 
-            just build ${out} ${os} ${arch}
+            GOOS=${os} GOARCH=${arch} just build ${out}
         done
     done
 
@@ -106,7 +106,7 @@ docker-build:
         docker tag ${image}:${version} ${image}:latest
     fi
 
-docker-push: _check-dirty && docker-build
+docker-push: _check-dirty docker-build
     #!/bin/sh
     set -euo pipefail
 
@@ -140,7 +140,18 @@ _check-tag:
     }
 
 _version:
-    @if [ -n "{{GIT_TAG}}" ]; then echo "{{GIT_TAG}}"; else just _pseudo-version; fi
+    #!/bin/sh
+    version="v0.0.0+unknown"
+
+    if [ -n "{{GIT_TAG}}" ]; then
+        version={{GIT_TAG}}
+    else
+        version=$(just _pseudo-version)
+    fi
+
+    just _check-dirty >/dev/null || version=${version}-dirty
+
+    echo ${version}
 
 _pseudo-version prefix="" object="HEAD":
     #!/bin/sh
