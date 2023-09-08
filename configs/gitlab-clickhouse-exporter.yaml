@@ -1,0 +1,16 @@
+gitlab:
+  api:
+    url: https://gitlab.com/api/v4
+    token: ""
+  client:
+    rate:
+      limit: 0.0
+
+clickhouse:
+  host: 127.0.0.1
+  port: 9000
+  database: default
+  user: default
+  password: ""
+
+projects: []
