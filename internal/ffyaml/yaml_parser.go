@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 
 	"gopkg.in/yaml.v3"
 )
@@ -28,6 +29,8 @@ const (
 )
 
 func traverseMap(key string, val any, set func(name string, value string) error) error {
+	key = sanitizeKey(key)
+
 	switch v := val.(type) {
 	case string:
 		return set(key, v)
@@ -75,4 +78,10 @@ func traverseMap(key string, val any, set func(name string, value string) error)
 	}
 
 	return nil
+}
+
+func sanitizeKey(key string) string {
+	key = strings.ToLower(key)
+	key = strings.ReplaceAll(key, "_", "-")
+	return key
 }
