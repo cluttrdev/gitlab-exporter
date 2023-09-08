@@ -44,6 +44,5 @@ func NewFetchCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 }
 
 func (c *FetchConfig) Exec(ctx context.Context, _ []string) error {
-	// return flag.ErrHelp
-	return nil
+	return flag.ErrHelp
 }

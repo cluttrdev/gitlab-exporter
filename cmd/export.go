@@ -41,6 +41,5 @@ func NewExportCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 }
 
 func (c *ExportConfig) Exec(ctx context.Context, _ []string) error {
-	// return flag.ErrHelp
-	return nil
+	return flag.ErrHelp
 }

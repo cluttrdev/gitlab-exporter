@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"errors"
+	"flag"
 	"fmt"
 	"os"
 
@@ -43,7 +45,9 @@ func main() {
 
 	ctx := context.Background()
 	if err := rootCmd.Run(ctx); err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
+		if !errors.Is(err, flag.ErrHelp) {
+			fmt.Fprintf(os.Stderr, "%v\n", err)
+		}
 		os.Exit(1)
 	}
 }
