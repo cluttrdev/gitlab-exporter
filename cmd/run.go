@@ -146,7 +146,11 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 }
 
 func exportProjectPipelines(ctx context.Context, projectID int64, pipelineUpdates map[int64]time.Time, ctl *controller.Controller) error {
-	wp, err := util.NewPool(10, 10)
+	var (
+		numWorkers  int = 100
+		channelSize int = 100
+	)
+	wp, err := util.NewPool(numWorkers, channelSize)
 	if err != nil {
 		return err
 	}

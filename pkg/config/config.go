@@ -1,11 +1,5 @@
 package config
 
-import (
-	"fmt"
-	"os"
-	"strconv"
-)
-
 type Config struct {
 	GitLab     GitLab     `yaml:"gitlab"`
 	ClickHouse ClickHouse `yaml:"clickhouse"`
@@ -44,43 +38,3 @@ const (
 	DefaultClickHouseUser     string = "default"
 	DefaultClickHousePassword string = ""
 )
-
-func LoadEnv() (*Config, error) {
-	getEnv := func(key string, defaultVal string) string {
-		val, ok := os.LookupEnv(key)
-		if !ok {
-			val = defaultVal
-		}
-		return val
-	}
-
-	gl := GitLab{}
-	gl.Api.URL = getEnv("GLCHE_GITLAB_API_URL", DefaultGitLabApiUrl)
-	gl.Api.Token = getEnv("GLCHE_GITLAB_API_TOKEN", DefaultGitLabApiToken)
-
-	gl_rps := getEnv("GLCHE_GITLAB_CLIENT_RATE_LIMIT", "0")
-	val, err := strconv.ParseFloat(gl_rps, 64)
-	if err != nil {
-		return nil, fmt.Errorf("error parsing environment variables: %w", err)
-	}
-	gl.Client.Rate.Limit = val
-
-	ch_host := getEnv("GLCHE_CLICKHOUSE_HOST", DefaultClickHouseHost)
-	ch_port := getEnv("GLCHE_CLICKHOUSE_PORT", DefaultClickHousePort)
-	ch_database := getEnv("GLCHE_CLICKHOUSE_DATABASE", DefaultClickHouseDatabase)
-	ch_user := getEnv("GLCHE_CLICKHOUSE_USER", DefaultClickHouseUser)
-	ch_password := getEnv("GLCHE_CLICKHOUSE_PASSWORD", DefaultClickHousePassword)
-
-	ch := ClickHouse{
-		Host:     ch_host,
-		Port:     ch_port,
-		Database: ch_database,
-		User:     ch_user,
-		Password: ch_password,
-	}
-
-	return &Config{
-		GitLab:     gl,
-		ClickHouse: ch,
-	}, nil
-}
