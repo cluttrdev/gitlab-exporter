@@ -32,6 +32,7 @@ func NewExportCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 		Name:       "export",
 		ShortUsage: fmt.Sprintf("%s export <subcommand> [flags] [<args>...]", exeName),
 		ShortHelp:  "Export data from the GitLab API to ClickHouse",
+		UsageFunc:  usageFunc,
 		FlagSet:    fs,
 		Subcommands: []*ffcli.Command{
 			exportPipelineCmd,

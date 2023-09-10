@@ -49,15 +49,15 @@ func NewRootCmd() (*ffcli.Command, *RootConfig) {
 }
 
 func (c *RootConfig) RegisterFlags(fs *flag.FlagSet) {
-	fs.StringVar(&c.Config.GitLab.Api.URL, "gitlab-api-url", config.DefaultGitLabApiUrl, "The GitLab API URL.")
-	fs.StringVar(&c.Config.GitLab.Api.Token, "gitlab-api-token", config.DefaultGitLabApiToken, "The GitLab API Token.")
-	fs.Float64Var(&c.Config.GitLab.Client.Rate.Limit, "gitlab-client-rate-limit", config.DefaultGitLabClientRateLimit, "Rate limit for the GitLab client.")
+	fs.StringVar(&c.Config.GitLab.Api.URL, "gitlab-api-url", config.DefaultGitLabApiUrl, fmt.Sprintf("The GitLab API URL (default: '%s').", config.DefaultGitLabApiUrl))
+	fs.StringVar(&c.Config.GitLab.Api.Token, "gitlab-api-token", config.DefaultGitLabApiToken, fmt.Sprintf("The GitLab API Token (default: '%s').", config.DefaultGitLabApiToken))
+	fs.Float64Var(&c.Config.GitLab.Client.Rate.Limit, "gitlab-client-rate-limit", config.DefaultGitLabClientRateLimit, fmt.Sprintf("Rate limit for the GitLab client (default: '%.1f').", config.DefaultGitLabClientRateLimit))
 
-	fs.StringVar(&c.Config.ClickHouse.Host, "clickhouse-host", config.DefaultClickHouseHost, "The ClickHouse server name (default: 'localhost').")
-	fs.StringVar(&c.Config.ClickHouse.Port, "clickhouse-port", config.DefaultClickHousePort, "The ClickHouse port to connect to (default: 9000)")
-	fs.StringVar(&c.Config.ClickHouse.Database, "clickhouse-database", config.DefaultClickHouseDatabase, "Select the current default ClickHouse database (default: 'default').")
-	fs.StringVar(&c.Config.ClickHouse.User, "clickhouse-user", config.DefaultClickHouseUser, "The ClickHouse username to connect with (default: 'default').")
-	fs.StringVar(&c.Config.ClickHouse.Password, "clickhouse-password", config.DefaultClickHousePassword, "The ClickHouse password (default: '').")
+	fs.StringVar(&c.Config.ClickHouse.Host, "clickhouse-host", config.DefaultClickHouseHost, fmt.Sprintf("The ClickHouse server name (default: '%s').", config.DefaultClickHouseHost))
+	fs.StringVar(&c.Config.ClickHouse.Port, "clickhouse-port", config.DefaultClickHousePort, fmt.Sprintf("The ClickHouse port to connect to (default: '%s')", config.DefaultClickHousePort))
+	fs.StringVar(&c.Config.ClickHouse.Database, "clickhouse-database", config.DefaultClickHouseDatabase, fmt.Sprintf("Select the current default ClickHouse database (default: '%s').", config.DefaultClickHouseDatabase))
+	fs.StringVar(&c.Config.ClickHouse.User, "clickhouse-user", config.DefaultClickHouseUser, fmt.Sprintf("The ClickHouse username to connect with (default: '%s').", config.DefaultClickHouseUser))
+	fs.StringVar(&c.Config.ClickHouse.Password, "clickhouse-password", config.DefaultClickHousePassword, fmt.Sprintf("The ClickHouse password (default: '%s').", config.DefaultClickHousePassword))
 
 	fs.String("config", "", "A configuration file.")
 }
