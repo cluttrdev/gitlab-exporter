@@ -133,7 +133,7 @@ func NewPipelineSpan(traceID string, parentID string, pipeline *Pipeline) *Span 
 		Kind:         SpanKindInternal,
 		StartTime:    unixNano(pipeline.StartedAt),
 		EndTime:      unixNano(pipeline.FinishedAt),
-		Attributes:   map[string]string{},
+		Attributes:   pipelineSpanAttributes(pipeline),
 		Events:       []SpanEvent{},
 		Links:        []SpanLink{},
 		Status: SpanStatus{
@@ -158,7 +158,7 @@ func NewJobSpan(traceID string, job *Job) *Span {
 		Kind:         SpanKindInternal,
 		StartTime:    unixNano(job.StartedAt),
 		EndTime:      unixNano(job.FinishedAt),
-		Attributes:   map[string]string{},
+		Attributes:   jobSpanAttributes(job),
 		Events:       []SpanEvent{},
 		Links:        []SpanLink{},
 		Status: SpanStatus{
@@ -183,7 +183,7 @@ func NewBridgeSpan(traceID string, bridge *Bridge) *Span {
 		Kind:         SpanKindInternal,
 		StartTime:    unixNano(bridge.StartedAt),
 		EndTime:      unixNano(bridge.FinishedAt),
-		Attributes:   map[string]string{},
+		Attributes:   bridgeSpanAttributes(bridge),
 		Events:       []SpanEvent{},
 		Links:        []SpanLink{},
 		Status: SpanStatus{
@@ -208,7 +208,7 @@ func NewSectionSpan(traceID string, section *Section) *Span {
 		Kind:         SpanKindInternal,
 		StartTime:    unixNano(section.StartedAt),
 		EndTime:      unixNano(section.FinishedAt),
-		Attributes:   map[string]string{},
+		Attributes:   sectionSpanAttributes(section),
 		Events:       []SpanEvent{},
 		Links:        []SpanLink{},
 		Status: SpanStatus{
@@ -254,4 +254,51 @@ func NewPipelineHierarchyTrace(traceID string, parentID string, ph *PipelineHier
 	}
 
 	return trace
+}
+
+func pipelineSpanAttributes(pipeline *Pipeline) map[string]string {
+	attr := map[string]string{}
+
+	if pipeline != nil {
+		attr["ci.pipeline.status"] = pipeline.Status
+		attr["ci.pipeline.web_url"] = pipeline.WebURL
+	}
+
+	return attr
+}
+
+func jobSpanAttributes(job *Job) map[string]string {
+	attr := map[string]string{}
+
+	if job != nil {
+		attr["ci.job.status"] = job.Status
+		attr["ci.job.web_url"] = job.WebURL
+	}
+
+	return attr
+}
+
+func sectionSpanAttributes(section *Section) map[string]string {
+	attr := map[string]string{}
+
+	if section != nil {
+	}
+
+	return attr
+}
+
+func bridgeSpanAttributes(bridge *Bridge) map[string]string {
+	attr := map[string]string{}
+
+	if bridge != nil {
+		attr["ci.bridge.status"] = bridge.Status
+		attr["ci.bridge.web_url"] = bridge.WebURL
+
+		if bridge.DownstreamPipeline != nil {
+			attr["ci.bridge.downstream_pipeline.status"] = bridge.DownstreamPipeline.Status
+			attr["ci.bridge.downstream_pipeline.web_url"] = bridge.DownstreamPipeline.WebURL
+		}
+	}
+
+	return attr
 }
