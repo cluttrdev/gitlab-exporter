@@ -100,7 +100,11 @@ docker-build:
     image=cluttrdev/{{BIN_NAME}}
     version=$(just _version)
 
-    docker build . -f build/Dockerfile -t ${image}:${version}
+    docker build \
+        -f build/Dockerfile \
+        --build-arg VERSION=${version} \
+        -t ${image}:${version} \
+        .
 
     if just _check-tag > /dev/null 2>&1; then
         docker tag ${image}:${version} ${image}:latest
