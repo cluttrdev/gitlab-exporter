@@ -1,0 +1,32 @@
+<!-- https://clickhouse.uptrace.dev/clickhouse/low-memory.html -->
+<clickhouse>
+    <profiles>
+        <default>
+            <!--
+            queue_max_wait_ms sets the wait time in the request queue if the number
+            of concurrent requests exceeds the max_concurrent_queries.
+
+            Wait up to 1000ms.
+            -->
+            <queue_max_wait_ms>1000</queue_max_wait_ms>
+
+            <!--
+            max_execution_time specifies the maximum query execution time in seconds.
+
+            Abort query after 10 seconds.
+            -->
+            <max_execution_time>10</max_execution_time>
+
+            <!--
+            background_pool_size sets the number of threads performing
+            background operations, for example, merges in MergeTree engine
+            tables.
+
+            Choose a value between (1 - 2) * number of CPU cores.
+            The default is 16.
+            -->
+            <background_pool_size>4</background_pool_size>
+        </default>
+    </profiles>
+</clickhouse>
+

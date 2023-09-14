@@ -1,14 +1,18 @@
 version: '3'
 
-name: gitlab-clickhouse-exporter-dev
+name: glche-dev
 
 services:
   clickhouse:
     container_name: clickhouse
     image: docker.io/clickhouse/clickhouse-server:latest
     volumes:
+      - ./clickhouse/config.xml:/etc/clickhouse-server/config.d/config.xml:ro
+      - ./clickhouse/users.xml:/etc/clickhouse-server/users.d/users.xml:ro
       - clickhouse_data:/var/lib/clickhouse/
       - clickhouse_logs:/var/log/clickhouse-server/
+    networks:
+      - glche-dev
     ports:
       - 127.0.0.1:8123:8123  # http
       - 127.0.0.1:9000:9000  # native
@@ -26,7 +30,8 @@ services:
       - ./grafana/provisioning/datasources/:/etc/grafana/provisioning/datasources/
       - ./grafana/provisioning/dashboards/:/etc/grafana/provisioning/dashboards/
       - grafana_data:/var/lib/grafana
-
+    networks:
+      - glche-dev
     ports:
       - 127.0.0.1:3000:3000
 
@@ -34,4 +39,8 @@ volumes:
   clickhouse_data: {}
   clickhouse_logs: {}
   grafana_data: {}
+
+networks:
+  glche-dev:
+    name: glche-dev
 
