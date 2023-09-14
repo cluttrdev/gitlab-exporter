@@ -1,10 +1,20 @@
-# synta=docker/dockerfile:1
+# syntax=docker/dockerfile:1
 
 #
 # BUILD
 #
 
 FROM docker.io/golang:1.20-alpine3.18 AS build
+
+RUN apk add --update --no-cache ca-certificates
+
+RUN adduser \
+    --disabled-password \
+    --shell /sbin/nologin \
+    --home /nonexistent \
+    --no-create-home \
+    --gecos "" \
+    glche
 
 WORKDIR /build
 
@@ -14,21 +24,28 @@ RUN go mod download
 
 COPY . /build/
 
-RUN go build -o /gitlab-clickhouse-exporter
+ARG GOOS=linux
+ARG GOARCH=amd64
+ARG VERSION=v0.0.0+unknown
+
+RUN GOOS=${GOOS} GOARCH=${GOARCH} go build \
+    -o /bin/gitlab-clickhouse-exporter \
+    -ldflags "-X 'main.version=${VERSION}' -s -w"
 
 #
 # RUN
 #
 
-FROM docker.io/alpine:3.18
+FROM scratch
 
-WORKDIR /
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+COPY --from=build /etc/passwd /etc/passwd
+COPY --from=build /etc/group /etc/group
 
-COPY --from=build /gitlab-clickhouse-exporter /gitlab-clickhouse-exporter
+COPY --from=build /bin/gitlab-clickhouse-exporter /bin/gitlab-clickhouse-exporter
 
-# run as nobody
-USER 65534:65534
+USER glche:glche
 
-ENTRYPOINT [ "/gitlab-clickhouse-exporter" ]
+ENTRYPOINT [ "/bin/gitlab-clickhouse-exporter" ]
 
-CMD [ "--help"]
+CMD [ "--help" ]
