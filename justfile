@@ -123,6 +123,27 @@ docker-push: _check-dirty docker-build
         docker push ${image}:latest
     fi
 
+[no-exit-message]
+_docker-run CONFIG="" *ARGS="":
+    #!/bin/sh
+    set -euo pipefail
+
+    config={{CONFIG}}
+    args="{{ARGS}}"
+
+    image=cluttrdev/{{BIN_NAME}}
+    tag=$(just _version)
+
+    if [ -z "${config}" ]; then
+        docker run -it --rm --net host ${image}:${tag} ${args}
+    else
+        docker run -it --rm --net host \
+            --volume $(realpath ${config}):/etc/gitlab-clickhouse-exporter.yaml:ro \
+            ${image}:${tag} \
+            --config /etc/gitlab-clickhouse-exporter.yaml \
+            ${args}
+    fi
+
 # ---
 
 # fail if working directory is dirty
