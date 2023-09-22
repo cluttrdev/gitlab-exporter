@@ -1,5 +1,9 @@
 package config
 
+import (
+	"github.com/creasty/defaults"
+)
+
 type Config struct {
 	GitLab     GitLab     `yaml:"gitlab"`
 	ClickHouse ClickHouse `yaml:"clickhouse"`
@@ -7,23 +11,23 @@ type Config struct {
 
 type GitLab struct {
 	Api struct {
-		URL   string `yaml:"url"`
-		Token string `yaml:"token"`
+		URL   string `default:"https://gitlab.com/api/v4" yaml:"url"`
+		Token string `default:"" yaml:"token"`
 	} `yaml:"api"`
 
 	Client struct {
 		Rate struct {
-			Limit float64 `yaml:"limit"`
+			Limit float64 `default:"0.0" yaml:"limit"`
 		} `yaml:"rate"`
 	} `yaml:"client"`
 }
 
 type ClickHouse struct {
-	Host     string `yaml:"host"`
-	Port     string `yaml:"port"`
-	Database string `yaml:"database"`
-	User     string `yaml:"user"`
-	Password string `yaml:"password"`
+	Host     string `default:"localhost" yaml:"host"`
+	Port     string `default:"9000" yaml:"port"`
+	Database string `default:"default" yaml:"database"`
+	User     string `default:"default" yaml:"user"`
+	Password string `default:"" yaml:"password"`
 }
 
 const (
@@ -38,3 +42,11 @@ const (
 	DefaultClickHouseUser     string = "default"
 	DefaultClickHousePassword string = ""
 )
+
+func New() *Config {
+	var cfg Config
+
+	defaults.MustSet(&cfg)
+
+	return &cfg
+}

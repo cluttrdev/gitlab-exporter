@@ -38,6 +38,10 @@ build out="":
         -o "${output}" \
         -ldflags "-X 'main.version=${version}'"
 
+# run unit tests
+test:
+    go test ./test/*
+
 # create binary distribution
 dist:
     #!/usr/bin/env bash
