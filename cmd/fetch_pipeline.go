@@ -23,8 +23,7 @@ func NewFetchPipelineCmd(fetchConfig *FetchConfig) *ffcli.Command {
 	}
 
 	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch pipeline", exeName), flag.ContinueOnError)
-	config.RegisterFlags(fs)
-	config.fetchConfig.rootConfig.RegisterFlags(fs)
+	config.registerFlags(fs)
 
 	return &ffcli.Command{
 		Name:       "pipeline",
@@ -37,7 +36,7 @@ func NewFetchPipelineCmd(fetchConfig *FetchConfig) *ffcli.Command {
 	}
 }
 
-func (c *FetchPipelineConfig) RegisterFlags(fs *flag.FlagSet) {
+func (c *FetchPipelineConfig) registerFlags(fs *flag.FlagSet) {
 	fs.BoolVar(&c.all, "all", false, "Fetch pipeline hierarchy.")
 }
 

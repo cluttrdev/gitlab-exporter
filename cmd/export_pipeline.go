@@ -24,8 +24,7 @@ func NewExportPipelineCmd(exportConfig *ExportConfig) *ffcli.Command {
 	}
 
 	fs := flag.NewFlagSet(fmt.Sprintf("%s export pipeline", exeName), flag.ContinueOnError)
-	config.RegisterFlags(fs)
-	config.exportConfig.rootConfig.RegisterFlags(fs)
+	config.registerFlags(fs)
 
 	return &ffcli.Command{
 		Name:       "pipeline",
@@ -38,7 +37,7 @@ func NewExportPipelineCmd(exportConfig *ExportConfig) *ffcli.Command {
 	}
 }
 
-func (c *ExportPipelineConfig) RegisterFlags(fs *flag.FlagSet) {
+func (c *ExportPipelineConfig) registerFlags(fs *flag.FlagSet) {
 	fs.BoolVar(&c.exportTrace, "export-traces", true, "Export pipeline trace.")
 	fs.BoolVar(&c.exportTestReports, "export-testreports", true, "Export pipeline test reports.")
 }

@@ -33,14 +33,14 @@ func main() {
 		exportCmd,
 	}
 
-	if err := rootCmd.Parse(os.Args[1:]); err != nil {
-		fmt.Fprintf(os.Stderr, "error parsing args: %v\n", err)
-		os.Exit(1)
-	}
-
 	if len(os.Args[1:]) == 0 {
 		fmt.Fprintf(out, rootCmd.UsageFunc(rootCmd))
 		os.Exit(0)
+	}
+
+	if err := rootCmd.Parse(os.Args[1:]); err != nil {
+		fmt.Fprintf(os.Stderr, "error parsing args: %v\n", err)
+		os.Exit(1)
 	}
 
 	ctx := context.Background()

@@ -72,7 +72,7 @@ func checkConfig(t *testing.T, want *config.Config, got *config.Config) {
 }
 
 func Test_NewDefault(t *testing.T) {
-	cfg := config.New()
+	cfg := config.Default()
 
 	expected := defaultConfig()
 

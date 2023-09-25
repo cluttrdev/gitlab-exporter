@@ -30,20 +30,7 @@ type ClickHouse struct {
 	Password string `default:"" yaml:"password"`
 }
 
-const (
-	DefaultGitLabApiUrl   string = "https://gitlab.com/api/v4"
-	DefaultGitLabApiToken string = ""
-
-	DefaultGitLabClientRateLimit float64 = 0
-
-	DefaultClickHouseHost     string = "localhost"
-	DefaultClickHousePort     string = "9000"
-	DefaultClickHouseDatabase string = "default"
-	DefaultClickHouseUser     string = "default"
-	DefaultClickHousePassword string = ""
-)
-
-func New() *Config {
+func Default() *Config {
 	var cfg Config
 
 	defaults.MustSet(&cfg)

@@ -53,9 +53,8 @@ func NewRunCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 		out:        out,
 	}
 
-	fs := flag.NewFlagSet(fmt.Sprintf("%s run [flags]", exeName), flag.ContinueOnError)
-	config.RegisterFlags(fs)
-	config.rootConfig.RegisterFlags(fs)
+	fs := flag.NewFlagSet(fmt.Sprintf("%s run", exeName), flag.ContinueOnError)
+	config.registerFlags(fs)
 
 	return &ffcli.Command{
 		Name:       "run",
@@ -68,7 +67,7 @@ func NewRunCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 	}
 }
 
-func (c *RunConfig) RegisterFlags(fs *flag.FlagSet) {
+func (c *RunConfig) registerFlags(fs *flag.FlagSet) {
 	fs.Var(&c.projects, "projects", "Comma separated list of project ids.")
 }
 
@@ -196,15 +195,21 @@ func exportProjectPipelines(ctx context.Context, projectID int64, pipelineUpdate
 }
 
 func printRunConfig(cfg *RunConfig, out io.Writer) {
+	c, err := newConfig(cfg.rootConfig.filename, cfg.rootConfig.flags)
+	if err != nil {
+		fmt.Fprintf(out, "%v\n", err)
+		return
+	}
+
 	fmt.Fprintln(out, "----")
-	fmt.Fprintf(out, "GitLab URL: %s\n", cfg.rootConfig.Config.GitLab.Api.URL)
-	fmt.Fprintf(out, "GitLab Token: %x\n", sha256String(cfg.rootConfig.Config.GitLab.Api.Token))
+	fmt.Fprintf(out, "GitLab URL: %s\n", c.GitLab.Api.URL)
+	fmt.Fprintf(out, "GitLab Token: %x\n", sha256String(c.GitLab.Api.Token))
 	fmt.Fprintln(out, "----")
-	fmt.Fprintf(out, "ClickHouse Host: %s\n", cfg.rootConfig.Config.ClickHouse.Host)
-	fmt.Fprintf(out, "ClickHouse Port: %s\n", cfg.rootConfig.Config.ClickHouse.Port)
-	fmt.Fprintf(out, "ClickHouse Database: %s\n", cfg.rootConfig.Config.ClickHouse.Database)
-	fmt.Fprintf(out, "ClickHouse User: %s\n", cfg.rootConfig.Config.ClickHouse.User)
-	fmt.Fprintf(out, "ClickHouse Password: %x\n", sha256String(cfg.rootConfig.Config.ClickHouse.Password))
+	fmt.Fprintf(out, "ClickHouse Host: %s\n", c.ClickHouse.Host)
+	fmt.Fprintf(out, "ClickHouse Port: %s\n", c.ClickHouse.Port)
+	fmt.Fprintf(out, "ClickHouse Database: %s\n", c.ClickHouse.Database)
+	fmt.Fprintf(out, "ClickHouse User: %s\n", c.ClickHouse.User)
+	fmt.Fprintf(out, "ClickHouse Password: %x\n", sha256String(c.ClickHouse.Password))
 	fmt.Fprintln(out, "----")
 	fmt.Fprintf(out, "Projects: %v\n", cfg.projects)
 	fmt.Fprintln(out, "----")

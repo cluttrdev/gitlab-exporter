@@ -22,7 +22,6 @@ func NewExportCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 	}
 
 	fs := flag.NewFlagSet(fmt.Sprintf("%s export", exeName), flag.ContinueOnError)
-	config.rootConfig.RegisterFlags(fs)
 
 	var (
 		exportPipelineCmd = NewExportPipelineCmd(&config)

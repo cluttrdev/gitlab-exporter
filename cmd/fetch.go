@@ -22,7 +22,6 @@ func NewFetchCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 	}
 
 	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch", exeName), flag.ContinueOnError)
-	config.rootConfig.RegisterFlags(fs)
 
 	var (
 		fetchPipelineCmd   = NewFetchPipelineCmd(&config)
