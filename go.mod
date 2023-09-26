@@ -5,6 +5,7 @@ go 1.19
 require (
 	github.com/ClickHouse/clickhouse-go/v2 v2.12.0
 	github.com/creasty/defaults v1.7.0
+	github.com/google/go-cmp v0.5.9
 	github.com/peterbourgon/ff/v3 v3.4.0
 	github.com/xanzy/go-gitlab v0.88.0
 	golang.org/x/exp v0.0.0-20230801115018-d63ba01acd4b

@@ -1,8 +1,9 @@
 package config_test
 
 import (
-	// "reflect"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
 )
@@ -19,62 +20,21 @@ func defaultConfig() *config.Config {
 	cfg.ClickHouse.User = "default"
 	cfg.ClickHouse.Password = ""
 
+	cfg.Projects = []config.Project{}
+
 	return &cfg
 }
 
 func checkConfig(t *testing.T, want *config.Config, got *config.Config) {
-	if want.GitLab.Api.URL != got.GitLab.Api.URL {
-		t.Errorf("Expected GitLab.Api.URL to be %s, got %s", got.GitLab.Api.URL, want.GitLab.Api.URL)
+	if diff := cmp.Diff(want, got); diff != "" {
+		t.Errorf("Config mismatch (-want +got):\n%s", diff)
 	}
-
-	if want.GitLab.Api.Token != got.GitLab.Api.Token {
-		t.Errorf("Expected GitLab.Api.Token to be %s, got %s", got.GitLab.Api.Token, want.GitLab.Api.Token)
-	}
-
-	if want.GitLab.Client.Rate.Limit != got.GitLab.Client.Rate.Limit {
-		t.Errorf("Expected GitLab.Client.Rate.Limit to be %f, got %f", got.GitLab.Client.Rate.Limit, want.GitLab.Client.Rate.Limit)
-	}
-
-	if want.ClickHouse.Host != got.ClickHouse.Host {
-		t.Errorf("Expected ClickHouse.Host to be %s, got %s", got.ClickHouse.Host, want.ClickHouse.Host)
-	}
-
-	if want.ClickHouse.Port != got.ClickHouse.Port {
-		t.Errorf("Expected ClickHouse.Port to be %s, got %s", got.ClickHouse.Port, want.ClickHouse.Port)
-	}
-
-	if want.ClickHouse.Database != got.ClickHouse.Database {
-		t.Errorf("Expected ClickHouse.Database to be %s, got %s", got.ClickHouse.Database, want.ClickHouse.Database)
-	}
-
-	if want.ClickHouse.User != got.ClickHouse.User {
-		t.Errorf("Expected ClickHouse.User to be %s, got %s", got.ClickHouse.User, want.ClickHouse.User)
-	}
-
-	if want.ClickHouse.Password != got.ClickHouse.Password {
-		t.Errorf("Expected ClickHouse.Password to be %s, got %s", got.ClickHouse.Password, want.ClickHouse.Password)
-	}
-
-	// gotValue := reflect.ValueOf(*cfg)
-	// wantValue := reflect.ValueOf(expected)
-	// if gotValue.Interface() != wantValue.Interface() {
-	//     t.Errorf("Expected %+v, got %+v", wantValue,wantValue)
-	// }
-	//
-	// for i := 0; i < gotValue.NumField(); i++ {
-	//     name := gotValue.Type().Field(i).Name
-	//     got := gotValue.FieldByName(name).Interface()
-	//     want := wantValue.FieldByName(name).Interface()
-	//     if got != want {
-	//         t.Errorf("Expected %s to be %v, got %v", name, want, got)
-	//     }
-	// }
 }
 
 func Test_NewDefault(t *testing.T) {
-	cfg := config.Default()
-
 	expected := defaultConfig()
+
+	cfg := config.Default()
 
 	checkConfig(t, expected, cfg)
 }
@@ -82,12 +42,12 @@ func Test_NewDefault(t *testing.T) {
 func TestLoad_EmptyData(t *testing.T) {
 	data := []byte{}
 
+	var expected config.Config
+
 	var cfg config.Config
 	if err := config.Load(data, &cfg); err != nil {
 		t.Errorf("Expected no error when loading empty data, got: %v", err)
 	}
-
-	var expected config.Config
 
 	checkConfig(t, &expected, &cfg)
 }
@@ -99,13 +59,13 @@ func TestLoad_PartialData(t *testing.T) {
         url: https://git.example.com/api/v4
     `)
 
+	var expected config.Config
+	expected.GitLab.Api.URL = "https://git.example.com/api/v4"
+
 	var cfg config.Config
 	if err := config.Load(data, &cfg); err != nil {
 		t.Errorf("Expected no error, got: %v", err)
 	}
-
-	var expected config.Config
-	expected.GitLab.Api.URL = "https://git.example.com/api/v4"
 
 	checkConfig(t, &expected, &cfg)
 }
@@ -120,12 +80,12 @@ func TestLoad_UnknownData(t *testing.T) {
         answer: 42
     `)
 
+	var expected config.Config
+
 	var cfg config.Config
 	if err := config.Load(data, &cfg); err != nil {
 		t.Errorf("Expected no error, got: %v", err)
 	}
-
-	var expected config.Config
 
 	checkConfig(t, &expected, &cfg)
 }
@@ -156,15 +116,65 @@ func TestLoad_DataWithDefaults(t *testing.T) {
       host: clickhouse.example.com
     `)
 
+	expected := defaultConfig()
+	expected.GitLab.Api.Token = "glpat-xxxxxxxxxxxxxxxxxxxx"
+	expected.GitLab.Client.Rate.Limit = 20
+	expected.ClickHouse.Host = "clickhouse.example.com"
+
 	cfg := defaultConfig()
 	if err := config.Load(data, cfg); err != nil {
 		t.Errorf("Expected no error, got: %v", err)
 	}
 
+	checkConfig(t, expected, cfg)
+}
+
+func TestLoad_DataWithProjects(t *testing.T) {
+	data := []byte(`
+    projects:
+      - id: foo/bar
+        sections:
+          enabled: true
+        catch_up:
+          enabled: true
+      - id: 42
+        sections:
+          enabled: false
+        catch_up:
+          enabled: true
+          updated_after: "2019-03-15T08:00:00Z"
+    `)
+
 	expected := defaultConfig()
-	expected.GitLab.Api.Token = "glpat-xxxxxxxxxxxxxxxxxxxx"
-	expected.GitLab.Client.Rate.Limit = 20
-	expected.ClickHouse.Host = "clickhouse.example.com"
+	expected.Projects = append(expected.Projects,
+		config.Project{
+			Id: "foo/bar",
+			Sections: config.ProjectSections{
+				Enabled: true,
+			},
+			CatchUp: config.ProjectCatchUp{
+				Enabled:       true,
+				UpdatedAfter:  "",
+				UpdatedBefore: "",
+			},
+		},
+		config.Project{
+			Id: "42",
+			Sections: config.ProjectSections{
+				Enabled: false,
+			},
+			CatchUp: config.ProjectCatchUp{
+				Enabled:       true,
+				UpdatedAfter:  "2019-03-15T08:00:00Z",
+				UpdatedBefore: "",
+			},
+		},
+	)
+
+	cfg := defaultConfig()
+	if err := config.Load(data, cfg); err != nil {
+		t.Errorf("Expected no error, got: %v", err)
+	}
 
 	checkConfig(t, expected, cfg)
 }
