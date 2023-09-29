@@ -132,7 +132,7 @@ func TestLoad_DataWithDefaults(t *testing.T) {
 func TestLoad_DataWithProjects(t *testing.T) {
 	data := []byte(`
     projects:
-      - id: foo/bar
+      - id: 1337  # foo/bar
         sections:
           enabled: true
         catch_up:
@@ -148,7 +148,7 @@ func TestLoad_DataWithProjects(t *testing.T) {
 	expected := defaultConfig()
 	expected.Projects = append(expected.Projects,
 		config.Project{
-			Id: "foo/bar",
+			Id: 1337, // "foo/bar",
 			Sections: config.ProjectSections{
 				Enabled: true,
 			},
@@ -159,7 +159,7 @@ func TestLoad_DataWithProjects(t *testing.T) {
 			},
 		},
 		config.Project{
-			Id: "42",
+			Id: 42, // "42",
 			Sections: config.ProjectSections{
 				Enabled: false,
 			},

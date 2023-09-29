@@ -32,7 +32,7 @@ type ClickHouse struct {
 }
 
 type Project struct {
-	Id       string          `yaml:"id" default:""`
+	Id       int64           `yaml:"id"`
 	Sections ProjectSections `yaml:"sections"`
 	CatchUp  ProjectCatchUp  `yaml:"catch_up"`
 }
