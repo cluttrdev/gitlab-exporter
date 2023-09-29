@@ -6,13 +6,13 @@ import (
 
 	"golang.org/x/time/rate"
 
-	"github.com/xanzy/go-gitlab"
+	gogitlab "github.com/xanzy/go-gitlab"
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
 )
 
 type Client struct {
-	client *gitlab.Client
+	client *gogitlab.Client
 }
 
 type ClientConfig struct {
@@ -23,8 +23,8 @@ type ClientConfig struct {
 }
 
 func NewGitLabClient(cfg ClientConfig) (*Client, error) {
-	opts := []gitlab.ClientOptionFunc{
-		gitlab.WithBaseURL(cfg.URL),
+	opts := []gogitlab.ClientOptionFunc{
+		gogitlab.WithBaseURL(cfg.URL),
 	}
 
 	if cfg.RateLimit > 0 {
@@ -32,10 +32,10 @@ func NewGitLabClient(cfg ClientConfig) (*Client, error) {
 		burst := cfg.RateLimit * 0.33
 		limiter := rate.NewLimiter(limit, int(burst))
 
-		opts = append(opts, gitlab.WithCustomLimiter(limiter))
+		opts = append(opts, gogitlab.WithCustomLimiter(limiter))
 	}
 
-	client, err := gitlab.NewOAuthClient(cfg.Token, opts...)
+	client, err := gogitlab.NewOAuthClient(cfg.Token, opts...)
 	if err != nil {
 		return nil, err
 	}
