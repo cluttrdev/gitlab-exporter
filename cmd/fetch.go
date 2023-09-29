@@ -13,19 +13,25 @@ type FetchConfig struct {
 	rootConfig *RootConfig
 
 	out io.Writer
+
+	flags *flag.FlagSet
 }
 
 func NewFetchCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
-	config := FetchConfig{
-		rootConfig: rootConfig,
-		out:        out,
-	}
-
 	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch", exeName), flag.ContinueOnError)
 
+	cfg := FetchConfig{
+		rootConfig: rootConfig,
+		out:        out,
+
+		flags: fs,
+	}
+
+	cfg.RegisterFlags(fs)
+
 	var (
-		fetchPipelineCmd   = NewFetchPipelineCmd(&config)
-		fetchTestReportCmd = NewFetchTestReportCmd(&config)
+		fetchPipelineCmd   = NewFetchPipelineCmd(&cfg)
+		fetchTestReportCmd = NewFetchTestReportCmd(&cfg)
 	)
 
 	return &ffcli.Command{
@@ -38,8 +44,12 @@ func NewFetchCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 			fetchPipelineCmd,
 			fetchTestReportCmd,
 		},
-		Exec: config.Exec,
+		Exec: cfg.Exec,
 	}
+}
+
+func (c *FetchConfig) RegisterFlags(fs *flag.FlagSet) {
+	c.rootConfig.RegisterFlags(fs)
 }
 
 func (c *FetchConfig) Exec(ctx context.Context, _ []string) error {

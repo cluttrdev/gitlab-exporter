@@ -15,15 +15,20 @@ type FetchPipelineConfig struct {
 	fetchConfig *FetchConfig
 
 	all bool
+
+	flags *flag.FlagSet
 }
 
 func NewFetchPipelineCmd(fetchConfig *FetchConfig) *ffcli.Command {
+	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch pipeline", exeName), flag.ContinueOnError)
+
 	config := FetchPipelineConfig{
 		fetchConfig: fetchConfig,
+
+		flags: fs,
 	}
 
-	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch pipeline", exeName), flag.ContinueOnError)
-	config.registerFlags(fs)
+	config.RegisterFlags(fs)
 
 	return &ffcli.Command{
 		Name:       "pipeline",
@@ -36,7 +41,9 @@ func NewFetchPipelineCmd(fetchConfig *FetchConfig) *ffcli.Command {
 	}
 }
 
-func (c *FetchPipelineConfig) registerFlags(fs *flag.FlagSet) {
+func (c *FetchPipelineConfig) RegisterFlags(fs *flag.FlagSet) {
+	c.fetchConfig.RegisterFlags(fs)
+
 	fs.BoolVar(&c.all, "all", false, "Fetch pipeline hierarchy.")
 }
 
@@ -47,7 +54,12 @@ func (c *FetchPipelineConfig) Exec(ctx context.Context, args []string) error {
 
 	log.SetOutput(c.fetchConfig.out)
 
-	ctl, err := c.fetchConfig.rootConfig.newController()
+	cfg, err := newConfig(c.fetchConfig.rootConfig.filename, c.flags)
+	if err != nil {
+		return err
+	}
+
+	ctl, err := newController(cfg)
 	if err != nil {
 		return err
 	}

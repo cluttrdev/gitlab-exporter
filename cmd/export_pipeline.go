@@ -16,15 +16,20 @@ type ExportPipelineConfig struct {
 
 	exportTrace       bool
 	exportTestReports bool
+
+	flags *flag.FlagSet
 }
 
 func NewExportPipelineCmd(exportConfig *ExportConfig) *ffcli.Command {
+	fs := flag.NewFlagSet(fmt.Sprintf("%s export pipeline", exeName), flag.ContinueOnError)
+
 	config := &ExportPipelineConfig{
 		exportConfig: exportConfig,
+
+		flags: fs,
 	}
 
-	fs := flag.NewFlagSet(fmt.Sprintf("%s export pipeline", exeName), flag.ContinueOnError)
-	config.registerFlags(fs)
+	config.RegisterFlags(fs)
 
 	return &ffcli.Command{
 		Name:       "pipeline",
@@ -37,7 +42,9 @@ func NewExportPipelineCmd(exportConfig *ExportConfig) *ffcli.Command {
 	}
 }
 
-func (c *ExportPipelineConfig) registerFlags(fs *flag.FlagSet) {
+func (c *ExportPipelineConfig) RegisterFlags(fs *flag.FlagSet) {
+	c.exportConfig.RegisterFlags(fs)
+
 	fs.BoolVar(&c.exportTrace, "export-traces", true, "Export pipeline trace.")
 	fs.BoolVar(&c.exportTestReports, "export-testreports", true, "Export pipeline test reports.")
 }
@@ -57,7 +64,12 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("error parsing `pipeline_id` argument: %w", err)
 	}
 
-	ctl, err := c.exportConfig.rootConfig.newController()
+	cfg, err := newConfig(c.exportConfig.rootConfig.filename, c.flags)
+	if err != nil {
+		return err
+	}
+
+	ctl, err := newController(cfg)
 	if err != nil {
 		return err
 	}

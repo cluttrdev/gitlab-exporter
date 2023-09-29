@@ -13,14 +13,18 @@ import (
 
 type FetchTestReportConfig struct {
 	fetchConfig *FetchConfig
+
+	flags *flag.FlagSet
 }
 
 func NewFetchTestReportCmd(fetchConfig *FetchConfig) *ffcli.Command {
+	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch testreport", exeName), flag.ContinueOnError)
+
 	config := FetchTestReportConfig{
 		fetchConfig: fetchConfig,
-	}
 
-	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch testreport", exeName), flag.ContinueOnError)
+		flags: fs,
+	}
 
 	return &ffcli.Command{
 		Name:       "testreport",
@@ -33,6 +37,10 @@ func NewFetchTestReportCmd(fetchConfig *FetchConfig) *ffcli.Command {
 	}
 }
 
+func (c *FetchTestReportConfig) RegisterFlags(fs *flag.FlagSet) {
+	c.fetchConfig.RegisterFlags(fs)
+}
+
 func (c *FetchTestReportConfig) Exec(ctx context.Context, args []string) error {
 	if len(args) != 2 {
 		return fmt.Errorf("invalid number of positional arguments: %v", args)
@@ -40,7 +48,12 @@ func (c *FetchTestReportConfig) Exec(ctx context.Context, args []string) error {
 
 	log.SetOutput(c.fetchConfig.out)
 
-	ctl, err := c.fetchConfig.rootConfig.newController()
+	cfg, err := newConfig(c.fetchConfig.rootConfig.filename, c.flags)
+	if err != nil {
+		return err
+	}
+
+	ctl, err := newController(cfg)
 	if err != nil {
 		return err
 	}

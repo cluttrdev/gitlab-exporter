@@ -25,16 +25,20 @@ var (
 
 type RootConfig struct {
 	filename string
-	flags    *flag.FlagSet
+
+	flags *flag.FlagSet
 }
 
 func NewRootCmd() (*ffcli.Command, *RootConfig) {
+	fs := flag.NewFlagSet(exeName, flag.ContinueOnError)
+
 	cfg := RootConfig{
 		filename: "",
-		flags:    flag.NewFlagSet(exeName, flag.ContinueOnError),
+
+		flags: fs,
 	}
 
-	cfg.registerFlags(cfg.flags)
+	cfg.RegisterFlags(cfg.flags)
 
 	return &ffcli.Command{
 		Name:       exeName,
@@ -46,7 +50,7 @@ func NewRootCmd() (*ffcli.Command, *RootConfig) {
 	}, &cfg
 }
 
-func (c *RootConfig) registerFlags(fs *flag.FlagSet) {
+func (c *RootConfig) RegisterFlags(fs *flag.FlagSet) {
 	defaults := config.Default()
 
 	fs.String("gitlab-api-url", defaults.GitLab.Api.URL, fmt.Sprintf("The GitLab API URL (default: '%s').", defaults.GitLab.Api.URL))
@@ -63,17 +67,6 @@ func (c *RootConfig) registerFlags(fs *flag.FlagSet) {
 
 func (c *RootConfig) Exec(context.Context, []string) error {
 	return flag.ErrHelp
-}
-
-func (c *RootConfig) newController() (*controller.Controller, error) {
-	cfg, err := newConfig(c.filename, c.flags)
-
-	ctl, err := controller.NewController(*cfg)
-	if err != nil {
-		return nil, fmt.Errorf("error constructing controller: %w", err)
-	}
-
-	return &ctl, nil
 }
 
 func newConfig(filename string, flags *flag.FlagSet) (*config.Config, error) {
@@ -105,4 +98,13 @@ func newConfig(filename string, flags *flag.FlagSet) (*config.Config, error) {
 	})
 
 	return cfg, nil
+}
+
+func newController(cfg *config.Config) (*controller.Controller, error) {
+	ctl, err := controller.NewController(*cfg)
+	if err != nil {
+		return nil, fmt.Errorf("error constructing controller: %w", err)
+	}
+
+	return &ctl, nil
 }

@@ -13,18 +13,24 @@ type ExportConfig struct {
 	rootConfig *RootConfig
 
 	out io.Writer
+
+	flags *flag.FlagSet
 }
 
 func NewExportCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
-	config := ExportConfig{
-		rootConfig: rootConfig,
-		out:        out,
-	}
-
 	fs := flag.NewFlagSet(fmt.Sprintf("%s export", exeName), flag.ContinueOnError)
 
+	cfg := ExportConfig{
+		rootConfig: rootConfig,
+		out:        out,
+
+		flags: fs,
+	}
+
+	cfg.RegisterFlags(fs)
+
 	var (
-		exportPipelineCmd = NewExportPipelineCmd(&config)
+		exportPipelineCmd = NewExportPipelineCmd(&cfg)
 	)
 
 	return &ffcli.Command{
@@ -36,8 +42,12 @@ func NewExportCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 		Subcommands: []*ffcli.Command{
 			exportPipelineCmd,
 		},
-		Exec: config.Exec,
+		Exec: cfg.Exec,
 	}
+}
+
+func (c *ExportConfig) RegisterFlags(fs *flag.FlagSet) {
+	c.rootConfig.RegisterFlags(fs)
 }
 
 func (c *ExportConfig) Exec(ctx context.Context, _ []string) error {

@@ -11,22 +11,21 @@ import (
 	"os/signal"
 	"strconv"
 	"strings"
-	"sync"
 	"syscall"
-	"time"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
+	"golang.org/x/exp/slices"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
-	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
-
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/internal/util"
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/worker"
 )
 
 type RunConfig struct {
 	rootConfig *RootConfig
 	out        io.Writer
 	projects   projectList
+
+	flags *flag.FlagSet
 }
 
 type projectList []int64
@@ -48,13 +47,16 @@ func (f *projectList) Set(value string) error {
 }
 
 func NewRunCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
+	fs := flag.NewFlagSet(fmt.Sprintf("%s run", exeName), flag.ContinueOnError)
+
 	config := RunConfig{
 		rootConfig: rootConfig,
 		out:        out,
+
+		flags: fs,
 	}
 
-	fs := flag.NewFlagSet(fmt.Sprintf("%s run", exeName), flag.ContinueOnError)
-	config.registerFlags(fs)
+	config.RegisterFlags(fs)
 
 	return &ffcli.Command{
 		Name:       "run",
@@ -67,7 +69,9 @@ func NewRunCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 	}
 }
 
-func (c *RunConfig) registerFlags(fs *flag.FlagSet) {
+func (c *RunConfig) RegisterFlags(fs *flag.FlagSet) {
+	c.rootConfig.RegisterFlags(fs)
+
 	fs.Var(&c.projects, "projects", "Comma separated list of project ids.")
 }
 
@@ -75,12 +79,32 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 	// configure logging
 	log.SetOutput(c.out)
 
-	ctl, err := c.rootConfig.newController()
+	// create config from root flags
+	log.Printf("Loading configuration from %s\n", c.rootConfig.filename)
+	cfg, err := newConfig(c.rootConfig.filename, c.flags)
 	if err != nil {
 		return err
 	}
 
-	// init controller
+	// add projects pass to run command
+	for _, pid := range c.projects {
+		exists := slices.ContainsFunc(cfg.Projects, func(p config.Project) bool {
+			return p.Id == pid
+		})
+
+		if !exists {
+			cfg.Projects = append(cfg.Projects, config.Project{
+				Id: pid,
+			})
+		}
+	}
+
+	// setup controller
+	ctl, err := newController(cfg)
+	if err != nil {
+		return err
+	}
+
 	if err := ctl.Init(ctx); err != nil {
 		return err
 	}
@@ -110,86 +134,27 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 	printRunConfig(c, c.out)
 
 	// run daemon
-	var firstRun bool = true
-	ticker := time.NewTicker(1 * time.Second)
-	for {
-		select {
-		case <-ctx.Done():
-			return nil
-		case <-ticker.C:
-			if firstRun {
-				ticker.Stop()
-				ticker = time.NewTicker(60 * time.Second)
-				firstRun = false
-			}
 
-			var wg sync.WaitGroup
-			for _, projectID := range c.projects {
-				pu, err := ctl.QueryLatestProjectPipelineUpdates(ctx, projectID)
-				if err != nil {
-					log.Println(err)
-					continue
-				}
+	workers := []worker.Worker{}
 
-				wg.Add(1)
-				go func(projectID int64) {
-					defer wg.Done()
-					if err := exportProjectPipelines(ctx, projectID, pu, ctl); err != nil {
-						log.Printf("%v", err)
-					}
-				}(projectID)
-			}
-			wg.Wait()
+	for _, pc := range cfg.Projects {
+		if pc.CatchUp.Enabled {
+			workers = append(workers, worker.NewCatchUpProjectWorker(ctl, &pc))
 		}
-	}
-}
-
-func exportProjectPipelines(ctx context.Context, projectID int64, pipelineUpdates map[int64]time.Time, ctl *controller.Controller) error {
-	var (
-		numWorkers  int = 100
-		channelSize int = 100
-	)
-	wp, err := util.NewPool(numWorkers, channelSize)
-	if err != nil {
-		return err
-	}
-	wp.Start()
-	defer wp.Stop()
-
-	scope := "finished"
-	opt := &gitlab.ListProjectPipelineOptions{
-		PerPage: 100,
-		Page:    1,
-
-		Scope: &scope,
+		workers = append(workers, worker.NewExportProjectWorker(ctl, &pc))
 	}
 
-	var wg sync.WaitGroup
-	for r := range ctl.GitLab.ListProjectPipelines(ctx, projectID, opt) {
-		if r.Error != nil {
-			log.Println(r.Error)
-			continue
-		}
-		pi := r.Pipeline
-
-		lastUpdatedAt, ok := pipelineUpdates[pi.ID]
-		if ok && pi.UpdatedAt.Compare(lastUpdatedAt) <= 0 {
-			continue
-		}
-
-		wg.Add(1)
-		wp.AddWork(util.NewTask(func() error {
-			defer wg.Done()
-
-			if err := ctl.ExportPipeline(ctx, projectID, pi.ID); err != nil {
-				log.Printf("error exporting pipeline: %s\n", err)
-				return err
-			}
-			log.Printf("Exporting projects/%d/pipelines/%d ... done\n", projectID, pi.ID)
-			return nil
-		}))
+	log.Println("Starting workers...")
+	for _, w := range workers {
+		go w.Start()
 	}
-	wg.Wait()
+
+	<-ctx.Done()
+
+	log.Println("Stopping workers...")
+	for _, w := range workers {
+		w.Stop()
+	}
 
 	return nil
 }
