@@ -2,8 +2,10 @@ package cmd
 
 import (
 	"context"
+	"crypto/sha256"
 	"flag"
 	"fmt"
+	"io"
 
 	"github.com/peterbourgon/ff/v3"
 	"github.com/peterbourgon/ff/v3/ffcli"
@@ -107,4 +109,30 @@ func newController(cfg *config.Config) (*controller.Controller, error) {
 	}
 
 	return &ctl, nil
+}
+
+func writeConfig(cfg *config.Config, out io.Writer) {
+	fmt.Fprintln(out, "----")
+	fmt.Fprintf(out, "GitLab URL: %s\n", cfg.GitLab.Api.URL)
+	fmt.Fprintf(out, "GitLab Token: %x\n", sha256String(cfg.GitLab.Api.Token))
+	fmt.Fprintln(out, "----")
+	fmt.Fprintf(out, "ClickHouse Host: %s\n", cfg.ClickHouse.Host)
+	fmt.Fprintf(out, "ClickHouse Port: %s\n", cfg.ClickHouse.Port)
+	fmt.Fprintf(out, "ClickHouse Database: %s\n", cfg.ClickHouse.Database)
+	fmt.Fprintf(out, "ClickHouse User: %s\n", cfg.ClickHouse.User)
+	fmt.Fprintf(out, "ClickHouse Password: %x\n", sha256String(cfg.ClickHouse.Password))
+	fmt.Fprintln(out, "----")
+
+	projects := []int64{}
+	for _, p := range cfg.Projects {
+		projects = append(projects, p.Id)
+	}
+	fmt.Fprintf(out, "Projects: %v\n", projects)
+	fmt.Fprintln(out, "----")
+}
+
+func sha256String(s string) []byte {
+	h := sha256.New()
+	h.Write([]byte(s))
+	return h.Sum(nil)
 }

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"crypto/sha256"
 	"flag"
 	"fmt"
 	"io"
@@ -131,7 +130,7 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 	}()
 
 	// log configuration
-	printRunConfig(c, c.out)
+	writeConfig(cfg, c.out)
 
 	// run daemon
 
@@ -157,31 +156,4 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 	}
 
 	return nil
-}
-
-func printRunConfig(cfg *RunConfig, out io.Writer) {
-	c, err := newConfig(cfg.rootConfig.filename, cfg.rootConfig.flags)
-	if err != nil {
-		fmt.Fprintf(out, "%v\n", err)
-		return
-	}
-
-	fmt.Fprintln(out, "----")
-	fmt.Fprintf(out, "GitLab URL: %s\n", c.GitLab.Api.URL)
-	fmt.Fprintf(out, "GitLab Token: %x\n", sha256String(c.GitLab.Api.Token))
-	fmt.Fprintln(out, "----")
-	fmt.Fprintf(out, "ClickHouse Host: %s\n", c.ClickHouse.Host)
-	fmt.Fprintf(out, "ClickHouse Port: %s\n", c.ClickHouse.Port)
-	fmt.Fprintf(out, "ClickHouse Database: %s\n", c.ClickHouse.Database)
-	fmt.Fprintf(out, "ClickHouse User: %s\n", c.ClickHouse.User)
-	fmt.Fprintf(out, "ClickHouse Password: %x\n", sha256String(c.ClickHouse.Password))
-	fmt.Fprintln(out, "----")
-	fmt.Fprintf(out, "Projects: %v\n", cfg.projects)
-	fmt.Fprintln(out, "----")
-}
-
-func sha256String(s string) []byte {
-	h := sha256.New()
-	h.Write([]byte(s))
-	return h.Sum(nil)
 }
