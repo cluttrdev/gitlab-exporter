@@ -135,10 +135,18 @@ func TestLoad_DataWithProjects(t *testing.T) {
       - id: 1337  # foo/bar
         sections:
           enabled: true
+        testreports:
+          enabled: false
+        traces:
+          enabled: true
         catch_up:
           enabled: true
       - id: 42
         sections:
+          enabled: false
+        testreports:
+          enabled: true
+        traces:
           enabled: false
         catch_up:
           enabled: true
@@ -152,6 +160,12 @@ func TestLoad_DataWithProjects(t *testing.T) {
 			Sections: config.ProjectSections{
 				Enabled: true,
 			},
+            TestReports: config.ProjectTestReports{
+                Enabled: false,
+            },
+            Traces: config.ProjectTraces{
+                Enabled: true,
+            },
 			CatchUp: config.ProjectCatchUp{
 				Enabled:       true,
 				UpdatedAfter:  "",
@@ -163,6 +177,12 @@ func TestLoad_DataWithProjects(t *testing.T) {
 			Sections: config.ProjectSections{
 				Enabled: false,
 			},
+            TestReports: config.ProjectTestReports{
+                Enabled: true,
+            },
+            Traces: config.ProjectTraces{
+                Enabled: false,
+            },
 			CatchUp: config.ProjectCatchUp{
 				Enabled:       true,
 				UpdatedAfter:  "2019-03-15T08:00:00Z",

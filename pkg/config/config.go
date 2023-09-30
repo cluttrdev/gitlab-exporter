@@ -32,12 +32,22 @@ type ClickHouse struct {
 }
 
 type Project struct {
-	Id       int64           `yaml:"id"`
-	Sections ProjectSections `yaml:"sections"`
-	CatchUp  ProjectCatchUp  `yaml:"catch_up"`
+	Id          int64              `yaml:"id"`
+	Sections    ProjectSections    `yaml:"sections"`
+	TestReports ProjectTestReports `yaml:"testreports"`
+	Traces      ProjectTraces      `yaml:"traces"`
+	CatchUp     ProjectCatchUp     `yaml:"catch_up"`
 }
 
 type ProjectSections struct {
+	Enabled bool `yaml:"enabled" default:"false"`
+}
+
+type ProjectTestReports struct {
+	Enabled bool `yaml:"enabled" default:"false"`
+}
+
+type ProjectTraces struct {
 	Enabled bool `yaml:"enabled" default:"false"`
 }
 
