@@ -128,14 +128,14 @@ func (c *Controller) exportPipeline(ctx context.Context, projectID int64, pipeli
 	go func() {
 		defer close(errChan)
 
-		cfg, err := c.projectConfig(projectID)
+		pcfg, err := c.projectConfig(projectID)
 		if err != nil {
 			errChan <- err
 			return
 		}
 
 		opt := &gitlab.GetPipelineHierarchyOptions{
-			FetchSections: cfg.Sections.Enabled,
+			FetchSections: pcfg.Sections.Enabled,
 		}
 
 		phr := <-c.GitLab.GetPipelineHierarchy(ctx, projectID, pipelineID, opt)
@@ -150,36 +150,40 @@ func (c *Controller) exportPipeline(ctx context.Context, projectID int64, pipeli
 			return
 		}
 
-		pts := ph.GetAllTraces()
-		if err := clickhouse.InsertTraces(ctx, pts, c.ClickHouse); err != nil {
-			errChan <- fmt.Errorf("[controller.ExportPipeline/InsertTraces] %w", err)
-			return
-		}
-
-		trs, err := c.GitLab.GetPipelineHierarchyTestReports(ctx, ph)
-		if err != nil {
-			errChan <- fmt.Errorf("[controller.ExportPipeline/GetTestRerports] %w", err)
-			return
-		}
-		tss := []*models.PipelineTestSuite{}
-		tcs := []*models.PipelineTestCase{}
-		for _, tr := range trs {
-			tss = append(tss, tr.TestSuites...)
-			for _, ts := range tr.TestSuites {
-				tcs = append(tcs, ts.TestCases...)
+		if pcfg.Traces.Enabled {
+			pts := ph.GetAllTraces()
+			if err := clickhouse.InsertTraces(ctx, pts, c.ClickHouse); err != nil {
+				errChan <- fmt.Errorf("[controller.ExportPipeline/InsertTraces] %w", err)
+				return
 			}
 		}
-		if err = clickhouse.InsertTestReports(ctx, trs, c.ClickHouse); err != nil {
-			errChan <- fmt.Errorf("[controller.ExportPipeline/InsertTestReports] %w", err)
-			return
-		}
-		if err = clickhouse.InsertTestSuites(ctx, tss, c.ClickHouse); err != nil {
-			errChan <- fmt.Errorf("[controller.ExportPipeline/InsertTestSuites] %w", err)
-			return
-		}
-		if err = clickhouse.InsertTestCases(ctx, tcs, c.ClickHouse); err != nil {
-			errChan <- fmt.Errorf("[controller.ExportPipeline/InsertTestCases] %w", err)
-			return
+
+		if pcfg.TestReports.Enabled {
+			trs, err := c.GitLab.GetPipelineHierarchyTestReports(ctx, ph)
+			if err != nil {
+				errChan <- fmt.Errorf("[controller.ExportPipeline/GetTestRerports] %w", err)
+				return
+			}
+			tss := []*models.PipelineTestSuite{}
+			tcs := []*models.PipelineTestCase{}
+			for _, tr := range trs {
+				tss = append(tss, tr.TestSuites...)
+				for _, ts := range tr.TestSuites {
+					tcs = append(tcs, ts.TestCases...)
+				}
+			}
+			if err = clickhouse.InsertTestReports(ctx, trs, c.ClickHouse); err != nil {
+				errChan <- fmt.Errorf("[controller.ExportPipeline/InsertTestReports] %w", err)
+				return
+			}
+			if err = clickhouse.InsertTestSuites(ctx, tss, c.ClickHouse); err != nil {
+				errChan <- fmt.Errorf("[controller.ExportPipeline/InsertTestSuites] %w", err)
+				return
+			}
+			if err = clickhouse.InsertTestCases(ctx, tcs, c.ClickHouse); err != nil {
+				errChan <- fmt.Errorf("[controller.ExportPipeline/InsertTestCases] %w", err)
+				return
+			}
 		}
 	}()
 
