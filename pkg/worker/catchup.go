@@ -48,26 +48,22 @@ func (w *catchUpProjectWorker) Done() <-chan struct{} {
 func (w *catchUpProjectWorker) run() {
 	retries := 3
 
-	ctx := w.ctx
-	ctl := w.ctl
-	cfg := w.cfg
-
 	opt := &gitlab.ListProjectPipelineOptions{
 		PerPage: 100,
 		Page:    1,
 
 		Scope: &[]string{"finished"}[0],
 	}
-	if cfg.CatchUp.UpdatedAfter != "" {
-		after, err := time.Parse("2006-01-02T15:04:05Z", cfg.CatchUp.UpdatedAfter)
+	if w.cfg.CatchUp.UpdatedAfter != "" {
+		after, err := time.Parse("2006-01-02T15:04:05Z", w.cfg.CatchUp.UpdatedAfter)
 		if err != nil {
 			log.Println(err)
 		} else {
 			opt.UpdatedAfter = &after
 		}
 	}
-	if cfg.CatchUp.UpdatedBefore != "" {
-		before, err := time.Parse("2006-01-02T15:04:05Z", cfg.CatchUp.UpdatedBefore)
+	if w.cfg.CatchUp.UpdatedBefore != "" {
+		before, err := time.Parse("2006-01-02T15:04:05Z", w.cfg.CatchUp.UpdatedBefore)
 		if err != nil {
 			log.Println(err)
 		} else {
@@ -76,36 +72,69 @@ func (w *catchUpProjectWorker) run() {
 	}
 
 	for i := 0; i < retries; i++ {
-		latestUpdates, err := ctl.QueryLatestProjectPipelineUpdates(ctx, cfg.Id)
-		if err != nil && !errors.Is(err, context.Canceled) {
-			log.Println(err)
-			continue
-		}
+		ch := w.produce(opt)
 
-		for r := range ctl.GitLab.ListProjectPipelines(ctx, cfg.Id, opt) {
-			if r.Error != nil {
-				if errors.Is(r.Error, context.Canceled) {
-					return
-				}
-				log.Println(r.Error)
-				continue
-			}
-			pi := r.Pipeline
-
-			lastUpdatedAt, ok := latestUpdates[pi.ID]
-			if ok && pi.UpdatedAt.Compare(lastUpdatedAt) <= 0 {
-				continue
-			}
-
-			if err := ctl.ExportPipeline(ctx, cfg.Id, pi.ID); err != nil {
-				if errors.Is(r.Error, context.Canceled) {
-					return
-				}
-				log.Printf("error exporting pipeline: %s\n", err)
-			}
-			log.Printf("Caught up on projects/%d/pipelines/%d\n", cfg.Id, pi.ID)
-		}
+		w.process(ch)
 	}
+}
+
+func (w *catchUpProjectWorker) produce(opt *gitlab.ListProjectPipelineOptions) <-chan int64 {
+	ch := make(chan int64)
+
+	go func() {
+		defer close(ch)
+
+		latestUpdates, err := w.ctl.QueryLatestProjectPipelineUpdates(w.ctx, w.cfg.Id)
+		if err != nil {
+			if errors.Is(err, context.Canceled) {
+				return
+			}
+			log.Println(err)
+		}
+
+		resChan := w.ctl.GitLab.ListProjectPipelines(w.ctx, w.cfg.Id, opt)
+		for {
+			select {
+			case <-w.ctx.Done():
+				return
+			case r := <-resChan:
+				if r.Error != nil && !errors.Is(r.Error, context.Canceled) {
+					log.Println(r.Error)
+					continue
+				}
+
+				lastUpdatedAt, ok := latestUpdates[r.Pipeline.ID]
+				if ok && r.Pipeline.UpdatedAt.Compare(lastUpdatedAt) <= 0 {
+					continue
+				}
+
+				ch <- r.Pipeline.ID
+			}
+		}
+	}()
+
+	return ch
+}
+
+func (w *catchUpProjectWorker) process(pipelineChan <-chan int64) {
+	numWorkers := 10
+	var wg sync.WaitGroup
+	for i := 0; i < numWorkers; i++ {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			for pipelineID := range pipelineChan {
+				if err := w.ctl.ExportPipeline(w.ctx, w.cfg.Id, pipelineID); err != nil {
+					if !errors.Is(err, context.Canceled) {
+						log.Printf("error exporting pipeline: %s\n", err)
+					}
+				}
+				log.Printf("Caught up on projects/%d/pipelines/%d\n", w.cfg.Id, pipelineID)
+			}
+		}()
+	}
+	wg.Wait()
 }
 
 func NewCatchUpProjectWorker(ctl *controller.Controller, cfg *config.Project) Worker {
