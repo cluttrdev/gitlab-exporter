@@ -9,12 +9,15 @@ import (
 	"strconv"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
+
+	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
 )
 
 type FetchPipelineConfig struct {
 	fetchConfig *FetchConfig
 
-	all bool
+	fetchHierarchy bool
+	fetchSections  bool
 
 	flags *flag.FlagSet
 }
@@ -44,7 +47,8 @@ func NewFetchPipelineCmd(fetchConfig *FetchConfig) *ffcli.Command {
 func (c *FetchPipelineConfig) RegisterFlags(fs *flag.FlagSet) {
 	c.fetchConfig.RegisterFlags(fs)
 
-	fs.BoolVar(&c.all, "all", false, "Fetch pipeline hierarchy.")
+	fs.BoolVar(&c.fetchHierarchy, "hierarchy", false, "Fetch pipeline hierarchy.")
+	fs.BoolVar(&c.fetchSections, "fetch-sections", true, "Fetch job sections.")
 }
 
 func (c *FetchPipelineConfig) Exec(ctx context.Context, args []string) error {
@@ -75,8 +79,12 @@ func (c *FetchPipelineConfig) Exec(ctx context.Context, args []string) error {
 	}
 
 	var b []byte
-	if c.all {
-		phr := <-ctl.GitLab.GetPipelineHierarchy(ctx, projectID, pipelineID)
+	if c.fetchHierarchy {
+		opt := &gitlab.GetPipelineHierarchyOptions{
+			FetchSections: c.fetchSections,
+		}
+
+		phr := <-ctl.GitLab.GetPipelineHierarchy(ctx, projectID, pipelineID, opt)
 		if err := phr.Error; err != nil {
 			return fmt.Errorf("error fetching pipeline hierarchy: %w", err)
 		}

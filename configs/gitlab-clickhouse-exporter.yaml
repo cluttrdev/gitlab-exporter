@@ -19,24 +19,24 @@ clickhouse:
   password: ""
 
 # List of projects to export
-projects: []
-#   - # Name (with namespace) or id of the project (required).
-#     id: foo/bar 
-#
-#     sections:
-#       # Whether or not to export job section data.
-#       # If enabled, this may significantly increase the export time since it
-#       # requires fetching entire job logs to parse for section information.
-#       enabled: false
-#     
-#     catch_up:
-#       # Whether to export data from past pipelines at startup.
-#       enabled: false
-#
-#       # Export pipelines updated after the specified date.
-#       # Expected in ISO 8601 format (2019-03-15T08:00:00Z)
-#       updated_after: ""
-#
-#       # Export pipelines updated before the specified date.
-#       # Expected in ISO 8601 format (2019-03-15T08:00:00Z)
-#       updated_before: ""
+projects:
+  - # Name (with namespace) or id of the project (required).
+    id: 50817395  # cluttrdev/gitlab-clickhouse-exporter
+
+    sections:
+      # Whether or not to export job section data.
+      # If enabled, this may significantly increase the export time since it
+      # requires fetching entire job logs to parse for section information.
+      enabled: false
+    
+    catch_up:
+      # Whether to export data from past pipelines at startup.
+      enabled: false
+
+      # Export pipelines updated after the specified date.
+      # Expected in ISO 8601 format (2019-03-15T08:00:00Z)
+      updated_after: ""
+
+      # Export pipelines updated before the specified date.
+      # Expected in ISO 8601 format (2019-03-15T08:00:00Z)
+      updated_before: ""

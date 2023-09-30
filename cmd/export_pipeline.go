@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	clickhouse "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
+	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
 	"github.com/peterbourgon/ff/v3/ffcli"
 )
@@ -14,8 +15,9 @@ import (
 type ExportPipelineConfig struct {
 	exportConfig *ExportConfig
 
-	exportTrace       bool
+	exportSections    bool
 	exportTestReports bool
+	exportTraces      bool
 
 	flags *flag.FlagSet
 }
@@ -45,7 +47,8 @@ func NewExportPipelineCmd(exportConfig *ExportConfig) *ffcli.Command {
 func (c *ExportPipelineConfig) RegisterFlags(fs *flag.FlagSet) {
 	c.exportConfig.RegisterFlags(fs)
 
-	fs.BoolVar(&c.exportTrace, "export-traces", true, "Export pipeline trace.")
+	fs.BoolVar(&c.exportSections, "export-sections", true, "Export job sections.")
+	fs.BoolVar(&c.exportTraces, "export-traces", true, "Export pipeline trace.")
 	fs.BoolVar(&c.exportTestReports, "export-testreports", true, "Export pipeline test reports.")
 }
 
@@ -74,14 +77,18 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 		return err
 	}
 
-	phr := <-ctl.GitLab.GetPipelineHierarchy(ctx, projectID, pipelineID)
+	opt := &gitlab.GetPipelineHierarchyOptions{
+		FetchSections: c.exportSections,
+	}
+
+	phr := <-ctl.GitLab.GetPipelineHierarchy(ctx, projectID, pipelineID, opt)
 	if err := phr.Error; err != nil {
 		return fmt.Errorf("error fetching pipeline hierarchy: %w", err)
 	}
 	ph := phr.PipelineHierarchy
 
 	pts := [][]*models.Span{}
-	if c.exportTrace {
+	if c.exportTraces {
 		pts = ph.GetAllTraces()
 	}
 
@@ -105,7 +112,7 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("error inserting pipeline hierarchy: %w", err)
 	}
 
-	if c.exportTrace {
+	if c.exportTraces {
 		if err = clickhouse.InsertTraces(ctx, pts, ctl.ClickHouse); err != nil {
 			return fmt.Errorf("error inserting pipeline trace: %w", err)
 		}

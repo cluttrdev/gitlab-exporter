@@ -45,12 +45,16 @@ func NewGitLabClient(cfg ClientConfig) (*Client, error) {
 	}, nil
 }
 
+type GetPipelineHierarchyOptions struct {
+	FetchSections bool
+}
+
 type GetPipelineHierarchyResult struct {
 	PipelineHierarchy *models.PipelineHierarchy
 	Error             error
 }
 
-func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipelineID int64) <-chan GetPipelineHierarchyResult {
+func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipelineID int64, opt *GetPipelineHierarchyOptions) <-chan GetPipelineHierarchyResult {
 	ch := make(chan GetPipelineHierarchyResult)
 
 	go func() {
@@ -75,15 +79,17 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 			}
 			jobs = append(jobs, jr.Job)
 
-			jobID := jr.Job.ID
-			for sr := range c.ListJobSections(ctx, projectID, jobID) {
-				if sr.Error != nil {
-					ch <- GetPipelineHierarchyResult{
-						Error: fmt.Errorf("[ListJobSections] %w", sr.Error),
+			if opt.FetchSections {
+				jobID := jr.Job.ID
+				for sr := range c.ListJobSections(ctx, projectID, jobID) {
+					if sr.Error != nil {
+						ch <- GetPipelineHierarchyResult{
+							Error: fmt.Errorf("[ListJobSections] %w", sr.Error),
+						}
+						return
 					}
-					return
+					sections = append(sections, sr.Section)
 				}
-				sections = append(sections, sr.Section)
 			}
 		}
 
@@ -103,7 +109,7 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 				continue
 			}
 
-			dpr := <-c.GetPipelineHierarchy(ctx, dp.ProjectID, dp.ID)
+			dpr := <-c.GetPipelineHierarchy(ctx, dp.ProjectID, dp.ID, opt)
 			if dpr.Error != nil {
 				ch <- GetPipelineHierarchyResult{
 					Error: fmt.Errorf("[GetPipelineHierarchy] %w", dpr.Error),

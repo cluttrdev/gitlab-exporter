@@ -52,6 +52,15 @@ func (c *Controller) configureClickHouseClient(cfg config.ClickHouse) (err error
 	return
 }
 
+func (c *Controller) projectConfig(pid int64) (*config.Project, error) {
+	for _, cfg := range c.Config.Projects {
+		if cfg.Id == pid {
+			return &cfg, nil
+		}
+	}
+	return nil, fmt.Errorf("Config not found for project id %d", pid)
+}
+
 func (c *Controller) Init(ctx context.Context) error {
 	if err := c.ClickHouse.CreateDatabase(ctx); err != nil {
 		return err
@@ -119,7 +128,17 @@ func (c *Controller) exportPipeline(ctx context.Context, projectID int64, pipeli
 	go func() {
 		defer close(errChan)
 
-		phr := <-c.GitLab.GetPipelineHierarchy(ctx, projectID, pipelineID)
+		cfg, err := c.projectConfig(projectID)
+		if err != nil {
+			errChan <- err
+			return
+		}
+
+		opt := &gitlab.GetPipelineHierarchyOptions{
+			FetchSections: cfg.Sections.Enabled,
+		}
+
+		phr := <-c.GitLab.GetPipelineHierarchy(ctx, projectID, pipelineID, opt)
 		if err := phr.Error; err != nil {
 			errChan <- fmt.Errorf("[controller.ExportPipeline/GetHierarchy] %w", err)
 			return
