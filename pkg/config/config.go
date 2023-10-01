@@ -32,7 +32,12 @@ type ClickHouse struct {
 }
 
 type Project struct {
-	Id          int64              `yaml:"id"`
+	ProjectSettings `yaml:",inline"`
+
+	Id int64 `yaml:"id"`
+}
+
+type ProjectSettings struct {
 	Sections    ProjectSections    `yaml:"sections"`
 	TestReports ProjectTestReports `yaml:"testreports"`
 	Traces      ProjectTraces      `yaml:"traces"`
@@ -40,15 +45,15 @@ type Project struct {
 }
 
 type ProjectSections struct {
-	Enabled bool `yaml:"enabled" default:"false"`
+	Enabled bool `yaml:"enabled" default:"true"`
 }
 
 type ProjectTestReports struct {
-	Enabled bool `yaml:"enabled" default:"false"`
+	Enabled bool `yaml:"enabled" default:"true"`
 }
 
 type ProjectTraces struct {
-	Enabled bool `yaml:"enabled" default:"false"`
+	Enabled bool `yaml:"enabled" default:"true"`
 }
 
 type ProjectCatchUp struct {
@@ -59,6 +64,14 @@ type ProjectCatchUp struct {
 
 func Default() *Config {
 	var cfg Config
+
+	defaults.MustSet(&cfg)
+
+	return &cfg
+}
+
+func DefaultProjectSettings() *ProjectSettings {
+	var cfg ProjectSettings
 
 	defaults.MustSet(&cfg)
 

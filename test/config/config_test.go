@@ -25,7 +25,7 @@ func defaultConfig() *config.Config {
 	return &cfg
 }
 
-func checkConfig(t *testing.T, want *config.Config, got *config.Config) {
+func checkConfig(t *testing.T, want interface{}, got interface{}) {
 	if diff := cmp.Diff(want, got); diff != "" {
 		t.Errorf("Config mismatch (-want +got):\n%s", diff)
 	}
@@ -35,6 +35,29 @@ func Test_NewDefault(t *testing.T) {
 	expected := defaultConfig()
 
 	cfg := config.Default()
+
+	checkConfig(t, expected, cfg)
+}
+
+func Test_NewDefaultProjectSettings(t *testing.T) {
+	expected := &config.ProjectSettings{
+		Sections: config.ProjectSections{
+			Enabled: true,
+		},
+		TestReports: config.ProjectTestReports{
+			Enabled: true,
+		},
+		Traces: config.ProjectTraces{
+			Enabled: true,
+		},
+		CatchUp: config.ProjectCatchUp{
+			Enabled:       false,
+			UpdatedAfter:  "",
+			UpdatedBefore: "",
+		},
+	}
+
+	cfg := config.DefaultProjectSettings()
 
 	checkConfig(t, expected, cfg)
 }
@@ -156,38 +179,42 @@ func TestLoad_DataWithProjects(t *testing.T) {
 	expected := defaultConfig()
 	expected.Projects = append(expected.Projects,
 		config.Project{
+			ProjectSettings: config.ProjectSettings{
+				Sections: config.ProjectSections{
+					Enabled: true,
+				},
+				TestReports: config.ProjectTestReports{
+					Enabled: false,
+				},
+				Traces: config.ProjectTraces{
+					Enabled: true,
+				},
+				CatchUp: config.ProjectCatchUp{
+					Enabled:       true,
+					UpdatedAfter:  "",
+					UpdatedBefore: "",
+				},
+			},
 			Id: 1337, // "foo/bar",
-			Sections: config.ProjectSections{
-				Enabled: true,
-			},
-			TestReports: config.ProjectTestReports{
-				Enabled: false,
-			},
-			Traces: config.ProjectTraces{
-				Enabled: true,
-			},
-			CatchUp: config.ProjectCatchUp{
-				Enabled:       true,
-				UpdatedAfter:  "",
-				UpdatedBefore: "",
-			},
 		},
 		config.Project{
+			ProjectSettings: config.ProjectSettings{
+				Sections: config.ProjectSections{
+					Enabled: false,
+				},
+				TestReports: config.ProjectTestReports{
+					Enabled: true,
+				},
+				Traces: config.ProjectTraces{
+					Enabled: false,
+				},
+				CatchUp: config.ProjectCatchUp{
+					Enabled:       true,
+					UpdatedAfter:  "2019-03-15T08:00:00Z",
+					UpdatedBefore: "",
+				},
+			},
 			Id: 42, // "42",
-			Sections: config.ProjectSections{
-				Enabled: false,
-			},
-			TestReports: config.ProjectTestReports{
-				Enabled: true,
-			},
-			Traces: config.ProjectTraces{
-				Enabled: false,
-			},
-			CatchUp: config.ProjectCatchUp{
-				Enabled:       true,
-				UpdatedAfter:  "2019-03-15T08:00:00Z",
-				UpdatedBefore: "",
-			},
 		},
 	)
 
