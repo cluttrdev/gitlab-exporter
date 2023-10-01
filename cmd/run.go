@@ -93,7 +93,8 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 
 		if !exists {
 			cfg.Projects = append(cfg.Projects, config.Project{
-				Id: pid,
+				ProjectSettings: *config.DefaultProjectSettings(),
+				Id:              pid,
 			})
 		}
 	}
