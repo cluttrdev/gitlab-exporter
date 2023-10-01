@@ -9,6 +9,41 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+// Config implements the Unmarshaler interface
+func (c *Config) UnmarshalYAML(v *yaml.Node) error {
+	type _Config struct {
+		GitLab     GitLab     `yaml:"gitlab"`
+		ClickHouse ClickHouse `yaml:"clickhouse"`
+
+		Projects []yaml.Node `yaml:"projects"`
+	}
+
+	var _cfg _Config
+	_cfg.GitLab = c.GitLab
+	_cfg.ClickHouse = c.ClickHouse
+
+	if err := v.Decode(&_cfg); err != nil {
+		return err
+	}
+
+	c.GitLab = _cfg.GitLab
+	c.ClickHouse = _cfg.ClickHouse
+
+	for _, n := range _cfg.Projects {
+		p := Project{
+			ProjectSettings: *DefaultProjectSettings(),
+		}
+
+		if err := n.Decode(&p); err != nil {
+			return nil
+		}
+
+		c.Projects = append(c.Projects, p)
+	}
+
+	return nil
+}
+
 func LoadFile(filename string, cfg *Config) error {
 	file, err := os.Open(filepath.Clean(filename))
 	if err != nil {
@@ -25,8 +60,7 @@ func LoadFile(filename string, cfg *Config) error {
 
 func Load(data []byte, cfg *Config) error {
 	if err := yaml.Unmarshal(data, cfg); err != nil {
-		return fmt.Errorf("error parsing configuration file: %w", err)
+		return fmt.Errorf("error parsing configuration: %w", err)
 	}
-
 	return nil
 }

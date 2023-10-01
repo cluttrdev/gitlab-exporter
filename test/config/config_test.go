@@ -14,6 +14,7 @@ func defaultConfig() *config.Config {
 	cfg.GitLab.Api.URL = "https://gitlab.com/api/v4"
 	cfg.GitLab.Api.Token = ""
 	cfg.GitLab.Client.Rate.Limit = 0.0
+
 	cfg.ClickHouse.Host = "localhost"
 	cfg.ClickHouse.Port = "9000"
 	cfg.ClickHouse.Database = "default"
@@ -21,6 +22,22 @@ func defaultConfig() *config.Config {
 	cfg.ClickHouse.Password = ""
 
 	cfg.Projects = []config.Project{}
+
+	return &cfg
+}
+
+func defaultProjectSettings() *config.ProjectSettings {
+	var cfg config.ProjectSettings
+
+	cfg.Sections.Enabled = true
+
+	cfg.TestReports.Enabled = true
+
+	cfg.Traces.Enabled = true
+
+	cfg.CatchUp.Enabled = false
+	cfg.CatchUp.UpdatedAfter = ""
+	cfg.CatchUp.UpdatedBefore = ""
 
 	return &cfg
 }
@@ -40,22 +57,7 @@ func Test_NewDefault(t *testing.T) {
 }
 
 func Test_NewDefaultProjectSettings(t *testing.T) {
-	expected := &config.ProjectSettings{
-		Sections: config.ProjectSections{
-			Enabled: true,
-		},
-		TestReports: config.ProjectTestReports{
-			Enabled: true,
-		},
-		Traces: config.ProjectTraces{
-			Enabled: true,
-		},
-		CatchUp: config.ProjectCatchUp{
-			Enabled:       false,
-			UpdatedAfter:  "",
-			UpdatedBefore: "",
-		},
-	}
+	expected := defaultProjectSettings()
 
 	cfg := config.DefaultProjectSettings()
 
@@ -155,6 +157,7 @@ func TestLoad_DataWithDefaults(t *testing.T) {
 func TestLoad_DataWithProjects(t *testing.T) {
 	data := []byte(`
     projects:
+      - id: 314
       - id: 1337  # foo/bar
         sections:
           enabled: true
@@ -178,6 +181,10 @@ func TestLoad_DataWithProjects(t *testing.T) {
 
 	expected := defaultConfig()
 	expected.Projects = append(expected.Projects,
+		config.Project{
+			ProjectSettings: *defaultProjectSettings(),
+			Id:              314,
+		},
 		config.Project{
 			ProjectSettings: config.ProjectSettings{
 				Sections: config.ProjectSections{
