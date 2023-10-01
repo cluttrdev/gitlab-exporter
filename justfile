@@ -88,6 +88,9 @@ release: _check-tag
     export RELEASE_ASSETS=${assets}
     ./.github/release.sh
 
+_unreleased:
+    @git log --oneline $(git describe --tags --abbrev=0)...HEAD
+
 clean:
     @echo "rm {{BIN_DIR}}/{{BIN_NAME}}"
     @rm {{BIN_DIR}}/{{BIN_NAME}} 2>/dev/null || true
