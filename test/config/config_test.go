@@ -29,11 +29,11 @@ func defaultConfig() *config.Config {
 func defaultProjectSettings() *config.ProjectSettings {
 	var cfg config.ProjectSettings
 
-	cfg.Sections.Enabled = true
+	cfg.Export.Sections.Enabled = true
 
-	cfg.TestReports.Enabled = true
+	cfg.Export.TestReports.Enabled = true
 
-	cfg.Traces.Enabled = true
+	cfg.Export.Traces.Enabled = true
 
 	cfg.CatchUp.Enabled = false
 	cfg.CatchUp.UpdatedAfter = ""
@@ -159,21 +159,23 @@ func TestLoad_DataWithProjects(t *testing.T) {
     projects:
       - id: 314
       - id: 1337  # foo/bar
-        sections:
-          enabled: true
-        testreports:
-          enabled: false
-        traces:
-          enabled: true
+        export:
+          sections:
+            enabled: true
+          testreports:
+            enabled: false
+          traces:
+            enabled: true
         catch_up:
           enabled: true
       - id: 42
-        sections:
-          enabled: false
-        testreports:
-          enabled: true
-        traces:
-          enabled: false
+        export:
+          sections:
+            enabled: false
+          testreports:
+            enabled: true
+          traces:
+            enabled: false
         catch_up:
           enabled: true
           updated_after: "2019-03-15T08:00:00Z"
@@ -187,14 +189,16 @@ func TestLoad_DataWithProjects(t *testing.T) {
 		},
 		config.Project{
 			ProjectSettings: config.ProjectSettings{
-				Sections: config.ProjectSections{
-					Enabled: true,
-				},
-				TestReports: config.ProjectTestReports{
-					Enabled: false,
-				},
-				Traces: config.ProjectTraces{
-					Enabled: true,
+				Export: config.ProjectExport{
+					Sections: config.ProjectExportSections{
+						Enabled: true,
+					},
+					TestReports: config.ProjectExportTestReports{
+						Enabled: false,
+					},
+					Traces: config.ProjectExportTraces{
+						Enabled: true,
+					},
 				},
 				CatchUp: config.ProjectCatchUp{
 					Enabled:       true,
@@ -206,14 +210,16 @@ func TestLoad_DataWithProjects(t *testing.T) {
 		},
 		config.Project{
 			ProjectSettings: config.ProjectSettings{
-				Sections: config.ProjectSections{
-					Enabled: false,
-				},
-				TestReports: config.ProjectTestReports{
-					Enabled: true,
-				},
-				Traces: config.ProjectTraces{
-					Enabled: false,
+				Export: config.ProjectExport{
+					Sections: config.ProjectExportSections{
+						Enabled: false,
+					},
+					TestReports: config.ProjectExportTestReports{
+						Enabled: true,
+					},
+					Traces: config.ProjectExportTraces{
+						Enabled: false,
+					},
 				},
 				CatchUp: config.ProjectCatchUp{
 					Enabled:       true,

@@ -23,19 +23,20 @@ projects:
   - # Name (with namespace) or id of the project (required).
     id: 50817395  # cluttrdev/gitlab-clickhouse-exporter
 
-    sections:
-      # Whether or not to export job section data.
-      # If enabled, this may significantly increase the export time since it
-      # requires fetching entire job logs to parse for section information.
-      enabled: true
-    
-    testreports:
-      # Whether or not to export pipeline testreports.
-      enabled: true
-    
-    traces:
-      # Whether or not to export pipeline hierarchies as traces.
-      enabled: true
+    export:
+      sections:
+        # Whether or not to export job section data.
+        # If enabled, this may significantly increase the export time since it
+        # requires fetching entire job logs to parse for section information.
+        enabled: true
+      
+      testreports:
+        # Whether or not to export pipeline testreports.
+        enabled: true
+      
+      traces:
+        # Whether or not to export pipeline hierarchies as traces.
+        enabled: true
     
     catch_up:
       # Whether to export data from past pipelines at startup.

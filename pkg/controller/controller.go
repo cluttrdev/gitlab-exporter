@@ -135,7 +135,7 @@ func (c *Controller) exportPipeline(ctx context.Context, projectID int64, pipeli
 		}
 
 		opt := &gitlab.GetPipelineHierarchyOptions{
-			FetchSections: pcfg.Sections.Enabled,
+			FetchSections: pcfg.Export.Sections.Enabled,
 		}
 
 		phr := <-c.GitLab.GetPipelineHierarchy(ctx, projectID, pipelineID, opt)
@@ -150,7 +150,7 @@ func (c *Controller) exportPipeline(ctx context.Context, projectID int64, pipeli
 			return
 		}
 
-		if pcfg.Traces.Enabled {
+		if pcfg.Export.Traces.Enabled {
 			pts := ph.GetAllTraces()
 			if err := clickhouse.InsertTraces(ctx, pts, c.ClickHouse); err != nil {
 				errChan <- fmt.Errorf("[controller.ExportPipeline/InsertTraces] %w", err)
@@ -158,7 +158,7 @@ func (c *Controller) exportPipeline(ctx context.Context, projectID int64, pipeli
 			}
 		}
 
-		if pcfg.TestReports.Enabled {
+		if pcfg.Export.TestReports.Enabled {
 			trs, err := c.GitLab.GetPipelineHierarchyTestReports(ctx, ph)
 			if err != nil {
 				errChan <- fmt.Errorf("[controller.ExportPipeline/GetTestRerports] %w", err)

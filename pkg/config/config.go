@@ -5,61 +5,65 @@ import (
 )
 
 type Config struct {
-	GitLab     GitLab     `yaml:"gitlab"`
-	ClickHouse ClickHouse `yaml:"clickhouse"`
-	Projects   []Project  `yaml:"projects" default:"[]"`
+	GitLab     GitLab     `default:"{}" yaml:"gitlab"`
+	ClickHouse ClickHouse `default:"{}" yaml:"clickhouse"`
+	Projects   []Project  `default:"[]" yaml:"projects"`
 }
 
 type GitLab struct {
 	Api struct {
-		URL   string `yaml:"url" default:"https://gitlab.com/api/v4"`
-		Token string `yaml:"token" default:""`
+		URL   string `default:"https://gitlab.com/api/v4" yaml:"url"`
+		Token string `default:"" yaml:"token"`
 	} `yaml:"api"`
 
 	Client struct {
 		Rate struct {
-			Limit float64 `yaml:"limit" default:"0.0"`
+			Limit float64 `default:"0.0" yaml:"limit"`
 		} `yaml:"rate"`
 	} `yaml:"client"`
 }
 
 type ClickHouse struct {
-	Host     string `yaml:"host" default:"localhost"`
-	Port     string `yaml:"port" default:"9000"`
-	Database string `yaml:"database" default:"default"`
-	User     string `yaml:"user" default:"default"`
-	Password string `yaml:"password" default:""`
+	Host     string `default:"localhost" yaml:"host"`
+	Port     string `default:"9000" yaml:"port"`
+	Database string `default:"default" yaml:"database"`
+	User     string `default:"default" yaml:"user"`
+	Password string `default:"" yaml:"password"`
 }
 
 type Project struct {
-	ProjectSettings `yaml:",inline"`
+	ProjectSettings `default:"{}" yaml:",inline"`
 
 	Id int64 `yaml:"id"`
 }
 
 type ProjectSettings struct {
-	Sections    ProjectSections    `yaml:"sections"`
-	TestReports ProjectTestReports `yaml:"testreports"`
-	Traces      ProjectTraces      `yaml:"traces"`
-	CatchUp     ProjectCatchUp     `yaml:"catch_up"`
+	Export  ProjectExport  `default:"{}" yaml:"export"`
+	CatchUp ProjectCatchUp `default:"{}" yaml:"catch_up"`
 }
 
-type ProjectSections struct {
-	Enabled bool `yaml:"enabled" default:"true"`
+type ProjectExport struct {
+	Sections    ProjectExportSections    `default:"{}" yaml:"sections"`
+	TestReports ProjectExportTestReports `default:"{}" yaml:"testreports"`
+	Traces      ProjectExportTraces      `default:"{}" yaml:"traces"`
 }
 
-type ProjectTestReports struct {
-	Enabled bool `yaml:"enabled" default:"true"`
+type ProjectExportSections struct {
+	Enabled bool `default:"true" yaml:"enabled"`
 }
 
-type ProjectTraces struct {
-	Enabled bool `yaml:"enabled" default:"true"`
+type ProjectExportTestReports struct {
+	Enabled bool `default:"true" yaml:"enabled"`
+}
+
+type ProjectExportTraces struct {
+	Enabled bool `default:"true" yaml:"enabled"`
 }
 
 type ProjectCatchUp struct {
-	Enabled       bool   `yaml:"enabled" default:"false"`
-	UpdatedAfter  string `yaml:"updated_after" default:""`
-	UpdatedBefore string `yaml:"updated_before" default:""`
+	Enabled       bool   `default:"false" yaml:"enabled"`
+	UpdatedAfter  string `default:"" yaml:"updated_after"`
+	UpdatedBefore string `default:"" yaml:"updated_before"`
 }
 
 func Default() *Config {
