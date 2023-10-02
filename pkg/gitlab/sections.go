@@ -31,7 +31,9 @@ func (c *Client) ListJobSections(ctx context.Context, projectID int64, jobID int
 	go func() {
 		defer close(ch)
 
+		c.RLock()
 		job, _, err := c.client.Jobs.GetJob(int(projectID), int(jobID), gitlab.WithContext(ctx))
+		c.RUnlock()
 		if err != nil {
 			ch <- ListJobSectionsResult{
 				Error: err,
@@ -39,7 +41,9 @@ func (c *Client) ListJobSections(ctx context.Context, projectID int64, jobID int
 			return
 		}
 
+		c.RLock()
 		trace, _, err := c.client.Jobs.GetTraceFile(int(projectID), int(jobID), gitlab.WithContext(ctx))
+		c.RUnlock()
 		if err != nil {
 			ch <- ListJobSectionsResult{
 				Error: err,

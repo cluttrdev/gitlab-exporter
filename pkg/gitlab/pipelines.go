@@ -59,7 +59,9 @@ func (c *Client) ListProjectPipelines(ctx context.Context, projectID int64, opt 
 		}
 
 		for {
+			c.RLock()
 			ps, resp, err := c.client.Pipelines.ListProjectPipelines(int(projectID), gitlabOpts, gogitlab.WithContext(ctx))
+			c.RUnlock()
 			if err != nil {
 				out <- ListProjectPipelinesResult{
 					Error: err,
@@ -102,7 +104,9 @@ func (c *Client) getPipeline(ctx context.Context, projectID int64, pipelineID in
 	go func() {
 		defer close(out)
 
+		c.RLock()
 		pipeline, _, err := c.client.Pipelines.GetPipeline(int(projectID), int(pipelineID), gogitlab.WithContext(ctx))
+		c.RUnlock()
 		if err != nil {
 			out <- fmt.Errorf("[gitlab.Client.GetPipeline] %w", err)
 			return

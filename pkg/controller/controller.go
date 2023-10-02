@@ -80,7 +80,7 @@ func (c *Controller) QueryLatestProjectPipelineUpdate(ctx context.Context) (map[
 	}
 
 	query := `SELECT project_id, max(updated_at) AS latest_update FROM gitlab_ci.pipelines GROUP BY project_id`
-	if err := c.ClickHouse.Conn.Select(ctx, &results, query); err != nil {
+	if err := c.ClickHouse.Select(ctx, &results, query); err != nil {
 		return nil, fmt.Errorf("[controller.QueryLatestProjectPipelineUpdate] %w", err)
 	}
 
@@ -103,7 +103,7 @@ func (c *Controller) QueryLatestProjectPipelineUpdates(ctx context.Context, proj
 	}
 
 	query := `SELECT id, max(updated_at) AS latest_update FROM gitlab_ci.pipelines GROUP BY id`
-	if err := c.ClickHouse.Conn.Select(ctx, &results, query); err != nil {
+	if err := c.ClickHouse.Select(ctx, &results, query); err != nil {
 		return nil, fmt.Errorf("[controller.QueryLatestProjectPipelineUpdates] %w", err)
 	}
 

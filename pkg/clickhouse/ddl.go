@@ -307,38 +307,38 @@ WHERE TraceId = {trace_id:String}
 )
 
 func createTables(ctx context.Context, client *Client) error {
-	if err := client.Conn.Exec(ctx, renderCreatePipelinesTableSQL()); err != nil {
+	if err := client.Exec(ctx, renderCreatePipelinesTableSQL()); err != nil {
 		return fmt.Errorf("exec create pipelines table: %w", err)
 	}
-	if err := client.Conn.Exec(ctx, renderCreateJobsTableSQL()); err != nil {
+	if err := client.Exec(ctx, renderCreateJobsTableSQL()); err != nil {
 		return fmt.Errorf("exec create jobs table: %w", err)
 	}
-	if err := client.Conn.Exec(ctx, renderCreateSectionsTableSQL()); err != nil {
+	if err := client.Exec(ctx, renderCreateSectionsTableSQL()); err != nil {
 		return fmt.Errorf("exec create sections table: %w", err)
 	}
-	if err := client.Conn.Exec(ctx, renderCreateBridgesTableSQL()); err != nil {
+	if err := client.Exec(ctx, renderCreateBridgesTableSQL()); err != nil {
 		return fmt.Errorf("exec create bridges table: %w", err)
 	}
-	if err := client.Conn.Exec(ctx, renderCreateTestReportsTableSQL()); err != nil {
+	if err := client.Exec(ctx, renderCreateTestReportsTableSQL()); err != nil {
 		return fmt.Errorf("exec create testreports table: %w", err)
 	}
-	if err := client.Conn.Exec(ctx, renderCreateTestSuitesTableSQL()); err != nil {
+	if err := client.Exec(ctx, renderCreateTestSuitesTableSQL()); err != nil {
 		return fmt.Errorf("exec create testsuites table: %w", err)
 	}
-	if err := client.Conn.Exec(ctx, renderCreateTestCasesTableSQL()); err != nil {
+	if err := client.Exec(ctx, renderCreateTestCasesTableSQL()); err != nil {
 		return fmt.Errorf("exec create testcases table: %w", err)
 	}
 
-	if err := client.Conn.Exec(ctx, renderCreateTracesTableSQL()); err != nil {
+	if err := client.Exec(ctx, renderCreateTracesTableSQL()); err != nil {
 		return fmt.Errorf("exec create traces table: %w", err)
 	}
-	if err := client.Conn.Exec(ctx, renderCreateTraceIdTsTableSQL()); err != nil {
+	if err := client.Exec(ctx, renderCreateTraceIdTsTableSQL()); err != nil {
 		return fmt.Errorf("exec create traceIdTs table: %w", err)
 	}
-	if err := client.Conn.Exec(ctx, renderCreateTraceIdTsMaterializedViewSQL()); err != nil {
+	if err := client.Exec(ctx, renderCreateTraceIdTsMaterializedViewSQL()); err != nil {
 		return fmt.Errorf("exec create traceIdTs view: %w", err)
 	}
-	if err := client.Conn.Exec(ctx, renderTraceViewSQL()); err != nil {
+	if err := client.Exec(ctx, renderTraceViewSQL()); err != nil {
 		return fmt.Errorf("exec create trace view: %w", err)
 	}
 

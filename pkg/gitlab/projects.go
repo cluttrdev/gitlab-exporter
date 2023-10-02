@@ -42,7 +42,9 @@ func (c *Client) GetProject(ctx context.Context, id string) <-chan GetProjectRes
 			Statistics: &[]bool{true}[0],
 		}
 
+		c.RLock()
 		p, _, err := c.client.Projects.GetProject(id, opts, gogitlab.WithContext(ctx))
+		c.RUnlock()
 		if err != nil {
 			ch <- GetProjectResult{
 				Error: err,

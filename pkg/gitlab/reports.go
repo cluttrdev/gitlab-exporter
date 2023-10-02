@@ -10,7 +10,9 @@ import (
 )
 
 func (c *Client) GetPipelineTestReport(ctx context.Context, projectID int64, pipelineID int64) (*models.PipelineTestReport, error) {
+	c.RLock()
 	report, _, err := c.client.Pipelines.GetPipelineTestReport(int(projectID), int(pipelineID), gogitlab.WithContext(ctx))
+	c.RUnlock()
 	if err != nil {
 		return nil, fmt.Errorf("[gitlab.Client.GetPipelineTestReport] %w", err)
 	}

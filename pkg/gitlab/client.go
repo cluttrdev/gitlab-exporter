@@ -3,6 +3,7 @@ package gitlabclient
 import (
 	"context"
 	"fmt"
+	"sync"
 
 	"golang.org/x/time/rate"
 
@@ -12,6 +13,7 @@ import (
 )
 
 type Client struct {
+	sync.RWMutex
 	client *gogitlab.Client
 }
 
@@ -23,6 +25,16 @@ type ClientConfig struct {
 }
 
 func NewGitLabClient(cfg ClientConfig) (*Client, error) {
+	var client Client
+
+	if err := client.configure(cfg); err != nil {
+		return nil, err
+	}
+
+	return &client, nil
+}
+
+func (c *Client) configure(cfg ClientConfig) error {
 	opts := []gogitlab.ClientOptionFunc{
 		gogitlab.WithBaseURL(cfg.URL),
 	}
@@ -37,12 +49,13 @@ func NewGitLabClient(cfg ClientConfig) (*Client, error) {
 
 	client, err := gogitlab.NewOAuthClient(cfg.Token, opts...)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	return &Client{
-		client: client,
-	}, nil
+	c.Lock()
+	c.client = client
+	c.Unlock()
+	return nil
 }
 
 type GetPipelineHierarchyOptions struct {

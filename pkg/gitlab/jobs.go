@@ -40,7 +40,9 @@ func (c *Client) ListPipelineJobs(ctx context.Context, projectID int64, pipeline
 		}
 
 		for {
+			c.RLock()
 			jobs, res, err := c.client.Jobs.ListPipelineJobs(int(projectID), int(pipelineID), opts, gitlab.WithContext(ctx))
+			c.RUnlock()
 			if err != nil {
 				ch <- ListPipelineJobsResult{
 					Error: err,
@@ -95,7 +97,9 @@ func (c *Client) ListPipelineBridges(ctx context.Context, projectID int64, pipel
 		}
 
 		for {
+			c.RLock()
 			bridges, res, err := c.client.Jobs.ListPipelineBridges(int(projectID), int(pipelineID), opts, gitlab.WithContext(ctx))
+			c.RUnlock()
 			if err != nil {
 				ch <- ListPipelineBridgesResult{
 					Error: err,
