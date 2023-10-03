@@ -7,9 +7,10 @@ import (
 	"sync"
 	"time"
 
+	clickhouse "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
 	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/tasks"
 )
 
 type catchUpProjectWorker struct {
@@ -22,8 +23,22 @@ type catchUpProjectWorker struct {
 	// ensure the worker can only be stopped once
 	stop sync.Once
 
-	ctl *controller.Controller
-	cfg *config.Project
+	project    *config.Project
+	gitlab     *gitlab.Client
+	clickhouse *clickhouse.Client
+}
+
+func NewCatchUpProjectWorker(cfg *config.Project, gl *gitlab.Client, ch *clickhouse.Client) Worker {
+	ctx, cancel := context.WithCancel(context.Background())
+	return &catchUpProjectWorker{
+		ctx:    ctx,
+		cancel: cancel,
+		done:   make(chan struct{}),
+
+		project:    cfg,
+		gitlab:     gl,
+		clickhouse: ch,
+	}
 }
 
 func (w *catchUpProjectWorker) Start() {
@@ -54,16 +69,16 @@ func (w *catchUpProjectWorker) run() {
 
 		Scope: &[]string{"finished"}[0],
 	}
-	if w.cfg.CatchUp.UpdatedAfter != "" {
-		after, err := time.Parse("2006-01-02T15:04:05Z", w.cfg.CatchUp.UpdatedAfter)
+	if w.project.CatchUp.UpdatedAfter != "" {
+		after, err := time.Parse("2006-01-02T15:04:05Z", w.project.CatchUp.UpdatedAfter)
 		if err != nil {
 			log.Println(err)
 		} else {
 			opt.UpdatedAfter = &after
 		}
 	}
-	if w.cfg.CatchUp.UpdatedBefore != "" {
-		before, err := time.Parse("2006-01-02T15:04:05Z", w.cfg.CatchUp.UpdatedBefore)
+	if w.project.CatchUp.UpdatedBefore != "" {
+		before, err := time.Parse("2006-01-02T15:04:05Z", w.project.CatchUp.UpdatedBefore)
 		if err != nil {
 			log.Println(err)
 		} else {
@@ -84,7 +99,7 @@ func (w *catchUpProjectWorker) produce(opt *gitlab.ListProjectPipelineOptions) <
 	go func() {
 		defer close(ch)
 
-		latestUpdates, err := w.ctl.QueryLatestProjectPipelineUpdates(w.ctx, w.cfg.Id)
+		latestUpdates, err := w.clickhouse.QueryProjectPipelinesLatestUpdate(w.ctx, w.project.Id)
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
 				return
@@ -92,7 +107,7 @@ func (w *catchUpProjectWorker) produce(opt *gitlab.ListProjectPipelineOptions) <
 			log.Println(err)
 		}
 
-		resChan := w.ctl.GitLab.ListProjectPipelines(w.ctx, w.cfg.Id, opt)
+		resChan := w.gitlab.ListProjectPipelines(w.ctx, w.project.Id, opt)
 		for {
 			select {
 			case <-w.ctx.Done():
@@ -125,26 +140,23 @@ func (w *catchUpProjectWorker) process(pipelineChan <-chan int64) {
 			defer wg.Done()
 
 			for pipelineID := range pipelineChan {
-				if err := w.ctl.ExportPipeline(w.ctx, w.cfg.Id, pipelineID); err != nil {
+				opts := &tasks.ExportPipelineHierarchyOptions{
+					ProjectID:  w.project.Id,
+					PipelineID: pipelineID,
+
+					ExportSections:    w.project.Export.Sections.Enabled,
+					ExportTestReports: w.project.Export.TestReports.Enabled,
+					ExportTraces:      w.project.Export.Traces.Enabled,
+				}
+
+				if err := tasks.ExportPipelineHierarchy(w.ctx, opts, w.gitlab, w.clickhouse); err != nil {
 					if !errors.Is(err, context.Canceled) {
-						log.Printf("error exporting pipeline: %s\n", err)
+						log.Printf("error exporting pipeline hierarchy: %s\n", err)
 					}
 				}
-				log.Printf("Caught up on projects/%d/pipelines/%d\n", w.cfg.Id, pipelineID)
+				log.Printf("Caught up on projects/%d/pipelines/%d\n", opts.ProjectID, opts.PipelineID)
 			}
 		}()
 	}
 	wg.Wait()
-}
-
-func NewCatchUpProjectWorker(ctl *controller.Controller, cfg *config.Project) Worker {
-	ctx, cancel := context.WithCancel(context.Background())
-	return &catchUpProjectWorker{
-		ctx:    ctx,
-		cancel: cancel,
-		done:   make(chan struct{}),
-
-		ctl: ctl,
-		cfg: cfg,
-	}
 }

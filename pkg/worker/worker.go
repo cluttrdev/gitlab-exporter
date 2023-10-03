@@ -2,8 +2,6 @@ package worker
 
 import (
 	"context"
-
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
 )
 
 type Worker interface {
@@ -18,8 +16,6 @@ type worker struct {
 	done   chan struct{}
 
 	run func(*worker)
-
-	ctl *controller.Controller
 }
 
 func (w *worker) Start() {
@@ -36,10 +32,9 @@ func (w *worker) Done() <-chan struct{} {
 	return w.done
 }
 
-func newWorker(ctl *controller.Controller, run func(*worker)) Worker {
+func newWorker(run func(*worker)) Worker {
 	return &worker{
 		done: make(chan struct{}),
 		run:  run,
-		ctl:  ctl,
 	}
 }

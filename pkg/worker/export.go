@@ -6,9 +6,10 @@ import (
 	"sync"
 	"time"
 
+	clickhouse "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
 	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/tasks"
 )
 
 type exportProjectWorker struct {
@@ -21,8 +22,22 @@ type exportProjectWorker struct {
 	// ensure the worker can only be stopped once
 	stop sync.Once
 
-	ctl *controller.Controller
-	cfg *config.Project
+	project    *config.Project
+	gitlab     *gitlab.Client
+	clickhouse *clickhouse.Client
+}
+
+func NewExportProjectWorker(cfg *config.Project, gl *gitlab.Client, ch *clickhouse.Client) Worker {
+	ctx, cancel := context.WithCancel(context.Background())
+	return &exportProjectWorker{
+		ctx:    ctx,
+		cancel: cancel,
+		done:   make(chan struct{}),
+
+		project:    cfg,
+		gitlab:     gl,
+		clickhouse: ch,
+	}
 }
 
 func (w *exportProjectWorker) Start() {
@@ -46,10 +61,6 @@ func (w *exportProjectWorker) Done() <-chan struct{} {
 
 func (w *exportProjectWorker) run() {
 	interval := 60 * time.Second
-
-	ctx := w.ctx
-	ctl := w.ctl
-	cfg := w.cfg
 
 	opt := &gitlab.ListProjectPipelineOptions{
 		PerPage: 100,
@@ -79,7 +90,7 @@ func (w *exportProjectWorker) run() {
 			opt.UpdatedBefore = &now
 
 			var wg sync.WaitGroup
-			for r := range ctl.GitLab.ListProjectPipelines(ctx, cfg.Id, opt) {
+			for r := range w.gitlab.ListProjectPipelines(w.ctx, w.project.Id, opt) {
 				if r.Error != nil {
 					log.Println(r.Error)
 					continue
@@ -89,25 +100,22 @@ func (w *exportProjectWorker) run() {
 				go func(pid int64) {
 					defer wg.Done()
 
-					if err := ctl.ExportPipeline(ctx, cfg.Id, pid); err != nil {
-						log.Printf("error exporting pipeline: %s\n", err)
+					opts := tasks.ExportPipelineHierarchyOptions{
+						ProjectID:  w.project.Id,
+						PipelineID: pid,
+
+						ExportSections:    w.project.Export.Sections.Enabled,
+						ExportTestReports: w.project.Export.TestReports.Enabled,
+						ExportTraces:      w.project.Export.Traces.Enabled,
 					}
-					log.Printf("Exported projects/%d/pipelines/%d\n", cfg.Id, pid)
+
+					if err := tasks.ExportPipelineHierarchy(w.ctx, &opts, w.gitlab, w.clickhouse); err != nil {
+						log.Printf("error exporting pipeline hierarchy: %s\n", err)
+					}
+					log.Printf("Exported projects/%d/pipelines/%d\n", opts.ProjectID, opts.PipelineID)
 				}(r.Pipeline.ID)
 			}
 			wg.Wait()
 		}
-	}
-}
-
-func NewExportProjectWorker(ctl *controller.Controller, cfg *config.Project) Worker {
-	ctx, cancel := context.WithCancel(context.Background())
-	return &exportProjectWorker{
-		ctx:    ctx,
-		cancel: cancel,
-		done:   make(chan struct{}),
-
-		ctl: ctl,
-		cfg: cfg,
 	}
 }

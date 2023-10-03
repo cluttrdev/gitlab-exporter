@@ -6,10 +6,9 @@ import (
 	"fmt"
 	"strconv"
 
-	clickhouse "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
-	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
 	"github.com/peterbourgon/ff/v3/ffcli"
+
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/tasks"
 )
 
 type ExportPipelineConfig struct {
@@ -77,58 +76,14 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 		return err
 	}
 
-	opt := &gitlab.GetPipelineHierarchyOptions{
-		FetchSections: c.exportSections,
+	opts := &tasks.ExportPipelineHierarchyOptions{
+		ProjectID:  projectID,
+		PipelineID: pipelineID,
+
+		ExportSections:    c.exportSections,
+		ExportTestReports: c.exportTestReports,
+		ExportTraces:      c.exportTraces,
 	}
 
-	phr := <-ctl.GitLab.GetPipelineHierarchy(ctx, projectID, pipelineID, opt)
-	if err := phr.Error; err != nil {
-		return fmt.Errorf("error fetching pipeline hierarchy: %w", err)
-	}
-	ph := phr.PipelineHierarchy
-
-	pts := [][]*models.Span{}
-	if c.exportTraces {
-		pts = ph.GetAllTraces()
-	}
-
-	trs := []*models.PipelineTestReport{}
-	if c.exportTestReports {
-		trs, err = ctl.GitLab.GetPipelineHierarchyTestReports(ctx, ph)
-		if err != nil {
-			return fmt.Errorf("error fetching pipeline hierarchy test reports: %w", err)
-		}
-	}
-	tss := []*models.PipelineTestSuite{}
-	tcs := []*models.PipelineTestCase{}
-	for _, tr := range trs {
-		tss = append(tss, tr.TestSuites...)
-		for _, ts := range tr.TestSuites {
-			tcs = append(tcs, ts.TestCases...)
-		}
-	}
-
-	if err = clickhouse.InsertPipelineHierarchy(ctx, ph, ctl.ClickHouse); err != nil {
-		return fmt.Errorf("error inserting pipeline hierarchy: %w", err)
-	}
-
-	if c.exportTraces {
-		if err = clickhouse.InsertTraces(ctx, pts, ctl.ClickHouse); err != nil {
-			return fmt.Errorf("error inserting pipeline trace: %w", err)
-		}
-	}
-
-	if c.exportTestReports {
-		if err = clickhouse.InsertTestReports(ctx, trs, ctl.ClickHouse); err != nil {
-			return fmt.Errorf("error inserting testreports: %w", err)
-		}
-		if err = clickhouse.InsertTestSuites(ctx, tss, ctl.ClickHouse); err != nil {
-			return fmt.Errorf("error inserting testsuites: %w", err)
-		}
-		if err = clickhouse.InsertTestCases(ctx, tcs, ctl.ClickHouse); err != nil {
-			return fmt.Errorf("error inserting testcases: %w", err)
-		}
-	}
-
-	return nil
+	return tasks.ExportPipelineHierarchy(ctx, opts, ctl.GitLab, ctl.ClickHouse)
 }

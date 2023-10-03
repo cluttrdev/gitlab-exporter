@@ -16,7 +16,6 @@ import (
 	"golang.org/x/exp/slices"
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/worker"
 )
 
 type RunConfig struct {
@@ -85,7 +84,7 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 		return err
 	}
 
-	// add projects pass to run command
+	// add projects passed to run command
 	for _, pid := range c.projects {
 		exists := slices.ContainsFunc(cfg.Projects, func(p config.Project) bool {
 			return p.Id == pid
@@ -134,15 +133,6 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 	writeConfig(cfg, c.out)
 
 	// run daemon
-
-	workers := []worker.Worker{}
-
-	for _, pc := range cfg.Projects {
-		if pc.CatchUp.Enabled {
-			workers = append(workers, worker.NewCatchUpProjectWorker(ctl, &pc))
-		}
-		workers = append(workers, worker.NewExportProjectWorker(ctl, &pc))
-	}
 
 	log.Println("Starting workers...")
 	for _, w := range workers {
