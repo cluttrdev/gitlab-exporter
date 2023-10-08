@@ -27,14 +27,14 @@ type ClientConfig struct {
 func NewGitLabClient(cfg ClientConfig) (*Client, error) {
 	var client Client
 
-	if err := client.configure(cfg); err != nil {
+	if err := client.Configure(cfg); err != nil {
 		return nil, err
 	}
 
 	return &client, nil
 }
 
-func (c *Client) configure(cfg ClientConfig) error {
+func (c *Client) Configure(cfg ClientConfig) error {
 	opts := []gogitlab.ClientOptionFunc{
 		gogitlab.WithBaseURL(cfg.URL),
 	}

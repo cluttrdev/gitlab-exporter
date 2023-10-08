@@ -14,7 +14,6 @@ import (
 )
 
 type catchUpProjectWorker struct {
-	ctx    context.Context
 	cancel context.CancelFunc
 	done   chan struct{}
 
@@ -23,17 +22,14 @@ type catchUpProjectWorker struct {
 	// ensure the worker can only be stopped once
 	stop sync.Once
 
-	project    *config.Project
+	project    config.Project
 	gitlab     *gitlab.Client
 	clickhouse *clickhouse.Client
 }
 
-func NewCatchUpProjectWorker(cfg *config.Project, gl *gitlab.Client, ch *clickhouse.Client) Worker {
-	ctx, cancel := context.WithCancel(context.Background())
+func NewCatchUpProjectWorker(cfg config.Project, gl *gitlab.Client, ch *clickhouse.Client) Worker {
 	return &catchUpProjectWorker{
-		ctx:    ctx,
-		cancel: cancel,
-		done:   make(chan struct{}),
+		done: make(chan struct{}),
 
 		project:    cfg,
 		gitlab:     gl,
@@ -41,10 +37,11 @@ func NewCatchUpProjectWorker(cfg *config.Project, gl *gitlab.Client, ch *clickho
 	}
 }
 
-func (w *catchUpProjectWorker) Start() {
+func (w *catchUpProjectWorker) Start(ctx context.Context) {
+	ctx, w.cancel = context.WithCancel(ctx)
 	go func() {
 		w.start.Do(func() {
-			w.run()
+			w.run(ctx)
 		})
 	}()
 }
@@ -60,10 +57,10 @@ func (w *catchUpProjectWorker) Done() <-chan struct{} {
 	return w.done
 }
 
-func (w *catchUpProjectWorker) run() {
+func (w *catchUpProjectWorker) run(ctx context.Context) {
 	retries := 3
 
-	opt := &gitlab.ListProjectPipelineOptions{
+	opt := gitlab.ListProjectPipelineOptions{
 		PerPage: 100,
 		Page:    1,
 
@@ -87,19 +84,19 @@ func (w *catchUpProjectWorker) run() {
 	}
 
 	for i := 0; i < retries; i++ {
-		ch := w.produce(opt)
+		ch := w.produce(ctx, opt)
 
-		w.process(ch)
+		w.process(ctx, ch)
 	}
 }
 
-func (w *catchUpProjectWorker) produce(opt *gitlab.ListProjectPipelineOptions) <-chan int64 {
+func (w *catchUpProjectWorker) produce(ctx context.Context, opt gitlab.ListProjectPipelineOptions) <-chan int64 {
 	ch := make(chan int64)
 
 	go func() {
 		defer close(ch)
 
-		latestUpdates, err := w.clickhouse.QueryProjectPipelinesLatestUpdate(w.ctx, w.project.Id)
+		latestUpdates, err := w.clickhouse.QueryProjectPipelinesLatestUpdate(ctx, w.project.Id)
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
 				return
@@ -107,10 +104,10 @@ func (w *catchUpProjectWorker) produce(opt *gitlab.ListProjectPipelineOptions) <
 			log.Println(err)
 		}
 
-		resChan := w.gitlab.ListProjectPipelines(w.ctx, w.project.Id, opt)
+		resChan := w.gitlab.ListProjectPipelines(ctx, w.project.Id, opt)
 		for {
 			select {
-			case <-w.ctx.Done():
+			case <-ctx.Done():
 				return
 			case r := <-resChan:
 				if r.Error != nil && !errors.Is(r.Error, context.Canceled) {
@@ -131,7 +128,7 @@ func (w *catchUpProjectWorker) produce(opt *gitlab.ListProjectPipelineOptions) <
 	return ch
 }
 
-func (w *catchUpProjectWorker) process(pipelineChan <-chan int64) {
+func (w *catchUpProjectWorker) process(ctx context.Context, pipelineChan <-chan int64) {
 	numWorkers := 10
 	var wg sync.WaitGroup
 	for i := 0; i < numWorkers; i++ {
@@ -140,7 +137,7 @@ func (w *catchUpProjectWorker) process(pipelineChan <-chan int64) {
 			defer wg.Done()
 
 			for pipelineID := range pipelineChan {
-				opts := &tasks.ExportPipelineHierarchyOptions{
+				opts := tasks.ExportPipelineHierarchyOptions{
 					ProjectID:  w.project.Id,
 					PipelineID: pipelineID,
 
@@ -149,12 +146,13 @@ func (w *catchUpProjectWorker) process(pipelineChan <-chan int64) {
 					ExportTraces:      w.project.Export.Traces.Enabled,
 				}
 
-				if err := tasks.ExportPipelineHierarchy(w.ctx, opts, w.gitlab, w.clickhouse); err != nil {
+				if err := tasks.ExportPipelineHierarchy(ctx, opts, w.gitlab, w.clickhouse); err != nil {
 					if !errors.Is(err, context.Canceled) {
 						log.Printf("error exporting pipeline hierarchy: %s\n", err)
 					}
+				} else {
+					log.Printf("Caught up on projects/%d/pipelines/%d\n", opts.ProjectID, opts.PipelineID)
 				}
-				log.Printf("Caught up on projects/%d/pipelines/%d\n", opts.ProjectID, opts.PipelineID)
 			}
 		}()
 	}

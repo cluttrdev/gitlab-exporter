@@ -18,11 +18,11 @@ type ExportPipelineHierarchyOptions struct {
 	ExportTraces      bool
 }
 
-func ExportPipelineHierarchy(ctx context.Context, opts *ExportPipelineHierarchyOptions, gl *gitlab.Client, ch *clickhouse.Client) error {
+func ExportPipelineHierarchy(ctx context.Context, opts ExportPipelineHierarchyOptions, gl *gitlab.Client, ch *clickhouse.Client) error {
 	return <-exportPipelineHierarchy(ctx, opts, gl, ch)
 }
 
-func exportPipelineHierarchy(ctx context.Context, opts *ExportPipelineHierarchyOptions, gl *gitlab.Client, ch *clickhouse.Client) <-chan error {
+func exportPipelineHierarchy(ctx context.Context, opts ExportPipelineHierarchyOptions, gl *gitlab.Client, ch *clickhouse.Client) <-chan error {
 	out := make(chan error)
 
 	go func() {

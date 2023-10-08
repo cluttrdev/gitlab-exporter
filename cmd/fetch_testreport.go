@@ -9,6 +9,9 @@ import (
 	"strconv"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
+
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
 )
 
 type FetchTestReportConfig struct {
@@ -46,18 +49,6 @@ func (c *FetchTestReportConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("invalid number of positional arguments: %v", args)
 	}
 
-	log.SetOutput(c.fetchConfig.out)
-
-	cfg, err := newConfig(c.fetchConfig.rootConfig.filename, c.flags)
-	if err != nil {
-		return err
-	}
-
-	ctl, err := newController(cfg)
-	if err != nil {
-		return err
-	}
-
 	projectID, err := strconv.ParseInt(args[0], 10, 64)
 	if err != nil {
 		return fmt.Errorf("error parsing `project_id` argument: %w", err)
@@ -66,6 +57,18 @@ func (c *FetchTestReportConfig) Exec(ctx context.Context, args []string) error {
 	pipelineID, err := strconv.ParseInt(args[1], 10, 64)
 	if err != nil {
 		return fmt.Errorf("error parsing `pipeline_id` argument: %w", err)
+	}
+
+	log.SetOutput(c.fetchConfig.out)
+
+	cfg := config.Default()
+	if err := loadConfig(c.fetchConfig.rootConfig.filename, c.flags, &cfg); err != nil {
+		return fmt.Errorf("error loading configuration: %w", err)
+	}
+
+	ctl, err := controller.NewController(cfg)
+	if err != nil {
+		return fmt.Errorf("error constructing controller: %w", err)
 	}
 
 	tr, err := ctl.GitLab.GetPipelineTestReport(ctx, projectID, pipelineID)

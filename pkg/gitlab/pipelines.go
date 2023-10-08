@@ -33,7 +33,7 @@ type ListProjectPipelinesResult struct {
 	Error    error
 }
 
-func (c *Client) ListProjectPipelines(ctx context.Context, projectID int64, opt *ListProjectPipelineOptions) <-chan ListProjectPipelinesResult {
+func (c *Client) ListProjectPipelines(ctx context.Context, projectID int64, opt ListProjectPipelineOptions) <-chan ListProjectPipelinesResult {
 	out := make(chan ListProjectPipelinesResult)
 
 	go func() {

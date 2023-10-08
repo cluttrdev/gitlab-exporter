@@ -34,7 +34,7 @@ func main() {
 	}
 
 	if len(os.Args[1:]) == 0 {
-		fmt.Fprintf(out, rootCmd.UsageFunc(rootCmd))
+		fmt.Fprintln(out, rootCmd.UsageFunc(rootCmd))
 		os.Exit(0)
 	}
 

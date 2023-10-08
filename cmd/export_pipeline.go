@@ -8,6 +8,8 @@ import (
 
 	"github.com/peterbourgon/ff/v3/ffcli"
 
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/tasks"
 )
 
@@ -66,17 +68,17 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("error parsing `pipeline_id` argument: %w", err)
 	}
 
-	cfg, err := newConfig(c.exportConfig.rootConfig.filename, c.flags)
-	if err != nil {
-		return err
+	cfg := config.Default()
+	if err := loadConfig(c.exportConfig.rootConfig.filename, c.flags, &cfg); err != nil {
+		return fmt.Errorf("error loading configuration: %w", err)
 	}
 
-	ctl, err := newController(cfg)
+	ctl, err := controller.NewController(cfg)
 	if err != nil {
-		return err
+		return fmt.Errorf("error constructing controller: %w", err)
 	}
 
-	opts := &tasks.ExportPipelineHierarchyOptions{
+	opts := tasks.ExportPipelineHierarchyOptions{
 		ProjectID:  projectID,
 		PipelineID: pipelineID,
 
@@ -85,5 +87,5 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 		ExportTraces:      c.exportTraces,
 	}
 
-	return tasks.ExportPipelineHierarchy(ctx, opts, ctl.GitLab, ctl.ClickHouse)
+	return tasks.ExportPipelineHierarchy(ctx, opts, &ctl.GitLab, &ctl.ClickHouse)
 }

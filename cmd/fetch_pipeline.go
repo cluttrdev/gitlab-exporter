@@ -10,6 +10,8 @@ import (
 
 	"github.com/peterbourgon/ff/v3/ffcli"
 
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
 	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
 )
 
@@ -58,14 +60,14 @@ func (c *FetchPipelineConfig) Exec(ctx context.Context, args []string) error {
 
 	log.SetOutput(c.fetchConfig.out)
 
-	cfg, err := newConfig(c.fetchConfig.rootConfig.filename, c.flags)
-	if err != nil {
-		return err
+	cfg := config.Default()
+	if err := loadConfig(c.fetchConfig.rootConfig.filename, c.flags, &cfg); err != nil {
+		return fmt.Errorf("error loading configuration: %w", err)
 	}
 
-	ctl, err := newController(cfg)
+	ctl, err := controller.NewController(cfg)
 	if err != nil {
-		return err
+		return fmt.Errorf("error constructing controller: %w", err)
 	}
 
 	projectID, err := strconv.ParseInt(args[0], 10, 64)

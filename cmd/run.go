@@ -16,6 +16,7 @@ import (
 	"golang.org/x/exp/slices"
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
 )
 
 type RunConfig struct {
@@ -77,11 +78,11 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 	// configure logging
 	log.SetOutput(c.out)
 
-	// create config from root flags
+	// load configuration
 	log.Printf("Loading configuration from %s\n", c.rootConfig.filename)
-	cfg, err := newConfig(c.rootConfig.filename, c.flags)
-	if err != nil {
-		return err
+	cfg := config.Default()
+	if err := loadConfig(c.rootConfig.filename, c.flags, &cfg); err != nil {
+		return fmt.Errorf("error loading configuration: %w", err)
 	}
 
 	// add projects passed to run command
@@ -92,20 +93,19 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 
 		if !exists {
 			cfg.Projects = append(cfg.Projects, config.Project{
-				ProjectSettings: *config.DefaultProjectSettings(),
+				ProjectSettings: config.DefaultProjectSettings(),
 				Id:              pid,
 			})
 		}
 	}
 
-	// setup controller
-	ctl, err := newController(cfg)
-	if err != nil {
-		return err
-	}
+	// log configuration
+	writeConfig(cfg, c.out)
 
-	if err := ctl.Init(ctx); err != nil {
-		return err
+	// setup controller
+	ctl, err := controller.NewController(cfg)
+	if err != nil {
+		return fmt.Errorf("error constructing controller: %w", err)
 	}
 
 	// setup daemon
@@ -129,22 +129,6 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 		}
 	}()
 
-	// log configuration
-	writeConfig(cfg, c.out)
-
 	// run daemon
-
-	log.Println("Starting workers...")
-	for _, w := range workers {
-		go w.Start()
-	}
-
-	<-ctx.Done()
-
-	log.Println("Stopping workers...")
-	for _, w := range workers {
-		w.Stop()
-	}
-
-	return nil
+	return ctl.Run(ctx)
 }

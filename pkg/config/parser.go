@@ -31,7 +31,7 @@ func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 
 	for _, n := range _cfg.Projects {
 		p := Project{
-			ProjectSettings: *DefaultProjectSettings(),
+			ProjectSettings: DefaultProjectSettings(),
 		}
 
 		if err := n.Decode(&p); err != nil {

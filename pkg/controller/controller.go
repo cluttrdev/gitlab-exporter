@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"fmt"
+	"log"
 
 	clickhouse "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
@@ -11,61 +12,104 @@ import (
 )
 
 type Controller struct {
-	Config     config.Config
-	GitLab     *gitlab.Client
-	ClickHouse *clickhouse.Client
+	config     config.Config
+	GitLab     gitlab.Client
+	ClickHouse clickhouse.Client
 
 	workers []worker.Worker
 }
 
-func NewController(cfg config.Config) (c Controller, err error) {
-	c.Config = cfg
-
-	if err = c.configureGitLabClient(cfg.GitLab); err != nil {
-		return
+func NewController(cfg config.Config) (*Controller, error) {
+	c := &Controller{
+		config: cfg,
 	}
 
-	if err = c.configureClickHouseClient(cfg.ClickHouse); err != nil {
-		return
+	if err := c.configure(cfg); err != nil {
+		return nil, err
 	}
 
 	return c, nil
 }
 
-func (c *Controller) configureGitLabClient(cfg config.GitLab) (err error) {
-	c.GitLab, err = gitlab.NewGitLabClient(gitlab.ClientConfig{
+func (c *Controller) configure(cfg config.Config) error {
+	if err := c.configureGitLabClient(cfg.GitLab); err != nil {
+		return err
+	}
+
+	if err := c.configureClickHouseClient(cfg.ClickHouse); err != nil {
+		return err
+	}
+
+	if err := c.configureWorkers(cfg); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Controller) configureGitLabClient(cfg config.GitLab) error {
+	return c.GitLab.Configure(gitlab.ClientConfig{
 		URL:   cfg.Api.URL,
 		Token: cfg.Api.Token,
 
 		RateLimit: cfg.Client.Rate.Limit,
 	})
-	return
 }
 
-func (c *Controller) configureClickHouseClient(cfg config.ClickHouse) (err error) {
-	c.ClickHouse, err = clickhouse.NewClickHouseClient(clickhouse.ClientConfig{
+func (c *Controller) configureClickHouseClient(cfg config.ClickHouse) error {
+	return c.ClickHouse.Configure(clickhouse.ClientConfig{
 		Host:     cfg.Host,
 		Port:     cfg.Port,
 		Database: cfg.Database,
 		User:     cfg.User,
 		Password: cfg.Password,
 	})
-	return
 }
 
-func (c *Controller) projectConfig(pid int64) (*config.Project, error) {
-	for _, cfg := range c.Config.Projects {
-		if cfg.Id == pid {
-			return &cfg, nil
+func (c *Controller) configureWorkers(cfg config.Config) error {
+	workers := []worker.Worker{}
+
+	for _, prj := range cfg.Projects {
+		if prj.CatchUp.Enabled {
+			workers = append(workers, worker.NewCatchUpProjectWorker(prj, &c.GitLab, &c.ClickHouse))
 		}
+		workers = append(workers, worker.NewExportProjectWorker(prj, &c.GitLab, &c.ClickHouse))
 	}
-	return nil, fmt.Errorf("Config not found for project id %d", pid)
+
+	c.workers = workers
+
+	return nil
 }
 
-func (c *Controller) Init(ctx context.Context) error {
+func (c *Controller) init(ctx context.Context) error {
 	if err := c.ClickHouse.CreateDatabase(ctx); err != nil {
+		return fmt.Errorf("error creating database: %w", err)
+	}
+
+	if err := c.ClickHouse.CreateTables(ctx); err != nil {
+		return fmt.Errorf("error creating tables: %w", err)
+	}
+
+	return nil
+}
+
+func (c *Controller) Run(ctx context.Context) error {
+	if err := c.init(ctx); err != nil {
 		return err
 	}
 
-	return c.ClickHouse.CreateTables(ctx)
+	log.Println("Starting workers...")
+	for _, w := range c.workers {
+		go w.Start(ctx)
+	}
+
+	<-ctx.Done()
+
+	log.Println("Stopping workers...")
+	for _, w := range c.workers {
+		w.Stop()
+		<-w.Done()
+	}
+
+	return nil
 }

@@ -5,22 +5,21 @@ import (
 )
 
 type Worker interface {
-	Start()
+	Start(context.Context)
 	Stop()
 	Done() <-chan struct{}
 }
 
 type worker struct {
-	ctx    context.Context
 	cancel context.CancelFunc
 	done   chan struct{}
 
-	run func(*worker)
+	run func(context.Context)
 }
 
-func (w *worker) Start() {
-	w.ctx, w.cancel = context.WithCancel(context.Background())
-	go w.run(w)
+func (w *worker) Start(ctx context.Context) {
+	ctx, w.cancel = context.WithCancel(ctx)
+	go w.run(ctx)
 }
 
 func (w *worker) Stop() {
@@ -32,7 +31,7 @@ func (w *worker) Done() <-chan struct{} {
 	return w.done
 }
 
-func newWorker(run func(*worker)) Worker {
+func newWorker(run func(context.Context)) Worker {
 	return &worker{
 		done: make(chan struct{}),
 		run:  run,

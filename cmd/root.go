@@ -11,7 +11,6 @@ import (
 	"github.com/peterbourgon/ff/v3/ffcli"
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
 )
 
 const (
@@ -71,12 +70,10 @@ func (c *RootConfig) Exec(context.Context, []string) error {
 	return flag.ErrHelp
 }
 
-func newConfig(filename string, flags *flag.FlagSet) (*config.Config, error) {
-	cfg := config.Default()
-
+func loadConfig(filename string, flags *flag.FlagSet, cfg *config.Config) error {
 	if filename != "" {
 		if err := config.LoadFile(filename, cfg); err != nil {
-			return nil, err
+			return err
 		}
 	}
 
@@ -99,19 +96,10 @@ func newConfig(filename string, flags *flag.FlagSet) (*config.Config, error) {
 		}
 	})
 
-	return cfg, nil
+	return nil
 }
 
-func newController(cfg *config.Config) (*controller.Controller, error) {
-	ctl, err := controller.NewController(*cfg)
-	if err != nil {
-		return nil, fmt.Errorf("error constructing controller: %w", err)
-	}
-
-	return &ctl, nil
-}
-
-func writeConfig(cfg *config.Config, out io.Writer) {
+func writeConfig(cfg config.Config, out io.Writer) {
 	fmt.Fprintln(out, "----")
 	fmt.Fprintf(out, "GitLab URL: %s\n", cfg.GitLab.Api.URL)
 	fmt.Fprintf(out, "GitLab Token: %x\n", sha256String(cfg.GitLab.Api.Token))

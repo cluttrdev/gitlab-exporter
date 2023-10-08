@@ -66,18 +66,18 @@ type ProjectCatchUp struct {
 	UpdatedBefore string `default:"" yaml:"updated_before"`
 }
 
-func Default() *Config {
+func Default() Config {
 	var cfg Config
 
 	defaults.MustSet(&cfg)
 
-	return &cfg
+	return cfg
 }
 
-func DefaultProjectSettings() *ProjectSettings {
+func DefaultProjectSettings() ProjectSettings {
 	var cfg ProjectSettings
 
 	defaults.MustSet(&cfg)
 
-	return &cfg
+	return cfg
 }
