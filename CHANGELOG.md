@@ -9,9 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Loading configuration from yaml files
+- Loading configuration from yaml file
 - More detailed project configuration options
 - Fetching project data from the GitLab API
+- Option to force data export during catch-up from pipelines that were not updated
 
 ### Changed
 

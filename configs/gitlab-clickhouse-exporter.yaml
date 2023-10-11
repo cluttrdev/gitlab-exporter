@@ -42,6 +42,9 @@ projects:
       # Whether to export data from past pipelines at startup.
       enabled: false
 
+      # Wheter to force export data of pipelines that have not been updated.
+      forced: false
+
       # Export pipelines updated after the specified date.
       # Expected in ISO 8601 format (2019-03-15T08:00:00Z)
       updated_after: ""

@@ -115,9 +115,12 @@ func (w *catchUpProjectWorker) produce(ctx context.Context, opt gitlab.ListProje
 					continue
 				}
 
-				lastUpdatedAt, ok := latestUpdates[r.Pipeline.ID]
-				if ok && r.Pipeline.UpdatedAt.Compare(lastUpdatedAt) <= 0 {
-					continue
+				if !w.project.CatchUp.Forced {
+					// if not forced, skip pipelines that have not been updated
+					lastUpdatedAt, ok := latestUpdates[r.Pipeline.ID]
+					if ok && r.Pipeline.UpdatedAt.Compare(lastUpdatedAt) <= 0 {
+						continue
+					}
 				}
 
 				ch <- r.Pipeline.ID

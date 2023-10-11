@@ -8,7 +8,7 @@ import (
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
 )
 
-func defaultConfig() *config.Config {
+func defaultConfig() config.Config {
 	var cfg config.Config
 
 	cfg.GitLab.Api.URL = "https://gitlab.com/api/v4"
@@ -23,10 +23,10 @@ func defaultConfig() *config.Config {
 
 	cfg.Projects = []config.Project{}
 
-	return &cfg
+	return cfg
 }
 
-func defaultProjectSettings() *config.ProjectSettings {
+func defaultProjectSettings() config.ProjectSettings {
 	var cfg config.ProjectSettings
 
 	cfg.Export.Sections.Enabled = true
@@ -36,10 +36,11 @@ func defaultProjectSettings() *config.ProjectSettings {
 	cfg.Export.Traces.Enabled = true
 
 	cfg.CatchUp.Enabled = false
+	cfg.CatchUp.Forced = false
 	cfg.CatchUp.UpdatedAfter = ""
 	cfg.CatchUp.UpdatedBefore = ""
 
-	return &cfg
+	return cfg
 }
 
 func checkConfig(t *testing.T, want interface{}, got interface{}) {
@@ -147,7 +148,7 @@ func TestLoad_DataWithDefaults(t *testing.T) {
 	expected.ClickHouse.Host = "clickhouse.example.com"
 
 	cfg := defaultConfig()
-	if err := config.Load(data, cfg); err != nil {
+	if err := config.Load(data, &cfg); err != nil {
 		t.Errorf("Expected no error, got: %v", err)
 	}
 
@@ -168,6 +169,7 @@ func TestLoad_DataWithProjects(t *testing.T) {
             enabled: true
         catch_up:
           enabled: true
+          forced: true
       - id: 42
         export:
           sections:
@@ -184,7 +186,7 @@ func TestLoad_DataWithProjects(t *testing.T) {
 	expected := defaultConfig()
 	expected.Projects = append(expected.Projects,
 		config.Project{
-			ProjectSettings: *defaultProjectSettings(),
+			ProjectSettings: defaultProjectSettings(),
 			Id:              314,
 		},
 		config.Project{
@@ -202,6 +204,7 @@ func TestLoad_DataWithProjects(t *testing.T) {
 				},
 				CatchUp: config.ProjectCatchUp{
 					Enabled:       true,
+					Forced:        true,
 					UpdatedAfter:  "",
 					UpdatedBefore: "",
 				},
@@ -232,7 +235,7 @@ func TestLoad_DataWithProjects(t *testing.T) {
 	)
 
 	cfg := defaultConfig()
-	if err := config.Load(data, cfg); err != nil {
+	if err := config.Load(data, &cfg); err != nil {
 		t.Errorf("Expected no error, got: %v", err)
 	}
 

@@ -62,6 +62,7 @@ type ProjectExportTraces struct {
 
 type ProjectCatchUp struct {
 	Enabled       bool   `default:"false" yaml:"enabled"`
+	Forced        bool   `default:"false" yaml:"forced"`
 	UpdatedAfter  string `default:"" yaml:"updated_after"`
 	UpdatedBefore string `default:"" yaml:"updated_before"`
 }
