@@ -58,8 +58,6 @@ func (w *catchUpProjectWorker) Done() <-chan struct{} {
 }
 
 func (w *catchUpProjectWorker) run(ctx context.Context) {
-	retries := 3
-
 	opt := gitlab.ListProjectPipelineOptions{
 		PerPage: 100,
 		Page:    1,
@@ -83,11 +81,8 @@ func (w *catchUpProjectWorker) run(ctx context.Context) {
 		}
 	}
 
-	for i := 0; i < retries; i++ {
-		ch := w.produce(ctx, opt)
-
-		w.process(ctx, ch)
-	}
+	ch := w.produce(ctx, opt)
+	w.process(ctx, ch)
 }
 
 func (w *catchUpProjectWorker) produce(ctx context.Context, opt gitlab.ListProjectPipelineOptions) <-chan int64 {
@@ -109,7 +104,11 @@ func (w *catchUpProjectWorker) produce(ctx context.Context, opt gitlab.ListProje
 			select {
 			case <-ctx.Done():
 				return
-			case r := <-resChan:
+			case r, ok := <-resChan:
+				if !ok { // channel closed
+					return
+				}
+
 				if r.Error != nil && !errors.Is(r.Error, context.Canceled) {
 					log.Println(r.Error)
 					continue
