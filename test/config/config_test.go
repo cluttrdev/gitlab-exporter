@@ -23,6 +23,8 @@ func defaultConfig() config.Config {
 
 	cfg.Projects = []config.Project{}
 
+	cfg.Server.Address = ":8080"
+
 	return cfg
 }
 
@@ -237,6 +239,23 @@ func TestLoad_DataWithProjects(t *testing.T) {
 	cfg := defaultConfig()
 	if err := config.Load(data, &cfg); err != nil {
 		t.Errorf("Expected no error, got: %v", err)
+	}
+
+	checkConfig(t, expected, cfg)
+}
+
+func TestLoad_DataWithCustomServerAddress(t *testing.T) {
+	data := []byte(`
+    server:
+      address: "0.0.0.0:8443"
+    `)
+
+	expected := defaultConfig()
+	expected.Server.Address = "0.0.0.0:8443"
+
+	cfg := config.Default()
+	if err := config.Load(data, &cfg); err != nil {
+		t.Errorf("Expected no error, got %v", err)
 	}
 
 	checkConfig(t, expected, cfg)

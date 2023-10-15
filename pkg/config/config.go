@@ -8,6 +8,7 @@ type Config struct {
 	GitLab     GitLab     `default:"{}" yaml:"gitlab"`
 	ClickHouse ClickHouse `default:"{}" yaml:"clickhouse"`
 	Projects   []Project  `default:"[]" yaml:"projects"`
+	Server     Server     `default:"{}" yaml:"server"`
 }
 
 type GitLab struct {
@@ -65,6 +66,10 @@ type ProjectCatchUp struct {
 	Forced        bool   `default:"false" yaml:"forced"`
 	UpdatedAfter  string `default:"" yaml:"updated_after"`
 	UpdatedBefore string `default:"" yaml:"updated_before"`
+}
+
+type Server struct {
+	Address string `default:":8080" yaml:"address"`
 }
 
 func Default() Config {

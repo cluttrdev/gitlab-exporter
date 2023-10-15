@@ -17,6 +17,7 @@ import (
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/server"
 )
 
 type RunConfig struct {
@@ -128,6 +129,11 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 			log.Println("Done")
 		}
 	}()
+
+	srv := server.New(server.ServerConfig{
+		Address: cfg.Server.Address,
+	})
+	go srv.Serve(ctx)
 
 	// run daemon
 	return ctl.Run(ctx)

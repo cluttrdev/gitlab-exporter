@@ -52,3 +52,8 @@ projects:
       # Export pipelines updated before the specified date.
       # Expected in ISO 8601 format (2019-03-15T08:00:00Z)
       updated_before: ""
+
+# HTTP server settings
+server:
+  # Address:port the server listens on
+  address: ":8080"
