@@ -5,10 +5,15 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"net/http/pprof"
+
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/internal/healthz"
 )
 
 type ServerConfig struct {
 	Address string
+
+	Debug bool
 }
 
 type Server struct {
@@ -24,7 +29,22 @@ func New(cfg ServerConfig) *Server {
 func (s *Server) routes() *http.ServeMux {
 	mux := http.NewServeMux()
 
+	// health check endpoints
+	health := healthz.NewHandler()
+	mux.HandleFunc("/healthz/live", health.LiveEndpoint)
+	mux.HandleFunc("/healthz/ready", health.ReadyEndpoint)
+
+	// metrics endpoint
 	mux.HandleFunc("/metrics", s.MetricsHandler)
+
+	// debug endpoints
+	if s.cfg.Debug {
+		mux.HandleFunc("/debug/pprof/", pprof.Index)
+		mux.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+		mux.HandleFunc("/debug/pprof/profile", pprof.Profile)
+		mux.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+		mux.HandleFunc("/debug/pprof/trace", pprof.Trace)
+	}
 
 	return mux
 }

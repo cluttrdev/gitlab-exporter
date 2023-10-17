@@ -132,6 +132,7 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 
 	srv := server.New(server.ServerConfig{
 		Address: cfg.Server.Address,
+		Debug:   false,
 	})
 	go srv.Serve(ctx)
 
