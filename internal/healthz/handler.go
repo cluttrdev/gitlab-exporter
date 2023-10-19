@@ -1,16 +1,12 @@
 package healthz
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 	"sync"
 )
 
 type Check func() error
-
-func checkOK() error {
-	return nil
-}
 
 type Handler interface {
 	SetLivenessCheck(Check)
@@ -30,10 +26,7 @@ type handler struct {
 }
 
 func NewHandler() Handler {
-	h := &handler{
-		livenessCheck:  checkOK,
-		readinessCheck: checkOK,
-	}
+	h := &handler{}
 
 	h.HandleFunc("/live", h.LiveEndpoint)
 	h.HandleFunc("/ready", h.ReadyEndpoint)
@@ -72,15 +65,23 @@ func (h *handler) handle(w http.ResponseWriter, r *http.Request, check Check) {
 		return
 	}
 
-	status := http.StatusOK
+	var err error
+	if check != nil {
+		err = check()
+	}
+
+	var status int = http.StatusOK
 	var message string = http.StatusText(status)
 
-	if err := check(); err != nil {
+	if err != nil {
 		status = http.StatusServiceUnavailable
 		message = err.Error()
 	}
 
 	w.Header().Set("Content-Type", "text/plain; charset=utf-8")
 	w.WriteHeader(status)
-	fmt.Fprintln(w, message)
+	_, err = w.Write([]byte(message))
+	if err != nil {
+		log.Println("Failed to answer health check")
+	}
 }

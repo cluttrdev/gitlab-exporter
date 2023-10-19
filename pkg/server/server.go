@@ -13,6 +13,9 @@ import (
 type ServerConfig struct {
 	Address string
 
+	LivenessCheck  healthz.Check
+	ReadinessCheck healthz.Check
+
 	Debug bool
 }
 
@@ -31,6 +34,9 @@ func (s *Server) routes() *http.ServeMux {
 
 	// health check endpoints
 	health := healthz.NewHandler()
+	health.SetLivenessCheck(s.cfg.LivenessCheck)
+	health.SetReadinessCheck(s.cfg.ReadinessCheck)
+
 	mux.HandleFunc("/healthz/live", health.LiveEndpoint)
 	mux.HandleFunc("/healthz/ready", health.ReadyEndpoint)
 
