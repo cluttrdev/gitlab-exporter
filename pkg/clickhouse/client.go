@@ -71,6 +71,10 @@ func (c *Client) Configure(cfg ClientConfig) error {
 	return nil
 }
 
+func WithParameters(ctx context.Context, params map[string]string) context.Context {
+	return clickhouse.Context(ctx, clickhouse.WithParameters(params))
+}
+
 func (c *Client) Exec(ctx context.Context, query string, args ...any) error {
 	c.RLock()
 	defer c.RUnlock()

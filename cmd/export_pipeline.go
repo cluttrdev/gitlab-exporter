@@ -48,9 +48,9 @@ func NewExportPipelineCmd(exportConfig *ExportConfig) *ffcli.Command {
 func (c *ExportPipelineConfig) RegisterFlags(fs *flag.FlagSet) {
 	c.exportConfig.RegisterFlags(fs)
 
-	fs.BoolVar(&c.exportSections, "export-sections", true, "Export job sections.")
-	fs.BoolVar(&c.exportTraces, "export-traces", true, "Export pipeline trace.")
-	fs.BoolVar(&c.exportTestReports, "export-testreports", true, "Export pipeline test reports.")
+	fs.BoolVar(&c.exportSections, "export-sections", true, "Export job sections (default: true.")
+	fs.BoolVar(&c.exportTraces, "export-traces", true, "Export pipeline trace (default: true.")
+	fs.BoolVar(&c.exportTestReports, "export-testreports", true, "Export pipeline test reports (default: true.")
 }
 
 func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
