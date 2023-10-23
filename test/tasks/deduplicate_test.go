@@ -54,16 +54,12 @@ func TestPrepareDeduplicateQuery_Full(t *testing.T) {
 
 	expectedQuery := "" +
 		"OPTIMIZE TABLE {database:Identifier}.{table:Identifier} FINAL DEDUPLICATE" +
-		" BY {by_1:Identifier},{by_2:Identifier}" +
-		" EXCEPT ({except_1:Identifier},{except_2:Identifier})" +
+		" BY id,project_id" +
+		" EXCEPT (finished_at,status)" +
 		" SETTINGS optimize_throw_if_noop=1"
 	expectedParams := map[string]string{
 		"database": "gitlab_ci",
 		"table":    "pipelines",
-		"by_1":     "id",
-		"by_2":     "project_id",
-		"except_1": "finished_at",
-		"except_2": "status",
 	}
 
 	query, params := tasks.PrepareDeduplicateQuery(opt)
@@ -130,12 +126,10 @@ func TestPrepareDeduplicateQuery_WithBy(t *testing.T) {
 
 	expectedQuery := "" +
 		"OPTIMIZE TABLE {database:Identifier}.{table:Identifier} DEDUPLICATE" +
-		" BY {by_1:Identifier},{by_2:Identifier}"
+		" BY id,project_id"
 	expectedParams := map[string]string{
 		"database": "gitlab_ci",
 		"table":    "pipelines",
-		"by_1":     "id",
-		"by_2":     "project_id",
 	}
 
 	query, params := tasks.PrepareDeduplicateQuery(opt)
@@ -156,11 +150,10 @@ func TestPrepareDeduplicateQuery_WithSingleExcept(t *testing.T) {
 
 	expectedQuery := "" +
 		"OPTIMIZE TABLE {database:Identifier}.{table:Identifier} DEDUPLICATE" +
-		" BY * EXCEPT {except_1:Identifier}"
+		" BY * EXCEPT project_id"
 	expectedParams := map[string]string{
 		"database": "gitlab_ci",
 		"table":    "pipelines",
-		"except_1": "project_id",
 	}
 
 	query, params := tasks.PrepareDeduplicateQuery(opt)
@@ -181,12 +174,10 @@ func TestPrepareDeduplicateQuery_WithMultipleExcept(t *testing.T) {
 
 	expectedQuery := "" +
 		"OPTIMIZE TABLE {database:Identifier}.{table:Identifier} DEDUPLICATE" +
-		" BY * EXCEPT ({except_1:Identifier},{except_2:Identifier})"
+		" BY * EXCEPT (project_id,status)"
 	expectedParams := map[string]string{
 		"database": "gitlab_ci",
 		"table":    "pipelines",
-		"except_1": "project_id",
-		"except_2": "status",
 	}
 
 	query, params := tasks.PrepareDeduplicateQuery(opt)
@@ -207,13 +198,10 @@ func TestPrepareDeduplicateQuery_WithByAndExcept(t *testing.T) {
 
 	expectedQuery := "" +
 		"OPTIMIZE TABLE {database:Identifier}.{table:Identifier} DEDUPLICATE" +
-		" BY {by_1:Identifier} EXCEPT ({except_1:Identifier},{except_2:Identifier})"
+		" BY id EXCEPT (project_id,status)"
 	expectedParams := map[string]string{
 		"database": "gitlab_ci",
 		"table":    "pipelines",
-		"by_1":     "id",
-		"except_1": "project_id",
-		"except_2": "status",
 	}
 
 	query, params := tasks.PrepareDeduplicateQuery(opt)

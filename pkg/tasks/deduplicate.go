@@ -3,9 +3,11 @@ package tasks
 import (
 	"context"
 	"fmt"
+	"regexp"
 	"strings"
 
 	clickhouse "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
+	"golang.org/x/exp/slices"
 )
 
 type DeduplicateTableOptions struct {
@@ -18,6 +20,10 @@ type DeduplicateTableOptions struct {
 }
 
 func DeduplicateTable(ctx context.Context, opt DeduplicateTableOptions, ch *clickhouse.Client) error {
+	if err := validateDeduplicateTableOptions(ctx, opt, ch); err != nil {
+		return fmt.Errorf("error validating deduplication options: %w", err)
+	}
+
 	query, params := PrepareDeduplicateQuery(opt)
 
 	ctx = clickhouse.WithParameters(ctx, params)
@@ -49,33 +55,17 @@ func PrepareDeduplicateQuery(opt DeduplicateTableOptions) (string, map[string]st
 	query += " DEDUPLICATE"
 
 	// BY
-	var byPrefix string = "by_"
-	var byParams []string = columnParameterList(len(opt.By), byPrefix)
-
-	if len(byParams) > 0 {
-		query += " BY " + strings.Join(byParams, ",")
+	if len(opt.By) > 0 {
+		query += " BY " + strings.Join(opt.By, ",")
 	} else if len(opt.Except) > 0 {
 		query += " BY *"
 	}
 
-	for i, val := range opt.By {
-		name := columnParameterName(byPrefix, i)
-		params[name] = val
-	}
-
 	// EXCEPT
-	var exceptPrefix string = "except_"
-	var exceptParams []string = columnParameterList(len(opt.Except), exceptPrefix)
-
-	if len(exceptParams) == 1 {
-		query += " EXCEPT " + exceptParams[0]
-	} else if len(exceptParams) > 1 {
-		query += " EXCEPT (" + strings.Join(exceptParams, ",") + ")"
-	}
-
-	for i, val := range opt.Except {
-		name := columnParameterName(exceptPrefix, i)
-		params[name] = val
+	if len(opt.Except) == 1 {
+		query += " EXCEPT " + opt.Except[0]
+	} else if len(opt.Except) > 1 {
+		query += " EXCEPT (" + strings.Join(opt.Except, ",") + ")"
 	}
 
 	// SETTINGS
@@ -90,15 +80,69 @@ func PrepareDeduplicateQuery(opt DeduplicateTableOptions) (string, map[string]st
 	return query, params
 }
 
-func columnParameterName(prefix string, i int) string {
-	return fmt.Sprintf("%s%d", prefix, i+1)
+func validateDeduplicateTableOptions(ctx context.Context, opt DeduplicateTableOptions, ch *clickhouse.Client) error {
+	var dbName string = opt.Database
+	if dbName == "" {
+		dbName = "gitlab_ci"
+	}
+
+	// validate database identifier
+	if err := matchIdentifier(dbName); err != nil {
+		return err
+	}
+
+	// validate table identifier
+	if err := matchIdentifier(opt.Table); err != nil {
+		return err
+	}
+
+	// validate column identifiers
+	cols, err := getColumnNames(ctx, dbName, opt.Table, ch)
+	if err != nil {
+		return fmt.Errorf("error getting table column names: %w", err)
+	}
+
+	for _, c := range append(append([]string{}, opt.By...), opt.Except...) {
+		if !slices.Contains(cols, c) {
+			return fmt.Errorf("Table `%s` has no column `%s`", opt.Table, c)
+		}
+	}
+
+	return nil
 }
 
-func columnParameterList(n int, prefix string) []string {
-	columns := make([]string, n)
-	for i := 0; i < n; i++ {
-		name := columnParameterName(prefix, i)
-		columns[i] = fmt.Sprintf("{%s:Identifier}", name)
+func matchIdentifier(s string) error {
+	pattern := `^[a-zA-Z_][0-9a-zA-Z_]*$`
+	matched, err := regexp.MatchString(pattern, s)
+	if err != nil {
+		return err
+	} else if !matched {
+		return fmt.Errorf("invalid identifier: `%s`", s)
 	}
-	return columns
+	return nil
+}
+
+func getColumnNames(ctx context.Context, database string, table string, ch *clickhouse.Client) ([]string, error) {
+	var columnNames []string
+
+	query_tpl := `
+    SELECT DISTINCT COLUMN_NAME FROM information_schema.COLUMNS
+      WHERE (TABLE_SCHEMA = '%s') AND (TABLE_NAME = '%s')
+    `
+
+	query := fmt.Sprintf(query_tpl, database, table)
+
+	var results []struct {
+		ColumnName string `ch:"COLUMN_NAME"`
+	}
+
+	if err := ch.Select(ctx, &results, query); err != nil {
+		return nil, err
+	}
+
+	for _, r := range results {
+		columnNames = append(columnNames, r.ColumnName)
+	}
+
+	return columnNames, nil
 }
