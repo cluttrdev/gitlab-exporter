@@ -188,6 +188,8 @@ _version:
 _pseudo-version prefix="" object="HEAD":
     #!/bin/sh
 
+    ref={{object}}
+
     latest_tag=$(git describe --tags --abbrev=0 || true)
 
     if [ -n "{{prefix}}" ]; then
@@ -198,11 +200,11 @@ _pseudo-version prefix="" object="HEAD":
         prefix=v0.0.0
     fi
 
-    # UTC time the revision was created (yymmddhhmmss).
-    timestamp=$(date -u +%y%m%d%H%M%S -d @$(git log -n 1 --format=%ct {{object}}))
+    # UTC time the revision was created (yyyymmddhhmmss).
+    timestamp=$(TZ=UTC git show --no-patch --format='%cd' --date='format-local:%Y%m%d%H%M%S' $ref)
 
     # 12-character prefix of the commit hash
-    revision=$(git rev-parse --short=12 --verify {{object}})
+    revision=$(git rev-parse --short=12 --verify $ref)
 
     echo "${prefix}-${timestamp}-${revision}"
 
