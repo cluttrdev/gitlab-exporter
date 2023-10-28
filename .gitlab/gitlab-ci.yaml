@@ -1,0 +1,35 @@
+stages:
+  - lint
+  - build
+  - test
+
+default:
+  image: golang:1.19
+
+lint:
+  stage: lint
+  image: docker.io/golangci/golangci-lint:latest
+  script:
+    - golangci-lint run ./...
+  allow_failure: true
+
+vet:
+  stage: lint
+  script:
+    - go vet ./...
+
+build:
+  stage: build
+  script:
+    - go build .
+
+test:
+  stage: test
+  before_script:
+    - go install gotest.tools/gotestsum@latest
+  script:
+    - gotestsum --junitfile report.xml --format testname ./test/...
+  artifacts:
+    when: always
+    reports:
+      junit: report.xml
