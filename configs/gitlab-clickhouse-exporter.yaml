@@ -1,10 +1,9 @@
 gitlab:
   api:
     # URL for accessing the GitLab API.
-    url: https://gitlab.com/api/v4
+    url: "https://gitlab.com/api/v4"
     # Token to use for authenticating against the GitLab API.
     # Only requires `read-api` permissions.
-    # (required)
     token: ""
 
   client:
@@ -12,46 +11,46 @@ gitlab:
       limit: 0.0
 
 clickhouse:
-  host: 127.0.0.1
-  port: 9000
-  database: default
-  user: default
+  host: "127.0.0.1"
+  port: "9000"
+  database: "default"
+  user: "default"
   password: ""
 
 # List of projects to export
-projects:
-  - # Name (with namespace) or id of the project (required).
-    id: 50817395  # cluttrdev/gitlab-clickhouse-exporter
-
-    export:
-      sections:
-        # Whether or not to export job section data.
-        # If enabled, this may significantly increase the export time since it
-        # requires fetching entire job logs to parse for section information.
-        enabled: true
-      
-      testreports:
-        # Whether or not to export pipeline testreports.
-        enabled: true
-      
-      traces:
-        # Whether or not to export pipeline hierarchies as traces.
-        enabled: true
-    
-    catch_up:
-      # Whether to export data from past pipelines at startup.
-      enabled: false
-
-      # Wheter to force export data of pipelines that have not been updated.
-      forced: false
-
-      # Export pipelines updated after the specified date.
-      # Expected in ISO 8601 format (2019-03-15T08:00:00Z)
-      updated_after: ""
-
-      # Export pipelines updated before the specified date.
-      # Expected in ISO 8601 format (2019-03-15T08:00:00Z)
-      updated_before: ""
+projects: []
+  # - # Project ID project (required).
+  #   id: 50817395  # cluttrdev/gitlab-clickhouse-exporter
+  #
+  #   export:
+  #     sections:
+  #       # Whether or not to export job section data.
+  #       # If enabled, this may significantly increase the export time since it
+  #       # requires fetching entire job logs to parse for section information.
+  #       enabled: true
+  #     
+  #     testreports:
+  #       # Whether or not to export pipeline testreports.
+  #       enabled: true
+  #     
+  #     traces:
+  #       # Whether or not to export pipeline hierarchies as traces.
+  #       enabled: true
+  #   
+  #   catch_up:
+  #     # Whether to export data from past pipelines at startup.
+  #     enabled: false
+  #
+  #     # Wheter to force export data of pipelines that have not been updated.
+  #     forced: false
+  #
+  #     # Export pipelines updated after the specified date.
+  #     # Expected in ISO 8601 format (2019-03-15T08:00:00Z)
+  #     updated_after: ""
+  #
+  #     # Export pipelines updated before the specified date.
+  #     # Expected in ISO 8601 format (2019-03-15T08:00:00Z)
+  #     updated_before: ""
 
 # HTTP server settings
 server:
