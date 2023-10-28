@@ -67,7 +67,7 @@ func NewDeduplicateCmd(rootConfig *RootConfig) *ffcli.Command {
 func (c *DeduplicateConfig) RegisterFlags(fs *flag.FlagSet) {
 	c.rootConfig.RegisterFlags(fs)
 
-	fs.StringVar(&c.database, "database", "gitlab_ci", "The database name. (default: `gitlab_ci`)")
+	fs.StringVar(&c.database, "database", "gitlab_ci", "The database name. (default: 'gitlab_ci')")
 	fs.BoolVar(&c.final, "final", true, "Optimize even if all data is already in one part. (default: true)")
 	fs.Var(&c.by, "by", "Comma separated list of columns to deduplicate by. (default: [])")
 	fs.Var(&c.except, "except", "Comma separated list of columns to not deduplicate by. (default: [])")

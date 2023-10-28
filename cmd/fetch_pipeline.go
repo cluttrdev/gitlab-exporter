@@ -49,8 +49,8 @@ func NewFetchPipelineCmd(fetchConfig *FetchConfig) *ffcli.Command {
 func (c *FetchPipelineConfig) RegisterFlags(fs *flag.FlagSet) {
 	c.fetchConfig.RegisterFlags(fs)
 
-	fs.BoolVar(&c.fetchHierarchy, "hierarchy", false, "Fetch pipeline hierarchy.")
-	fs.BoolVar(&c.fetchSections, "fetch-sections", true, "Fetch job sections.")
+	fs.BoolVar(&c.fetchHierarchy, "hierarchy", false, "Fetch pipeline hierarchy. (default: false)")
+	fs.BoolVar(&c.fetchSections, "fetch-sections", true, "Fetch job sections. (default: true)")
 }
 
 func (c *FetchPipelineConfig) Exec(ctx context.Context, args []string) error {

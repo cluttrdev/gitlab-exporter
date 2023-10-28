@@ -46,12 +46,9 @@ func usageFunc(c *ffcli.Command) string {
 		fmt.Fprintf(&b, "FLAGS\n")
 		tw := tabwriter.NewWriter(&b, 0, 2, 2, ' ', 0)
 		c.FlagSet.VisitAll(func(f *flag.Flag) {
-			typ, usage := flag.UnquoteUsage(f)
-			if typ == "" {
-				typ = "boolean"
-			}
+			_, usage := flag.UnquoteUsage(f)
 
-			fmt.Fprintf(tw, "  --%s %s\t%s\n", f.Name, typ, usage)
+			fmt.Fprintf(tw, "  --%s\t%s\n", f.Name, usage)
 		})
 		tw.Flush()
 		fmt.Fprintf(&b, "\n")
