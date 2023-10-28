@@ -3,7 +3,6 @@ package clickhouseclient
 import (
 	"context"
 	"fmt"
-	"log"
 	"sync"
 	"time"
 
@@ -57,17 +56,20 @@ func (c *Client) Configure(cfg ClientConfig) error {
 		return err
 	}
 
-	ctx := context.Background()
-	if err := conn.Ping(ctx); err != nil {
-		if exception, ok := err.(*clickhouse.Exception); ok {
-			log.Printf("Exception: [%d] %s \n%s\n", exception.Code, exception.Message, exception.StackTrace)
-		}
-		return err
-	}
-
 	c.Lock()
 	c.conn = conn
 	c.Unlock()
+	return nil
+}
+
+func (c *Client) CheckReadiness(ctx context.Context) error {
+	if err := c.conn.Ping(ctx); err != nil {
+		if exception, ok := err.(*clickhouse.Exception); ok {
+			return fmt.Errorf("clickhouse exception: [%d] %s", exception.Code, exception.Message)
+		} else {
+			return fmt.Errorf("error pinging clickhouse: %w", err)
+		}
+	}
 	return nil
 }
 

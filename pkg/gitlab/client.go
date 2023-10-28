@@ -3,6 +3,7 @@ package gitlabclient
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"sync"
 
 	"golang.org/x/time/rate"
@@ -55,6 +56,33 @@ func (c *Client) Configure(cfg ClientConfig) error {
 	c.Lock()
 	c.client = client
 	c.Unlock()
+	return nil
+}
+
+func (c *Client) CheckReadiness(ctx context.Context) error {
+	const readinessEndpoint string = "version"
+
+	req, err := c.client.NewRequest(
+		http.MethodGet,
+		readinessEndpoint,
+		nil,
+		[]gogitlab.RequestOptionFunc{gogitlab.WithContext(ctx)},
+	)
+	if err != nil {
+		return err
+	}
+
+	res, err := c.client.Do(req, nil)
+	if err != nil {
+		return err
+	}
+
+	if res == nil {
+		return fmt.Errorf("http error: empty response")
+	} else if res.StatusCode != http.StatusOK {
+		return fmt.Errorf("http error: %d", res.StatusCode)
+	}
+
 	return nil
 }
 

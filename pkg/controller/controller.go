@@ -2,8 +2,12 @@ package controller
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
+	"math"
+	"math/rand"
+	"time"
 
 	clickhouse "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
@@ -93,7 +97,23 @@ func (c *Controller) init(ctx context.Context) error {
 	return nil
 }
 
+func (c *Controller) CheckReadiness(ctx context.Context) error {
+	if err := c.GitLab.CheckReadiness(ctx); err != nil {
+		return err
+	}
+
+	if err := c.ClickHouse.CheckReadiness(ctx); err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (c *Controller) Run(ctx context.Context) error {
+	if err := c.waitForReady(ctx); err != nil {
+		return fmt.Errorf("error getting ready: %w", err)
+	}
+
 	if err := c.init(ctx); err != nil {
 		return err
 	}
@@ -112,4 +132,35 @@ func (c *Controller) Run(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func (c *Controller) waitForReady(ctx context.Context) error {
+	var (
+		maxTries         int     = 5
+		backoffBaseSec   float64 = 1.0
+		backoffJitterSec float64 = 1.0
+	)
+
+	ticker := time.NewTicker(time.Second)
+
+	var err error
+	for i := 0; i < maxTries; i++ {
+		if err = c.CheckReadiness(ctx); err == nil {
+			return nil
+		}
+
+		log.Println(fmt.Errorf("Readiness check failed: %w", err))
+		delaySec := backoffBaseSec*math.Pow(2, float64(i)) + backoffJitterSec*rand.Float64()
+		delay := time.Duration(delaySec) * time.Second
+		ticker.Reset(delay)
+
+		select {
+		case <-ticker.C:
+		case <-ctx.Done():
+			ticker.Stop()
+			return context.Canceled
+		}
+	}
+
+	return errors.New("Failed to get ready")
 }

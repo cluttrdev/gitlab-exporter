@@ -130,16 +130,19 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 		}
 	}()
 
-	go startServer(ctx, cfg.Server)
+	go startServer(ctx, cfg.Server, ctl)
 
 	// run daemon
 	return ctl.Run(ctx)
 }
 
-func startServer(ctx context.Context, cfg config.Server) {
+func startServer(ctx context.Context, cfg config.Server, ctl *controller.Controller) {
 	srv := server.New(server.ServerConfig{
 		Address: cfg.Address,
 		Debug:   false,
+
+		ReadinessCheck: func() error { return ctl.CheckReadiness(ctx) },
 	})
+
 	go srv.Serve(ctx)
 }
