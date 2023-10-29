@@ -27,7 +27,7 @@ func TestPrepareDeduplicateQuery_Minimal(t *testing.T) {
 		Final:       &[]bool{false}[0],
 		By:          []string{},
 		Except:      []string{},
-		ThrowIfNoop: &[]bool{false}[0],
+		ThrowIfNoop: nil,
 	}
 
 	expectedQuery := "OPTIMIZE TABLE {database:Identifier}.{table:Identifier} DEDUPLICATE"
@@ -75,7 +75,7 @@ func TestPrepareDeduplicateQuery_WithFinal(t *testing.T) {
 		Final:       &[]bool{true}[0],
 		By:          []string{},
 		Except:      []string{},
-		ThrowIfNoop: &[]bool{false}[0],
+		ThrowIfNoop: nil,
 	}
 
 	expectedQuery := "OPTIMIZE TABLE {database:Identifier}.{table:Identifier} FINAL DEDUPLICATE"
@@ -90,7 +90,7 @@ func TestPrepareDeduplicateQuery_WithFinal(t *testing.T) {
 	checkParams(t, expectedParams, params)
 }
 
-func TestPrepareDeduplicateQuery_WithThrowIfNoop(t *testing.T) {
+func TestPrepareDeduplicateQuery_WithThrowIfNoopTrue(t *testing.T) {
 	opt := tasks.DeduplicateTableOptions{
 		Database:    "",
 		Table:       "pipelines",
@@ -114,6 +114,30 @@ func TestPrepareDeduplicateQuery_WithThrowIfNoop(t *testing.T) {
 	checkParams(t, expectedParams, params)
 }
 
+func TestPrepareDeduplicateQuery_WithThrowIfNoopFalse(t *testing.T) {
+	opt := tasks.DeduplicateTableOptions{
+		Database:    "",
+		Table:       "pipelines",
+		Final:       &[]bool{false}[0],
+		By:          []string{},
+		Except:      []string{},
+		ThrowIfNoop: &[]bool{false}[0],
+	}
+
+	expectedQuery := "" +
+		"OPTIMIZE TABLE {database:Identifier}.{table:Identifier} DEDUPLICATE" +
+		" SETTINGS optimize_throw_if_noop=0"
+	expectedParams := map[string]string{
+		"database": "gitlab_ci",
+		"table":    "pipelines",
+	}
+
+	query, params := tasks.PrepareDeduplicateQuery(opt)
+
+	checkQuery(t, expectedQuery, query)
+	checkParams(t, expectedParams, params)
+}
+
 func TestPrepareDeduplicateQuery_WithBy(t *testing.T) {
 	opt := tasks.DeduplicateTableOptions{
 		Database:    "",
@@ -121,7 +145,7 @@ func TestPrepareDeduplicateQuery_WithBy(t *testing.T) {
 		Final:       &[]bool{false}[0],
 		By:          []string{"id", "project_id"},
 		Except:      []string{},
-		ThrowIfNoop: &[]bool{false}[0],
+		ThrowIfNoop: nil,
 	}
 
 	expectedQuery := "" +
@@ -145,7 +169,7 @@ func TestPrepareDeduplicateQuery_WithSingleExcept(t *testing.T) {
 		Final:       &[]bool{false}[0],
 		By:          []string{},
 		Except:      []string{"project_id"},
-		ThrowIfNoop: &[]bool{false}[0],
+		ThrowIfNoop: nil,
 	}
 
 	expectedQuery := "" +
@@ -169,7 +193,7 @@ func TestPrepareDeduplicateQuery_WithMultipleExcept(t *testing.T) {
 		Final:       &[]bool{false}[0],
 		By:          []string{},
 		Except:      []string{"project_id", "status"},
-		ThrowIfNoop: &[]bool{false}[0],
+		ThrowIfNoop: nil,
 	}
 
 	expectedQuery := "" +
@@ -193,7 +217,7 @@ func TestPrepareDeduplicateQuery_WithByAndExcept(t *testing.T) {
 		Final:       &[]bool{false}[0],
 		By:          []string{"id"},
 		Except:      []string{"project_id", "status"},
-		ThrowIfNoop: &[]bool{false}[0],
+		ThrowIfNoop: nil,
 	}
 
 	expectedQuery := "" +
