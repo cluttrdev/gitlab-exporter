@@ -144,5 +144,7 @@ func startServer(ctx context.Context, cfg config.Server, ctl *controller.Control
 		ReadinessCheck: func() error { return ctl.CheckReadiness(ctx) },
 	})
 
-	go srv.Serve(ctx)
+	if err := srv.Serve(ctx); err != nil {
+		log.Printf("error during server shutdown: %v\n", err)
+	}
 }

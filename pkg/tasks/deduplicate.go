@@ -32,7 +32,7 @@ func DeduplicateTable(ctx context.Context, opt DeduplicateTableOptions, ch *clic
 
 func PrepareDeduplicateQuery(opt DeduplicateTableOptions) (string, map[string]string) {
 	var (
-		query  = ""
+		query  string
 		params = map[string]string{}
 	)
 

@@ -17,6 +17,9 @@ default:
 fmt:
     go fmt ./...
 
+lint:
+    golangci-lint run ./...
+
 # vet code
 vet:
     go vet ./...

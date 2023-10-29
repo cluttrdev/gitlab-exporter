@@ -4,7 +4,6 @@ import (
 	"context"
 	"flag"
 	"fmt"
-	"io"
 	"strings"
 
 	"github.com/peterbourgon/ff/v3/ffcli"
@@ -16,10 +15,8 @@ import (
 
 type DeduplicateConfig struct {
 	rootConfig *RootConfig
-	out        io.Writer
 
 	database    string
-	table       string
 	final       bool
 	by          columnList
 	except      columnList

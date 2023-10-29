@@ -31,7 +31,7 @@ func (w *worker) Done() <-chan struct{} {
 	return w.done
 }
 
-func newWorker(run func(context.Context)) Worker {
+func NewWorker(run func(context.Context)) Worker {
 	return &worker{
 		done: make(chan struct{}),
 		run:  run,

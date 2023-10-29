@@ -281,9 +281,6 @@ func jobSpanAttributes(job *Job) map[string]string {
 func sectionSpanAttributes(section *Section) map[string]string {
 	attr := map[string]string{}
 
-	if section != nil {
-	}
-
 	return attr
 }
 

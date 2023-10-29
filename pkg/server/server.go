@@ -71,10 +71,6 @@ func (s *Server) Serve(ctx context.Context) error {
 		}
 	}()
 
-	select {
-	case <-ctx.Done():
-		srv.Shutdown(ctx)
-	}
-
-	return nil
+	<-ctx.Done()
+	return srv.Shutdown(ctx)
 }
