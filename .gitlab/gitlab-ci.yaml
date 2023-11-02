@@ -29,14 +29,6 @@ lint:
     - golangci-lint run ./...
   allow_failure: true
 
-vet:
-  stage: lint
-  cache:
-    - <<: *cache-defaults
-      policy: pull
-  script:
-    - go vet ./...
-
 build:
   stage: build
   cache:
