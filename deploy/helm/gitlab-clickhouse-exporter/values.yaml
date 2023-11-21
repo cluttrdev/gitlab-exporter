@@ -1,0 +1,57 @@
+# Default values for gitlab-clickhouse-exporter.
+
+image:
+  registry: docker.io
+  repository: cluttrdev/gitlab-clickhouse-exporter
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+  pullPolicy: Always
+
+podAnnotations: {}
+
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: [ALL]
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+
+resources: {}
+#  requests:
+#    cpu: 100m
+#    memory: 128Mi
+#  limits:
+#    cpu: 200m
+#    memory: 256Mi
+
+service:
+  type: ClusterIP
+  port: 80
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+env: []
+
+# ---
+
+config: {}
+
