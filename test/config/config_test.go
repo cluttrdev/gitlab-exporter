@@ -23,7 +23,8 @@ func defaultConfig() config.Config {
 
 	cfg.Projects = []config.Project{}
 
-	cfg.Server.Address = ":8080"
+	cfg.Server.Host = "127.0.0.1"
+	cfg.Server.Port = "8080"
 
 	return cfg
 }
@@ -247,11 +248,13 @@ func TestLoad_DataWithProjects(t *testing.T) {
 func TestLoad_DataWithCustomServerAddress(t *testing.T) {
 	data := []byte(`
     server:
-      address: "0.0.0.0:8443"
+      host: "0.0.0.0"
+      port: "8443"
     `)
 
 	expected := defaultConfig()
-	expected.Server.Address = "0.0.0.0:8443"
+	expected.Server.Host = "0.0.0.0"
+	expected.Server.Port = "8443"
 
 	cfg := config.Default()
 	if err := config.Load(data, &cfg); err != nil {

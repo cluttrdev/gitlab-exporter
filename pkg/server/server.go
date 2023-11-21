@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/pprof"
@@ -11,7 +12,8 @@ import (
 )
 
 type ServerConfig struct {
-	Address string
+	Host string
+	Port string
 
 	LivenessCheck  healthz.Check
 	ReadinessCheck healthz.Check
@@ -59,7 +61,7 @@ func (s *Server) Serve(ctx context.Context) error {
 	mux := s.routes()
 
 	srv := &http.Server{
-		Addr:    s.cfg.Address,
+		Addr:    fmt.Sprintf("%s:%s", s.cfg.Host, s.cfg.Port),
 		Handler: mux,
 	}
 

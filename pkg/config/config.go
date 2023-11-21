@@ -69,7 +69,8 @@ type ProjectCatchUp struct {
 }
 
 type Server struct {
-	Address string `default:":8080" yaml:"address"`
+	Host string `default:"127.0.0.1" yaml:"host"`
+	Port string `default:"8080" yaml:"port"`
 }
 
 func Default() Config {

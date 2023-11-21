@@ -138,8 +138,9 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 
 func startServer(ctx context.Context, cfg config.Server, ctl *controller.Controller) {
 	srv := server.New(server.ServerConfig{
-		Address: cfg.Address,
-		Debug:   false,
+		Host:  cfg.Host,
+		Port:  cfg.Port,
+		Debug: false,
 
 		ReadinessCheck: func() error { return ctl.CheckReadiness(ctx) },
 	})
