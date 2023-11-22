@@ -1,4 +1,4 @@
-package clickhouseclient
+package clickhouse
 
 import (
 	"context"

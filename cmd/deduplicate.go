@@ -8,7 +8,7 @@ import (
 
 	"github.com/peterbourgon/ff/v3/ffcli"
 
-	clickhouse "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/tasks"
 )

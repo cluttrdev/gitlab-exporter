@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	clickhouse "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
 	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/tasks"

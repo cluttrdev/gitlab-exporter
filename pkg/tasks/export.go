@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	clickhouse "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
 	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
 )
