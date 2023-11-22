@@ -364,7 +364,7 @@ func convertLinks(links []models.SpanLink) ([]string, []string, []string, []map[
 	return traceIDs, spanIDs, states, attrs
 }
 
-func InsertTraces(ctx context.Context, traces [][]*models.Span, client *Client) error {
+func InsertTraces(ctx context.Context, traces []models.Trace, client *Client) error {
 	batch, err := client.PrepareBatch(ctx, "INSERT INTO gitlab_ci.traces")
 	if err != nil {
 		return fmt.Errorf("[clickhouse.Client.InsertTraces] %w", err)
@@ -418,5 +418,5 @@ func InsertTraces(ctx context.Context, traces [][]*models.Span, client *Client) 
 }
 
 func InsertTrace(ctx context.Context, trace []*models.Span, client *Client) error {
-	return InsertTraces(ctx, [][]*models.Span{trace}, client)
+	return InsertTraces(ctx, []models.Trace{trace}, client)
 }

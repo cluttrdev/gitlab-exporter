@@ -7,6 +7,8 @@ import (
 	"golang.org/x/exp/slices"
 )
 
+type Trace []*Span
+
 type Span struct {
 	TraceID      string
 	SpanID       string
@@ -223,12 +225,12 @@ func NewSectionSpan(traceID string, section *Section) *Span {
 	}
 }
 
-func NewPipelineHierarchyTrace(traceID string, parentID string, ph *PipelineHierarchy) []*Span {
+func NewPipelineHierarchyTrace(traceID string, parentID string, ph *PipelineHierarchy) Trace {
 	if traceID == "" {
 		traceID = fmt.Sprintf("%d", ph.Pipeline.ID)
 	}
 
-	var trace = []*Span{}
+	var trace = Trace{}
 
 	trace = append(trace, NewPipelineSpan(traceID, parentID, ph.Pipeline))
 

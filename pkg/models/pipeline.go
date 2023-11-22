@@ -144,14 +144,14 @@ func (ph *PipelineHierarchy) GetAllBridges() []*Bridge {
 	return bridges
 }
 
-func (ph *PipelineHierarchy) GetTrace() []*Span {
+func (ph *PipelineHierarchy) GetTrace() Trace {
 	traceID := fmt.Sprintf("%d", ph.Pipeline.ID)
 	parentID := ""
 	return NewPipelineHierarchyTrace(traceID, parentID, ph)
 }
 
-func (ph *PipelineHierarchy) GetAllTraces() [][]*Span {
-	traces := [][]*Span{ph.GetTrace()}
+func (ph *PipelineHierarchy) GetAllTraces() []Trace {
+	traces := []Trace{ph.GetTrace()}
 	for _, dph := range ph.DownstreamPipelines {
 		traces = append(traces, dph.GetAllTraces()...)
 	}
