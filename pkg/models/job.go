@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	gogitlab "github.com/xanzy/go-gitlab"
+	_gitlab "github.com/xanzy/go-gitlab"
 )
 
 type Job struct {
@@ -77,7 +77,7 @@ type Bridge struct {
 	DownstreamPipeline *PipelineInfo `json:"downstream_pipeline"`
 }
 
-func NewJob(j *gogitlab.Job) *Job {
+func NewJob(j *_gitlab.Job) *Job {
 	return &Job{
 		Coverage:       j.Coverage,
 		AllowFailure:   j.AllowFailure,
@@ -112,7 +112,7 @@ func NewJob(j *gogitlab.Job) *Job {
 	}
 }
 
-func NewBridge(b *gogitlab.Bridge) *Bridge {
+func NewBridge(b *_gitlab.Bridge) *Bridge {
 	// account for downstream pipeline creation failures
 	dp := nullPipelineInfo()
 	if b.DownstreamPipeline != nil {

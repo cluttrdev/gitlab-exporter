@@ -3,7 +3,7 @@ package models
 import (
 	"time"
 
-	gogitlab "github.com/xanzy/go-gitlab"
+	_gitlab "github.com/xanzy/go-gitlab"
 )
 
 type Project struct {
@@ -31,7 +31,7 @@ type ProjectStatistics struct {
 	UploadsSize           int64 `json:"uploads_size"`
 }
 
-func NewProject(p *gogitlab.Project) *Project {
+func NewProject(p *_gitlab.Project) *Project {
 	return &Project{
 		ID:                int64(p.ID),
 		Name:              p.Name,

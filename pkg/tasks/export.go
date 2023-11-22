@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/internal/datastore"

@@ -1,9 +1,9 @@
-package gitlabclient
+package gitlab
 
 import (
 	"context"
 
-	gogitlab "github.com/xanzy/go-gitlab"
+	_gitlab "github.com/xanzy/go-gitlab"
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
 )
@@ -19,12 +19,12 @@ func (c *Client) GetProject(ctx context.Context, id interface{}) <-chan GetProje
 	go func() {
 		defer close(ch)
 
-		opts := &gogitlab.GetProjectOptions{
+		opts := &_gitlab.GetProjectOptions{
 			Statistics: &[]bool{true}[0],
 		}
 
 		c.RLock()
-		p, _, err := c.client.Projects.GetProject(id, opts, gogitlab.WithContext(ctx))
+		p, _, err := c.client.Projects.GetProject(id, opts, _gitlab.WithContext(ctx))
 		c.RUnlock()
 		if err != nil {
 			ch <- GetProjectResult{

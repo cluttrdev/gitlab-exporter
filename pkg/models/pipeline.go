@@ -5,7 +5,7 @@ import (
 	"strconv"
 	"time"
 
-	gogitlab "github.com/xanzy/go-gitlab"
+	_gitlab "github.com/xanzy/go-gitlab"
 )
 
 type PipelineInfo struct {
@@ -45,7 +45,7 @@ type Pipeline struct {
 	// DetailedStatus *DetailedStatus `json:"detailed_status"`
 }
 
-func NewPipelineInfo(p *gogitlab.PipelineInfo) *PipelineInfo {
+func NewPipelineInfo(p *_gitlab.PipelineInfo) *PipelineInfo {
 	return &PipelineInfo{
 		ID:        int64(p.ID),
 		IID:       int64(p.IID),
@@ -68,7 +68,7 @@ func nullPipelineInfo() *PipelineInfo {
 	}
 }
 
-func NewPipeline(p *gogitlab.Pipeline) *Pipeline {
+func NewPipeline(p *_gitlab.Pipeline) *Pipeline {
 	cov, err := strconv.ParseFloat(p.Coverage, 64)
 	if err != nil {
 		cov = 0.0

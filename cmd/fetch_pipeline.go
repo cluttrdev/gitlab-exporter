@@ -12,7 +12,7 @@ import (
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
-	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
 )
 
 type FetchPipelineConfig struct {

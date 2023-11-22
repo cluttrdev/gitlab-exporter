@@ -1,11 +1,11 @@
-package gitlabclient
+package gitlab
 
 import (
 	"context"
 	"fmt"
 	"time"
 
-	gogitlab "github.com/xanzy/go-gitlab"
+	_gitlab "github.com/xanzy/go-gitlab"
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
 )
@@ -39,13 +39,13 @@ func (c *Client) ListProjectPipelines(ctx context.Context, projectID int64, opt 
 	go func() {
 		defer close(out)
 
-		gitlabOpts := &gogitlab.ListProjectPipelinesOptions{
-			ListOptions: gogitlab.ListOptions{
+		gitlabOpts := &_gitlab.ListProjectPipelinesOptions{
+			ListOptions: _gitlab.ListOptions{
 				Page:    opt.Page,
 				PerPage: opt.PerPage,
 			},
 			Scope:         opt.Scope,
-			Status:        (*gogitlab.BuildStateValue)(opt.Status),
+			Status:        (*_gitlab.BuildStateValue)(opt.Status),
 			Source:        opt.Source,
 			Ref:           opt.Ref,
 			SHA:           opt.SHA,
@@ -60,7 +60,7 @@ func (c *Client) ListProjectPipelines(ctx context.Context, projectID int64, opt 
 
 		for {
 			c.RLock()
-			ps, resp, err := c.client.Pipelines.ListProjectPipelines(int(projectID), gitlabOpts, gogitlab.WithContext(ctx))
+			ps, resp, err := c.client.Pipelines.ListProjectPipelines(int(projectID), gitlabOpts, _gitlab.WithContext(ctx))
 			c.RUnlock()
 			if err != nil {
 				out <- ListProjectPipelinesResult{
@@ -105,7 +105,7 @@ func (c *Client) getPipeline(ctx context.Context, projectID int64, pipelineID in
 		defer close(out)
 
 		c.RLock()
-		pipeline, _, err := c.client.Pipelines.GetPipeline(int(projectID), int(pipelineID), gogitlab.WithContext(ctx))
+		pipeline, _, err := c.client.Pipelines.GetPipeline(int(projectID), int(pipelineID), _gitlab.WithContext(ctx))
 		c.RUnlock()
 		if err != nil {
 			out <- fmt.Errorf("[gitlab.Client.GetPipeline] %w", err)

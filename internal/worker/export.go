@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
-	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/tasks"
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/internal/datastore"

@@ -1,17 +1,17 @@
-package gitlabclient
+package gitlab
 
 import (
 	"context"
 	"fmt"
 
-	gogitlab "github.com/xanzy/go-gitlab"
+	_gitlab "github.com/xanzy/go-gitlab"
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
 )
 
 func (c *Client) GetPipelineTestReport(ctx context.Context, projectID int64, pipelineID int64) (*models.PipelineTestReport, error) {
 	c.RLock()
-	report, _, err := c.client.Pipelines.GetPipelineTestReport(int(projectID), int(pipelineID), gogitlab.WithContext(ctx))
+	report, _, err := c.client.Pipelines.GetPipelineTestReport(int(projectID), int(pipelineID), _gitlab.WithContext(ctx))
 	c.RUnlock()
 	if err != nil {
 		return nil, fmt.Errorf("[gitlab.Client.GetPipelineTestReport] %w", err)

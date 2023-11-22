@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"hash/adler32"
 
-	gogitlab "github.com/xanzy/go-gitlab"
+	_gitlab "github.com/xanzy/go-gitlab"
 )
 
 type PipelineTestReport struct {
@@ -61,7 +61,7 @@ type TestSuiteReference struct {
 	ID int64
 }
 
-func NewPipelineTestReport(pipelineID int64, tr *gogitlab.PipelineTestReport) *PipelineTestReport {
+func NewPipelineTestReport(pipelineID int64, tr *_gitlab.PipelineTestReport) *PipelineTestReport {
 	report := &TestReportReference{
 		ID:         hashStringID(fmt.Sprint(pipelineID)),
 		PipelineID: pipelineID,
@@ -84,7 +84,7 @@ func NewPipelineTestReport(pipelineID int64, tr *gogitlab.PipelineTestReport) *P
 	}
 }
 
-func NewPipelineTestSuites(report *TestReportReference, ts *gogitlab.PipelineTestSuites) *PipelineTestSuite {
+func NewPipelineTestSuites(report *TestReportReference, ts *_gitlab.PipelineTestSuites) *PipelineTestSuite {
 	suite := &TestSuiteReference{
 		ID: hashStringID(fmt.Sprint(report.ID) + ts.Name),
 	}
@@ -108,7 +108,7 @@ func NewPipelineTestSuites(report *TestReportReference, ts *gogitlab.PipelineTes
 	}
 }
 
-func NewPipelineTestCases(report *TestReportReference, suite *TestSuiteReference, tc *gogitlab.PipelineTestCases) *PipelineTestCase {
+func NewPipelineTestCases(report *TestReportReference, suite *TestSuiteReference, tc *_gitlab.PipelineTestCases) *PipelineTestCase {
 	return &PipelineTestCase{
 		ID:             hashStringID(fmt.Sprint(suite.ID) + tc.Name),
 		TestSuite:      suite,
@@ -125,7 +125,7 @@ func NewPipelineTestCases(report *TestReportReference, suite *TestSuiteReference
 	}
 }
 
-func NewRecentFailures(rf *gogitlab.RecentFailures) *RecentFailures {
+func NewRecentFailures(rf *_gitlab.RecentFailures) *RecentFailures {
 	if rf == nil {
 		return &RecentFailures{}
 	}

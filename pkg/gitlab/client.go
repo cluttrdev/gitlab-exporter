@@ -1,4 +1,4 @@
-package gitlabclient
+package gitlab
 
 import (
 	"context"
@@ -8,14 +8,14 @@ import (
 
 	"golang.org/x/time/rate"
 
-	gogitlab "github.com/xanzy/go-gitlab"
+	_gitlab "github.com/xanzy/go-gitlab"
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
 )
 
 type Client struct {
 	sync.RWMutex
-	client *gogitlab.Client
+	client *_gitlab.Client
 }
 
 type ClientConfig struct {
@@ -36,8 +36,8 @@ func NewGitLabClient(cfg ClientConfig) (*Client, error) {
 }
 
 func (c *Client) Configure(cfg ClientConfig) error {
-	opts := []gogitlab.ClientOptionFunc{
-		gogitlab.WithBaseURL(cfg.URL),
+	opts := []_gitlab.ClientOptionFunc{
+		_gitlab.WithBaseURL(cfg.URL),
 	}
 
 	if cfg.RateLimit > 0 {
@@ -45,10 +45,10 @@ func (c *Client) Configure(cfg ClientConfig) error {
 		burst := cfg.RateLimit * 0.33
 		limiter := rate.NewLimiter(limit, int(burst))
 
-		opts = append(opts, gogitlab.WithCustomLimiter(limiter))
+		opts = append(opts, _gitlab.WithCustomLimiter(limiter))
 	}
 
-	client, err := gogitlab.NewOAuthClient(cfg.Token, opts...)
+	client, err := _gitlab.NewOAuthClient(cfg.Token, opts...)
 	if err != nil {
 		return err
 	}
@@ -66,7 +66,7 @@ func (c *Client) CheckReadiness(ctx context.Context) error {
 		http.MethodGet,
 		readinessEndpoint,
 		nil,
-		[]gogitlab.RequestOptionFunc{gogitlab.WithContext(ctx)},
+		[]_gitlab.RequestOptionFunc{_gitlab.WithContext(ctx)},
 	)
 	if err != nil {
 		return err

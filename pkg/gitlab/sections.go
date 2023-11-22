@@ -1,10 +1,10 @@
-package gitlabclient
+package gitlab
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/xanzy/go-gitlab"
+	_gitlab "github.com/xanzy/go-gitlab"
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
 )
@@ -32,7 +32,7 @@ func (c *Client) ListJobSections(ctx context.Context, projectID int64, jobID int
 		defer close(ch)
 
 		c.RLock()
-		job, _, err := c.client.Jobs.GetJob(int(projectID), int(jobID), gitlab.WithContext(ctx))
+		job, _, err := c.client.Jobs.GetJob(int(projectID), int(jobID), _gitlab.WithContext(ctx))
 		c.RUnlock()
 		if err != nil {
 			ch <- ListJobSectionsResult{
@@ -42,7 +42,7 @@ func (c *Client) ListJobSections(ctx context.Context, projectID int64, jobID int
 		}
 
 		c.RLock()
-		trace, _, err := c.client.Jobs.GetTraceFile(int(projectID), int(jobID), gitlab.WithContext(ctx))
+		trace, _, err := c.client.Jobs.GetTraceFile(int(projectID), int(jobID), _gitlab.WithContext(ctx))
 		c.RUnlock()
 		if err != nil {
 			ch <- ListJobSectionsResult{

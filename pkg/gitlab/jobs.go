@@ -1,10 +1,10 @@
-package gitlabclient
+package gitlab
 
 import (
 	"context"
 	"fmt"
 
-	"github.com/xanzy/go-gitlab"
+	_gitlab "github.com/xanzy/go-gitlab"
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
 )
@@ -31,8 +31,8 @@ func (c *Client) ListPipelineJobs(ctx context.Context, projectID int64, pipeline
 	go func() {
 		defer close(ch)
 
-		opts := &gitlab.ListJobsOptions{
-			ListOptions: gitlab.ListOptions{
+		opts := &_gitlab.ListJobsOptions{
+			ListOptions: _gitlab.ListOptions{
 				PerPage: 100,
 				Page:    1,
 			},
@@ -41,7 +41,7 @@ func (c *Client) ListPipelineJobs(ctx context.Context, projectID int64, pipeline
 
 		for {
 			c.RLock()
-			jobs, res, err := c.client.Jobs.ListPipelineJobs(int(projectID), int(pipelineID), opts, gitlab.WithContext(ctx))
+			jobs, res, err := c.client.Jobs.ListPipelineJobs(int(projectID), int(pipelineID), opts, _gitlab.WithContext(ctx))
 			c.RUnlock()
 			if err != nil {
 				ch <- ListPipelineJobsResult{
@@ -89,8 +89,8 @@ func (c *Client) ListPipelineBridges(ctx context.Context, projectID int64, pipel
 	go func() {
 		defer close(ch)
 
-		opts := &gitlab.ListJobsOptions{
-			ListOptions: gitlab.ListOptions{
+		opts := &_gitlab.ListJobsOptions{
+			ListOptions: _gitlab.ListOptions{
 				PerPage: 100,
 				Page:    1,
 			},
@@ -98,7 +98,7 @@ func (c *Client) ListPipelineBridges(ctx context.Context, projectID int64, pipel
 
 		for {
 			c.RLock()
-			bridges, res, err := c.client.Jobs.ListPipelineBridges(int(projectID), int(pipelineID), opts, gitlab.WithContext(ctx))
+			bridges, res, err := c.client.Jobs.ListPipelineBridges(int(projectID), int(pipelineID), opts, _gitlab.WithContext(ctx))
 			c.RUnlock()
 			if err != nil {
 				ch <- ListPipelineBridgesResult{
