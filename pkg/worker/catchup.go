@@ -7,10 +7,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
 	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/tasks"
+
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/internal/datastore"
 )
 
 type catchUpProjectWorker struct {
@@ -22,18 +23,18 @@ type catchUpProjectWorker struct {
 	// ensure the worker can only be stopped once
 	stop sync.Once
 
-	project    config.Project
-	gitlab     *gitlab.Client
-	clickhouse *clickhouse.Client
+	project   config.Project
+	gitlab    *gitlab.Client
+	datastore datastore.DataStore
 }
 
-func NewCatchUpProjectWorker(cfg config.Project, gl *gitlab.Client, ch *clickhouse.Client) Worker {
+func NewCatchUpProjectWorker(cfg config.Project, gl *gitlab.Client, ds datastore.DataStore) Worker {
 	return &catchUpProjectWorker{
 		done: make(chan struct{}),
 
-		project:    cfg,
-		gitlab:     gl,
-		clickhouse: ch,
+		project:   cfg,
+		gitlab:    gl,
+		datastore: ds,
 	}
 }
 
@@ -91,7 +92,7 @@ func (w *catchUpProjectWorker) produce(ctx context.Context, opt gitlab.ListProje
 	go func() {
 		defer close(ch)
 
-		latestUpdates, err := w.clickhouse.QueryProjectPipelinesLatestUpdate(ctx, w.project.Id)
+		latestUpdates, err := w.datastore.QueryProjectPipelinesLatestUpdate(ctx, w.project.Id)
 		if err != nil {
 			if errors.Is(err, context.Canceled) {
 				return
@@ -148,7 +149,7 @@ func (w *catchUpProjectWorker) process(ctx context.Context, pipelineChan <-chan 
 					ExportTraces:      w.project.Export.Traces.Enabled,
 				}
 
-				if err := tasks.ExportPipelineHierarchy(ctx, opts, w.gitlab, w.clickhouse); err != nil {
+				if err := tasks.ExportPipelineHierarchy(ctx, opts, w.gitlab, w.datastore); err != nil {
 					if !errors.Is(err, context.Canceled) {
 						log.Printf("error exporting pipeline hierarchy: %s\n", err)
 					}

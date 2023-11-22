@@ -13,12 +13,14 @@ import (
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
 	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/worker"
+
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/internal/datastore"
 )
 
 type Controller struct {
-	config     config.Config
-	GitLab     gitlab.Client
-	ClickHouse clickhouse.Client
+	config    config.Config
+	GitLab    gitlab.Client
+	DataStore datastore.DataStore
 
 	workers []worker.Worker
 }
@@ -40,7 +42,7 @@ func (c *Controller) configure(cfg config.Config) error {
 		return err
 	}
 
-	if err := c.configureClickHouseClient(cfg.ClickHouse); err != nil {
+	if err := c.configureClickHouseDataStore(cfg.ClickHouse); err != nil {
 		return err
 	}
 
@@ -60,14 +62,22 @@ func (c *Controller) configureGitLabClient(cfg config.GitLab) error {
 	})
 }
 
-func (c *Controller) configureClickHouseClient(cfg config.ClickHouse) error {
-	return c.ClickHouse.Configure(clickhouse.ClientConfig{
+func (c *Controller) configureClickHouseDataStore(cfg config.ClickHouse) error {
+	var client clickhouse.Client
+
+	conf := clickhouse.ClientConfig{
 		Host:     cfg.Host,
 		Port:     cfg.Port,
 		Database: cfg.Database,
 		User:     cfg.User,
 		Password: cfg.Password,
-	})
+	}
+	if err := client.Configure(conf); err != nil {
+		return err
+	}
+
+	c.DataStore = clickhouse.NewClickHouseDataStore(&client)
+	return nil
 }
 
 func (c *Controller) configureWorkers(cfg config.Config) error {
@@ -75,9 +85,9 @@ func (c *Controller) configureWorkers(cfg config.Config) error {
 
 	for _, prj := range cfg.Projects {
 		if prj.CatchUp.Enabled {
-			workers = append(workers, worker.NewCatchUpProjectWorker(prj, &c.GitLab, &c.ClickHouse))
+			workers = append(workers, worker.NewCatchUpProjectWorker(prj, &c.GitLab, c.DataStore))
 		}
-		workers = append(workers, worker.NewExportProjectWorker(prj, &c.GitLab, &c.ClickHouse))
+		workers = append(workers, worker.NewExportProjectWorker(prj, &c.GitLab, c.DataStore))
 	}
 
 	c.workers = workers
@@ -86,12 +96,8 @@ func (c *Controller) configureWorkers(cfg config.Config) error {
 }
 
 func (c *Controller) init(ctx context.Context) error {
-	if err := c.ClickHouse.CreateDatabase(ctx); err != nil {
-		return fmt.Errorf("error creating database: %w", err)
-	}
-
-	if err := c.ClickHouse.CreateTables(ctx); err != nil {
-		return fmt.Errorf("error creating tables: %w", err)
+	if err := c.DataStore.Initialize(ctx); err != nil {
+		return err
 	}
 
 	return nil
@@ -102,7 +108,7 @@ func (c *Controller) CheckReadiness(ctx context.Context) error {
 		return err
 	}
 
-	if err := c.ClickHouse.CheckReadiness(ctx); err != nil {
+	if err := c.DataStore.CheckReadiness(ctx); err != nil {
 		return err
 	}
 

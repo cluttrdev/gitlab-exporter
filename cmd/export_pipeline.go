@@ -87,5 +87,5 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 		ExportTraces:      c.exportTraces,
 	}
 
-	return tasks.ExportPipelineHierarchy(ctx, opts, &ctl.GitLab, &ctl.ClickHouse)
+	return tasks.ExportPipelineHierarchy(ctx, opts, &ctl.GitLab, ctl.DataStore)
 }

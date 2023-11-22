@@ -6,10 +6,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
 	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/tasks"
+
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/internal/datastore"
 )
 
 type exportProjectWorker struct {
@@ -21,18 +22,18 @@ type exportProjectWorker struct {
 	// ensure the worker can only be stopped once
 	stop sync.Once
 
-	project    config.Project
-	gitlab     *gitlab.Client
-	clickhouse *clickhouse.Client
+	project   config.Project
+	gitlab    *gitlab.Client
+	datastore datastore.DataStore
 }
 
-func NewExportProjectWorker(cfg config.Project, gl *gitlab.Client, ch *clickhouse.Client) Worker {
+func NewExportProjectWorker(cfg config.Project, gl *gitlab.Client, ds datastore.DataStore) Worker {
 	return &exportProjectWorker{
 		done: make(chan struct{}),
 
-		project:    cfg,
-		gitlab:     gl,
-		clickhouse: ch,
+		project:   cfg,
+		gitlab:    gl,
+		datastore: ds,
 	}
 }
 
@@ -106,7 +107,7 @@ func (w *exportProjectWorker) run(ctx context.Context) {
 						ExportTraces:      w.project.Export.Traces.Enabled,
 					}
 
-					if err := tasks.ExportPipelineHierarchy(ctx, opts, w.gitlab, w.clickhouse); err != nil {
+					if err := tasks.ExportPipelineHierarchy(ctx, opts, w.gitlab, w.datastore); err != nil {
 						log.Printf("error exporting pipeline hierarchy: %s\n", err)
 					} else {
 						log.Printf("Exported projects/%d/pipelines/%d\n", opts.ProjectID, opts.PipelineID)

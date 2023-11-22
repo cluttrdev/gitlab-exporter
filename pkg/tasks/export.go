@@ -4,9 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
 	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
+
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/internal/datastore"
 )
 
 type ExportPipelineHierarchyOptions struct {
@@ -18,11 +19,11 @@ type ExportPipelineHierarchyOptions struct {
 	ExportTraces      bool
 }
 
-func ExportPipelineHierarchy(ctx context.Context, opts ExportPipelineHierarchyOptions, gl *gitlab.Client, ch *clickhouse.Client) error {
-	return <-exportPipelineHierarchy(ctx, opts, gl, ch)
+func ExportPipelineHierarchy(ctx context.Context, opts ExportPipelineHierarchyOptions, gl *gitlab.Client, ds datastore.DataStore) error {
+	return <-exportPipelineHierarchy(ctx, opts, gl, ds)
 }
 
-func exportPipelineHierarchy(ctx context.Context, opts ExportPipelineHierarchyOptions, gl *gitlab.Client, ch *clickhouse.Client) <-chan error {
+func exportPipelineHierarchy(ctx context.Context, opts ExportPipelineHierarchyOptions, gl *gitlab.Client, ds datastore.DataStore) <-chan error {
 	out := make(chan error)
 
 	go func() {
@@ -39,14 +40,14 @@ func exportPipelineHierarchy(ctx context.Context, opts ExportPipelineHierarchyOp
 		}
 		ph := phr.PipelineHierarchy
 
-		if err := clickhouse.InsertPipelineHierarchy(ctx, ph, ch); err != nil {
+		if err := ds.InsertPipelineHierarchy(ctx, ph); err != nil {
 			out <- fmt.Errorf("error inserting pipeline hierarchy: %w", err)
 			return
 		}
 
 		if opts.ExportTraces {
 			pts := ph.GetAllTraces()
-			if err := clickhouse.InsertTraces(ctx, pts, ch); err != nil {
+			if err := ds.InsertTraces(ctx, pts); err != nil {
 				out <- fmt.Errorf("error inserting traces: %w", err)
 				return
 			}
@@ -66,15 +67,15 @@ func exportPipelineHierarchy(ctx context.Context, opts ExportPipelineHierarchyOp
 					tcs = append(tcs, ts.TestCases...)
 				}
 			}
-			if err = clickhouse.InsertTestReports(ctx, trs, ch); err != nil {
+			if err = ds.InsertTestReports(ctx, trs); err != nil {
 				out <- fmt.Errorf("error inserting testreports: %w", err)
 				return
 			}
-			if err = clickhouse.InsertTestSuites(ctx, tss, ch); err != nil {
+			if err = ds.InsertTestSuites(ctx, tss); err != nil {
 				out <- fmt.Errorf("error inserting testsuites: %w", err)
 				return
 			}
-			if err = clickhouse.InsertTestCases(ctx, tcs, ch); err != nil {
+			if err = ds.InsertTestCases(ctx, tcs); err != nil {
 				out <- fmt.Errorf("error inserting testcases: %w", err)
 				return
 			}
