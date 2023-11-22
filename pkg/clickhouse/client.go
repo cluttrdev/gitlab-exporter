@@ -48,7 +48,7 @@ func (c *Client) Configure(cfg ClientConfig) error {
 				Name    string
 				Version string
 			}{
-				{Name: "gitlab-clickhouse-exporter", Version: "v0.0.0+unknown"},
+				{Name: "gitlab-exporter", Version: "v0.0.0+unknown"},
 			},
 		},
 	})

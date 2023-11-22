@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
+	"github.com/cluttrdev/gitlab-exporter/pkg/models"
 )
 
 type DataStore interface {

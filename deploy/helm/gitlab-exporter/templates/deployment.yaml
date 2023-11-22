@@ -1,14 +1,14 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ include "gitlab-clickhouse-exporter.fullname" . }}
+  name: {{ include "gitlab-exporter.fullname" . }}
   labels:
-    {{- include "gitlab-clickhouse-exporter.labels" . | nindent 4 }}
+    {{- include "gitlab-exporter.labels" . | nindent 4 }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      {{- include "gitlab-clickhouse-exporter.selectorLabels" . | nindent 6 }}
+      {{- include "gitlab-exporter.selectorLabels" . | nindent 6 }}
   template:
     metadata:
       {{- with .Values.podAnnotations }}
@@ -16,9 +16,9 @@ spec:
         {{- toYaml . | nindent 8 }}
       {{- end }}
       labels:
-        {{- include "gitlab-clickhouse-exporter.selectorLabels" . | nindent 8 }}
+        {{- include "gitlab-exporter.selectorLabels" . | nindent 8 }}
     spec:
-      serviceAccountName: {{ include "gitlab-clickhouse-exporter.serviceAccountName" . }}
+      serviceAccountName: {{ include "gitlab-exporter.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
       containers:
@@ -31,7 +31,7 @@ spec:
               {{- toYaml .Values.resources | nindent 12 }}
           volumeMounts:
               - name: config
-                mountPath: /etc/gitlab-clickhouse-exporter/
+                mountPath: /etc/gitlab-exporter/
           ports:
             - name: http
               {{- $serverConfig := .Values.config.server | default dict }}
@@ -47,11 +47,11 @@ spec:
               port: http
           env: 
               {{- toYaml .Values.env | nindent 12 }}
-          args: ["run", "--config", "/etc/gitlab-clickhouse-exporter/config.yaml"]
+          args: ["run", "--config", "/etc/gitlab-exporter/config.yaml"]
       volumes:
         - name: config
           configMap:
-            name: {{ include "gitlab-clickhouse-exporter.fullname" . }}
+            name: {{ include "gitlab-exporter.fullname" . }}
       {{- with .Values.nodeSelector }}
       nodeSelector:
         {{- toYaml . | nindent 8 }}

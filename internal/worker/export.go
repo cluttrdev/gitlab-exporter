@@ -6,11 +6,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/tasks"
+	"github.com/cluttrdev/gitlab-exporter/pkg/config"
+	"github.com/cluttrdev/gitlab-exporter/pkg/gitlab"
+	"github.com/cluttrdev/gitlab-exporter/pkg/tasks"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/internal/datastore"
+	"github.com/cluttrdev/gitlab-exporter/internal/datastore"
 )
 
 type exportProjectWorker struct {

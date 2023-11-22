@@ -1,8 +1,8 @@
-# Default values for gitlab-clickhouse-exporter.
+# Default values for gitlab-exporter.
 
 image:
   registry: docker.io
-  repository: cluttrdev/gitlab-clickhouse-exporter
+  repository: cluttrdev/gitlab-exporter
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
   pullPolicy: Always

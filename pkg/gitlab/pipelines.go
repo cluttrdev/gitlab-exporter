@@ -7,7 +7,7 @@ import (
 
 	_gitlab "github.com/xanzy/go-gitlab"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
+	"github.com/cluttrdev/gitlab-exporter/pkg/models"
 )
 
 type ListProjectPipelineOptions struct {

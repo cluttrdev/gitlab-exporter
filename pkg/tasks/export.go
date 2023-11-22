@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
+	"github.com/cluttrdev/gitlab-exporter/pkg/gitlab"
+	"github.com/cluttrdev/gitlab-exporter/pkg/models"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/internal/datastore"
+	"github.com/cluttrdev/gitlab-exporter/internal/datastore"
 )
 
 type ExportPipelineHierarchyOptions struct {

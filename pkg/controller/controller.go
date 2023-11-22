@@ -9,12 +9,12 @@ import (
 	"math/rand"
 	"time"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
+	"github.com/cluttrdev/gitlab-exporter/pkg/clickhouse"
+	"github.com/cluttrdev/gitlab-exporter/pkg/config"
+	"github.com/cluttrdev/gitlab-exporter/pkg/gitlab"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/internal/datastore"
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/internal/worker"
+	"github.com/cluttrdev/gitlab-exporter/internal/datastore"
+	"github.com/cluttrdev/gitlab-exporter/internal/worker"
 )
 
 type Controller struct {

@@ -98,11 +98,11 @@ Initial release.
 - README
 
 
-[Unreleased]: https://github.com/cluttrdev/gitlab-clickhouse-exporter/compare/v0.4.1...HEAD
-[0.4.1]: https://github.com/cluttrdev/gitlab-clickhouse-exporter/compare/v0.4.0...v0.4.1
-[0.4.0]: https://github.com/cluttrdev/gitlab-clickhouse-exporter/compare/v0.3.1...v0.4.0
-[0.3.1]: https://github.com/cluttrdev/gitlab-clickhouse-exporter/compare/v0.3.0...v0.3.1
-[0.3.0]: https://github.com/cluttrdev/gitlab-clickhouse-exporter/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/cluttrdev/gitlab-clickhouse-exporter/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/cluttrdev/gitlab-clickhouse-exporter/releases/tag/v0.1.0
+[Unreleased]: https://github.com/cluttrdev/gitlab-exporter/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/cluttrdev/gitlab-exporter/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/cluttrdev/gitlab-exporter/compare/v0.3.1...v0.4.0
+[0.3.1]: https://github.com/cluttrdev/gitlab-exporter/compare/v0.3.0...v0.3.1
+[0.3.0]: https://github.com/cluttrdev/gitlab-exporter/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/cluttrdev/gitlab-exporter/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/cluttrdev/gitlab-exporter/releases/tag/v0.1.0
 

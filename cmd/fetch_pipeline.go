@@ -10,9 +10,9 @@ import (
 
 	"github.com/peterbourgon/ff/v3/ffcli"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
+	"github.com/cluttrdev/gitlab-exporter/pkg/config"
+	"github.com/cluttrdev/gitlab-exporter/pkg/controller"
+	"github.com/cluttrdev/gitlab-exporter/pkg/gitlab"
 )
 
 type FetchPipelineConfig struct {

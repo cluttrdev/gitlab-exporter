@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
+	"github.com/cluttrdev/gitlab-exporter/pkg/clickhouse"
 	"golang.org/x/exp/slices"
 )
 

@@ -20,7 +20,7 @@ clickhouse:
 # List of projects to export
 projects: []
   # - # Project ID project (required).
-  #   id: 50817395  # cluttrdev/gitlab-clickhouse-exporter
+  #   id: 50817395  # cluttrdev/gitlab-exporter
   #
   #   export:
   #     sections:

@@ -1,4 +1,4 @@
-module github.com/cluttrdev/gitlab-clickhouse-exporter
+module github.com/cluttrdev/gitlab-exporter
 
 go 1.20
 

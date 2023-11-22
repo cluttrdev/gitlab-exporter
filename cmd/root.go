@@ -10,12 +10,12 @@ import (
 	"github.com/peterbourgon/ff/v3"
 	"github.com/peterbourgon/ff/v3/ffcli"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
+	"github.com/cluttrdev/gitlab-exporter/pkg/config"
 )
 
 const (
-	exeName      string = "gitlab-clickhouse-exporter"
-	envVarPrefix string = "GLCHE"
+	exeName      string = "gitlab-exporter"
+	envVarPrefix string = "GLE"
 )
 
 var (

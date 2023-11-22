@@ -9,7 +9,7 @@ import (
 
 	"github.com/peterbourgon/ff/v3/ffcli"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/cmd"
+	"github.com/cluttrdev/gitlab-exporter/cmd"
 )
 
 var (

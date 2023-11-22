@@ -1,8 +1,9 @@
-# gitlab-clickhouse-exporter
+# gitlab-exporter
 
-`gitlab-clickhouse-exporter` can help you build an observability and analytics
-solution to gain insights into your CI pipelines by exporting data retrieved
-from the [GitLab API][gitlab-api] to [ClickHouse][clickhouse].
+`gitlab-exporter` can help you build an observability and analytics solution to
+gain insights into your CI pipelines by exporting data retrieved from the
+[GitLab API][gitlab-api] to a data store backend such as
+[ClickHouse][clickhouse].
 
 ---
 
@@ -18,38 +19,38 @@ configuration options are limited.
 
 ## Installation
 
-To install `gitlab-clickhouse-exporter` you can download a 
+To install `gitlab-exporter` you can download a 
 [prebuilt binary][prebuilt-binaries] that matches your system, e.g.
 
 ```shell
 # Download
 OS=linux
 ARCH=amd64
-RELEASE_TAG=$(curl -sSfL https://api.github.com/repos/cluttrdev/gitlab-clickhouse-exporter/releases/latest | jq -r '.tag_name')
-curl -sSfL https://github.com/cluttrdev/gitlab-clickhouse-exporter/releases/download/${RELEASE_TAG}/gitlab-clickhouse-exporter_${RELEASE_TAG}_${OS}_${ARCH}.tar.gz
+RELEASE_TAG=$(curl -sSfL https://api.github.com/repos/cluttrdev/gitlab-exporter/releases/latest | jq -r '.tag_name')
+curl -sSfL https://github.com/cluttrdev/gitlab-exporter/releases/download/${RELEASE_TAG}/gitlab-exporter_${RELEASE_TAG}_${OS}_${ARCH}.tar.gz
 # Install
-tar -xf gitlab-clickhouse-exporter_*.tar.gz gitlab-clickhouse-exporter
-install gitlab-clickhouse-exporter ~/.local/bin/gitlab-clickhouse-exporter
+tar -xf gitlab-exporter_*.tar.gz gitlab-exporter
+install gitlab-exporter ~/.local/bin/gitlab-exporter
 ```
 
 Alternatively, if you have the [Go][go-install] tools installed on your
 machine, you can use
 
 ```shell
-go install github.com/cluttrdev/gitlab-clickhouse-exporter@latest
+go install github.com/cluttrdev/gitlab-exporter@latest
 ```
 
 ## Usage
 
-`gitlab-clickhouse-exporter` can either run in daemon mode or execute one-off
+`gitlab-exporter` can either run in daemon mode or execute one-off
 commands.
 
 ### Daemon Mode
 
-To run `gitlab-clickhouse-exporter` in daemon mode use:
+To run `gitlab-exporter` in daemon mode use:
 
 ```shell
-gitlab-clickhouse-exporter --config CONFIG_FILE run
+gitlab-exporter --config CONFIG_FILE run
 ```
 
 This will periodically export data for updated pipelines of the configured projects,
@@ -57,11 +58,11 @@ see [Configuration](#configuration) for configuration options.
 
 ### Command Mode
 
-`gitlab-clickhouse-exporter` supports a number of commands that can be executed
+`gitlab-exporter` supports a number of commands that can be executed
 individually. Use the following to get an overview of available commands:
 
 ```shell
-gitlab-clickhouse-exporter -h
+gitlab-exporter -h
 ```
 
 ## Configuration
@@ -70,20 +71,20 @@ Configuration options can be specified in a config file that is passed to the
 application using the `--config` command-line flag.
 
 For an overview of available configuration options and their default values,
-see [configs/gitlab-clickhouse-exporter.yaml](./configs/gitlab-clickhouse-exporter.yaml).
+see [configs/gitlab-exporter.yaml](./configs/gitlab-exporter.yaml).
 
 Some common options can also be passed as command-line flags and/or environment
 variables, with flags taking precedence.
 
-| Flag                  | Environment Variable        | Default Value                 |
-| ---                   | ---                         | ---                           |
-| --gitlab-api-url      | `GLCHE_GITLAB_API_URL`      | `"https://gitlab.com/api/v4"` |
-| --gitlab-api-token    | `GLCHE_GITLAB_API_TOKEN`    | **required**                  |
-| --clickhouse-host     | `GLCHE_CLICKHOUSE_HOST`     | `"localhost"`                 |
-| --clickhouse-port     | `GLCHE_CLICKHOUSE_PORT`     | `9000`                        |
-| --clickhouse-database | `GLCHE_CLICKHOUSE_DATABASE` | `"default"`                   |
-| --clickhouse-user     | `GLCHE_CLICKHOUSE_USER`     | `"default"`                   |
-| --clickhouse-password | `GLCHE_CLICKHOUSE_PASSWORD` | `""`                          |
+| Flag                  | Environment Variable      | Default Value                 |
+| ---                   | ---                       | ---                           |
+| --gitlab-api-url      | `GLE_GITLAB_API_URL`      | `"https://gitlab.com/api/v4"` |
+| --gitlab-api-token    | `GLE_GITLAB_API_TOKEN`    | **required**                  |
+| --clickhouse-host     | `GLE_CLICKHOUSE_HOST`     | `"localhost"`                 |
+| --clickhouse-port     | `GLE_CLICKHOUSE_PORT`     | `9000`                        |
+| --clickhouse-database | `GLE_CLICKHOUSE_DATABASE` | `"default"`                   |
+| --clickhouse-user     | `GLE_CLICKHOUSE_USER`     | `"default"`                   |
+| --clickhouse-password | `GLE_CLICKHOUSE_PASSWORD` | `""`                          |
 
 ## Development Environment
 
@@ -98,12 +99,12 @@ To use this, simply change directory to `environments/dev/` and run:
 docker compose up -d
 ```
 
-Then, set the necessary environment variables and run `gitlab-clickhouse-exporter`
+Then, set the necessary environment variables and run `gitlab-exporter`
 (either in daemon mode or using one-off commands):
 ```shell
-export GLCHE_GITLAB_API_TOKEN=<your-gitlab-token>
+export GLE_GITLAB_API_TOKEN=<your-gitlab-token>
 
-gitlab-clickhouse-exporter run --projects <project-ids>
+gitlab-exporter run --projects <project-ids>
 ```
 
 You can then login to Grafana on <http://localhost:3000> to explore the data.
@@ -120,6 +121,6 @@ This project is licensed under the [MIT License](./LICENSE).
 [gitlab-api]: https://docs.gitlab.com/ee/api/rest/
 [clickhouse]: https://clickhouse.com/
 [go-install]: https://go.dev/doc/install
-[prebuilt-binaries]: https://github.com/cluttrdev/gitlab-clickhouse-exporter/releases/latest
+[prebuilt-binaries]: https://github.com/cluttrdev/gitlab-exporter/releases/latest
 [github-mvisonneau]: https://github.com/mvisonneau
 [github-gcpe]: https://github.com/mvisonneau/gitlab-ci-pipelines-exporter

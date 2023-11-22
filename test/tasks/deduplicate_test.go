@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/tasks"
+	"github.com/cluttrdev/gitlab-exporter/pkg/tasks"
 )
 
 func checkQuery(t *testing.T, want string, got string) {

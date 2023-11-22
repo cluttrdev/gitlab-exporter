@@ -5,7 +5,7 @@ GIT_TAG := `git describe --exact-match 2>/dev/null || true`
 GOHOSTOS := `go env GOHOSTOS`
 GOHOSTARCH := `go env GOHOSTARCH`
 
-BIN_NAME := "gitlab-clickhouse-exporter"
+BIN_NAME := "gitlab-exporter"
 BIN_DIR := "bin"
 DIST_DIR := "dist"
 
@@ -148,9 +148,9 @@ _docker-run CONFIG="" *ARGS="":
         docker run -it --rm --net host ${image}:${tag} ${args}
     else
         docker run -it --rm --net host \
-            --volume $(realpath ${config}):/etc/gitlab-clickhouse-exporter.yaml:ro \
+            --volume $(realpath ${config}):/etc/gitlab-exporter.yaml:ro \
             ${image}:${tag} \
-            --config /etc/gitlab-clickhouse-exporter.yaml \
+            --config /etc/gitlab-exporter.yaml \
             ${args}
     fi
 

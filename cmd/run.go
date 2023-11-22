@@ -15,9 +15,9 @@ import (
 	"github.com/peterbourgon/ff/v3/ffcli"
 	"golang.org/x/exp/slices"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/controller"
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/server"
+	"github.com/cluttrdev/gitlab-exporter/pkg/config"
+	"github.com/cluttrdev/gitlab-exporter/pkg/controller"
+	"github.com/cluttrdev/gitlab-exporter/pkg/server"
 )
 
 type RunConfig struct {

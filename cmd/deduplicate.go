@@ -8,9 +8,9 @@ import (
 
 	"github.com/peterbourgon/ff/v3/ffcli"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/tasks"
+	"github.com/cluttrdev/gitlab-exporter/pkg/clickhouse"
+	"github.com/cluttrdev/gitlab-exporter/pkg/config"
+	"github.com/cluttrdev/gitlab-exporter/pkg/tasks"
 )
 
 type DeduplicateConfig struct {

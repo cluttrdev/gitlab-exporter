@@ -6,7 +6,7 @@ import (
 
 	_gitlab "github.com/xanzy/go-gitlab"
 
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/models"
+	"github.com/cluttrdev/gitlab-exporter/pkg/models"
 )
 
 func (c *Client) GetPipelineTestReport(ctx context.Context, projectID int64, pipelineID int64) (*models.PipelineTestReport, error) {
