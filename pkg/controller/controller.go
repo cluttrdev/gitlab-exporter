@@ -12,9 +12,9 @@ import (
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/clickhouse"
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/config"
 	gitlab "github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/gitlab"
-	"github.com/cluttrdev/gitlab-clickhouse-exporter/pkg/worker"
 
 	"github.com/cluttrdev/gitlab-clickhouse-exporter/internal/datastore"
+	"github.com/cluttrdev/gitlab-clickhouse-exporter/internal/worker"
 )
 
 type Controller struct {
