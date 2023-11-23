@@ -13,6 +13,8 @@ import (
 type Client struct {
 	sync.RWMutex
 	conn driver.Conn
+
+	dbName string
 }
 
 type ClientConfig struct {
@@ -58,6 +60,7 @@ func (c *Client) Configure(cfg ClientConfig) error {
 
 	c.Lock()
 	c.conn = conn
+	c.dbName = cfg.Database
 	c.Unlock()
 	return nil
 }
@@ -100,7 +103,7 @@ func (c *Client) CreateDatabase(ctx context.Context) error {
 }
 
 func (c *Client) CreateTables(ctx context.Context) error {
-	return createTables(ctx, c)
+	return createTables(ctx, c.dbName, c)
 }
 
 func (c *Client) QueryProjectPipelinesLatestUpdate(ctx context.Context, projectID int64) (map[int64]time.Time, error) {
@@ -115,10 +118,10 @@ func (c *Client) QueryProjectPipelinesLatestUpdate(ctx context.Context, projectI
 
 	query := fmt.Sprintf(`
         SELECT id, max(updated_at) AS latest_update
-        FROM gitlab_ci.pipelines
+        FROM %s.pipelines
         WHERE project_id = %d
         GROUP BY id
-    `, projectID)
+    `, c.dbName, projectID)
 
 	if err := c.Select(ctx, &results, query); err != nil {
 		return nil, err

@@ -17,7 +17,14 @@ func timestamp(t *time.Time) float64 {
 }
 
 func InsertPipelines(ctx context.Context, pipelines []*models.Pipeline, c *Client) error {
-	batch, err := c.PrepareBatch(ctx, "INSERT INTO gitlab_ci.pipelines")
+	const query string = `INSERT INTO {db: Identifier}.pipelines`
+	var params = map[string]string{
+		"db": c.dbName,
+	}
+
+	ctx = WithParameters(ctx, params)
+
+	batch, err := c.PrepareBatch(ctx, query)
 	if err != nil {
 		return fmt.Errorf("[clickhouse.Client.InsertPipelines] %w", err)
 	}
@@ -53,7 +60,14 @@ func InsertPipelines(ctx context.Context, pipelines []*models.Pipeline, c *Clien
 }
 
 func InsertJobs(ctx context.Context, jobs []*models.Job, c *Client) error {
-	batch, err := c.PrepareBatch(ctx, "INSERT INTO gitlab_ci.jobs")
+	const query string = `INSERT INTO {db: Identifier}.jobs`
+	var params = map[string]string{
+		"db": c.dbName,
+	}
+
+	ctx = WithParameters(ctx, params)
+
+	batch, err := c.PrepareBatch(ctx, query)
 	if err != nil {
 		return fmt.Errorf("[clickhouse.Client.InsertJobs] %w", err)
 	}
@@ -94,7 +108,14 @@ func InsertJobs(ctx context.Context, jobs []*models.Job, c *Client) error {
 }
 
 func InsertBridges(ctx context.Context, bridges []*models.Bridge, c *Client) error {
-	batch, err := c.PrepareBatch(ctx, "INSERT INTO gitlab_ci.bridges")
+	const query string = `INSERT INTO {db: Identifier}.bridges`
+	var params = map[string]string{
+		"db": c.dbName,
+	}
+
+	ctx = WithParameters(ctx, params)
+
+	batch, err := c.PrepareBatch(ctx, query)
 	if err != nil {
 		return fmt.Errorf("[clickhouse.Client.InsertBridges] %w", err)
 	}
@@ -151,7 +172,14 @@ func InsertBridges(ctx context.Context, bridges []*models.Bridge, c *Client) err
 }
 
 func InsertSections(ctx context.Context, sections []*models.Section, client *Client) error {
-	batch, err := client.PrepareBatch(ctx, "INSERT INTO gitlab_ci.sections")
+	const query string = `INSERT INTO {db: Identifier}.sections`
+	var params = map[string]string{
+		"db": client.dbName,
+	}
+
+	ctx = WithParameters(ctx, params)
+
+	batch, err := client.PrepareBatch(ctx, query)
 	if err != nil {
 		return fmt.Errorf("[clickhouse.Client.InsertSections] %w", err)
 	}
@@ -205,7 +233,14 @@ func InsertPipelineHierarchy(ctx context.Context, hierarchy *models.PipelineHier
 }
 
 func InsertTestReports(ctx context.Context, reports []*models.PipelineTestReport, client *Client) error {
-	batch, err := client.PrepareBatch(ctx, "INSERT INTO gitlab_ci.testreports")
+	const query string = `INSERT INTO {db: Identifier}.testreports`
+	var params = map[string]string{
+		"db": client.dbName,
+	}
+
+	ctx = WithParameters(ctx, params)
+
+	batch, err := client.PrepareBatch(ctx, query)
 	if err != nil {
 		return fmt.Errorf("[clickhouse.Client.InsertTestReports] %w", err)
 	}
@@ -247,7 +282,14 @@ func convertTestSuitesSummary(suites []*models.PipelineTestSuite) (ids []int64, 
 }
 
 func InsertTestSuites(ctx context.Context, suites []*models.PipelineTestSuite, client *Client) error {
-	batch, err := client.PrepareBatch(ctx, "INSERT INTO gitlab_ci.testsuites")
+	const query string = `INSERT INTO {db: Identifier}.testsuites`
+	var params = map[string]string{
+		"db": client.dbName,
+	}
+
+	ctx = WithParameters(ctx, params)
+
+	batch, err := client.PrepareBatch(ctx, query)
 	if err != nil {
 		return fmt.Errorf("[clickhouse.Client.InsertTestReports] %w", err)
 	}
@@ -291,7 +333,14 @@ func convertTestCasesSummary(cases []*models.PipelineTestCase) (ids []int64, sta
 }
 
 func InsertTestCases(ctx context.Context, cases []*models.PipelineTestCase, client *Client) error {
-	batch, err := client.PrepareBatch(ctx, "INSERT INTO gitlab_ci.testcases")
+	const query string = `INSERT INTO {db: Identifier}.testcases`
+	var params = map[string]string{
+		"db": client.dbName,
+	}
+
+	ctx = WithParameters(ctx, params)
+
+	batch, err := client.PrepareBatch(ctx, query)
 	if err != nil {
 		return fmt.Errorf("[clickhouse.Client.InsertTestReports] %w", err)
 	}
@@ -365,7 +414,14 @@ func convertLinks(links []models.SpanLink) ([]string, []string, []string, []map[
 }
 
 func InsertTraces(ctx context.Context, traces []models.Trace, client *Client) error {
-	batch, err := client.PrepareBatch(ctx, "INSERT INTO gitlab_ci.traces")
+	const query string = `INSERT INTO {db: Identifier}.traces`
+	var params = map[string]string{
+		"db": client.dbName,
+	}
+
+	ctx = WithParameters(ctx, params)
+
+	batch, err := client.PrepareBatch(ctx, query)
 	if err != nil {
 		return fmt.Errorf("[clickhouse.Client.InsertTraces] %w", err)
 	}

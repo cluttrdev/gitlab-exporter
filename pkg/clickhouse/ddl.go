@@ -6,7 +6,7 @@ import (
 )
 
 const (
-	dbName string = "gitlab_ci"
+	defaultDBName string = "gitlab_ci"
 )
 
 const (
@@ -306,106 +306,106 @@ WHERE TraceId = {trace_id:String}
     `
 )
 
-func createTables(ctx context.Context, client *Client) error {
-	if err := client.Exec(ctx, renderCreatePipelinesTableSQL()); err != nil {
+func createTables(ctx context.Context, db string, client *Client) error {
+	if err := client.Exec(ctx, renderCreatePipelinesTableSQL(db)); err != nil {
 		return fmt.Errorf("exec create pipelines table: %w", err)
 	}
-	if err := client.Exec(ctx, renderCreateJobsTableSQL()); err != nil {
+	if err := client.Exec(ctx, renderCreateJobsTableSQL(db)); err != nil {
 		return fmt.Errorf("exec create jobs table: %w", err)
 	}
-	if err := client.Exec(ctx, renderCreateSectionsTableSQL()); err != nil {
+	if err := client.Exec(ctx, renderCreateSectionsTableSQL(db)); err != nil {
 		return fmt.Errorf("exec create sections table: %w", err)
 	}
-	if err := client.Exec(ctx, renderCreateBridgesTableSQL()); err != nil {
+	if err := client.Exec(ctx, renderCreateBridgesTableSQL(db)); err != nil {
 		return fmt.Errorf("exec create bridges table: %w", err)
 	}
-	if err := client.Exec(ctx, renderCreateTestReportsTableSQL()); err != nil {
+	if err := client.Exec(ctx, renderCreateTestReportsTableSQL(db)); err != nil {
 		return fmt.Errorf("exec create testreports table: %w", err)
 	}
-	if err := client.Exec(ctx, renderCreateTestSuitesTableSQL()); err != nil {
+	if err := client.Exec(ctx, renderCreateTestSuitesTableSQL(db)); err != nil {
 		return fmt.Errorf("exec create testsuites table: %w", err)
 	}
-	if err := client.Exec(ctx, renderCreateTestCasesTableSQL()); err != nil {
+	if err := client.Exec(ctx, renderCreateTestCasesTableSQL(db)); err != nil {
 		return fmt.Errorf("exec create testcases table: %w", err)
 	}
 
-	if err := client.Exec(ctx, renderCreateTracesTableSQL()); err != nil {
+	if err := client.Exec(ctx, renderCreateTracesTableSQL(db)); err != nil {
 		return fmt.Errorf("exec create traces table: %w", err)
 	}
-	if err := client.Exec(ctx, renderCreateTraceIdTsTableSQL()); err != nil {
+	if err := client.Exec(ctx, renderCreateTraceIdTsTableSQL(db)); err != nil {
 		return fmt.Errorf("exec create traceIdTs table: %w", err)
 	}
-	if err := client.Exec(ctx, renderCreateTraceIdTsMaterializedViewSQL()); err != nil {
+	if err := client.Exec(ctx, renderCreateTraceIdTsMaterializedViewSQL(db)); err != nil {
 		return fmt.Errorf("exec create traceIdTs view: %w", err)
 	}
-	if err := client.Exec(ctx, renderTraceViewSQL()); err != nil {
+	if err := client.Exec(ctx, renderTraceViewSQL(db)); err != nil {
 		return fmt.Errorf("exec create trace view: %w", err)
 	}
 
 	return nil
 }
 
-func renderCreatePipelinesTableSQL() string {
-	tableName := "pipelines"
-	return fmt.Sprintf(createPipelinesTableSQL, dbName, tableName)
+func renderCreatePipelinesTableSQL(db string) string {
+	const tableName string = "pipelines"
+	return fmt.Sprintf(createPipelinesTableSQL, db, tableName)
 }
 
-func renderCreateJobsTableSQL() string {
-	tableName := "jobs"
-	return fmt.Sprintf(createJobsTableSQL, dbName, tableName)
+func renderCreateJobsTableSQL(db string) string {
+	const tableName string = "jobs"
+	return fmt.Sprintf(createJobsTableSQL, db, tableName)
 }
 
-func renderCreateBridgesTableSQL() string {
-	tableName := "bridges"
-	return fmt.Sprintf(createBridgesTableSQL, dbName, tableName)
+func renderCreateBridgesTableSQL(db string) string {
+	const tableName string = "bridges"
+	return fmt.Sprintf(createBridgesTableSQL, db, tableName)
 }
 
-func renderCreateSectionsTableSQL() string {
-	tableName := "sections"
-	return fmt.Sprintf(createSectionsTableSQL, dbName, tableName)
+func renderCreateSectionsTableSQL(db string) string {
+	const tableName string = "sections"
+	return fmt.Sprintf(createSectionsTableSQL, db, tableName)
 }
 
-func renderCreateTestReportsTableSQL() string {
-	tableName := "testreports"
-	return fmt.Sprintf(createTestReportsTableSQL, dbName, tableName)
+func renderCreateTestReportsTableSQL(db string) string {
+	const tableName string = "testreports"
+	return fmt.Sprintf(createTestReportsTableSQL, db, tableName)
 }
 
-func renderCreateTestSuitesTableSQL() string {
-	tableName := "testsuites"
-	return fmt.Sprintf(createTestSuitesTableSQL, dbName, tableName)
+func renderCreateTestSuitesTableSQL(db string) string {
+	const tableName string = "testsuites"
+	return fmt.Sprintf(createTestSuitesTableSQL, db, tableName)
 }
 
-func renderCreateTestCasesTableSQL() string {
-	tableName := "testcases"
-	return fmt.Sprintf(createTestCasesTableSQL, dbName, tableName)
+func renderCreateTestCasesTableSQL(db string) string {
+	const tableName string = "testcases"
+	return fmt.Sprintf(createTestCasesTableSQL, db, tableName)
 }
 
-func renderCreateTracesTableSQL() string {
-	tableName := "traces"
-	return fmt.Sprintf(createTracesTableSQL, dbName, tableName)
+func renderCreateTracesTableSQL(db string) string {
+	const tableName string = "traces"
+	return fmt.Sprintf(createTracesTableSQL, db, tableName)
 }
 
-func renderCreateTraceIdTsTableSQL() string {
-	tableName := "traces"
-	return fmt.Sprintf(createTraceIdTsTableSQL, dbName, tableName)
+func renderCreateTraceIdTsTableSQL(db string) string {
+	const tableName string = "traces"
+	return fmt.Sprintf(createTraceIdTsTableSQL, db, tableName)
 }
 
-func renderCreateTraceIdTsMaterializedViewSQL() string {
-	tableName := "traces"
+func renderCreateTraceIdTsMaterializedViewSQL(db string) string {
+	const tableName string = "traces"
 	return fmt.Sprintf(
 		createTraceIdTsMaterializedViewSQL,
-		dbName, tableName,
-		dbName, tableName,
-		dbName, tableName,
+		db, tableName,
+		db, tableName,
+		db, tableName,
 	)
 }
 
-func renderTraceViewSQL() string {
+func renderTraceViewSQL(db string) string {
 	viewName := "trace_view"
-	tableName := "traces"
+	const tableName string = "traces"
 	return fmt.Sprintf(
 		createTraceViewSQL,
-		dbName, viewName,
-		dbName, tableName,
+		db, viewName,
+		db, tableName,
 	)
 }
