@@ -28,5 +28,18 @@
             <background_pool_size>4</background_pool_size>
         </default>
     </profiles>
+
+    <users>
+        <default>
+            <!--
+            Enable SQL-driven access management for default user.
+            Else, creating new user in init-db script would fail.
+            see: https://clickhouse.com/docs/en/operations/access-rights#enabling-access-control
+
+            The default is 0 - Disabled.
+            -->
+            <access_management>1</access_management>
+        </default>
+    </users>
 </clickhouse>
 

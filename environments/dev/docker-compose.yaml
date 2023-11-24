@@ -1,18 +1,24 @@
 version: '3'
 
-name: glche-dev
+name: glcia-dev
 
 services:
   clickhouse:
     container_name: clickhouse
     image: docker.io/clickhouse/clickhouse-server:latest
+    environment:
+      # variables used in ./clickhouse/initdb.d/init-db.sh
+      GLE_CLICKHOUSE_DATABASE: "gitlab_ci"
+      GLE_CLICKHOUSE_USER: "gitlab_exporter"
+      GLE_CLICKHOUSE_PASSWORD: "gitlab_exporter"
     volumes:
       - ./clickhouse/config.xml:/etc/clickhouse-server/config.d/config.xml:ro
       - ./clickhouse/users.xml:/etc/clickhouse-server/users.d/users.xml:ro
+      - ./clickhouse/initdb.d/:/docker-entrypoint-initdb.d/:ro
       - clickhouse_data:/var/lib/clickhouse/
       - clickhouse_logs:/var/log/clickhouse-server/
     networks:
-      - glche-dev
+      - glcia-dev
     ports:
       - 127.0.0.1:8123:8123  # http
       - 127.0.0.1:9000:9000  # native
@@ -31,7 +37,7 @@ services:
       - ./grafana/provisioning/dashboards/:/etc/grafana/provisioning/dashboards/
       - grafana_data:/var/lib/grafana
     networks:
-      - glche-dev
+      - glcia-dev
     ports:
       - 127.0.0.1:3000:3000
 
@@ -41,6 +47,6 @@ volumes:
   grafana_data: {}
 
 networks:
-  glche-dev:
-    name: glche-dev
+  glcia-dev:
+    name: glcia-dev
 
