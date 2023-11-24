@@ -54,5 +54,7 @@ projects: []
 
 # HTTP server settings
 server:
-  # Address:port the server listens on
-  address: ":8080"
+  # The host part of the server address
+  host: "127.0.0.1"
+  # The port the server listens on
+  port: "8080"
