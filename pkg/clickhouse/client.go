@@ -98,10 +98,6 @@ func (c *Client) PrepareBatch(ctx context.Context, query string) (driver.Batch, 
 	return c.conn.PrepareBatch(ctx, query)
 }
 
-func (c *Client) CreateDatabase(ctx context.Context) error {
-	return c.Exec(ctx, `CREATE DATABASE IF NOT EXISTS gitlab_ci`)
-}
-
 func (c *Client) CreateTables(ctx context.Context) error {
 	return createTables(ctx, c.dbName, c)
 }

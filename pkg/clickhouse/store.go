@@ -19,10 +19,6 @@ func NewClickHouseDataStore(c *Client) *ClickHouseDataStore {
 }
 
 func (ds *ClickHouseDataStore) Initialize(ctx context.Context) error {
-	if err := ds.client.CreateDatabase(ctx); err != nil {
-		return fmt.Errorf("error creating database: %w", err)
-	}
-
 	if err := ds.client.CreateTables(ctx); err != nil {
 		return fmt.Errorf("error creating tables: %w", err)
 	}

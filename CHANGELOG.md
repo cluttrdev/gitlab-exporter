@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - HTTP server implementation with health, debug and metrics endpoints
 - Deduplication task and subcommand
 
+### Removed
+
+- ClickHouse database creation (instead use the one configured to connect with)
+
 ## [0.4.1] - 2023-10-24
 
 ### Changed
