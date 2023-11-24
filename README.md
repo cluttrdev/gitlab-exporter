@@ -80,8 +80,8 @@ variables, with flags taking precedence.
 | ---                   | ---                       | ---                           |
 | --gitlab-api-url      | `GLE_GITLAB_API_URL`      | `"https://gitlab.com/api/v4"` |
 | --gitlab-api-token    | `GLE_GITLAB_API_TOKEN`    | **required**                  |
-| --clickhouse-host     | `GLE_CLICKHOUSE_HOST`     | `"localhost"`                 |
-| --clickhouse-port     | `GLE_CLICKHOUSE_PORT`     | `9000`                        |
+| --clickhouse-host     | `GLE_CLICKHOUSE_HOST`     | `"127.0.0.1"`                 |
+| --clickhouse-port     | `GLE_CLICKHOUSE_PORT`     | `"9000"`                      |
 | --clickhouse-database | `GLE_CLICKHOUSE_DATABASE` | `"default"`                   |
 | --clickhouse-user     | `GLE_CLICKHOUSE_USER`     | `"default"`                   |
 | --clickhouse-password | `GLE_CLICKHOUSE_PASSWORD` | `""`                          |
@@ -89,25 +89,49 @@ variables, with flags taking precedence.
 ## Development Environment
 
 To test the application during development or to just see what it has to offer,
-a [docker-compose.yaml](./environments/dev/docker-compose.yaml) file is provided
-that can be used to set up a simple environment consisting of a ClickHouse server
+a [docker-compose](./environments/dev/docker-compose.yaml) setup is provided
+that can be used to create a simple environment consisting of a ClickHouse server
 and a Grafana instance that includes some predefined dashboards.
 
-To use this, simply change directory to `environments/dev/` and run:
+To use this, change directory to `environments/dev/` and run:
 
 ```shell
 docker compose up -d
 ```
 
-Then, set the necessary environment variables and run `gitlab-exporter`
-(either in daemon mode or using one-off commands):
+The ClickHouse server will listen on `127.0.0.1:9000` and have the following
+database and user created:
+```
+database: gitlab_ci
+user:     gitlab_exporter
+password: gitlab_exporter
+```
+See the
+[config.xml](./environments/dev/clickhouse/config.xml),
+[users.xml](./environments/dev/clickhouse/users.xml) and
+[init-db.sh](./environments/dev/clickhouse/initdb.d/init-db.sh)
+files for more details.
+
+Then, create a configuration file or set the necessary environment variables
+and run `gitlab-exporter` (either in daemon mode or using one-off commands):
 ```shell
+# create simple config file with the database settings
+cat <<EOF > config.yaml
+clickhouse:
+  database: "gitlab_ci"
+  user: "gitlab_exporter"
+  password: "gitlab_exporter"
+EOF
+
+# set required api token as environment variable (or put it in the config file)
 export GLE_GITLAB_API_TOKEN=<your-gitlab-token>
 
-gitlab-exporter run --projects <project-ids>
+# run the application
+gitlab-exporter run --config ./config.yaml --projects <project-ids>
 ```
 
-You can then login to Grafana on <http://localhost:3000> to explore the data.
+You should then be able to login to Grafana on <http://localhost:3000> (using
+the default `admin:admin` credentials) and explore the data.
 
 ## Acknowledgements
 
