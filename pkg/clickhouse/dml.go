@@ -376,6 +376,42 @@ func InsertTestCases(ctx context.Context, cases []*models.PipelineTestCase, clie
 	return batch.Send()
 }
 
+func InsertJobMetrics(ctx context.Context, metrics []*models.JobMetric, client *Client) error {
+	const query string = `INSERT INTO {db: Identifier}.{table: Identifier}`
+	var params = map[string]string{
+		"db":    client.dbName,
+		"table": "job_metrics",
+	}
+
+	ctx = WithParameters(ctx, params)
+
+	batch, err := client.PrepareBatch(ctx, query)
+	if err != nil {
+		return fmt.Errorf("prepare batch: %w", err)
+	}
+
+	for _, m := range metrics {
+		err = batch.Append(
+			m.Name,
+			m.Labels,
+			m.Value,
+			m.Timestamp,
+			map[string]interface{}{
+				"id":   m.Job.ID,
+				"name": m.Job.Name,
+			},
+		)
+		if err != nil {
+			return fmt.Errorf("append batch:  %w", err)
+		}
+	}
+
+	if err := batch.Send(); err != nil {
+		return fmt.Errorf("send batch: %w", err)
+	}
+	return nil
+}
+
 func timeFromUnixNano(ts int64) time.Time {
 	const nsecPerSecond int64 = 1e09
 	sec := ts / nsecPerSecond
