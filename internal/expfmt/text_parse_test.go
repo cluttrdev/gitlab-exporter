@@ -14,18 +14,18 @@ func TestTextParser_LineToMetric(t *testing.T) {
 		out *expfmt.Metric
 	}{
 		{
-			in:  "",
+			in:  ``,
 			out: nil,
 		},
 		{
-			in: "minimal_metric 42.1337",
+			in: `minimal_metric 42.1337`,
 			out: &expfmt.Metric{
 				Name:  "minimal_metric",
 				Value: 42.1337,
 			},
 		},
 		{
-			in: "no_labels{} 3",
+			in: `no_labels{} 3`,
 			out: &expfmt.Metric{
 				Name:  "no_labels",
 				Value: 3,
