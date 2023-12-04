@@ -66,6 +66,10 @@ func (ds *ClickHouseDataStore) InsertTestCases(ctx context.Context, cases []*mod
 	return InsertTestCases(ctx, cases, ds.client)
 }
 
+func (ds *ClickHouseDataStore) InsertJobMetrics(ctx context.Context, metrics []*models.JobMetric) error {
+	return InsertJobMetrics(ctx, metrics, ds.client)
+}
+
 func (ds *ClickHouseDataStore) QueryProjectPipelinesLatestUpdate(ctx context.Context, projectID int64) (map[int64]time.Time, error) {
 	return ds.client.QueryProjectPipelinesLatestUpdate(ctx, projectID)
 }
