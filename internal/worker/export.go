@@ -105,6 +105,7 @@ func (w *exportProjectWorker) run(ctx context.Context) {
 						ExportSections:    w.project.Export.Sections.Enabled,
 						ExportTestReports: w.project.Export.TestReports.Enabled,
 						ExportTraces:      w.project.Export.Traces.Enabled,
+						ExportJobMetrics:  w.project.Export.Sections.Enabled, // for now, export metrics if we fetch the logs for sections anyway
 					}
 
 					if err := tasks.ExportPipelineHierarchy(ctx, opts, w.gitlab, w.datastore); err != nil {

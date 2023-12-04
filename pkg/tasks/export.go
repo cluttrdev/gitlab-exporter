@@ -17,6 +17,7 @@ type ExportPipelineHierarchyOptions struct {
 	ExportSections    bool
 	ExportTestReports bool
 	ExportTraces      bool
+	ExportJobMetrics  bool
 }
 
 func ExportPipelineHierarchy(ctx context.Context, opts ExportPipelineHierarchyOptions, gl *gitlab.Client, ds datastore.DataStore) error {
@@ -30,7 +31,8 @@ func exportPipelineHierarchy(ctx context.Context, opts ExportPipelineHierarchyOp
 		defer close(out)
 
 		opt := &gitlab.GetPipelineHierarchyOptions{
-			FetchSections: opts.ExportSections,
+			FetchSections:   opts.ExportSections,
+			FetchJobMetrics: opts.ExportSections,
 		}
 
 		phr := <-gl.GetPipelineHierarchy(ctx, opts.ProjectID, opts.PipelineID, opt)
