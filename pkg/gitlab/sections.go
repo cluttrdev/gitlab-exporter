@@ -112,20 +112,24 @@ func parseSections(trace *bytes.Reader) ([]sectionData, error) {
 	scanner := bufio.NewScanner(trace)
 	for scanner.Scan() {
 		line := scanner.Bytes()
-		if index := bytes.Index(line, []byte(sectionMarkerStart)); index >= 0 {
-			ts, name, err := parseSection(sectionMarkerStart, line)
-			if err != nil {
-				// TODO: what?
-			} else {
-				stack.Start(ts, name)
+		var i, j int
+		sep := []byte(`section_`)
+		for {
+			j = bytes.Index(line[i:], sep)
+			if j < 0 {
+				break
 			}
-		} else if index := bytes.Index(line, []byte(sectionMarkerEnd)); index >= 0 {
-			ts, name, err := parseSection(sectionMarkerEnd, line)
+
+			marker, ts, name, err := parseSection(line[i:])
 			if err != nil {
 				// TODO: what?
-			} else {
+			} else if marker == string(sectionMarkerStart) {
+				stack.Start(ts, name)
+			} else if marker == string(sectionMarkerEnd) {
 				sections = append(sections, stack.End(ts, name)...)
 			}
+
+			i = i + j + 1
 		}
 	}
 
@@ -191,14 +195,15 @@ const (
 	sectionMarkerEnd   sectionMarker = "section_end"
 )
 
-func parseSection(marker sectionMarker, line []byte) (timestamp int64, name string, err error) {
-	pattern := regexp.MustCompile(fmt.Sprintf(`%s:(?P<ts>\d+):(?P<name>[\w_]+)`, marker))
+func parseSection(line []byte) (marker string, timestamp int64, name string, err error) {
+	pattern := regexp.MustCompile(`(?P<marker>section_(?:start|end)):(?P<ts>\d+):(?P<name>[\w_]+)`)
 	match := pattern.FindSubmatch(line)
-	if len(match) != 3 {
+	if len(match) != 4 {
 		err = errors.New("no match found")
 		return
 	}
 
+	marker = string(match[pattern.SubexpIndex("marker")])
 	time_s := string(match[pattern.SubexpIndex("ts")])
 	name = string(match[pattern.SubexpIndex("name")])
 

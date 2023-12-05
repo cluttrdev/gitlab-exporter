@@ -39,20 +39,26 @@ func parseJobLog(trace *bytes.Reader) (*jobLogData, error) {
 				continue
 			}
 			data.Metrics = append(data.Metrics, metric)
-		} else if index := bytes.Index(line, []byte(sectionMarkerStart)); index >= 0 {
-			ts, name, err := parseSection(sectionMarkerStart, line)
-			if err != nil {
-				// TODO: what?
-			} else {
-				stack.Start(ts, name)
+		}
+
+		var i, j int
+		sep := []byte(`section_`)
+		for {
+			j = bytes.Index(line[i:], sep)
+			if j < 0 {
+				break
 			}
-		} else if index := bytes.Index(line, []byte(sectionMarkerEnd)); index >= 0 {
-			ts, name, err := parseSection(sectionMarkerEnd, line)
+
+			marker, ts, name, err := parseSection(line[i:])
 			if err != nil {
 				// TODO: what?
-			} else {
+			} else if marker == string(sectionMarkerStart) {
+				stack.Start(ts, name)
+			} else if marker == string(sectionMarkerEnd) {
 				data.Sections = append(data.Sections, stack.End(ts, name)...)
 			}
+
+			i = i + j + 1
 		}
 	}
 
