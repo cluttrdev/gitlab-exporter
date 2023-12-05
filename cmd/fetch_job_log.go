@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -12,10 +13,14 @@ import (
 
 	"github.com/cluttrdev/gitlab-exporter/pkg/config"
 	"github.com/cluttrdev/gitlab-exporter/pkg/controller"
+	"github.com/cluttrdev/gitlab-exporter/pkg/gitlab"
 )
 
 type FetchJobLogConfig struct {
 	fetchConfig *FetchConfig
+
+	printSections bool
+	printMetrics  bool
 
 	flags *flag.FlagSet
 }
@@ -44,6 +49,9 @@ func NewFetchJobLogCmd(fetchConfig *FetchConfig) *ffcli.Command {
 
 func (c *FetchJobLogConfig) RegisterFlags(fs *flag.FlagSet) {
 	c.fetchConfig.RegisterFlags(fs)
+
+	fs.BoolVar(&c.printSections, "sections", false, "Print parsed job log sections. (default: false)")
+	fs.BoolVar(&c.printMetrics, "metrics", false, "Print parsed job log embedded metrics. (default: false)")
 }
 
 func (c *FetchJobLogConfig) Exec(ctx context.Context, args []string) error {
@@ -78,9 +86,30 @@ func (c *FetchJobLogConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("error fetching job log: %w", err)
 	}
 
-	_, err = io.Copy(c.fetchConfig.out, trace)
-	if err != nil {
-		return err
+	if c.printSections || c.printMetrics {
+		data, err := gitlab.ParseJobLog(trace)
+		if err != nil {
+			return err
+		}
+
+		var m []byte
+		switch {
+		case c.printSections && c.printMetrics:
+			m, err = json.Marshal(data)
+		case c.printSections:
+			m, err = json.Marshal(data.Sections)
+		case c.printMetrics:
+			m, err = json.Marshal(data.Metrics)
+		}
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(m))
+	} else {
+		_, err = io.Copy(c.fetchConfig.out, trace)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

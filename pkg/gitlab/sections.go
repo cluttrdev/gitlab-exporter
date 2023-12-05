@@ -99,14 +99,14 @@ func (c *Client) ListJobSections(ctx context.Context, projectID int64, jobID int
 	return ch
 }
 
-type sectionData struct {
-	Name  string
-	Start int64
-	End   int64
+type SectionData struct {
+	Name  string `json:"name"`
+	Start int64  `json:"start"`
+	End   int64  `json:"end"`
 }
 
-func parseSections(trace *bytes.Reader) ([]sectionData, error) {
-	sections := []sectionData{}
+func parseSections(trace *bytes.Reader) ([]SectionData, error) {
+	sections := []SectionData{}
 	stack := sectionStack{}
 
 	scanner := bufio.NewScanner(trace)
@@ -141,21 +141,21 @@ func parseSections(trace *bytes.Reader) ([]sectionData, error) {
 }
 
 type sectionStack struct {
-	Sections []sectionData
+	Sections []SectionData
 }
 
 func (s *sectionStack) Len() int {
 	return len(s.Sections)
 }
 
-func (s *sectionStack) Push(section sectionData) {
+func (s *sectionStack) Push(section SectionData) {
 	s.Sections = append(s.Sections, section)
 }
 
-func (s *sectionStack) Pop() sectionData {
+func (s *sectionStack) Pop() SectionData {
 	size := len(s.Sections)
 	if size == 0 {
-		return sectionData{}
+		return SectionData{}
 	}
 	section := s.Sections[size-1]
 	s.Sections = s.Sections[:(size - 1)]
@@ -163,14 +163,14 @@ func (s *sectionStack) Pop() sectionData {
 }
 
 func (s *sectionStack) Start(timestamp int64, name string) {
-	s.Push(sectionData{
+	s.Push(SectionData{
 		Name:  name,
 		Start: timestamp,
 	})
 }
 
-func (s *sectionStack) End(timestamp int64, name string) []sectionData {
-	endedSections := []sectionData{}
+func (s *sectionStack) End(timestamp int64, name string) []SectionData {
+	endedSections := []SectionData{}
 
 	section := s.Pop()
 	if section.Name == "" {

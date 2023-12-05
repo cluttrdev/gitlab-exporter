@@ -17,14 +17,21 @@ func (c *Client) GetJobLog(ctx context.Context, projectID int64, jobID int64) (*
 	return trace, err
 }
 
-type jobLogData struct {
-	Sections []sectionData
-	Metrics  []*expfmt.Metric
+type JobLogData struct {
+	Sections []SectionData `json:"sections"`
+	Metrics  []*MetricData `json:"metrics"`
 }
 
-func parseJobLog(trace *bytes.Reader) (*jobLogData, error) {
+type MetricData struct {
+	Name      string            `json:"name"`
+	Labels    map[string]string `json:"labels"`
+	Value     float64           `json:"value"`
+	Timestamp int64             `json:"timestamp"`
+}
+
+func ParseJobLog(trace *bytes.Reader) (*JobLogData, error) {
 	var (
-		data   jobLogData
+		data   JobLogData
 		stack  sectionStack
 		parser expfmt.TextParser
 	)
@@ -38,7 +45,12 @@ func parseJobLog(trace *bytes.Reader) (*jobLogData, error) {
 				// TODO: what?
 				continue
 			}
-			data.Metrics = append(data.Metrics, metric)
+			data.Metrics = append(data.Metrics, &MetricData{
+				Name:      metric.Name,
+				Labels:    convertMetricLabels(metric.Labels),
+				Value:     metric.Value,
+				Timestamp: metric.TimestampMs,
+			})
 		}
 
 		var i, j int
@@ -63,4 +75,15 @@ func parseJobLog(trace *bytes.Reader) (*jobLogData, error) {
 	}
 
 	return &data, nil
+}
+
+func convertMetricLabels(pairs []expfmt.MetricLabelPair) map[string]string {
+	if len(pairs) == 0 {
+		return nil
+	}
+	labels := map[string]string{}
+	for _, p := range pairs {
+		labels[p.Name] = p.Value
+	}
+	return labels
 }

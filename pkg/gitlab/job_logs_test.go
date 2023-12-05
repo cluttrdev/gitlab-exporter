@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/expfmt"
 	"github.com/google/go-cmp/cmp"
 )
 
@@ -54,13 +53,13 @@ func TestParseJobLog_OnlySections(t *testing.T) {
     [0K[32;1mJob succeeded[0;m
     `)
 
-	data, err := parseJobLog(bytes.NewReader(trace))
+	data, err := ParseJobLog(bytes.NewReader(trace))
 	if err != nil {
 		t.Errorf("%v", err)
 	}
 
-	expected := &jobLogData{
-		Sections: []sectionData{
+	expected := &JobLogData{
+		Sections: []SectionData{
 			{Name: "prepare_executor", Start: 1700819846, End: 1700819865},
 			{Name: "prepare_script", Start: 1700819865, End: 1700819868},
 			{Name: "get_sources", Start: 1700819868, End: 1700819869},
@@ -86,48 +85,48 @@ METRIC_single_label{label_name="label_value"} 42
 METRIC_multi_labels{label_name1="label_value1",label_name2="label_value2"} 1
     `)
 
-	data, err := parseJobLog(bytes.NewReader(trace))
+	data, err := ParseJobLog(bytes.NewReader(trace))
 	if err != nil {
 		t.Errorf("%v", err)
 	}
 
-	expected := &jobLogData{
+	expected := &JobLogData{
 		Sections: nil,
-		Metrics: []*expfmt.Metric{
+		Metrics: []*MetricData{
 			{
-				Name:        "minimal_metric",
-				Value:       42.1337,
-				Labels:      nil,
-				TimestampMs: 0,
+				Name:      "minimal_metric",
+				Value:     42.1337,
+				Labels:    nil,
+				Timestamp: 0,
 			},
 			{
-				Name:        "with_timestamp",
-				Labels:      nil,
-				Value:       3.14,
-				TimestampMs: 1234567890,
+				Name:      "with_timestamp",
+				Labels:    nil,
+				Value:     3.14,
+				Timestamp: 1234567890,
 			},
 			{
-				Name:        "no_labels",
-				Labels:      nil,
-				Value:       3,
-				TimestampMs: 0,
+				Name:      "no_labels",
+				Labels:    nil,
+				Value:     3,
+				Timestamp: 0,
 			},
 			{
 				Name: "single_label",
-				Labels: []expfmt.MetricLabelPair{
-					{Name: "label_name", Value: "label_value"},
+				Labels: map[string]string{
+					"label_name": "label_value",
 				},
-				Value:       42,
-				TimestampMs: 0,
+				Value:     42,
+				Timestamp: 0,
 			},
 			{
 				Name: "multi_labels",
-				Labels: []expfmt.MetricLabelPair{
-					{Name: "label_name1", Value: "label_value1"},
-					{Name: "label_name2", Value: "label_value2"},
+				Labels: map[string]string{
+					"label_name1": "label_value1",
+					"label_name2": "label_value2",
 				},
-				Value:       1,
-				TimestampMs: 0,
+				Value:     1,
+				Timestamp: 0,
 			},
 		},
 	}

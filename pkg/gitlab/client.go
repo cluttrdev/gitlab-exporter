@@ -140,7 +140,7 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 					return
 				}
 
-				data, err := parseJobLog(r)
+				data, err := ParseJobLog(r)
 				if err != nil {
 					ch <- GetPipelineHierarchyResult{
 						Error: fmt.Errorf("parse job log: %w", err),
@@ -175,12 +175,9 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 					for _, m := range data.Metrics {
 						metric := &models.JobMetric{
 							Name:      m.Name,
+							Labels:    m.Labels,
 							Value:     m.Value,
-							Timestamp: m.TimestampMs,
-						}
-
-						for _, pair := range m.Labels {
-							metric.Labels[pair.Name] = pair.Value
+							Timestamp: m.Timestamp,
 						}
 
 						metric.Job.ID = job.ID
