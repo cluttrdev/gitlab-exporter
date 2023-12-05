@@ -10,6 +10,7 @@ default:
 variables:
   GOPATH: ${CI_PROJECT_DIR}/.go
   GOCACHE: ${CI_PROJECT_DIR}/.cache/go-build
+  GOMAXPROCS: "8"
 
 download:
   stage: .pre
