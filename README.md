@@ -135,8 +135,11 @@ the default `admin:admin` credentials) and explore the data.
 
 ## Acknowledgements
 
-This project was inspired by [Maxime Visonneau's][github-mvisonneau] 
+This project was inspired by Maxime Visonneau's
 [gitlab-ci-pipeline-exporter][github-gcpe].
+
+The project logo is based on the original [artwork][gopher-artwork] created by
+Ashley McNamara.
 
 ## License
 
@@ -146,5 +149,5 @@ This project is licensed under the [MIT License](./LICENSE).
 [clickhouse]: https://clickhouse.com/
 [go-install]: https://go.dev/doc/install
 [prebuilt-binaries]: https://github.com/cluttrdev/gitlab-exporter/releases/latest
-[github-mvisonneau]: https://github.com/mvisonneau
 [github-gcpe]: https://github.com/mvisonneau/gitlab-ci-pipelines-exporter
+[gopher-artwork]: https://github.com/ashleymcnamara/gophers
