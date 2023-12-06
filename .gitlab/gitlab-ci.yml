@@ -39,7 +39,7 @@ lint:
   variables:
     GOLANGCI_LINT_CACHE: ${CACHE_DIR}/golangci-lint
   script:
-    - golangci-lint run ./...
+    - golangci-lint run --verbose ./...
   allow_failure: true
 
 build:
