@@ -6,10 +6,6 @@ import (
 )
 
 const (
-	defaultDBName string = "gitlab_ci"
-)
-
-const (
 	createPipelinesTableSQL = `
 CREATE TABLE IF NOT EXISTS %s.%s (
     id Int64,
