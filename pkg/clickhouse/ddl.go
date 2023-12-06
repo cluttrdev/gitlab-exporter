@@ -216,6 +216,22 @@ ENGINE ReplacingMergeTree()
 ORDER BY id
 ;
     `
+
+	createJobMetricsTableSQL = `
+CREATE TABLE IF NOT EXISTS %s.%s (
+    name String,
+    labels Map(string, string),
+    value Float64,
+    timestamp Int64,
+    job Tuple(
+        id Int64,
+        name String
+    )
+)
+ENGINE MergeTree()
+ORDER BY (job.id, name, timestamp)
+;
+    `
 )
 
 const (
@@ -328,6 +344,9 @@ func createTables(ctx context.Context, db string, client *Client) error {
 	if err := client.Exec(ctx, renderCreateTestCasesTableSQL(db)); err != nil {
 		return fmt.Errorf("exec create testcases table: %w", err)
 	}
+	if err := client.Exec(ctx, renderCreateJobMetricsTableSQL(db)); err != nil {
+		return fmt.Errorf("exec create job metrics table: %w", err)
+	}
 
 	if err := client.Exec(ctx, renderCreateTracesTableSQL(db)); err != nil {
 		return fmt.Errorf("exec create traces table: %w", err)
@@ -380,32 +399,37 @@ func renderCreateTestCasesTableSQL(db string) string {
 	return fmt.Sprintf(createTestCasesTableSQL, db, tableName)
 }
 
+func renderCreateJobMetricsTableSQL(db string) string {
+	const tableName string = "job_metrics"
+	return fmt.Sprintf(createJobMetricsTableSQL, db, tableName)
+}
+
 func renderCreateTracesTableSQL(db string) string {
 	const tableName string = "traces"
 	return fmt.Sprintf(createTracesTableSQL, db, tableName)
 }
 
 func renderCreateTraceIdTsTableSQL(db string) string {
-	const tableName string = "traces"
-	return fmt.Sprintf(createTraceIdTsTableSQL, db, tableName)
+	const tracesTableName string = "traces"
+	return fmt.Sprintf(createTraceIdTsTableSQL, db, tracesTableName)
 }
 
 func renderCreateTraceIdTsMaterializedViewSQL(db string) string {
-	const tableName string = "traces"
+	const tracesTableName string = "traces"
 	return fmt.Sprintf(
 		createTraceIdTsMaterializedViewSQL,
-		db, tableName,
-		db, tableName,
-		db, tableName,
+		db, tracesTableName,
+		db, tracesTableName,
+		db, tracesTableName,
 	)
 }
 
 func renderTraceViewSQL(db string) string {
-	viewName := "trace_view"
-	const tableName string = "traces"
+	const viewName string = "trace_view"
+	const tracesTableName string = "traces"
 	return fmt.Sprintf(
 		createTraceViewSQL,
 		db, viewName,
-		db, tableName,
+		db, tracesTableName,
 	)
 }

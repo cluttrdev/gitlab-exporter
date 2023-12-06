@@ -31,6 +31,7 @@ func NewFetchCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 
 	var (
 		fetchPipelineCmd   = NewFetchPipelineCmd(&cfg)
+		fetchJobLogCmd     = NewFetchJobLogCmd(&cfg)
 		fetchTestReportCmd = NewFetchTestReportCmd(&cfg)
 	)
 
@@ -42,6 +43,7 @@ func NewFetchCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 		FlagSet:    fs,
 		Subcommands: []*ffcli.Command{
 			fetchPipelineCmd,
+			fetchJobLogCmd,
 			fetchTestReportCmd,
 		},
 		Exec: cfg.Exec,

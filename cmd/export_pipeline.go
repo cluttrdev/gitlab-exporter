@@ -85,6 +85,7 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 		ExportSections:    c.exportSections,
 		ExportTestReports: c.exportTestReports,
 		ExportTraces:      c.exportTraces,
+		ExportJobMetrics:  c.exportSections, // for now, export metrics if we fetch the logs for sections anyway
 	}
 
 	return tasks.ExportPipelineHierarchy(ctx, opts, &ctl.GitLab, ctl.DataStore)

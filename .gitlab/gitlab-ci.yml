@@ -5,17 +5,29 @@ stages:
 
 default:
   image: golang:1.20
+  tags: [ $GITLAB_CI_DEFAULT_TAGS ]
 
 variables:
+  CACHE_DIR: ${CI_PROJECT_DIR}/.cache
   GOPATH: ${CI_PROJECT_DIR}/.go
+  GOCACHE: ${CACHE_DIR}/go-build
+  GOMAXPROCS: "8"
 
 download:
   stage: .pre
   script:
-    - go mod download
+    - |
+      start=$(date +%s%N)
+      go mod download
+      end=$(date +%s%N)
+      duration=$(printf %.6f "$(( end-start ))e-9")
+      timestamp=$(( end/1000000 ))
+      module=$(head -n 1 go.mod | cut -d ' ' -f 2)
+      echo "METRIC_go_mod_download_time{module=\"${module}\"} ${duration} ${timestamp}"
   cache: &cache-defaults
     key: ${CI_COMMIT_REF_SLUG}
     paths:
+      - ${CACHE_DIR}
       - ${GOPATH}
     policy: pull-push
 
@@ -24,7 +36,8 @@ lint:
   image: docker.io/golangci/golangci-lint:latest
   cache:
     - <<: *cache-defaults
-      policy: pull
+  variables:
+    GOLANGCI_LINT_CACHE: ${CACHE_DIR}/golangci-lint
   script:
     - golangci-lint run ./...
   allow_failure: true
@@ -33,19 +46,25 @@ build:
   stage: build
   cache:
     - <<: *cache-defaults
-      policy: pull
   script:
-    - go build .
+    - |
+      start=$(date +%s%N)
+      go build .
+      end=$(date +%s%N)
+      duration=$(printf %.6f "$(( end-start ))e-9")
+      timestamp=$(( end/1000000 ))
+      echo "METRIC_go_build_time{package=\"$(go list .)\"} ${duration} ${timestamp}"
 
 test:
   stage: test
   cache:
     - <<: *cache-defaults
-      policy: pull
   before_script:
     - go install gotest.tools/gotestsum@latest
   script:
     - ${GOPATH}/bin/gotestsum --junitfile report.xml --format testname ./test/...
+  after_script:
+    - go run ./tools/junitmetrics ./report.xml
   artifacts:
     when: always
     reports:

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 
 	"golang.org/x/time/rate"
 
@@ -87,11 +88,13 @@ func (c *Client) CheckReadiness(ctx context.Context) error {
 }
 
 type GetPipelineHierarchyOptions struct {
-	FetchSections bool
+	FetchSections   bool
+	FetchJobMetrics bool
 }
 
 type GetPipelineHierarchyResult struct {
 	PipelineHierarchy *models.PipelineHierarchy
+	JobMetrics        []*models.JobMetric
 	Error             error
 }
 
@@ -100,6 +103,12 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 
 	go func() {
 		defer close(ch)
+
+		unixTime := func(ts int64) *time.Time {
+			const nsec int64 = 0
+			t := time.Unix(ts, nsec)
+			return &t
+		}
 
 		pipeline, err := c.GetPipeline(ctx, projectID, pipelineID)
 		if err != nil {
@@ -111,6 +120,7 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 
 		jobs := []*models.Job{}
 		sections := []*models.Section{}
+		metrics := []*models.JobMetric{}
 		for jr := range c.ListPipelineJobs(ctx, projectID, pipelineID) {
 			if jr.Error != nil {
 				ch <- GetPipelineHierarchyResult{
@@ -120,16 +130,61 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 			}
 			jobs = append(jobs, jr.Job)
 
-			if opt.FetchSections {
-				jobID := jr.Job.ID
-				for sr := range c.ListJobSections(ctx, projectID, jobID) {
-					if sr.Error != nil {
-						ch <- GetPipelineHierarchyResult{
-							Error: fmt.Errorf("[ListJobSections] %w", sr.Error),
-						}
-						return
+			if opt.FetchSections || opt.FetchJobMetrics {
+				job := jr.Job
+				r, err := c.GetJobLog(ctx, projectID, job.ID)
+				if err != nil {
+					ch <- GetPipelineHierarchyResult{
+						Error: fmt.Errorf("get job log: %w", err),
 					}
-					sections = append(sections, sr.Section)
+					return
+				}
+
+				data, err := ParseJobLog(r)
+				if err != nil {
+					ch <- GetPipelineHierarchyResult{
+						Error: fmt.Errorf("parse job log: %w", err),
+					}
+					return
+				}
+
+				if opt.FetchSections {
+					for secnum, secdat := range data.Sections {
+						section := &models.Section{
+							Name:       secdat.Name,
+							StartedAt:  unixTime(secdat.Start),
+							FinishedAt: unixTime(secdat.End),
+							Duration:   float64(secdat.End - secdat.Start),
+						}
+
+						section.ID = job.ID*1000 + int64(secnum)
+						section.Job.ID = int64(job.ID)
+						section.Job.Name = job.Name
+						section.Job.Status = job.Status
+						section.Pipeline.ID = int64(job.Pipeline.ID)
+						section.Pipeline.ProjectID = int64(job.Pipeline.ProjectID)
+						section.Pipeline.Ref = job.Pipeline.Ref
+						section.Pipeline.Sha = job.Pipeline.Sha
+						section.Pipeline.Status = job.Pipeline.Status
+
+						sections = append(sections, section)
+					}
+				}
+
+				if opt.FetchJobMetrics {
+					for _, m := range data.Metrics {
+						metric := &models.JobMetric{
+							Name:      m.Name,
+							Labels:    m.Labels,
+							Value:     m.Value,
+							Timestamp: m.Timestamp,
+						}
+
+						metric.Job.ID = job.ID
+						metric.Job.Name = job.Name
+
+						metrics = append(metrics, metric)
+					}
 				}
 			}
 		}
@@ -168,6 +223,7 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 				Bridges:             bridges,
 				DownstreamPipelines: dps,
 			},
+			JobMetrics: metrics,
 		}
 	}()
 

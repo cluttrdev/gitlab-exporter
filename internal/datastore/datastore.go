@@ -17,11 +17,13 @@ type DataStore interface {
 	InsertBridges(context.Context, []*models.Bridge) error
 
 	InsertPipelineHierarchy(context.Context, *models.PipelineHierarchy) error
-	InsertTraces(context.Context, []models.Trace) error
 
 	InsertTestReports(context.Context, []*models.PipelineTestReport) error
 	InsertTestSuites(context.Context, []*models.PipelineTestSuite) error
 	InsertTestCases(context.Context, []*models.PipelineTestCase) error
+
+	InsertTraces(context.Context, []models.Trace) error
+	InsertJobMetrics(context.Context, []*models.JobMetric) error
 
 	QueryProjectPipelinesLatestUpdate(context.Context, int64) (map[int64]time.Time, error)
 }
