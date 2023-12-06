@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Support export of job log embedded metrics (experimental)
 - HTTP server implementation with health, debug and metrics endpoints
 - ClickHouse table deduplication task and subcommand
 
