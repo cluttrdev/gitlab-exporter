@@ -7,5 +7,5 @@ package gitlabexporter.proto.models;
 import "opentelemetry/proto/trace/v1/trace.proto";
 
 message Trace {
-    repeated opentelemetry.proto.trace.v1.Span spans = 1;
+    opentelemetry.proto.trace.v1.TracesData data = 1;
 }

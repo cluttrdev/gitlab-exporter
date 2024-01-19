@@ -10,6 +10,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	otlp_commonpb "go.opentelemetry.io/proto/otlp/common/v1"
+	otlp_resourcepb "go.opentelemetry.io/proto/otlp/resource/v1"
 	otlp_tracepb "go.opentelemetry.io/proto/otlp/trace/v1"
 
 	pb "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb"
@@ -405,28 +406,49 @@ func (c *Client) RecordTraces(ctx context.Context, traces []*models.Trace) error
 	}
 
 	for _, t := range traces {
-		spans := make([]*otlp_tracepb.Span, 0, len(*t))
+		resourceSpans := make([]*otlp_tracepb.ResourceSpans, 0, len(*t))
 		for _, s := range *t {
-			spans = append(spans, &otlp_tracepb.Span{
-				TraceId:                []byte(s.TraceID),
-				SpanId:                 []byte(s.SpanID),
-				TraceState:             s.TraceState,
-				ParentSpanId:           []byte(s.ParentSpanID),
-				Name:                   s.Name,
-				Kind:                   otlp_tracepb.Span_SpanKind(s.Kind),
-				StartTimeUnixNano:      s.StartTime,
-				EndTimeUnixNano:        s.EndTime,
-				Attributes:             convertSpanAttributes(s.Attributes),
-				DroppedAttributesCount: 0,
-				Events:                 convertSpanEvents(s.Events),
-				DroppedEventsCount:     0,
-				Links:                  convertSpanLinks(s.Links),
-				DroppedLinksCount:      0,
-				Status:                 convertSpanStatus(s.Status),
+			resourceSpans = append(resourceSpans, &otlp_tracepb.ResourceSpans{
+				Resource: &otlp_resourcepb.Resource{
+					Attributes:             convertSpanAttributes(s.Resource.Attributes),
+					DroppedAttributesCount: 0,
+				},
+				ScopeSpans: []*otlp_tracepb.ScopeSpans{
+					&otlp_tracepb.ScopeSpans{
+						Scope: &otlp_commonpb.InstrumentationScope{
+							Name:                   "",
+							Version:                "",
+							Attributes:             []*otlp_commonpb.KeyValue{},
+							DroppedAttributesCount: 0,
+						},
+						Spans: []*otlp_tracepb.Span{
+							&otlp_tracepb.Span{
+								TraceId:                []byte(s.TraceID),
+								SpanId:                 []byte(s.SpanID),
+								TraceState:             s.TraceState,
+								ParentSpanId:           []byte(s.ParentSpanID),
+								Name:                   s.Name,
+								Kind:                   otlp_tracepb.Span_SpanKind(s.Kind),
+								StartTimeUnixNano:      s.StartTime,
+								EndTimeUnixNano:        s.EndTime,
+								Attributes:             convertSpanAttributes(s.Attributes),
+								DroppedAttributesCount: 0,
+								Events:                 convertSpanEvents(s.Events),
+								DroppedEventsCount:     0,
+								Links:                  convertSpanLinks(s.Links),
+								DroppedLinksCount:      0,
+								Status:                 convertSpanStatus(s.Status),
+							},
+						},
+					},
+				},
+				SchemaUrl: "",
 			})
 		}
 		err := stream.Send(&pb.Trace{
-			Spans: spans,
+			Data: &otlp_tracepb.TracesData{
+				ResourceSpans: resourceSpans,
+			},
 		})
 		if err != nil {
 			return err
