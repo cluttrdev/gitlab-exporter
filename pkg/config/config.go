@@ -7,6 +7,7 @@ import (
 type Config struct {
 	GitLab     GitLab     `default:"{}" yaml:"gitlab"`
 	ClickHouse ClickHouse `default:"{}" yaml:"clickhouse"`
+	Endpoints  []Endpoint `default:"[]" yaml:"endpoints"`
 	Projects   []Project  `default:"[]" yaml:"projects"`
 	Server     Server     `default:"{}" yaml:"server"`
 }
@@ -30,6 +31,10 @@ type ClickHouse struct {
 	Database string `default:"default" yaml:"database"`
 	User     string `default:"default" yaml:"user"`
 	Password string `default:"" yaml:"password"`
+}
+
+type Endpoint struct {
+	Address string `default:"" yaml:"address"`
 }
 
 type Project struct {

@@ -15,6 +15,8 @@ func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 		GitLab     GitLab     `yaml:"gitlab"`
 		ClickHouse ClickHouse `yaml:"clickhouse"`
 
+		Endpoints []Endpoint `yaml:"endpoints"`
+
 		Projects []yaml.Node `yaml:"projects"`
 
 		Server Server `yaml:"server"`
@@ -23,6 +25,7 @@ func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 	var _cfg _Config
 	_cfg.GitLab = c.GitLab
 	_cfg.ClickHouse = c.ClickHouse
+	_cfg.Endpoints = c.Endpoints
 	_cfg.Server = c.Server
 
 	if err := v.Decode(&_cfg); err != nil {
@@ -31,6 +34,7 @@ func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 
 	c.GitLab = _cfg.GitLab
 	c.ClickHouse = _cfg.ClickHouse
+	c.Endpoints = _cfg.Endpoints
 	c.Server = _cfg.Server
 
 	for _, n := range _cfg.Projects {

@@ -17,6 +17,10 @@ clickhouse:
   user: "default"
   password: ""
 
+# List of gRPC server endpoints to export to
+endpoints: []
+  # - address: "127.0.0.1:36275"
+
 # List of projects to export
 projects: []
   # - # Project ID project (required).

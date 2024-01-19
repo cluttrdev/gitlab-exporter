@@ -21,6 +21,8 @@ func defaultConfig() config.Config {
 	cfg.ClickHouse.User = "default"
 	cfg.ClickHouse.Password = ""
 
+	cfg.Endpoints = []config.Endpoint{}
+
 	cfg.Projects = []config.Project{}
 
 	cfg.Server.Host = "127.0.0.1"
@@ -255,6 +257,25 @@ func TestLoad_DataWithCustomServerAddress(t *testing.T) {
 	expected := defaultConfig()
 	expected.Server.Host = "0.0.0.0"
 	expected.Server.Port = "8443"
+
+	cfg := config.Default()
+	if err := config.Load(data, &cfg); err != nil {
+		t.Errorf("Expected no error, got %v", err)
+	}
+
+	checkConfig(t, expected, cfg)
+}
+
+func TestLoad_DataWithEndpoints(t *testing.T) {
+	data := []byte(`
+    endpoints:
+      - address: "127.0.0.1:36275"
+    `)
+
+	expected := defaultConfig()
+	expected.Endpoints = []config.Endpoint{
+		{Address: "127.0.0.1:36275"},
+	}
 
 	cfg := config.Default()
 	if err := config.Load(data, &cfg); err != nil {

@@ -9,6 +9,11 @@ import (
 	"math/rand"
 	"time"
 
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
+
+	grpc_client "github.com/cluttrdev/gitlab-exporter/grpc/client"
+
 	"github.com/cluttrdev/gitlab-exporter/pkg/clickhouse"
 	"github.com/cluttrdev/gitlab-exporter/pkg/config"
 	"github.com/cluttrdev/gitlab-exporter/pkg/gitlab"
@@ -20,6 +25,7 @@ import (
 type Controller struct {
 	config    config.Config
 	GitLab    gitlab.Client
+	Exporter  *Exporter
 	DataStore datastore.DataStore
 
 	workers []worker.Worker
@@ -43,6 +49,10 @@ func (c *Controller) configure(cfg config.Config) error {
 	}
 
 	if err := c.configureClickHouseDataStore(cfg.ClickHouse); err != nil {
+		return err
+	}
+
+	if err := c.configureExporter(cfg.Endpoints); err != nil {
 		return err
 	}
 
@@ -77,6 +87,24 @@ func (c *Controller) configureClickHouseDataStore(cfg config.ClickHouse) error {
 	}
 
 	c.DataStore = clickhouse.NewClickHouseDataStore(&client)
+	return nil
+}
+
+func (c *Controller) configureExporter(cfg []config.Endpoint) error {
+	endpoints := make([]grpc_client.EndpointConfig, 0, len(cfg))
+	for _, cc := range cfg {
+		endpoints = append(endpoints, grpc_client.EndpointConfig{
+			Address: cc.Address,
+			Options: []grpc.DialOption{
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
+			},
+		})
+	}
+	exp, err := NewExporter(endpoints)
+	if err != nil {
+		return err
+	}
+	c.Exporter = exp
 	return nil
 }
 

@@ -17,7 +17,7 @@ import (
 	"github.com/cluttrdev/gitlab-exporter/pkg/models"
 )
 
-type ClientConfig struct {
+type EndpointConfig struct {
 	Address string
 	Options []grpc.DialOption
 }
@@ -27,7 +27,7 @@ type Client struct {
 	client pb.GitLabExporterClient
 }
 
-func NewCLient(cfg ClientConfig) (*Client, error) {
+func NewCLient(cfg EndpointConfig) (*Client, error) {
 	conn, err := grpc.Dial(cfg.Address, cfg.Options...)
 	if err != nil {
 		return nil, err
