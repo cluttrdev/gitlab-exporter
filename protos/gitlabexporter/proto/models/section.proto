@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+option go_package = "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb";
+
+package gitlabexporter.proto.models;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+import "gitlabexporter/proto/models/pipeline.proto";
+import "gitlabexporter/proto/models/job.proto";
+
+message Section {
+    JobReference job = 1;
+    PipelineReference pipeline = 2;
+    
+    int64 id = 3;
+    string name = 4;
+    
+    google.protobuf.Timestamp started_at = 10;
+    google.protobuf.Timestamp finished_at = 11;
+    google.protobuf.Duration duration = 12;
+}

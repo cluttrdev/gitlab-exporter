@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+option go_package = "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb";
+
+package gitlabexporter.proto.models;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+message Pipeline {
+    int64 id = 1;
+    int64 iid = 2;
+    int64 project_id = 3;
+    string status = 4;
+    string source = 5;
+    string ref = 6;
+    string sha = 7;
+    string before_sha = 8;
+    bool tag = 9;
+    string yaml_errors = 10;
+    google.protobuf.Timestamp created_at = 11;
+    google.protobuf.Timestamp updated_at = 12;
+    google.protobuf.Timestamp started_at = 13;
+    google.protobuf.Timestamp finished_at = 14;
+    google.protobuf.Timestamp committed_at = 15;
+    google.protobuf.Duration duration = 16;
+    google.protobuf.Duration queued_duration = 17;
+    double coverage = 18;
+    string web_url = 19;
+}
+
+message PipelineInfo {
+    int64 id = 1;
+    int64 iid = 2;
+    int64 project_id = 3;
+    string status = 4;
+    string source = 5;
+    string ref = 6;
+    string sha = 7;
+    string web_url = 8;
+    google.protobuf.Timestamp created_at = 9;
+    google.protobuf.Timestamp updated_at = 10;
+}
+
+message PipelineReference {
+    int64 id = 1;
+    int64 project_id = 2;
+    string ref = 3;
+    string sha = 4;
+    string source = 5;
+    string status = 6;
+}

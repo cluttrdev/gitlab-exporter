@@ -1,0 +1,28 @@
+syntax = "proto3";
+
+option go_package = "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb";
+
+package gitlabexporter.proto.models;
+
+import "google/protobuf/timestamp.proto";
+
+message LogEmbeddedMetric {
+    string name = 1;
+
+    message Label {
+        string name = 1;
+        string value = 2;
+    }
+    repeated Label labels = 2;
+
+    double value = 3;
+
+    google.protobuf.Timestamp timestamp = 4;
+
+    message JobReference {
+        int64 id = 1;
+        string name = 2;
+    }
+
+    JobReference job = 5;
+}

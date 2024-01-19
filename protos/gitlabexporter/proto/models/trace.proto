@@ -1,0 +1,11 @@
+syntax = "proto3";
+
+option go_package = "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb";
+
+package gitlabexporter.proto.models;
+
+import "opentelemetry/proto/trace/v1/trace.proto";
+
+message Trace {
+    repeated opentelemetry.proto.trace.v1.Span spans = 1;
+}

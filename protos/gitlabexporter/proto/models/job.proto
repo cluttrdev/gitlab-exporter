@@ -1,0 +1,67 @@
+syntax = "proto3";
+
+option go_package = "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb";
+
+package gitlabexporter.proto.models;
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/duration.proto";
+
+import "gitlabexporter/proto/models/pipeline.proto";
+
+message Job {
+    PipelineReference pipeline = 1;
+
+    int64 id = 2;
+    string name = 3;
+    string ref = 4;
+    string stage = 5;
+    string status = 6;
+    
+    google.protobuf.Timestamp created_at = 10;
+    google.protobuf.Timestamp started_at = 11;
+    google.protobuf.Timestamp finished_at = 12;
+    google.protobuf.Timestamp erased_at = 13;
+    google.protobuf.Duration duration = 14;
+    google.protobuf.Duration queued_duration = 15;
+
+    double coverage = 20;
+
+    bool tag = 21;
+    bool allow_failure = 22;
+    string failure_reason = 23;
+    string web_url = 24;
+    repeated string tag_list = 25;
+}
+
+message JobReference {
+    int64 id = 1;
+    string name = 2;
+    string status = 3;
+}
+
+message Bridge {
+    PipelineInfo pipeline = 1;
+
+    int64 id = 2;
+    string name = 3;
+    string ref = 4;
+    string stage = 5;
+    string status = 6;
+
+    PipelineInfo downstream_pipeline = 7;
+    
+    google.protobuf.Timestamp created_at = 10;
+    google.protobuf.Timestamp started_at = 11;
+    google.protobuf.Timestamp finished_at = 12;
+    google.protobuf.Timestamp erased_at = 13;
+    google.protobuf.Duration duration = 14;
+    google.protobuf.Duration queued_duration = 15;
+
+    double coverage = 20;
+
+    bool tag = 21;
+    bool allow_failure = 22;
+    string failure_reason = 23;
+    string web_url = 24;
+}

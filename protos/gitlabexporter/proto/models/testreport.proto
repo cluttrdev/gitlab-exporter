@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+option go_package = "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb";
+
+package gitlabexporter.proto.models;
+
+message TestReport {
+    int64 id = 1;
+    int64 pipeline_id = 2;
+    double total_time = 3;
+    int64 total_count = 4;
+    int64 success_count = 5;
+    int64 failed_count = 6;
+    int64 skipped_count = 7;
+    int64 error_count = 8;
+}
+
+message TestSuite {
+    int64 id = 1;
+    int64 testreport_id = 2;
+    int64 pipeline_id = 3;
+    string name = 4;
+    double total_time = 5;
+    int64 total_count = 6;
+    int64 success_count = 7;
+    int64 failed_count = 8;
+    int64 skipped_count = 9;
+    int64 error_count = 10;
+}
+
+message TestCase {
+    int64 id = 1;
+    int64 testsuite_id = 2;
+    int64 testreport_id = 3;
+    int64 pipeline_id = 4;
+    string status = 5;
+    string name = 6;
+    string classname = 7;
+    string file = 8;
+    double execution_time = 9;
+    string system_output = 10;
+    string stack_trace = 11;
+    string attachment_url = 12;
+    TestCaseRecentFailures recent_failures = 13;
+}
+
+message TestCaseRecentFailures {
+    int64 count = 1;
+    string base_branch = 2;
+}
