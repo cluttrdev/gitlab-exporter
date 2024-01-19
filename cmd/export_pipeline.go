@@ -10,7 +10,6 @@ import (
 
 	"github.com/cluttrdev/gitlab-exporter/pkg/config"
 	"github.com/cluttrdev/gitlab-exporter/pkg/controller"
-	"github.com/cluttrdev/gitlab-exporter/pkg/tasks"
 )
 
 type ExportPipelineConfig struct {
@@ -78,7 +77,7 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("error constructing controller: %w", err)
 	}
 
-	opts := tasks.ExportPipelineHierarchyOptions{
+	opts := controller.ExportPipelineHierarchyOptions{
 		ProjectID:  projectID,
 		PipelineID: pipelineID,
 
@@ -88,5 +87,5 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 		ExportJobMetrics:  c.exportSections, // for now, export metrics if we fetch the logs for sections anyway
 	}
 
-	return tasks.ExportPipelineHierarchy(ctx, opts, &ctl.GitLab, ctl.DataStore)
+	return controller.ExportPipelineHierarchy(ctl, ctx, opts)
 }

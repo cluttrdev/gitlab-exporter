@@ -12,8 +12,7 @@ import (
 // Config implements the Unmarshaler interface
 func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 	type _Config struct {
-		GitLab     GitLab     `yaml:"gitlab"`
-		ClickHouse ClickHouse `yaml:"clickhouse"`
+		GitLab GitLab `yaml:"gitlab"`
 
 		Endpoints []Endpoint `yaml:"endpoints"`
 
@@ -24,7 +23,6 @@ func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 
 	var _cfg _Config
 	_cfg.GitLab = c.GitLab
-	_cfg.ClickHouse = c.ClickHouse
 	_cfg.Endpoints = c.Endpoints
 	_cfg.Server = c.Server
 
@@ -33,7 +31,6 @@ func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 	}
 
 	c.GitLab = _cfg.GitLab
-	c.ClickHouse = _cfg.ClickHouse
 	c.Endpoints = _cfg.Endpoints
 	c.Server = _cfg.Server
 

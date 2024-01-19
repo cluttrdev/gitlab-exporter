@@ -5,11 +5,10 @@ import (
 )
 
 type Config struct {
-	GitLab     GitLab     `default:"{}" yaml:"gitlab"`
-	ClickHouse ClickHouse `default:"{}" yaml:"clickhouse"`
-	Endpoints  []Endpoint `default:"[]" yaml:"endpoints"`
-	Projects   []Project  `default:"[]" yaml:"projects"`
-	Server     Server     `default:"{}" yaml:"server"`
+	GitLab    GitLab     `default:"{}" yaml:"gitlab"`
+	Endpoints []Endpoint `default:"[]" yaml:"endpoints"`
+	Projects  []Project  `default:"[]" yaml:"projects"`
+	Server    Server     `default:"{}" yaml:"server"`
 }
 
 type GitLab struct {
@@ -23,14 +22,6 @@ type GitLab struct {
 			Limit float64 `default:"0.0" yaml:"limit"`
 		} `yaml:"rate"`
 	} `yaml:"client"`
-}
-
-type ClickHouse struct {
-	Host     string `default:"localhost" yaml:"host"`
-	Port     string `default:"9000" yaml:"port"`
-	Database string `default:"default" yaml:"database"`
-	User     string `default:"default" yaml:"user"`
-	Password string `default:"" yaml:"password"`
 }
 
 type Endpoint struct {

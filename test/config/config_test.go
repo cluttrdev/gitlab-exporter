@@ -15,12 +15,6 @@ func defaultConfig() config.Config {
 	cfg.GitLab.Api.Token = ""
 	cfg.GitLab.Client.Rate.Limit = 0.0
 
-	cfg.ClickHouse.Host = "localhost"
-	cfg.ClickHouse.Port = "9000"
-	cfg.ClickHouse.Database = "default"
-	cfg.ClickHouse.User = "default"
-	cfg.ClickHouse.Password = ""
-
 	cfg.Endpoints = []config.Endpoint{}
 
 	cfg.Projects = []config.Project{}
@@ -142,15 +136,11 @@ func TestLoad_DataWithDefaults(t *testing.T) {
       client:
         rate:
           limit: 20
-
-    clickhouse:
-      host: clickhouse.example.com
     `)
 
 	expected := defaultConfig()
 	expected.GitLab.Api.Token = "glpat-xxxxxxxxxxxxxxxxxxxx"
 	expected.GitLab.Client.Rate.Limit = 20
-	expected.ClickHouse.Host = "clickhouse.example.com"
 
 	cfg := defaultConfig()
 	if err := config.Load(data, &cfg); err != nil {

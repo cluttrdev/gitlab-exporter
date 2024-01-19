@@ -14,19 +14,16 @@ import (
 
 	grpc_client "github.com/cluttrdev/gitlab-exporter/grpc/client"
 
-	"github.com/cluttrdev/gitlab-exporter/pkg/clickhouse"
 	"github.com/cluttrdev/gitlab-exporter/pkg/config"
 	"github.com/cluttrdev/gitlab-exporter/pkg/gitlab"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/datastore"
 	"github.com/cluttrdev/gitlab-exporter/internal/worker"
 )
 
 type Controller struct {
-	config    config.Config
-	GitLab    gitlab.Client
-	Exporter  *Exporter
-	DataStore datastore.DataStore
+	config   config.Config
+	GitLab   gitlab.Client
+	Exporter *Exporter
 
 	workers []worker.Worker
 }
@@ -48,10 +45,6 @@ func (c *Controller) configure(cfg config.Config) error {
 		return err
 	}
 
-	if err := c.configureClickHouseDataStore(cfg.ClickHouse); err != nil {
-		return err
-	}
-
 	if err := c.configureExporter(cfg.Endpoints); err != nil {
 		return err
 	}
@@ -70,24 +63,6 @@ func (c *Controller) configureGitLabClient(cfg config.GitLab) error {
 
 		RateLimit: cfg.Client.Rate.Limit,
 	})
-}
-
-func (c *Controller) configureClickHouseDataStore(cfg config.ClickHouse) error {
-	var client clickhouse.Client
-
-	conf := clickhouse.ClientConfig{
-		Host:     cfg.Host,
-		Port:     cfg.Port,
-		Database: cfg.Database,
-		User:     cfg.User,
-		Password: cfg.Password,
-	}
-	if err := client.Configure(conf); err != nil {
-		return err
-	}
-
-	c.DataStore = clickhouse.NewClickHouseDataStore(&client)
-	return nil
 }
 
 func (c *Controller) configureExporter(cfg []config.Endpoint) error {
@@ -113,9 +88,19 @@ func (c *Controller) configureWorkers(cfg config.Config) error {
 
 	for _, prj := range cfg.Projects {
 		if prj.CatchUp.Enabled {
-			workers = append(workers, worker.NewCatchUpProjectWorker(prj, &c.GitLab, c.DataStore))
+			task := ProjectCatchUpTask{
+				Config: prj,
+			}
+			workers = append(workers, worker.NewWorker(func(ctx context.Context) {
+				task.Run(c, ctx)
+			}))
 		}
-		workers = append(workers, worker.NewExportProjectWorker(prj, &c.GitLab, c.DataStore))
+		task := ProjectExportTask{
+			Config: prj,
+		}
+		workers = append(workers, worker.NewWorker(func(ctx context.Context) {
+			task.Run(c, ctx)
+		}))
 	}
 
 	c.workers = workers
@@ -124,10 +109,6 @@ func (c *Controller) configureWorkers(cfg config.Config) error {
 }
 
 func (c *Controller) init(ctx context.Context) error {
-	if err := c.DataStore.Initialize(ctx); err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -135,11 +116,6 @@ func (c *Controller) CheckReadiness(ctx context.Context) error {
 	if err := c.GitLab.CheckReadiness(ctx); err != nil {
 		return err
 	}
-
-	if err := c.DataStore.CheckReadiness(ctx); err != nil {
-		return err
-	}
-
 	return nil
 }
 

@@ -57,12 +57,6 @@ func (c *RootConfig) RegisterFlags(fs *flag.FlagSet) {
 	fs.String("gitlab-api-url", defaults.GitLab.Api.URL, fmt.Sprintf("The GitLab API URL (default: '%s').", defaults.GitLab.Api.URL))
 	fs.String("gitlab-api-token", defaults.GitLab.Api.Token, fmt.Sprintf("The GitLab API Token (default: '%s').", defaults.GitLab.Api.Token))
 
-	fs.String("clickhouse-host", defaults.ClickHouse.Host, fmt.Sprintf("The ClickHouse server name (default: '%s').", defaults.ClickHouse.Host))
-	fs.String("clickhouse-port", defaults.ClickHouse.Port, fmt.Sprintf("The ClickHouse port to connect to (default: '%s')", defaults.ClickHouse.Port))
-	fs.String("clickhouse-database", defaults.ClickHouse.Database, fmt.Sprintf("Select the current default ClickHouse database (default: '%s').", defaults.ClickHouse.Database))
-	fs.String("clickhouse-user", defaults.ClickHouse.User, fmt.Sprintf("The ClickHouse username to connect with (default: '%s').", defaults.ClickHouse.User))
-	fs.String("clickhouse-password", defaults.ClickHouse.Password, fmt.Sprintf("The ClickHouse password (default: '%s').", defaults.ClickHouse.Password))
-
 	fs.StringVar(&c.filename, "config", "", "Configuration file to use.")
 }
 
@@ -83,16 +77,6 @@ func loadConfig(filename string, flags *flag.FlagSet, cfg *config.Config) error 
 			cfg.GitLab.Api.URL = f.Value.String()
 		case "gitlab-api-token":
 			cfg.GitLab.Api.Token = f.Value.String()
-		case "clickhouse-host":
-			cfg.ClickHouse.Host = f.Value.String()
-		case "clickhouse-port":
-			cfg.ClickHouse.Port = f.Value.String()
-		case "clickhouse-database":
-			cfg.ClickHouse.Database = f.Value.String()
-		case "clickhouse-user":
-			cfg.ClickHouse.User = f.Value.String()
-		case "clickhouse-password":
-			cfg.ClickHouse.Password = f.Value.String()
 		}
 	})
 
@@ -103,12 +87,6 @@ func writeConfig(cfg config.Config, out io.Writer) {
 	fmt.Fprintln(out, "----")
 	fmt.Fprintf(out, "GitLab URL: %s\n", cfg.GitLab.Api.URL)
 	fmt.Fprintf(out, "GitLab Token: %x\n", sha256String(cfg.GitLab.Api.Token))
-	fmt.Fprintln(out, "----")
-	fmt.Fprintf(out, "ClickHouse Host: %s\n", cfg.ClickHouse.Host)
-	fmt.Fprintf(out, "ClickHouse Port: %s\n", cfg.ClickHouse.Port)
-	fmt.Fprintf(out, "ClickHouse Database: %s\n", cfg.ClickHouse.Database)
-	fmt.Fprintf(out, "ClickHouse User: %s\n", cfg.ClickHouse.User)
-	fmt.Fprintf(out, "ClickHouse Password: %x\n", sha256String(cfg.ClickHouse.Password))
 	fmt.Fprintln(out, "----")
 
 	projects := []int64{}

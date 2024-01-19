@@ -21,6 +21,8 @@ type FetchPipelineConfig struct {
 	fetchHierarchy bool
 	fetchSections  bool
 
+	outputTrace bool
+
 	flags *flag.FlagSet
 }
 
@@ -51,6 +53,7 @@ func (c *FetchPipelineConfig) RegisterFlags(fs *flag.FlagSet) {
 
 	fs.BoolVar(&c.fetchHierarchy, "hierarchy", false, "Fetch pipeline hierarchy. (default: false)")
 	fs.BoolVar(&c.fetchSections, "fetch-sections", true, "Fetch job sections. (default: true)")
+	fs.BoolVar(&c.outputTrace, "trace", false, "Output pipeline trace. (default: false)")
 }
 
 func (c *FetchPipelineConfig) Exec(ctx context.Context, args []string) error {
@@ -81,7 +84,7 @@ func (c *FetchPipelineConfig) Exec(ctx context.Context, args []string) error {
 	}
 
 	var b []byte
-	if c.fetchHierarchy {
+	if c.fetchHierarchy || c.outputTrace {
 		opt := &gitlab.GetPipelineHierarchyOptions{
 			FetchSections: c.fetchSections,
 		}
@@ -92,9 +95,17 @@ func (c *FetchPipelineConfig) Exec(ctx context.Context, args []string) error {
 		}
 		ph := phr.PipelineHierarchy
 
-		b, err = json.Marshal(ph)
-		if err != nil {
-			return fmt.Errorf("error marshalling pipeline hierarchy: %w", err)
+		if c.outputTrace {
+			ts := ph.GetAllTraces()
+			b, err = json.Marshal(ts)
+			if err != nil {
+				return fmt.Errorf("error marshalling pipeline traces: %w", err)
+			}
+		} else {
+			b, err = json.Marshal(ph)
+			if err != nil {
+				return fmt.Errorf("error marshalling pipeline hierarchy: %w", err)
+			}
 		}
 	} else {
 		p, err := ctl.GitLab.GetPipeline(ctx, projectID, pipelineID)

@@ -10,13 +10,6 @@ gitlab:
     rate:
       limit: 0.0
 
-clickhouse:
-  host: "127.0.0.1"
-  port: "9000"
-  database: "default"
-  user: "default"
-  password: ""
-
 # List of gRPC server endpoints to export to
 endpoints: []
   # - address: "127.0.0.1:36275"

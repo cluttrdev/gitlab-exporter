@@ -2,6 +2,7 @@ package worker
 
 import (
 	"context"
+	"sync"
 )
 
 type Worker interface {
@@ -14,17 +15,29 @@ type worker struct {
 	cancel context.CancelFunc
 	done   chan struct{}
 
+	// ensure the worker can only be started once
+	start sync.Once
+	// ensure the worker can only be stopped once
+	stop sync.Once
+
 	run func(context.Context)
 }
 
 func (w *worker) Start(ctx context.Context) {
 	ctx, w.cancel = context.WithCancel(ctx)
-	go w.run(ctx)
+	go func() {
+		w.start.Do(func() {
+			defer w.cancel()
+			w.run(ctx)
+		})
+	}()
 }
 
 func (w *worker) Stop() {
-	w.cancel()
-	close(w.done)
+	w.stop.Do(func() {
+		w.cancel()
+		close(w.done)
+	})
 }
 
 func (w *worker) Done() <-chan struct{} {

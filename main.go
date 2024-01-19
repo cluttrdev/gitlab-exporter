@@ -24,7 +24,6 @@ func main() {
 		runCmd              = cmd.NewRunCmd(rootConfig, out)
 		fetchCmd            = cmd.NewFetchCmd(rootConfig, out)
 		exportCmd           = cmd.NewExportCmd(rootConfig, out)
-		deduplicateCmd      = cmd.NewDeduplicateCmd(rootConfig)
 	)
 
 	rootCmd.Subcommands = []*ffcli.Command{
@@ -32,7 +31,6 @@ func main() {
 		runCmd,
 		fetchCmd,
 		exportCmd,
-		deduplicateCmd,
 	}
 
 	if len(os.Args[1:]) == 0 {
