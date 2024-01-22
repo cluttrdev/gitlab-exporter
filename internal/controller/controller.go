@@ -17,7 +17,7 @@ import (
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/worker"
+	"github.com/cluttrdev/gitlab-exporter/pkg/worker"
 )
 
 type Controller struct {
