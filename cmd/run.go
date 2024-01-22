@@ -12,8 +12,9 @@ import (
 	"strings"
 	"syscall"
 
-	"github.com/peterbourgon/ff/v3/ffcli"
 	"golang.org/x/exp/slices"
+
+	"github.com/cluttrdev/cli"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/internal/controller"
@@ -21,11 +22,9 @@ import (
 )
 
 type RunConfig struct {
-	rootConfig *RootConfig
-	out        io.Writer
-	projects   projectList
+	RootConfig
 
-	flags *flag.FlagSet
+	projects projectList
 }
 
 type projectList []int64
@@ -46,31 +45,28 @@ func (f *projectList) Set(value string) error {
 	return nil
 }
 
-func NewRunCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
+func NewRunCmd(out io.Writer) *cli.Command {
 	fs := flag.NewFlagSet(fmt.Sprintf("%s run", exeName), flag.ContinueOnError)
 
 	config := RunConfig{
-		rootConfig: rootConfig,
-		out:        out,
-
-		flags: fs,
+		RootConfig: RootConfig{
+			out: out,
+		},
 	}
 
 	config.RegisterFlags(fs)
 
-	return &ffcli.Command{
+	return &cli.Command{
 		Name:       "run",
-		ShortUsage: fmt.Sprintf("%s run [flags]", exeName),
+		ShortUsage: fmt.Sprintf("%s run [option]...", exeName),
 		ShortHelp:  "Run in daemon mode",
-		UsageFunc:  usageFunc,
-		FlagSet:    fs,
-		Options:    rootCmdOptions,
+		Flags:      fs,
 		Exec:       config.Exec,
 	}
 }
 
 func (c *RunConfig) RegisterFlags(fs *flag.FlagSet) {
-	c.rootConfig.RegisterFlags(fs)
+	c.RootConfig.RegisterFlags(fs)
 
 	fs.Var(&c.projects, "projects", "Comma separated list of project ids.")
 }
@@ -80,9 +76,9 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 	log.SetOutput(c.out)
 
 	// load configuration
-	log.Printf("Loading configuration from %s\n", c.rootConfig.filename)
+	log.Printf("Loading configuration from %s\n", c.RootConfig.filename)
 	cfg := config.Default()
-	if err := loadConfig(c.rootConfig.filename, c.flags, &cfg); err != nil {
+	if err := loadConfig(c.RootConfig.filename, &c.flags, &cfg); err != nil {
 		return fmt.Errorf("error loading configuration: %w", err)
 	}
 

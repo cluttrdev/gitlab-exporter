@@ -7,8 +7,7 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/peterbourgon/ff/v3"
-	"github.com/peterbourgon/ff/v3/ffcli"
+	"github.com/cluttrdev/cli"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
 )
@@ -18,37 +17,31 @@ const (
 	envVarPrefix string = "GLE"
 )
 
-var (
-	rootCmdOptions = []ff.Option{
-		ff.WithEnvVarPrefix(envVarPrefix),
-	}
-)
-
 type RootConfig struct {
 	filename string
 
-	flags *flag.FlagSet
+	out   io.Writer
+	flags flag.FlagSet
 }
 
-func NewRootCmd() (*ffcli.Command, *RootConfig) {
+func NewRootCmd(out io.Writer) *cli.Command {
 	fs := flag.NewFlagSet(exeName, flag.ContinueOnError)
 
 	cfg := RootConfig{
 		filename: "",
 
-		flags: fs,
+		out:   out,
+		flags: *fs,
 	}
 
-	cfg.RegisterFlags(cfg.flags)
+	cfg.RegisterFlags(&cfg.flags)
 
-	return &ffcli.Command{
+	return &cli.Command{
 		Name:       exeName,
-		ShortUsage: fmt.Sprintf("%s <subcommand> [flags] [<args>...]", exeName),
-		UsageFunc:  usageFunc,
-		FlagSet:    cfg.flags,
-		Options:    rootCmdOptions,
+		ShortUsage: fmt.Sprintf("%s <subcommand> [option]... [arg]...", exeName),
+		Flags:      &cfg.flags,
 		Exec:       cfg.Exec,
-	}, &cfg
+	}
 }
 
 func (c *RootConfig) RegisterFlags(fs *flag.FlagSet) {

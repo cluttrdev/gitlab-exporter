@@ -6,42 +6,36 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/peterbourgon/ff/v3/ffcli"
+	"github.com/cluttrdev/cli"
 )
 
 type FetchConfig struct {
-	rootConfig *RootConfig
-
-	out io.Writer
-
-	flags *flag.FlagSet
+	RootConfig
 }
 
-func NewFetchCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
+func NewFetchCmd(out io.Writer) *cli.Command {
 	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch", exeName), flag.ContinueOnError)
 
 	cfg := FetchConfig{
-		rootConfig: rootConfig,
-		out:        out,
-
-		flags: fs,
+		RootConfig: RootConfig{
+			out: out,
+		},
 	}
 
 	cfg.RegisterFlags(fs)
 
 	var (
-		fetchPipelineCmd   = NewFetchPipelineCmd(&cfg)
-		fetchJobLogCmd     = NewFetchJobLogCmd(&cfg)
-		fetchTestReportCmd = NewFetchTestReportCmd(&cfg)
+		fetchPipelineCmd   = NewFetchPipelineCmd(out)
+		fetchJobLogCmd     = NewFetchJobLogCmd(out)
+		fetchTestReportCmd = NewFetchTestReportCmd(out)
 	)
 
-	return &ffcli.Command{
+	return &cli.Command{
 		Name:       "fetch",
-		ShortUsage: fmt.Sprintf("%s fetch <subcommand> [flags] [<args>...]", exeName),
+		ShortUsage: fmt.Sprintf("%s fetch <subcommand> [option]... [args]...", exeName),
 		ShortHelp:  "Fetch data from the GitLab API",
-		UsageFunc:  usageFunc,
-		FlagSet:    fs,
-		Subcommands: []*ffcli.Command{
+		Flags:      fs,
+		Subcommands: []*cli.Command{
 			fetchPipelineCmd,
 			fetchJobLogCmd,
 			fetchTestReportCmd,
@@ -51,7 +45,7 @@ func NewFetchCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 }
 
 func (c *FetchConfig) RegisterFlags(fs *flag.FlagSet) {
-	c.rootConfig.RegisterFlags(fs)
+	c.RootConfig.RegisterFlags(fs)
 }
 
 func (c *FetchConfig) Exec(ctx context.Context, _ []string) error {

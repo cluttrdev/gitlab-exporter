@@ -5,43 +5,40 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"strconv"
 
-	"github.com/peterbourgon/ff/v3/ffcli"
+	"github.com/cluttrdev/cli"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/internal/controller"
 )
 
 type FetchTestReportConfig struct {
-	fetchConfig *FetchConfig
-
-	flags *flag.FlagSet
+	FetchConfig
 }
 
-func NewFetchTestReportCmd(fetchConfig *FetchConfig) *ffcli.Command {
+func NewFetchTestReportCmd(out io.Writer) *cli.Command {
 	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch testreport", exeName), flag.ContinueOnError)
 
 	config := FetchTestReportConfig{
-		fetchConfig: fetchConfig,
-
-		flags: fs,
+		FetchConfig: FetchConfig{
+			RootConfig: RootConfig{},
+		},
 	}
 
-	return &ffcli.Command{
+	return &cli.Command{
 		Name:       "testreport",
-		ShortUsage: fmt.Sprintf("%s fetch testreport [flags] project_id pipeline_id", exeName),
+		ShortUsage: fmt.Sprintf("%s fetch testreport [option]... project_id pipeline_id", exeName),
 		ShortHelp:  "Fetch pipeline testreport",
-		UsageFunc:  usageFunc,
-		FlagSet:    fs,
-		Options:    rootCmdOptions,
+		Flags:      fs,
 		Exec:       config.Exec,
 	}
 }
 
 func (c *FetchTestReportConfig) RegisterFlags(fs *flag.FlagSet) {
-	c.fetchConfig.RegisterFlags(fs)
+	c.FetchConfig.RegisterFlags(fs)
 }
 
 func (c *FetchTestReportConfig) Exec(ctx context.Context, args []string) error {
@@ -59,10 +56,10 @@ func (c *FetchTestReportConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("error parsing `pipeline_id` argument: %w", err)
 	}
 
-	log.SetOutput(c.fetchConfig.out)
+	log.SetOutput(c.FetchConfig.RootConfig.out)
 
 	cfg := config.Default()
-	if err := loadConfig(c.fetchConfig.rootConfig.filename, c.flags, &cfg); err != nil {
+	if err := loadConfig(c.FetchConfig.RootConfig.filename, &c.flags, &cfg); err != nil {
 		return fmt.Errorf("error loading configuration: %w", err)
 	}
 
@@ -81,7 +78,7 @@ func (c *FetchTestReportConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("error marshalling pipeline testreport %w", err)
 	}
 
-	fmt.Fprint(c.fetchConfig.out, string(b))
+	fmt.Fprint(c.FetchConfig.RootConfig.out, string(b))
 
 	return nil
 }

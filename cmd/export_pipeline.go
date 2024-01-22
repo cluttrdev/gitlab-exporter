@@ -4,48 +4,47 @@ import (
 	"context"
 	"flag"
 	"fmt"
+	"io"
 	"strconv"
 
-	"github.com/peterbourgon/ff/v3/ffcli"
+	"github.com/cluttrdev/cli"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/internal/controller"
 )
 
 type ExportPipelineConfig struct {
-	exportConfig *ExportConfig
+	ExportConfig
 
 	exportSections    bool
 	exportTestReports bool
 	exportTraces      bool
-
-	flags *flag.FlagSet
 }
 
-func NewExportPipelineCmd(exportConfig *ExportConfig) *ffcli.Command {
+func NewExportPipelineCmd(out io.Writer) *cli.Command {
 	fs := flag.NewFlagSet(fmt.Sprintf("%s export pipeline", exeName), flag.ContinueOnError)
 
 	config := &ExportPipelineConfig{
-		exportConfig: exportConfig,
-
-		flags: fs,
+		ExportConfig: ExportConfig{
+			RootConfig: RootConfig{
+				out: out,
+			},
+		},
 	}
 
 	config.RegisterFlags(fs)
 
-	return &ffcli.Command{
+	return &cli.Command{
 		Name:       "pipeline",
-		ShortUsage: fmt.Sprintf("%s export pipeline [flags] project_id pipeline_id", exeName),
+		ShortUsage: fmt.Sprintf("%s export pipeline [option]... project_id pipeline_id", exeName),
 		ShortHelp:  "Export pipeline data",
-		UsageFunc:  usageFunc,
-		FlagSet:    fs,
-		Options:    rootCmdOptions,
+		Flags:      fs,
 		Exec:       config.Exec,
 	}
 }
 
 func (c *ExportPipelineConfig) RegisterFlags(fs *flag.FlagSet) {
-	c.exportConfig.RegisterFlags(fs)
+	c.ExportConfig.RegisterFlags(fs)
 
 	fs.BoolVar(&c.exportSections, "export-sections", true, "Export job sections. (default: true)")
 	fs.BoolVar(&c.exportTraces, "export-traces", true, "Export pipeline trace. (default: true)")
@@ -68,7 +67,7 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 	}
 
 	cfg := config.Default()
-	if err := loadConfig(c.exportConfig.rootConfig.filename, c.flags, &cfg); err != nil {
+	if err := loadConfig(c.ExportConfig.RootConfig.filename, &c.flags, &cfg); err != nil {
 		return fmt.Errorf("error loading configuration: %w", err)
 	}
 

@@ -1,11 +1,11 @@
 module github.com/cluttrdev/gitlab-exporter
 
-go 1.20
+go 1.21.4
 
 require (
+	github.com/cluttrdev/cli v0.0.0-20240117210602-b3e731e74746
 	github.com/creasty/defaults v1.7.0
 	github.com/google/go-cmp v0.5.9
-	github.com/peterbourgon/ff/v3 v3.4.0
 	github.com/prometheus/client_golang v1.17.0
 	github.com/xanzy/go-gitlab v0.88.0
 	go.opentelemetry.io/proto/otlp v1.0.0

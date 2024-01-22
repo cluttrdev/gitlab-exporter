@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"strconv"
 
-	"github.com/peterbourgon/ff/v3/ffcli"
+	"github.com/cluttrdev/cli"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/internal/controller"
@@ -16,40 +17,38 @@ import (
 )
 
 type FetchPipelineConfig struct {
-	fetchConfig *FetchConfig
+	FetchConfig
 
 	fetchHierarchy bool
 	fetchSections  bool
 
 	outputTrace bool
-
-	flags *flag.FlagSet
 }
 
-func NewFetchPipelineCmd(fetchConfig *FetchConfig) *ffcli.Command {
+func NewFetchPipelineCmd(out io.Writer) *cli.Command {
 	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch pipeline", exeName), flag.ContinueOnError)
 
 	config := FetchPipelineConfig{
-		fetchConfig: fetchConfig,
-
-		flags: fs,
+		FetchConfig: FetchConfig{
+			RootConfig: RootConfig{
+				out: out,
+			},
+		},
 	}
 
 	config.RegisterFlags(fs)
 
-	return &ffcli.Command{
+	return &cli.Command{
 		Name:       "pipeline",
-		ShortUsage: fmt.Sprintf("%s fetch pipeline [flags] project_id pipeline_id", exeName),
+		ShortUsage: fmt.Sprintf("%s fetch pipeline [option]... project_id pipeline_id", exeName),
 		ShortHelp:  "Fetch pipeline data",
-		UsageFunc:  usageFunc,
-		FlagSet:    fs,
-		Options:    rootCmdOptions,
+		Flags:      fs,
 		Exec:       config.Exec,
 	}
 }
 
 func (c *FetchPipelineConfig) RegisterFlags(fs *flag.FlagSet) {
-	c.fetchConfig.RegisterFlags(fs)
+	c.FetchConfig.RegisterFlags(fs)
 
 	fs.BoolVar(&c.fetchHierarchy, "hierarchy", false, "Fetch pipeline hierarchy. (default: false)")
 	fs.BoolVar(&c.fetchSections, "fetch-sections", true, "Fetch job sections. (default: true)")
@@ -61,10 +60,10 @@ func (c *FetchPipelineConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("invalid number of positional arguments: %v", args)
 	}
 
-	log.SetOutput(c.fetchConfig.out)
+	log.SetOutput(c.FetchConfig.RootConfig.out)
 
 	cfg := config.Default()
-	if err := loadConfig(c.fetchConfig.rootConfig.filename, c.flags, &cfg); err != nil {
+	if err := loadConfig(c.FetchConfig.RootConfig.filename, &c.flags, &cfg); err != nil {
 		return fmt.Errorf("error loading configuration: %w", err)
 	}
 
@@ -119,7 +118,7 @@ func (c *FetchPipelineConfig) Exec(ctx context.Context, args []string) error {
 		}
 	}
 
-	fmt.Fprint(c.fetchConfig.out, string(b))
+	fmt.Fprint(c.FetchConfig.RootConfig.out, string(b))
 
 	return nil
 }

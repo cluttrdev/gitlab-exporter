@@ -6,40 +6,34 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/peterbourgon/ff/v3/ffcli"
+	"github.com/cluttrdev/cli"
 )
 
 type ExportConfig struct {
-	rootConfig *RootConfig
-
-	out io.Writer
-
-	flags *flag.FlagSet
+	RootConfig
 }
 
-func NewExportCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
+func NewExportCmd(out io.Writer) *cli.Command {
 	fs := flag.NewFlagSet(fmt.Sprintf("%s export", exeName), flag.ContinueOnError)
 
 	cfg := ExportConfig{
-		rootConfig: rootConfig,
-		out:        out,
-
-		flags: fs,
+		RootConfig: RootConfig{
+			out: out,
+		},
 	}
 
 	cfg.RegisterFlags(fs)
 
 	var (
-		exportPipelineCmd = NewExportPipelineCmd(&cfg)
+		exportPipelineCmd = NewExportPipelineCmd(out)
 	)
 
-	return &ffcli.Command{
+	return &cli.Command{
 		Name:       "export",
-		ShortUsage: fmt.Sprintf("%s export <subcommand> [flags] [<args>...]", exeName),
+		ShortUsage: fmt.Sprintf("%s export <subcommand> [option]... [args]...", exeName),
 		ShortHelp:  "Export data from the GitLab API",
-		UsageFunc:  usageFunc,
-		FlagSet:    fs,
-		Subcommands: []*ffcli.Command{
+		Flags:      fs,
+		Subcommands: []*cli.Command{
 			exportPipelineCmd,
 		},
 		Exec: cfg.Exec,
@@ -47,7 +41,7 @@ func NewExportCmd(rootConfig *RootConfig, out io.Writer) *ffcli.Command {
 }
 
 func (c *ExportConfig) RegisterFlags(fs *flag.FlagSet) {
-	c.rootConfig.RegisterFlags(fs)
+	c.RootConfig.RegisterFlags(fs)
 }
 
 func (c *ExportConfig) Exec(ctx context.Context, _ []string) error {

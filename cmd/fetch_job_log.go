@@ -9,7 +9,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/peterbourgon/ff/v3/ffcli"
+	"github.com/cluttrdev/cli"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/internal/controller"
@@ -17,38 +17,36 @@ import (
 )
 
 type FetchJobLogConfig struct {
-	fetchConfig *FetchConfig
+	FetchConfig
 
 	printSections bool
 	printMetrics  bool
-
-	flags *flag.FlagSet
 }
 
-func NewFetchJobLogCmd(fetchConfig *FetchConfig) *ffcli.Command {
+func NewFetchJobLogCmd(out io.Writer) *cli.Command {
 	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch joblog", exeName), flag.ContinueOnError)
 
 	cfg := FetchJobLogConfig{
-		fetchConfig: fetchConfig,
-
-		flags: fs,
+		FetchConfig: FetchConfig{
+			RootConfig: RootConfig{
+				out: out,
+			},
+		},
 	}
 
 	cfg.RegisterFlags(fs)
 
-	return &ffcli.Command{
+	return &cli.Command{
 		Name:       "joblog",
-		ShortUsage: fmt.Sprintf("%s fetch joblog [flags] project_id job_id", exeName),
+		ShortUsage: fmt.Sprintf("%s fetch joblog [option]... project_id job_id", exeName),
 		ShortHelp:  "Fetch job log",
-		UsageFunc:  usageFunc,
-		FlagSet:    fs,
-		Options:    rootCmdOptions,
+		Flags:      fs,
 		Exec:       cfg.Exec,
 	}
 }
 
 func (c *FetchJobLogConfig) RegisterFlags(fs *flag.FlagSet) {
-	c.fetchConfig.RegisterFlags(fs)
+	c.FetchConfig.RegisterFlags(fs)
 
 	fs.BoolVar(&c.printSections, "sections", false, "Print parsed job log sections. (default: false)")
 	fs.BoolVar(&c.printMetrics, "metrics", false, "Print parsed job log embedded metrics. (default: false)")
@@ -59,10 +57,10 @@ func (c *FetchJobLogConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("invalid number of positional arguments: %v", args)
 	}
 
-	log.SetOutput(c.fetchConfig.out)
+	log.SetOutput(c.FetchConfig.RootConfig.out)
 
 	cfg := config.Default()
-	if err := loadConfig(c.fetchConfig.rootConfig.filename, c.flags, &cfg); err != nil {
+	if err := loadConfig(c.FetchConfig.RootConfig.filename, &c.flags, &cfg); err != nil {
 		return fmt.Errorf("error loading configuration: %w", err)
 	}
 
@@ -106,7 +104,7 @@ func (c *FetchJobLogConfig) Exec(ctx context.Context, args []string) error {
 		}
 		fmt.Println(string(m))
 	} else {
-		_, err = io.Copy(c.fetchConfig.out, trace)
+		_, err = io.Copy(c.FetchConfig.RootConfig.out, trace)
 		if err != nil {
 			return err
 		}
