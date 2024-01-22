@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"net/http/pprof"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/healthz"
+	"github.com/cluttrdev/gitlab-exporter/pkg/healthz"
 )
 
 type ServerConfig struct {
