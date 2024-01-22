@@ -17,7 +17,7 @@ import (
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/internal/controller"
-	"github.com/cluttrdev/gitlab-exporter/pkg/server"
+	"github.com/cluttrdev/gitlab-exporter/internal/server"
 )
 
 type RunConfig struct {
