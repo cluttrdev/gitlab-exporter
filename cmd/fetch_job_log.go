@@ -11,7 +11,7 @@ import (
 
 	"github.com/peterbourgon/ff/v3/ffcli"
 
-	"github.com/cluttrdev/gitlab-exporter/pkg/config"
+	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/pkg/controller"
 	"github.com/cluttrdev/gitlab-exporter/pkg/gitlab"
 )

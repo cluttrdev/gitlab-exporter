@@ -8,7 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cluttrdev/gitlab-exporter/pkg/config"
+	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/pkg/gitlab"
 )
 

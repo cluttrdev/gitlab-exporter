@@ -14,7 +14,7 @@ import (
 
 	grpc_client "github.com/cluttrdev/gitlab-exporter/grpc/client"
 
-	"github.com/cluttrdev/gitlab-exporter/pkg/config"
+	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/pkg/gitlab"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/worker"
