@@ -47,6 +47,5 @@ message PipelineReference {
     int64 project_id = 2;
     string ref = 3;
     string sha = 4;
-    string source = 5;
     string status = 6;
 }

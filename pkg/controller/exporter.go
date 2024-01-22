@@ -5,7 +5,8 @@ import (
 	"errors"
 
 	grpc_client "github.com/cluttrdev/gitlab-exporter/grpc/client"
-	"github.com/cluttrdev/gitlab-exporter/pkg/models"
+	pb "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb"
+	"github.com/cluttrdev/gitlab-exporter/internal/models"
 )
 
 type Exporter struct {
@@ -27,7 +28,7 @@ func NewExporter(endpoints []grpc_client.EndpointConfig) (*Exporter, error) {
 	}, nil
 }
 
-func (e *Exporter) RecordPipelines(ctx context.Context, data []*models.Pipeline) error {
+func (e *Exporter) RecordPipelines(ctx context.Context, data []*pb.Pipeline) error {
 	var errs error
 	for _, client := range e.clients {
 		if err := client.RecordPipelines(ctx, data); err != nil {
@@ -37,7 +38,7 @@ func (e *Exporter) RecordPipelines(ctx context.Context, data []*models.Pipeline)
 	return errs
 }
 
-func (e *Exporter) RecordJobs(ctx context.Context, data []*models.Job) error {
+func (e *Exporter) RecordJobs(ctx context.Context, data []*pb.Job) error {
 	var errs error
 	for _, client := range e.clients {
 		if err := client.RecordJobs(ctx, data); err != nil {
@@ -47,7 +48,7 @@ func (e *Exporter) RecordJobs(ctx context.Context, data []*models.Job) error {
 	return errs
 }
 
-func (e *Exporter) RecordSections(ctx context.Context, data []*models.Section) error {
+func (e *Exporter) RecordSections(ctx context.Context, data []*pb.Section) error {
 	var errs error
 	for _, client := range e.clients {
 		if err := client.RecordSections(ctx, data); err != nil {
@@ -57,7 +58,7 @@ func (e *Exporter) RecordSections(ctx context.Context, data []*models.Section) e
 	return errs
 }
 
-func (e *Exporter) RecordBridges(ctx context.Context, data []*models.Bridge) error {
+func (e *Exporter) RecordBridges(ctx context.Context, data []*pb.Bridge) error {
 	var errs error
 	for _, client := range e.clients {
 		if err := client.RecordBridges(ctx, data); err != nil {
@@ -67,7 +68,7 @@ func (e *Exporter) RecordBridges(ctx context.Context, data []*models.Bridge) err
 	return errs
 }
 
-func (e *Exporter) RecordTestReports(ctx context.Context, reports []*models.PipelineTestReport) error {
+func (e *Exporter) RecordTestReports(ctx context.Context, reports []*pb.TestReport) error {
 	var errs error
 	for _, client := range e.clients {
 		if err := client.RecordTestReports(ctx, reports); err != nil {
@@ -77,7 +78,7 @@ func (e *Exporter) RecordTestReports(ctx context.Context, reports []*models.Pipe
 	return errs
 }
 
-func (e *Exporter) RecordTestSuites(ctx context.Context, suites []*models.PipelineTestSuite) error {
+func (e *Exporter) RecordTestSuites(ctx context.Context, suites []*pb.TestSuite) error {
 	var errs error
 	for _, client := range e.clients {
 		if err := client.RecordTestSuites(ctx, suites); err != nil {
@@ -87,7 +88,7 @@ func (e *Exporter) RecordTestSuites(ctx context.Context, suites []*models.Pipeli
 	return errs
 }
 
-func (e *Exporter) RecordTestCases(ctx context.Context, cases []*models.PipelineTestCase) error {
+func (e *Exporter) RecordTestCases(ctx context.Context, cases []*pb.TestCase) error {
 	var errs error
 	for _, client := range e.clients {
 		if err := client.RecordTestCases(ctx, cases); err != nil {
@@ -97,7 +98,7 @@ func (e *Exporter) RecordTestCases(ctx context.Context, cases []*models.Pipeline
 	return errs
 }
 
-func (e *Exporter) RecordTraces(ctx context.Context, traces []*models.Trace) error {
+func (e *Exporter) RecordTraces(ctx context.Context, traces []*pb.Trace) error {
 	var errs error
 	for _, client := range e.clients {
 		if err := client.RecordTraces(ctx, traces); err != nil {
@@ -136,10 +137,10 @@ func (e *Exporter) RecordPipelineHierarchy(ctx context.Context, ph *models.Pipel
 }
 
 type pipelineData struct {
-	Pipelines []*models.Pipeline
-	Jobs      []*models.Job
-	Sections  []*models.Section
-	Bridges   []*models.Bridge
+	Pipelines []*pb.Pipeline
+	Jobs      []*pb.Job
+	Sections  []*pb.Section
+	Bridges   []*pb.Bridge
 }
 
 func flattenPipelineHierarchy(ph *models.PipelineHierarchy) (pipelineData, error) {

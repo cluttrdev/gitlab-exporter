@@ -5,13 +5,13 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
-	"time"
 
 	"golang.org/x/time/rate"
 
 	_gitlab "github.com/xanzy/go-gitlab"
 
-	"github.com/cluttrdev/gitlab-exporter/pkg/models"
+	pb "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb"
+	"github.com/cluttrdev/gitlab-exporter/internal/models"
 )
 
 type Client struct {
@@ -93,9 +93,9 @@ type GetPipelineHierarchyOptions struct {
 }
 
 type GetPipelineHierarchyResult struct {
-	PipelineHierarchy *models.PipelineHierarchy
-	JobMetrics        []*models.JobMetric
-	Error             error
+	PipelineHierarchy  *models.PipelineHierarchy
+	LogEmbeddedMetrics []*pb.LogEmbeddedMetric
+	Error              error
 }
 
 func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipelineID int64, opt *GetPipelineHierarchyOptions) <-chan GetPipelineHierarchyResult {
@@ -103,12 +103,6 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 
 	go func() {
 		defer close(ch)
-
-		unixTime := func(ts int64) *time.Time {
-			const nsec int64 = 0
-			t := time.Unix(ts, nsec)
-			return &t
-		}
 
 		pipeline, err := c.GetPipeline(ctx, projectID, pipelineID)
 		if err != nil {
@@ -118,9 +112,9 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 			return
 		}
 
-		jobs := []*models.Job{}
-		sections := []*models.Section{}
-		metrics := []*models.JobMetric{}
+		jobs := []*pb.Job{}
+		sections := []*pb.Section{}
+		metrics := []*pb.LogEmbeddedMetric{}
 		for jr := range c.ListPipelineJobs(ctx, projectID, pipelineID) {
 			if jr.Error != nil {
 				ch <- GetPipelineHierarchyResult{
@@ -132,7 +126,7 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 
 			if opt.FetchSections || opt.FetchJobMetrics {
 				job := jr.Job
-				r, err := c.GetJobLog(ctx, projectID, job.ID)
+				r, err := c.GetJobLog(ctx, projectID, job.Id)
 				if err != nil {
 					ch <- GetPipelineHierarchyResult{
 						Error: fmt.Errorf("get job log: %w", err),
@@ -150,22 +144,19 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 
 				if opt.FetchSections {
 					for secnum, secdat := range data.Sections {
-						section := &models.Section{
+						section := &pb.Section{
+							Id: job.Id*1000 + int64(secnum),
+							Job: &pb.JobReference{
+								Id:     job.Id,
+								Name:   job.Name,
+								Status: job.Status,
+							},
+							Pipeline:   job.Pipeline,
 							Name:       secdat.Name,
-							StartedAt:  unixTime(secdat.Start),
-							FinishedAt: unixTime(secdat.End),
-							Duration:   float64(secdat.End - secdat.Start),
+							StartedAt:  models.ConvertUnixSeconds(secdat.Start),
+							FinishedAt: models.ConvertUnixSeconds(secdat.End),
+							Duration:   models.ConvertDuration(float64(secdat.End - secdat.Start)),
 						}
-
-						section.ID = job.ID*1000 + int64(secnum)
-						section.Job.ID = int64(job.ID)
-						section.Job.Name = job.Name
-						section.Job.Status = job.Status
-						section.Pipeline.ID = int64(job.Pipeline.ID)
-						section.Pipeline.ProjectID = int64(job.Pipeline.ProjectID)
-						section.Pipeline.Ref = job.Pipeline.Ref
-						section.Pipeline.Sha = job.Pipeline.Sha
-						section.Pipeline.Status = job.Pipeline.Status
 
 						sections = append(sections, section)
 					}
@@ -173,15 +164,16 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 
 				if opt.FetchJobMetrics {
 					for _, m := range data.Metrics {
-						metric := &models.JobMetric{
+						metric := &pb.LogEmbeddedMetric{
 							Name:      m.Name,
-							Labels:    m.Labels,
+							Labels:    models.ConvertLabels(m.Labels),
 							Value:     m.Value,
-							Timestamp: m.Timestamp,
+							Timestamp: models.ConvertUnixMilli(m.Timestamp),
+							Job: &pb.LogEmbeddedMetric_JobReference{
+								Id:   job.Id,
+								Name: job.Name,
+							},
 						}
-
-						metric.Job.ID = job.ID
-						metric.Job.Name = job.Name
 
 						metrics = append(metrics, metric)
 					}
@@ -189,7 +181,7 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 			}
 		}
 
-		bridges := []*models.Bridge{}
+		bridges := []*pb.Bridge{}
 		dps := []*models.PipelineHierarchy{}
 		for br := range c.ListPipelineBridges(ctx, projectID, pipelineID) {
 			if br.Error != nil {
@@ -201,11 +193,11 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 			bridges = append(bridges, br.Bridge)
 
 			dp := br.Bridge.DownstreamPipeline
-			if dp == nil || dp.ID == 0 {
+			if dp == nil || dp.Id == 0 {
 				continue
 			}
 
-			dpr := <-c.GetPipelineHierarchy(ctx, dp.ProjectID, dp.ID, opt)
+			dpr := <-c.GetPipelineHierarchy(ctx, dp.ProjectId, dp.Id, opt)
 			if dpr.Error != nil {
 				ch <- GetPipelineHierarchyResult{
 					Error: fmt.Errorf("[GetPipelineHierarchy] %w", dpr.Error),
@@ -223,7 +215,7 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 				Bridges:             bridges,
 				DownstreamPipelines: dps,
 			},
-			JobMetrics: metrics,
+			LogEmbeddedMetrics: metrics,
 		}
 	}()
 

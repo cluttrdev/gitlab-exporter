@@ -5,7 +5,7 @@ option go_package = "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb";
 package gitlabexporter.proto.models;
 
 message TestReport {
-    int64 id = 1;
+    string id = 1;
     int64 pipeline_id = 2;
     double total_time = 3;
     int64 total_count = 4;
@@ -16,8 +16,8 @@ message TestReport {
 }
 
 message TestSuite {
-    int64 id = 1;
-    int64 testreport_id = 2;
+    string id = 1;
+    string testreport_id = 2;
     int64 pipeline_id = 3;
     string name = 4;
     double total_time = 5;
@@ -29,9 +29,9 @@ message TestSuite {
 }
 
 message TestCase {
-    int64 id = 1;
-    int64 testsuite_id = 2;
-    int64 testreport_id = 3;
+    string id = 1;
+    string testsuite_id = 2;
+    string testreport_id = 3;
     int64 pipeline_id = 4;
     string status = 5;
     string name = 6;
@@ -41,10 +41,10 @@ message TestCase {
     string system_output = 10;
     string stack_trace = 11;
     string attachment_url = 12;
-    TestCaseRecentFailures recent_failures = 13;
-}
 
-message TestCaseRecentFailures {
-    int64 count = 1;
-    string base_branch = 2;
+    message RecentFailures {
+        int64 count = 1;
+        string base_branch = 2;
+    }
+    RecentFailures recent_failures = 13;
 }

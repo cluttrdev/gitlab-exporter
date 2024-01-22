@@ -10,7 +10,6 @@ import (
 
 	"github.com/cluttrdev/gitlab-exporter/pkg/config"
 	"github.com/cluttrdev/gitlab-exporter/pkg/gitlab"
-	"github.com/cluttrdev/gitlab-exporter/pkg/models"
 )
 
 type ExportPipelineHierarchyOptions struct {
@@ -41,35 +40,23 @@ func ExportPipelineHierarchy(ctl *Controller, ctx context.Context, opts ExportPi
 
 	if opts.ExportTraces {
 		traces := ph.GetAllTraces()
-		ts := make([]*models.Trace, 0, len(traces))
-		for _, t := range traces {
-			ts = append(ts, &t)
-		}
-		if err := ctl.Exporter.RecordTraces(ctx, ts); err != nil {
+		if err := ctl.Exporter.RecordTraces(ctx, traces); err != nil {
 			return fmt.Errorf("error exporting traces: %w", err)
 		}
 	}
 
 	if opts.ExportTestReports {
-		trs, err := ctl.GitLab.GetPipelineHierarchyTestReports(ctx, ph)
+		results, err := ctl.GitLab.GetPipelineHierarchyTestReports(ctx, ph)
 		if err != nil {
 			return fmt.Errorf("error getting testreports: %w", err)
 		}
-		tss := []*models.PipelineTestSuite{}
-		tcs := []*models.PipelineTestCase{}
-		for _, tr := range trs {
-			tss = append(tss, tr.TestSuites...)
-			for _, ts := range tr.TestSuites {
-				tcs = append(tcs, ts.TestCases...)
-			}
-		}
-		if err := ctl.Exporter.RecordTestReports(ctx, trs); err != nil {
+		if err := ctl.Exporter.RecordTestReports(ctx, results.TestReports); err != nil {
 			return fmt.Errorf("error exporting testreports: %w", err)
 		}
-		if err := ctl.Exporter.RecordTestSuites(ctx, tss); err != nil {
+		if err := ctl.Exporter.RecordTestSuites(ctx, results.TestSuites); err != nil {
 			return fmt.Errorf("error exporting testsuites: %w", err)
 		}
-		if err := ctl.Exporter.RecordTestCases(ctx, tcs); err != nil {
+		if err := ctl.Exporter.RecordTestCases(ctx, results.TestCases); err != nil {
 			return fmt.Errorf("error exporting testcases: %w", err)
 		}
 	}
@@ -86,9 +73,11 @@ type ProjectExportTask struct {
 func (t *ProjectExportTask) Run(ctl *Controller, ctx context.Context) {
 	interval := 60 * time.Second
 
-	opt := gitlab.ListProjectPipelineOptions{
-		PerPage: 100,
-		Page:    1,
+	opt := gitlab.ListProjectPipelinesOptions{
+		ListOptions: gitlab.ListOptions{
+			PerPage: 100,
+			Page:    1,
+		},
 
 		Scope: &[]string{"finished"}[0],
 	}
@@ -139,7 +128,7 @@ func (t *ProjectExportTask) Run(ctl *Controller, ctx context.Context) {
 					} else {
 						log.Printf("Exported projects/%d/pipelines/%d\n", opts.ProjectID, opts.PipelineID)
 					}
-				}(r.Pipeline.ID)
+				}(r.Pipeline.Id)
 			}
 			wg.Wait()
 		}
@@ -153,9 +142,11 @@ type ProjectCatchUpTask struct {
 }
 
 func (t *ProjectCatchUpTask) Run(ctl *Controller, ctx context.Context) {
-	opt := gitlab.ListProjectPipelineOptions{
-		PerPage: 100,
-		Page:    1,
+	opt := gitlab.ListProjectPipelinesOptions{
+		ListOptions: gitlab.ListOptions{
+			PerPage: 100,
+			Page:    1,
+		},
 
 		Scope: &[]string{"finished"}[0],
 	}
@@ -180,7 +171,7 @@ func (t *ProjectCatchUpTask) Run(ctl *Controller, ctx context.Context) {
 	t.process(ctl, ctx, ch)
 }
 
-func (t *ProjectCatchUpTask) produce(ctl *Controller, ctx context.Context, opt gitlab.ListProjectPipelineOptions) <-chan int64 {
+func (t *ProjectCatchUpTask) produce(ctl *Controller, ctx context.Context, opt gitlab.ListProjectPipelinesOptions) <-chan int64 {
 	ch := make(chan int64)
 
 	go func() {
@@ -201,7 +192,7 @@ func (t *ProjectCatchUpTask) produce(ctl *Controller, ctx context.Context, opt g
 					continue
 				}
 
-				ch <- r.Pipeline.ID
+				ch <- r.Pipeline.Id
 			}
 		}
 	}()

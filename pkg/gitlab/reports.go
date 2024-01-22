@@ -6,34 +6,54 @@ import (
 
 	_gitlab "github.com/xanzy/go-gitlab"
 
-	"github.com/cluttrdev/gitlab-exporter/pkg/models"
+	pb "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb"
+	"github.com/cluttrdev/gitlab-exporter/internal/models"
 )
 
-func (c *Client) GetPipelineTestReport(ctx context.Context, projectID int64, pipelineID int64) (*models.PipelineTestReport, error) {
+type PipelineTestReportData struct {
+	TestReports []*pb.TestReport
+	TestSuites  []*pb.TestSuite
+	TestCases   []*pb.TestCase
+}
+
+func (c *Client) GetPipelineTestReport(ctx context.Context, projectID int64, pipelineID int64) (*PipelineTestReportData, error) {
 	c.RLock()
 	report, _, err := c.client.Pipelines.GetPipelineTestReport(int(projectID), int(pipelineID), _gitlab.WithContext(ctx))
 	c.RUnlock()
 	if err != nil {
-		return nil, fmt.Errorf("[gitlab.Client.GetPipelineTestReport] %w", err)
+		return nil, fmt.Errorf("error getting pipeline test report: %w", err)
 	}
 
-	return models.NewPipelineTestReport(pipelineID, report), nil
+	testreport, testsuites, testcases := models.ConvertTestReport(pipelineID, report)
+
+	return &PipelineTestReportData{
+		TestReports: []*pb.TestReport{testreport},
+		TestSuites:  testsuites,
+		TestCases:   testcases,
+	}, nil
 }
 
-func (c *Client) GetPipelineHierarchyTestReports(ctx context.Context, ph *models.PipelineHierarchy) ([]*models.PipelineTestReport, error) {
-	tr, err := c.GetPipelineTestReport(ctx, ph.Pipeline.ProjectID, ph.Pipeline.ID)
+func (c *Client) GetPipelineHierarchyTestReports(ctx context.Context, ph *models.PipelineHierarchy) (*PipelineTestReportData, error) {
+	var results PipelineTestReportData
+
+	result, err := c.GetPipelineTestReport(ctx, ph.Pipeline.ProjectId, ph.Pipeline.Id)
 	if err != nil {
-		return nil, fmt.Errorf("[gitlab.Client.GetPipelineHierarchyTestReports] %w", err)
+		return nil, err
 	}
 
-	reports := []*models.PipelineTestReport{tr}
+	results.TestReports = append(result.TestReports, result.TestReports...)
+	results.TestSuites = append(result.TestSuites, result.TestSuites...)
+	results.TestCases = append(result.TestCases, result.TestCases...)
+
 	for _, dph := range ph.DownstreamPipelines {
-		trs, err := c.GetPipelineHierarchyTestReports(ctx, dph)
+		rs, err := c.GetPipelineHierarchyTestReports(ctx, dph)
 		if err != nil {
 			return nil, err
 		}
-		reports = append(reports, trs...)
+		results.TestReports = append(results.TestReports, rs.TestReports...)
+		results.TestSuites = append(results.TestSuites, rs.TestSuites...)
+		results.TestCases = append(results.TestCases, rs.TestCases...)
 	}
 
-	return reports, nil
+	return &results, nil
 }

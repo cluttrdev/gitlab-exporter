@@ -5,30 +5,18 @@ import (
 	"bytes"
 	"context"
 	"errors"
-	"fmt"
 	"regexp"
 	"sort"
 	"strconv"
-	"time"
 
 	_gitlab "github.com/xanzy/go-gitlab"
 
-	"github.com/cluttrdev/gitlab-exporter/pkg/models"
+	pb "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb"
+	"github.com/cluttrdev/gitlab-exporter/internal/models"
 )
 
-func (c *Client) GetJobSections(ctx context.Context, projectID int64, jobID int64) ([]*models.Section, error) {
-	sections := []*models.Section{}
-	for r := range c.ListJobSections(ctx, projectID, jobID) {
-		if r.Error != nil {
-			return nil, fmt.Errorf("[gitlab.Client.GetSections] %w", r.Error)
-		}
-		sections = append(sections, r.Section)
-	}
-	return sections, nil
-}
-
 type ListJobSectionsResult struct {
-	Section *models.Section
+	Section *pb.Section
 	Error   error
 }
 
@@ -66,26 +54,20 @@ func (c *Client) ListJobSections(ctx context.Context, projectID int64, jobID int
 			return
 		}
 
-		unixTime := func(ts int64) *time.Time {
-			const nsec int64 = 0
-			t := time.Unix(ts, nsec)
-			return &t
-		}
-
 		for secnum, secdat := range data {
-			section := &models.Section{
+			section := &pb.Section{
 				Name:       secdat.Name,
-				StartedAt:  unixTime(secdat.Start),
-				FinishedAt: unixTime(secdat.End),
-				Duration:   float64(secdat.End - secdat.Start),
+				StartedAt:  models.ConvertUnixSeconds(secdat.Start),
+				FinishedAt: models.ConvertUnixSeconds(secdat.End),
+				Duration:   models.ConvertDuration(float64(secdat.End - secdat.Start)),
 			}
 
-			section.ID = int64(job.ID*1000 + secnum)
-			section.Job.ID = int64(job.ID)
+			section.Id = int64(job.ID*1000 + secnum)
+			section.Job.Id = int64(job.ID)
 			section.Job.Name = job.Name
 			section.Job.Status = job.Status
-			section.Pipeline.ID = int64(job.Pipeline.ID)
-			section.Pipeline.ProjectID = int64(job.Pipeline.ProjectID)
+			section.Pipeline.Id = int64(job.Pipeline.ID)
+			section.Pipeline.ProjectId = int64(job.Pipeline.ProjectID)
 			section.Pipeline.Ref = job.Pipeline.Ref
 			section.Pipeline.Sha = job.Pipeline.Sha
 			section.Pipeline.Status = job.Pipeline.Status

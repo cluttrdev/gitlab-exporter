@@ -2,26 +2,15 @@ package gitlab
 
 import (
 	"context"
-	"fmt"
 
 	_gitlab "github.com/xanzy/go-gitlab"
 
-	"github.com/cluttrdev/gitlab-exporter/pkg/models"
+	pb "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb"
+	"github.com/cluttrdev/gitlab-exporter/internal/models"
 )
 
-func (c *Client) GetPipelineJobs(ctx context.Context, projectID int64, pipelineID int64) ([]*models.Job, error) {
-	jobs := []*models.Job{}
-	for r := range c.ListPipelineJobs(ctx, projectID, pipelineID) {
-		if r.Error != nil {
-			return nil, fmt.Errorf("[gitlab.Client.GetJobs] %w", r.Error)
-		}
-		jobs = append(jobs, r.Job)
-	}
-	return jobs, nil
-}
-
 type ListPipelineJobsResult struct {
-	Job   *models.Job
+	Job   *pb.Job
 	Error error
 }
 
@@ -52,7 +41,7 @@ func (c *Client) ListPipelineJobs(ctx context.Context, projectID int64, pipeline
 
 			for _, j := range jobs {
 				ch <- ListPipelineJobsResult{
-					Job: models.NewJob(j),
+					Job: models.ConvertJob(j),
 				}
 			}
 
@@ -67,19 +56,8 @@ func (c *Client) ListPipelineJobs(ctx context.Context, projectID int64, pipeline
 	return ch
 }
 
-func (c *Client) GetPipelineBridges(ctx context.Context, projectID int64, pipelineID int64) ([]*models.Bridge, error) {
-	bridges := []*models.Bridge{}
-	for r := range c.ListPipelineBridges(ctx, projectID, pipelineID) {
-		if r.Error != nil {
-			return nil, fmt.Errorf("[gitlab.Client.GetBridges] %w", r.Error)
-		}
-		bridges = append(bridges, r.Bridge)
-	}
-	return bridges, nil
-}
-
 type ListPipelineBridgesResult struct {
-	Bridge *models.Bridge
+	Bridge *pb.Bridge
 	Error  error
 }
 
@@ -109,7 +87,7 @@ func (c *Client) ListPipelineBridges(ctx context.Context, projectID int64, pipel
 
 			for _, b := range bridges {
 				ch <- ListPipelineBridgesResult{
-					Bridge: models.NewBridge(b),
+					Bridge: models.ConvertBridge(b),
 				}
 			}
 
