@@ -16,7 +16,7 @@ import (
 	"golang.org/x/exp/slices"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
-	"github.com/cluttrdev/gitlab-exporter/pkg/controller"
+	"github.com/cluttrdev/gitlab-exporter/internal/controller"
 	"github.com/cluttrdev/gitlab-exporter/pkg/server"
 )
 
