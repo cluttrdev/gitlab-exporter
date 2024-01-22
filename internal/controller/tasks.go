@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
-	"github.com/cluttrdev/gitlab-exporter/pkg/gitlab"
+	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
 )
 
 type ExportPipelineHierarchyOptions struct {

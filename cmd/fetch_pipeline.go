@@ -12,7 +12,7 @@ import (
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/internal/controller"
-	"github.com/cluttrdev/gitlab-exporter/pkg/gitlab"
+	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
 )
 
 type FetchPipelineConfig struct {
