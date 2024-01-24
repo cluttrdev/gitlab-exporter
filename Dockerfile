@@ -4,7 +4,9 @@
 # BUILD
 #
 
-FROM docker.io/golang:1.20-alpine3.18 AS build
+ARG GOVERSION=1.21
+
+FROM docker.io/golang:${GOVERSION}-alpine AS build
 
 RUN apk add --update --no-cache ca-certificates
 
@@ -14,7 +16,7 @@ RUN adduser \
     --home /nonexistent \
     --no-create-home \
     --gecos "" \
-    glche
+    user
 
 WORKDIR /build
 
@@ -29,8 +31,8 @@ ARG GOARCH=amd64
 ARG VERSION=v0.0.0+unknown
 
 RUN GOOS=${GOOS} GOARCH=${GOARCH} go build \
-    -o /bin/gitlab-exporter \
-    -ldflags "-X 'main.version=${VERSION}' -s -w"
+    -ldflags "-X 'main.version=${VERSION}' -s -w" \
+    -o /bin/gitlab-exporter
 
 #
 # RUN
@@ -44,7 +46,7 @@ COPY --from=build /etc/group /etc/group
 
 COPY --from=build /bin/gitlab-exporter /bin/gitlab-exporter
 
-USER glche:glche
+USER user:user
 
 ENTRYPOINT [ "/bin/gitlab-exporter" ]
 

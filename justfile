@@ -5,6 +5,9 @@ BIN_NAME := `basename {{GIT_DIR}}`
 BIN_DIR := "bin"
 DIST_DIR := "dist"
 
+GITHUB_OWNER := "cluttrdev"
+GITHUB_REPO := "gitlab-exporter"
+
 # list available recipes
 default:
     @just --list
@@ -32,8 +35,8 @@ dist *args="":
 # create a new release
 release *args="":
     #!/bin/sh
-    export GITHUB_OWNER=cluttrdev
-    export GITHUB_REPO=gitlab-exporter
+    export GITHUB_OWNER={{GITHUB_OWNER}}
+    export GITHUB_REPO={{GITHUB_REPO}}
     {{GIT_DIR}}/scripts/release.sh -p {{MAIN}} {{args}}
 
 changes from="" to="":
@@ -52,3 +55,56 @@ clean:
     @rm {{DIST_DIR}}/{{BIN_NAME}}_* 2>/dev/null || true
     @-[ -d {{DIST_DIR}} ] && rmdir {{DIST_DIR}}
 
+###############################################################################
+
+docker-build:
+    #!/bin/sh
+
+    github_owner={{GITHUB_OWNER}}
+    github_repo={{GITHUB_REPO}}
+    git_dir={{GIT_DIR}}
+
+    set -eu
+
+    source ${git_dir}/scripts/functions.sh
+
+    image=${github_owner}/${github_repo}
+    version=$(get_version)
+    if is_dirty; then
+        version="${version}-modified"
+    fi
+
+    docker build \
+        -f Dockerfile \
+        --build-arg VERSION=${version} \
+        -t ${image}:${version} \
+        .
+
+    if is_tagged; then
+        docker tag ${image}:${version} ${image}:latest
+    fi
+
+docker-push: docker-build
+    #!/bin/sh
+
+    github_owner={{GITHUB_OWNER}}
+    github_owner={{GITHUB_REPO}}
+    git_dir={{GIT_DIR}}
+
+    set -eu
+
+    source ${git_dir}/scripts/functions.sh
+
+    if is_dirty; then
+        echo "Working diretory is dirty"
+        exit 1
+    fi
+
+    image=${github_owner}/${github_repo}
+    version=$(get_version)
+
+    docker push ${image}:${version}
+
+    if is_tagged; then
+        docker push ${image}:latest
+    fi

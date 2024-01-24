@@ -11,4 +11,5 @@
 !main.go
 !cmd/
 !pkg/
+!grpc/
 !internal/

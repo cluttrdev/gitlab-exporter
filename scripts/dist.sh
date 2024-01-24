@@ -51,6 +51,9 @@ if [ -z "${bin_name}" ]; then
 fi
 
 version=$(get_version)
+if is_dirty; then
+    version="${version}-modified"
+fi
 
 declare -A OSARCHMAP=(
     [linux]="amd64,arm,arm64"

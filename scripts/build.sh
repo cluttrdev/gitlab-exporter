@@ -34,6 +34,9 @@ scriptsdir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 source "${scriptsdir}/functions.sh"
 
 version=$(get_version)
+if is_dirty; then
+    version="${version}-modified"
+fi
 commit_sha=$(get_commit_sha)
 commit_date=$(get_commit_date)
 
