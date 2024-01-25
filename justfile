@@ -57,6 +57,15 @@ clean:
 
 ###############################################################################
 
+proto-gen:
+    #!/bin/sh
+    protoc \
+        -I protos/ \
+        -I protos/vendor/opentelemetry-proto \
+        --go_out=. --go_opt=module=github.com/cluttrdev/gitlab-exporter \
+        --go-grpc_out=. --go-grpc_opt=module=github.com/cluttrdev/gitlab-exporter \
+        protos/gitlabexporter/proto/models/* protos/gitlabexporter/proto/service/*
+
 docker-build:
     #!/bin/sh
 
