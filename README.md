@@ -1,16 +1,15 @@
 # gitlab-exporter
 
 `gitlab-exporter` can help you build an observability and analytics solution to
-gain insights into your CI pipelines by exporting data retrieved from the
-[GitLab API][gitlab-api] to a data store backend such as
-[ClickHouse][clickhouse].
+gain insights into your CI pipelines. 
+It provides the [protocol buffer][protobuf] schemas and client implementation 
+for a [gRPC] service to record data fetched from the [GitLab API][gitlab-api].
+This allows the data to be exported and stored in various storage backends by
+implementing the correspondong gRPC server interface.
 
----
+The following server implementations are available:
 
-**Note:** This project is in an early development stage, so functionality and
-configuration options are limited.
-
----
+  - [gitlab-clickhouse-exporter][gh-glche]
 
 <p>
     <img src="./assets/project-overview.webp" />
@@ -49,11 +48,12 @@ commands.
 To run `gitlab-exporter` in daemon mode use:
 
 ```shell
-gitlab-exporter --config CONFIG_FILE run
+gitlab-exporter run --config CONFIG_FILE 
 ```
 
-This will periodically export data for updated pipelines of the configured projects,
-see [Configuration](#configuration) for configuration options.
+This will periodically fetch data of the configured projects and send it to
+configured gRPC server endpoints.
+See [Configuration](#configuration) for configuration options.
 
 ### Command Mode
 
@@ -92,8 +92,10 @@ Ashley McNamara.
 
 This project is licensed under the [MIT License](./LICENSE).
 
+[protobuf]: https://protobuf.dev/
+[grpc]: https://grpc.io/
 [gitlab-api]: https://docs.gitlab.com/ee/api/rest/
-[clickhouse]: https://clickhouse.com/
+[gh-glche]: https://github.com/cluttrdev/gitlab-clickhouse-exporter
 [go-install]: https://go.dev/doc/install
 [prebuilt-binaries]: https://github.com/cluttrdev/gitlab-exporter/releases/latest
 [github-gcpe]: https://github.com/mvisonneau/gitlab-ci-pipelines-exporter

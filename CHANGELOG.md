@@ -7,19 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+This is quite a big release that introduces a lot of breaking changes.
+
 ### Added
 
+- gRPC service and protocol buffer schemas for client-server model
 - Support export of job log embedded metrics (experimental)
 - HTTP server implementation with health, debug and metrics endpoints
-- ClickHouse table deduplication task and subcommand
 
 ### Changed
 
-- Provide data store interface to make exporter more flexible
+- Project name
 
 ### Removed
 
-- ClickHouse database creation (instead use the one configured to connect with)
+- Storage backend specific implementations
 
 ## [0.4.1] - 2023-10-24
 
