@@ -40,28 +40,34 @@ func ConvertTestReport(pipelineID int64, report *gitlab.PipelineTestReport) (*pb
 		cases := make([]*pb.TestCase, 0, len(testsuite.TestCases))
 		for j, testcase := range testsuite.TestCases {
 			cases = append(cases, &pb.TestCase{
-				Id:            testCaseID(testsuiteID, j),
-				TestsuiteId:   testsuiteID,
-				TestreportId:  testreport.Id,
-				PipelineId:    pipelineID,
-				Status:        testcase.Status,
-				Name:          testcase.Name,
-				Classname:     testcase.Classname,
-				File:          testcase.File,
-				ExecutionTime: testcase.ExecutionTime,
-				SystemOutput:  fmt.Sprint(testcase.SystemOutput),
-				StackTrace:    testcase.StackTrace,
-				AttachmentUrl: testcase.AttachmentURL,
-				RecentFailures: &pb.TestCase_RecentFailures{
-					Count:      int64(testcase.RecentFailures.Count),
-					BaseBranch: testcase.RecentFailures.BaseBranch,
-				},
+				Id:             testCaseID(testsuiteID, j),
+				TestsuiteId:    testsuiteID,
+				TestreportId:   testreport.Id,
+				PipelineId:     pipelineID,
+				Status:         testcase.Status,
+				Name:           testcase.Name,
+				Classname:      testcase.Classname,
+				File:           testcase.File,
+				ExecutionTime:  testcase.ExecutionTime,
+				SystemOutput:   fmt.Sprint(testcase.SystemOutput),
+				StackTrace:     testcase.StackTrace,
+				AttachmentUrl:  testcase.AttachmentURL,
+				RecentFailures: convertTestCaseRecentFailures(testcase.RecentFailures),
 			})
 		}
 		testcases = append(testcases, cases...)
 	}
 
 	return testreport, testsuites, testcases
+}
+
+func convertTestCaseRecentFailures(f *gitlab.RecentFailures) *pb.TestCase_RecentFailures {
+	var r pb.TestCase_RecentFailures
+	if f != nil {
+		r.Count = int64(f.Count)
+		r.BaseBranch = f.BaseBranch
+	}
+	return &r
 }
 
 func testReportID(pipelineID int64) string {
