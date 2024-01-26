@@ -3,15 +3,16 @@ stages:
   - build
   - test
 
-default:
-  image: golang:1.20
-  tags: [ $GITLAB_CI_DEFAULT_TAGS ]
-
 variables:
   CACHE_DIR: ${CI_PROJECT_DIR}/.cache
   GOPATH: ${CI_PROJECT_DIR}/.go
   GOCACHE: ${CACHE_DIR}/go-build
   GOMAXPROCS: "8"
+  GOVERSION: "1.21"
+
+default:
+  image: golang:${GOVERSION}
+  tags: [ $GITLAB_CI_DEFAULT_TAGS ]
 
 download:
   stage: .pre
