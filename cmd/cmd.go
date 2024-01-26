@@ -10,11 +10,14 @@ import (
 	"github.com/cluttrdev/cli"
 )
 
+// Version is the version to be overriden when building the binary
+var Version string
+
 func Execute() error {
 	var (
 		out        = os.Stdout
 		rootCmd    = NewRootCmd(out)
-		versionCmd = cli.DefaultVersionCommand(out)
+		versionCmd = cli.NewVersionCommand(cli.NewBuildInfo(Version), out)
 		runCmd     = NewRunCmd(out)
 		fetchCmd   = NewFetchCmd(out)
 		exportCmd  = NewExportCmd(out)

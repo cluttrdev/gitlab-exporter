@@ -3,7 +3,7 @@ module github.com/cluttrdev/gitlab-exporter
 go 1.21.4
 
 require (
-	github.com/cluttrdev/cli v0.0.0-20240117210602-b3e731e74746
+	github.com/cluttrdev/cli v0.0.0-20240126090120-a44e34c8b0be
 	github.com/creasty/defaults v1.7.0
 	github.com/google/go-cmp v0.5.9
 	github.com/prometheus/client_golang v1.17.0
