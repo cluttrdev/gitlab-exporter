@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	_gitlab "github.com/xanzy/go-gitlab"
+	"golang.org/x/exp/slices"
 
 	pb "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb"
 	"github.com/cluttrdev/gitlab-exporter/internal/models"
@@ -24,8 +25,16 @@ func (c *Client) GetPipelineTestReport(ctx context.Context, projectID int64, pip
 	if err != nil {
 		return nil, fmt.Errorf("error getting pipeline test report: %w", err)
 	}
+	summary, err := c.GetPipelineTestReportSummary(ctx, projectID, pipelineID)
+	if err != nil {
+		return nil, fmt.Errorf("error getting pipeline test report summary: %w", err)
+	}
 
 	testreport, testsuites, testcases := models.ConvertTestReport(pipelineID, report)
+
+	if err := overrideIDs(pipelineID, summary, testreport, testsuites, testcases); err != nil {
+		return nil, fmt.Errorf("error setting test report ids: %w", err)
+	}
 
 	return &PipelineTestReportData{
 		TestReports: []*pb.TestReport{testreport},
@@ -105,4 +114,43 @@ func (c *Client) GetPipelineTestReportSummary(ctx context.Context, projectID int
 	}
 
 	return p, nil
+}
+
+func overrideIDs(pipelineID int64, summary *PipelineTestReportSummary, report *pb.TestReport, suites []*pb.TestSuite, cases []*pb.TestCase) error {
+	trID := fmt.Sprint(pipelineID)
+
+	report.Id = fmt.Sprint(pipelineID)
+
+	for _, rts := range suites {
+		index := slices.IndexFunc(summary.TestSuites, func(sts *PipelineTestReportSummaryTestSuite) bool {
+			return rts.Name == sts.Name
+		})
+		if index < 0 {
+			return fmt.Errorf("cannot find test suite in summary: %s", rts.Name)
+		}
+
+		sts := summary.TestSuites[index]
+		if len(sts.BuildIDs) == 0 {
+			return fmt.Errorf("test suite has no build id: %s", sts.Name)
+		}
+
+		tsID := fmt.Sprint(sts.BuildIDs[0])
+
+		tcNum := 0
+		for _, tc := range cases {
+			if tc.TestsuiteId == rts.Id {
+				tcNum++
+				tc.Id = fmt.Sprintf("%s-%d", tsID, tcNum)
+				tc.TestsuiteId = tsID
+				tc.TestreportId = trID
+				tc.PipelineId = pipelineID
+			}
+		}
+
+		rts.Id = tsID
+		rts.TestreportId = trID
+		rts.PipelineId = pipelineID
+	}
+
+	return nil
 }
