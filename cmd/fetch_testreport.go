@@ -17,28 +17,36 @@ import (
 
 type FetchTestReportConfig struct {
 	FetchConfig
+
+	summary bool
 }
 
 func NewFetchTestReportCmd(out io.Writer) *cli.Command {
 	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch testreport", exeName), flag.ContinueOnError)
 
-	config := FetchTestReportConfig{
+	cfg := FetchTestReportConfig{
 		FetchConfig: FetchConfig{
-			RootConfig: RootConfig{},
+			RootConfig: RootConfig{
+				out: out,
+			},
 		},
 	}
+
+	cfg.RegisterFlags(fs)
 
 	return &cli.Command{
 		Name:       "testreport",
 		ShortUsage: fmt.Sprintf("%s fetch testreport [option]... project_id pipeline_id", exeName),
 		ShortHelp:  "Fetch pipeline testreport",
 		Flags:      fs,
-		Exec:       config.Exec,
+		Exec:       cfg.Exec,
 	}
 }
 
 func (c *FetchTestReportConfig) RegisterFlags(fs *flag.FlagSet) {
 	c.FetchConfig.RegisterFlags(fs)
+
+	fs.BoolVar(&c.summary, "summary", false, "Fetch testreport summary")
 }
 
 func (c *FetchTestReportConfig) Exec(ctx context.Context, args []string) error {
@@ -68,14 +76,28 @@ func (c *FetchTestReportConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("error constructing controller: %w", err)
 	}
 
-	tr, err := ctl.GitLab.GetPipelineTestReport(ctx, projectID, pipelineID)
-	if err != nil {
-		return fmt.Errorf("error fetching pipeline testreport: %w", err)
-	}
+	var b []byte
+	if c.summary {
+		tr, err := ctl.GitLab.GetPipelineTestReportSummary(ctx, projectID, pipelineID)
+		if err != nil {
+			return fmt.Errorf("error fetching pipeline testreport summary: %w", err)
+		}
 
-	b, err := json.Marshal(tr)
-	if err != nil {
-		return fmt.Errorf("error marshalling pipeline testreport %w", err)
+		b, err = json.Marshal(tr)
+		if err != nil {
+			return fmt.Errorf("error marshalling pipeline testreport summary: %w", err)
+		}
+
+	} else {
+		tr, err := ctl.GitLab.GetPipelineTestReport(ctx, projectID, pipelineID)
+		if err != nil {
+			return fmt.Errorf("error fetching pipeline testreport: %w", err)
+		}
+
+		b, err = json.Marshal(tr)
+		if err != nil {
+			return fmt.Errorf("error marshalling pipeline testreport: %w", err)
+		}
 	}
 
 	fmt.Fprint(c.FetchConfig.RootConfig.out, string(b))
