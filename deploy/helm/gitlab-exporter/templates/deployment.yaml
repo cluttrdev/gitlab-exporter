@@ -46,7 +46,7 @@ spec:
               path: /healthz/ready
               port: http
           env: 
-              {{- toYaml .Values.env | nindent 12 }}
+            {{- tpl (toYaml .Values.env) $ | nindent 12 }}
           args: ["run", "--config", "/etc/gitlab-exporter/config.yaml"]
       volumes:
         - name: config
