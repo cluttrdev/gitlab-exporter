@@ -34,13 +34,13 @@ func ExportPipelineHierarchy(ctl *Controller, ctx context.Context, opts ExportPi
 	}
 	ph := phr.PipelineHierarchy
 
-	if err := ctl.Exporter.RecordPipelineHierarchy(ctx, ph); err != nil {
+	if err := ctl.Exporter.ExportPipelineHierarchy(ctx, ph); err != nil {
 		return fmt.Errorf("error exporting pipeline hierarchy: %w", err)
 	}
 
 	if opts.ExportTraces {
 		traces := ph.GetAllTraces()
-		if err := ctl.Exporter.RecordTraces(ctx, traces); err != nil {
+		if err := ctl.Exporter.ExportTraces(ctx, traces); err != nil {
 			return fmt.Errorf("error exporting traces: %w", err)
 		}
 	}
@@ -50,13 +50,13 @@ func ExportPipelineHierarchy(ctl *Controller, ctx context.Context, opts ExportPi
 		if err != nil {
 			return fmt.Errorf("error getting testreports: %w", err)
 		}
-		if err := ctl.Exporter.RecordTestReports(ctx, results.TestReports); err != nil {
+		if err := ctl.Exporter.ExportTestReports(ctx, results.TestReports); err != nil {
 			return fmt.Errorf("error exporting testreports: %w", err)
 		}
-		if err := ctl.Exporter.RecordTestSuites(ctx, results.TestSuites); err != nil {
+		if err := ctl.Exporter.ExportTestSuites(ctx, results.TestSuites); err != nil {
 			return fmt.Errorf("error exporting testsuites: %w", err)
 		}
-		if err := ctl.Exporter.RecordTestCases(ctx, results.TestCases); err != nil {
+		if err := ctl.Exporter.ExportTestCases(ctx, results.TestCases); err != nil {
 			return fmt.Errorf("error exporting testcases: %w", err)
 		}
 	}

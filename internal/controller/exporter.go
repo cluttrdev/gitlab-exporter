@@ -28,106 +28,75 @@ func NewExporter(endpoints []grpc_client.EndpointConfig) (*Exporter, error) {
 	}, nil
 }
 
-func (e *Exporter) RecordPipelines(ctx context.Context, data []*pb.Pipeline) error {
+type recordFunc[T any] func(client *grpc_client.Client, ctx context.Context, data []*T) error
+
+func export[T any](exporter *Exporter, ctx context.Context, data []*T, record recordFunc[T]) error {
 	var errs error
-	for _, client := range e.clients {
-		if err := client.RecordPipelines(ctx, data); err != nil {
+	for _, client := range exporter.clients {
+		if err := record(client, ctx, data); err != nil {
 			errs = errors.Join(errs, err)
 		}
 	}
 	return errs
 }
 
-func (e *Exporter) RecordJobs(ctx context.Context, data []*pb.Job) error {
-	var errs error
-	for _, client := range e.clients {
-		if err := client.RecordJobs(ctx, data); err != nil {
-			errs = errors.Join(errs, err)
-		}
-	}
-	return errs
+func (e *Exporter) ExportPipelines(ctx context.Context, data []*pb.Pipeline) error {
+	return export[pb.Pipeline](e, ctx, data, grpc_client.RecordPipelines)
 }
 
-func (e *Exporter) RecordSections(ctx context.Context, data []*pb.Section) error {
-	var errs error
-	for _, client := range e.clients {
-		if err := client.RecordSections(ctx, data); err != nil {
-			errs = errors.Join(errs, err)
-		}
-	}
-	return errs
+func (e *Exporter) ExportJobs(ctx context.Context, data []*pb.Job) error {
+	return export[pb.Job](e, ctx, data, grpc_client.RecordJobs)
 }
 
-func (e *Exporter) RecordBridges(ctx context.Context, data []*pb.Bridge) error {
-	var errs error
-	for _, client := range e.clients {
-		if err := client.RecordBridges(ctx, data); err != nil {
-			errs = errors.Join(errs, err)
-		}
-	}
-	return errs
+func (e *Exporter) ExportSections(ctx context.Context, data []*pb.Section) error {
+	return export[pb.Section](e, ctx, data, grpc_client.RecordSections)
 }
 
-func (e *Exporter) RecordTestReports(ctx context.Context, reports []*pb.TestReport) error {
-	var errs error
-	for _, client := range e.clients {
-		if err := client.RecordTestReports(ctx, reports); err != nil {
-			errs = errors.Join(errs, err)
-		}
-	}
-	return errs
+func (e *Exporter) ExportBridges(ctx context.Context, data []*pb.Bridge) error {
+	return export[pb.Bridge](e, ctx, data, grpc_client.RecordBridges)
 }
 
-func (e *Exporter) RecordTestSuites(ctx context.Context, suites []*pb.TestSuite) error {
-	var errs error
-	for _, client := range e.clients {
-		if err := client.RecordTestSuites(ctx, suites); err != nil {
-			errs = errors.Join(errs, err)
-		}
-	}
-	return errs
+func (e *Exporter) ExportTestReports(ctx context.Context, data []*pb.TestReport) error {
+	return export[pb.TestReport](e, ctx, data, grpc_client.RecordTestReports)
 }
 
-func (e *Exporter) RecordTestCases(ctx context.Context, cases []*pb.TestCase) error {
-	var errs error
-	for _, client := range e.clients {
-		if err := client.RecordTestCases(ctx, cases); err != nil {
-			errs = errors.Join(errs, err)
-		}
-	}
-	return errs
+func (e *Exporter) ExportTestSuites(ctx context.Context, data []*pb.TestSuite) error {
+	return export[pb.TestSuite](e, ctx, data, grpc_client.RecordTestSuites)
 }
 
-func (e *Exporter) RecordTraces(ctx context.Context, traces []*pb.Trace) error {
-	var errs error
-	for _, client := range e.clients {
-		if err := client.RecordTraces(ctx, traces); err != nil {
-			errs = errors.Join(errs, err)
-		}
-	}
-	return errs
+func (e *Exporter) ExportTestCases(ctx context.Context, data []*pb.TestCase) error {
+	return export[pb.TestCase](e, ctx, data, grpc_client.RecordTestCases)
 }
 
-func (e *Exporter) RecordPipelineHierarchy(ctx context.Context, ph *models.PipelineHierarchy) error {
+func (e *Exporter) ExportLogEmbeddedMetrics(ctx context.Context, data []*pb.LogEmbeddedMetric) error {
+	return export[pb.LogEmbeddedMetric](e, ctx, data, grpc_client.RecordLogEmbeddedMetrics)
+}
+
+func (e *Exporter) ExportTraces(ctx context.Context, data []*pb.Trace) error {
+	return export[pb.Trace](e, ctx, data, grpc_client.RecordTraces)
+}
+
+func (e *Exporter) ExportPipelineHierarchy(ctx context.Context, ph *models.PipelineHierarchy) error {
 	data, err := flattenPipelineHierarchy(ph)
 	if err != nil {
 		return err
 	}
+
 	var errs error
 	for _, client := range e.clients {
-		if err := client.RecordPipelines(ctx, data.Pipelines); err != nil {
+		if err := grpc_client.RecordPipelines(client, ctx, data.Pipelines); err != nil {
 			errs = errors.Join(errs, err)
 			continue
 		}
-		if err := client.RecordJobs(ctx, data.Jobs); err != nil {
+		if err := grpc_client.RecordJobs(client, ctx, data.Jobs); err != nil {
 			errs = errors.Join(errs, err)
 			continue
 		}
-		if err := client.RecordSections(ctx, data.Sections); err != nil {
+		if err := grpc_client.RecordSections(client, ctx, data.Sections); err != nil {
 			errs = errors.Join(errs, err)
 			continue
 		}
-		if err := client.RecordBridges(ctx, data.Bridges); err != nil {
+		if err := grpc_client.RecordBridges(client, ctx, data.Bridges); err != nil {
 			errs = errors.Join(errs, err)
 			continue
 		}

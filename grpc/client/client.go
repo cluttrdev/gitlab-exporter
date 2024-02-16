@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"errors"
 
 	"google.golang.org/grpc"
 
@@ -33,218 +32,101 @@ func NewCLient(cfg EndpointConfig) (*Client, error) {
 	}, nil
 }
 
-func (c *Client) RecordPipelines(ctx context.Context, ps []*pb.Pipeline) error {
-	if c == nil {
-		return errors.New("nil client")
+func send[T any](stream grpc.ClientStream, data []*T) error {
+	for _, msg := range data {
+		if err := stream.SendMsg(msg); err != nil {
+			return err
+		}
 	}
+
+	if err := stream.CloseSend(); err != nil {
+		return err
+	}
+
+	m := new(pb.RecordSummary)
+	if err := stream.RecvMsg(m); err != nil {
+		return err
+	}
+	return nil
+}
+
+func RecordPipelines(c *Client, ctx context.Context, data []*pb.Pipeline) error {
 	stream, err := c.client.RecordPipelines(ctx)
 	if err != nil {
 		return err
 	}
 
-	for _, p := range ps {
-		err := stream.Send(p)
-		if err != nil {
-			return err
-		}
-	}
-
-	_, err = stream.CloseAndRecv()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return send[pb.Pipeline](stream, data)
 }
 
-func (c *Client) RecordJobs(ctx context.Context, jobs []*pb.Job) error {
-	if c == nil {
-		return errors.New("nil client")
-	}
+func RecordJobs(c *Client, ctx context.Context, data []*pb.Job) error {
 	stream, err := c.client.RecordJobs(ctx)
 	if err != nil {
 		return err
 	}
 
-	for _, job := range jobs {
-		err := stream.Send(job)
-		if err != nil {
-			return err
-		}
-	}
-
-	_, err = stream.CloseAndRecv()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return send[pb.Job](stream, data)
 }
 
-func (c *Client) RecordSections(ctx context.Context, sections []*pb.Section) error {
-	if c == nil {
-		return errors.New("nil client")
-	}
+func RecordSections(c *Client, ctx context.Context, data []*pb.Section) error {
 	stream, err := c.client.RecordSections(ctx)
 	if err != nil {
 		return err
 	}
 
-	for _, section := range sections {
-		err := stream.Send(section)
-		if err != nil {
-			return err
-		}
-	}
-
-	_, err = stream.CloseAndRecv()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return send[pb.Section](stream, data)
 }
 
-func (c *Client) RecordBridges(ctx context.Context, bridges []*pb.Bridge) error {
-	if c == nil {
-		return errors.New("nil client")
-	}
+func RecordBridges(c *Client, ctx context.Context, data []*pb.Bridge) error {
 	stream, err := c.client.RecordBridges(ctx)
 	if err != nil {
 		return err
 	}
 
-	for _, bridge := range bridges {
-		err := stream.Send(bridge)
-		if err != nil {
-			return err
-		}
-	}
-
-	_, err = stream.CloseAndRecv()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return send[pb.Bridge](stream, data)
 }
 
-func (c *Client) RecordTestReports(ctx context.Context, reports []*pb.TestReport) error {
-	if c == nil {
-		return errors.New("nil client")
-	}
+func RecordTestReports(c *Client, ctx context.Context, data []*pb.TestReport) error {
 	stream, err := c.client.RecordTestReports(ctx)
 	if err != nil {
 		return err
 	}
 
-	for _, tr := range reports {
-		err := stream.Send(tr)
-		if err != nil {
-			return err
-		}
-	}
-
-	_, err = stream.CloseAndRecv()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return send[pb.TestReport](stream, data)
 }
 
-func (c *Client) RecordTestSuites(ctx context.Context, suites []*pb.TestSuite) error {
-	if c == nil {
-		return errors.New("nil client")
-	}
+func RecordTestSuites(c *Client, ctx context.Context, data []*pb.TestSuite) error {
 	stream, err := c.client.RecordTestSuites(ctx)
 	if err != nil {
 		return err
 	}
 
-	for _, ts := range suites {
-		err := stream.Send(ts)
-		if err != nil {
-			return err
-		}
-	}
-
-	_, err = stream.CloseAndRecv()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return send[pb.TestSuite](stream, data)
 }
 
-func (c *Client) RecordTestCases(ctx context.Context, cases []*pb.TestCase) error {
-	if c == nil {
-		return errors.New("nil client")
-	}
+func RecordTestCases(c *Client, ctx context.Context, data []*pb.TestCase) error {
 	stream, err := c.client.RecordTestCases(ctx)
 	if err != nil {
 		return err
 	}
 
-	for _, tc := range cases {
-		err := stream.Send(tc)
-		if err != nil {
-			return err
-		}
-	}
-
-	_, err = stream.CloseAndRecv()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return send[pb.TestCase](stream, data)
 }
 
-func (c *Client) RecordLogEmbeddedMetrics(ctx context.Context, metrics []*pb.LogEmbeddedMetric) error {
-	if c == nil {
-		return errors.New("nil client")
-	}
+func RecordLogEmbeddedMetrics(c *Client, ctx context.Context, data []*pb.LogEmbeddedMetric) error {
 	stream, err := c.client.RecordLogEmbeddedMetrics(ctx)
 	if err != nil {
 		return err
 	}
 
-	for _, m := range metrics {
-		err := stream.Send(m)
-		if err != nil {
-			return err
-		}
-	}
-
-	_, err = stream.CloseAndRecv()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return send[pb.LogEmbeddedMetric](stream, data)
 }
 
-func (c *Client) RecordTraces(ctx context.Context, traces []*pb.Trace) error {
-	if c == nil {
-		return errors.New("nil client")
-	}
+func RecordTraces(c *Client, ctx context.Context, data []*pb.Trace) error {
 	stream, err := c.client.RecordTraces(ctx)
 	if err != nil {
 		return err
 	}
 
-	for _, t := range traces {
-		err := stream.Send(t)
-		if err != nil {
-			return err
-		}
-	}
-
-	_, err = stream.CloseAndRecv()
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return send[pb.Trace](stream, data)
 }
