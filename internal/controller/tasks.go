@@ -16,10 +16,10 @@ type ExportPipelineHierarchyOptions struct {
 	ProjectID  int64
 	PipelineID int64
 
-	ExportSections    bool
-	ExportTestReports bool
-	ExportTraces      bool
-	ExportJobMetrics  bool
+	ExportSections           bool
+	ExportTestReports        bool
+	ExportTraces             bool
+	ExportLogEmbeddedMetrics bool
 }
 
 func ExportPipelineHierarchy(ctl *Controller, ctx context.Context, opts ExportPipelineHierarchyOptions) error {
@@ -42,6 +42,12 @@ func ExportPipelineHierarchy(ctl *Controller, ctx context.Context, opts ExportPi
 		traces := ph.GetAllTraces()
 		if err := ctl.Exporter.ExportTraces(ctx, traces); err != nil {
 			return fmt.Errorf("error exporting traces: %w", err)
+		}
+	}
+
+	if opts.ExportLogEmbeddedMetrics {
+		if err := ctl.Exporter.ExportLogEmbeddedMetrics(ctx, phr.LogEmbeddedMetrics); err != nil {
+			return fmt.Errorf("error exporting log embedded metrics: %w", err)
 		}
 	}
 
@@ -117,10 +123,10 @@ func (t *ProjectExportTask) Run(ctl *Controller, ctx context.Context) {
 						ProjectID:  t.Config.Id,
 						PipelineID: pid,
 
-						ExportSections:    t.Config.Export.Sections.Enabled,
-						ExportTestReports: t.Config.Export.TestReports.Enabled,
-						ExportTraces:      t.Config.Export.Traces.Enabled,
-						ExportJobMetrics:  t.Config.Export.Sections.Enabled, // for now, export metrics if we fetch the logs for sections anyway
+						ExportSections:           t.Config.Export.Sections.Enabled,
+						ExportTestReports:        t.Config.Export.TestReports.Enabled,
+						ExportTraces:             t.Config.Export.Traces.Enabled,
+						ExportLogEmbeddedMetrics: t.Config.Export.LogEmbeddedMetrics.Enabled,
 					}
 
 					if err := ExportPipelineHierarchy(ctl, ctx, opts); err != nil {
@@ -213,10 +219,10 @@ func (t *ProjectCatchUpTask) process(ctl *Controller, ctx context.Context, pipel
 					ProjectID:  t.Config.Id,
 					PipelineID: pipelineID,
 
-					ExportSections:    t.Config.Export.Sections.Enabled,
-					ExportTestReports: t.Config.Export.TestReports.Enabled,
-					ExportTraces:      t.Config.Export.Traces.Enabled,
-					ExportJobMetrics:  t.Config.Export.Sections.Enabled, // for now, export metrics if we fetch the logs for sections anyway
+					ExportSections:           t.Config.Export.Sections.Enabled,
+					ExportTestReports:        t.Config.Export.TestReports.Enabled,
+					ExportTraces:             t.Config.Export.Traces.Enabled,
+					ExportLogEmbeddedMetrics: t.Config.Export.Sections.Enabled, // for now, export metrics if we fetch the logs for sections anyway
 				}
 
 				if err := ExportPipelineHierarchy(ctl, ctx, opts); err != nil {

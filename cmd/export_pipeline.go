@@ -19,6 +19,7 @@ type ExportPipelineConfig struct {
 	exportSections    bool
 	exportTestReports bool
 	exportTraces      bool
+	exportMetrics     bool
 }
 
 func NewExportPipelineCmd(out io.Writer) *cli.Command {
@@ -49,6 +50,7 @@ func (c *ExportPipelineConfig) RegisterFlags(fs *flag.FlagSet) {
 	fs.BoolVar(&c.exportSections, "export-sections", true, "Export job sections. (default: true)")
 	fs.BoolVar(&c.exportTraces, "export-traces", true, "Export pipeline trace. (default: true)")
 	fs.BoolVar(&c.exportTestReports, "export-testreports", true, "Export pipeline test reports. (default: true)")
+	fs.BoolVar(&c.exportMetrics, "export-metrics", true, "Export job log embedded metrics. (default: true)")
 }
 
 func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
@@ -80,10 +82,10 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 		ProjectID:  projectID,
 		PipelineID: pipelineID,
 
-		ExportSections:    c.exportSections,
-		ExportTestReports: c.exportTestReports,
-		ExportTraces:      c.exportTraces,
-		ExportJobMetrics:  c.exportSections, // for now, export metrics if we fetch the logs for sections anyway
+		ExportSections:           c.exportSections,
+		ExportTestReports:        c.exportTestReports,
+		ExportTraces:             c.exportTraces,
+		ExportLogEmbeddedMetrics: c.exportMetrics,
 	}
 
 	return controller.ExportPipelineHierarchy(ctl, ctx, opts)

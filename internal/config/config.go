@@ -40,9 +40,10 @@ type ProjectSettings struct {
 }
 
 type ProjectExport struct {
-	Sections    ProjectExportSections    `default:"{}" yaml:"sections"`
-	TestReports ProjectExportTestReports `default:"{}" yaml:"testreports"`
-	Traces      ProjectExportTraces      `default:"{}" yaml:"traces"`
+	Sections           ProjectExportSections           `default:"{}" yaml:"sections"`
+	TestReports        ProjectExportTestReports        `default:"{}" yaml:"testreports"`
+	Traces             ProjectExportTraces             `default:"{}" yaml:"traces"`
+	LogEmbeddedMetrics ProjectExportLogEmbeddedMetrics `default:"{}" yaml:"log_embedded_metrics"`
 }
 
 type ProjectExportSections struct {
@@ -54,6 +55,10 @@ type ProjectExportTestReports struct {
 }
 
 type ProjectExportTraces struct {
+	Enabled bool `default:"true" yaml:"enabled"`
+}
+
+type ProjectExportLogEmbeddedMetrics struct {
 	Enabled bool `default:"true" yaml:"enabled"`
 }
 

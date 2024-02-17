@@ -82,6 +82,11 @@ func writeConfig(cfg config.Config, out io.Writer) {
 	fmt.Fprintf(out, "GitLab Token: %x\n", sha256String(cfg.GitLab.Api.Token))
 	fmt.Fprintln(out, "----")
 
+	for _, s := range cfg.Endpoints {
+		fmt.Fprintf(out, "Endpoint: %s\n", s.Address)
+	}
+	fmt.Fprintln(out, "----")
+
 	projects := []int64{}
 	for _, p := range cfg.Projects {
 		projects = append(projects, p.Id)

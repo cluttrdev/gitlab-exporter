@@ -29,10 +29,9 @@ func defaultProjectSettings() config.ProjectSettings {
 	var cfg config.ProjectSettings
 
 	cfg.Export.Sections.Enabled = true
-
 	cfg.Export.TestReports.Enabled = true
-
 	cfg.Export.Traces.Enabled = true
+	cfg.Export.LogEmbeddedMetrics.Enabled = true
 
 	cfg.CatchUp.Enabled = false
 	cfg.CatchUp.Forced = false
@@ -196,6 +195,9 @@ func TestLoad_DataWithProjects(t *testing.T) {
 					Traces: config.ProjectExportTraces{
 						Enabled: true,
 					},
+					LogEmbeddedMetrics: config.ProjectExportLogEmbeddedMetrics{
+						Enabled: true,
+					},
 				},
 				CatchUp: config.ProjectCatchUp{
 					Enabled:       true,
@@ -217,6 +219,9 @@ func TestLoad_DataWithProjects(t *testing.T) {
 					},
 					Traces: config.ProjectExportTraces{
 						Enabled: false,
+					},
+					LogEmbeddedMetrics: config.ProjectExportLogEmbeddedMetrics{
+						Enabled: true,
 					},
 				},
 				CatchUp: config.ProjectCatchUp{
