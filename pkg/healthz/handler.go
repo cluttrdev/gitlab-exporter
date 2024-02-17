@@ -1,7 +1,7 @@
 package healthz
 
 import (
-	"log"
+	"log/slog"
 	"net/http"
 	"sync"
 )
@@ -82,6 +82,6 @@ func (h *handler) handle(w http.ResponseWriter, r *http.Request, check Check) {
 	w.WriteHeader(status)
 	_, err = w.Write([]byte(message))
 	if err != nil {
-		log.Println("Failed to answer health check")
+		slog.Error("Failed to answer health check", "error", err)
 	}
 }

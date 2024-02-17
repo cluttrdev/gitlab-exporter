@@ -22,6 +22,9 @@ func defaultConfig() config.Config {
 	cfg.Server.Host = "127.0.0.1"
 	cfg.Server.Port = "8080"
 
+	cfg.Log.Level = "info"
+	cfg.Log.Format = "text"
+
 	return cfg
 }
 
@@ -135,11 +138,15 @@ func TestLoad_DataWithDefaults(t *testing.T) {
       client:
         rate:
           limit: 20
+
+    log:
+      format: json
     `)
 
 	expected := defaultConfig()
 	expected.GitLab.Api.Token = "glpat-xxxxxxxxxxxxxxxxxxxx"
 	expected.GitLab.Client.Rate.Limit = 20
+	expected.Log.Format = "json"
 
 	cfg := defaultConfig()
 	if err := config.Load(data, &cfg); err != nil {

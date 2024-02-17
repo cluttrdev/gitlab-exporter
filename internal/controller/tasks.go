@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -111,7 +111,7 @@ func (t *ProjectExportTask) Run(ctl *Controller, ctx context.Context) {
 			var wg sync.WaitGroup
 			for r := range ctl.GitLab.ListProjectPipelines(ctx, t.Config.Id, opt) {
 				if r.Error != nil {
-					log.Println(r.Error)
+					slog.Error("error listing project pipelines", "error", r.Error)
 					continue
 				}
 
@@ -130,9 +130,11 @@ func (t *ProjectExportTask) Run(ctl *Controller, ctx context.Context) {
 					}
 
 					if err := ExportPipelineHierarchy(ctl, ctx, opts); err != nil {
-						log.Printf("error exporting pipeline hierarchy: %s\n", err)
+						if !errors.Is(err, context.Canceled) {
+							slog.Error("error exporting pipeline hierarchy", "error", err)
+						}
 					} else {
-						log.Printf("Exported projects/%d/pipelines/%d\n", opts.ProjectID, opts.PipelineID)
+						slog.Debug("Exported project pipeline hierarchy", "project_id", opts.ProjectID, "pipeline_id", opts.PipelineID)
 					}
 				}(r.Pipeline.Id)
 			}
@@ -159,7 +161,7 @@ func (t *ProjectCatchUpTask) Run(ctl *Controller, ctx context.Context) {
 	if t.Config.CatchUp.UpdatedAfter != "" {
 		after, err := time.Parse("2006-01-02T15:04:05Z", t.Config.CatchUp.UpdatedAfter)
 		if err != nil {
-			log.Println(err)
+			slog.Error("error parsing catchup update_after", "error", err)
 		} else {
 			opt.UpdatedAfter = &after
 		}
@@ -167,7 +169,7 @@ func (t *ProjectCatchUpTask) Run(ctl *Controller, ctx context.Context) {
 	if t.Config.CatchUp.UpdatedBefore != "" {
 		before, err := time.Parse("2006-01-02T15:04:05Z", t.Config.CatchUp.UpdatedBefore)
 		if err != nil {
-			log.Println(err)
+			slog.Error("error parsing catchup update_before", "error", err)
 		} else {
 			opt.UpdatedBefore = &before
 		}
@@ -194,7 +196,7 @@ func (t *ProjectCatchUpTask) produce(ctl *Controller, ctx context.Context, opt g
 				}
 
 				if r.Error != nil && !errors.Is(r.Error, context.Canceled) {
-					log.Println(r.Error)
+					slog.Error("error listing project pipelines", "error", r.Error)
 					continue
 				}
 
@@ -227,10 +229,10 @@ func (t *ProjectCatchUpTask) process(ctl *Controller, ctx context.Context, pipel
 
 				if err := ExportPipelineHierarchy(ctl, ctx, opts); err != nil {
 					if !errors.Is(err, context.Canceled) {
-						log.Printf("error exporting pipeline hierarchy: %s\n", err)
+						slog.Error("error exporting pipeline hierarchy", "error", err)
 					}
 				} else {
-					log.Printf("Caught up on projects/%d/pipelines/%d\n", opts.ProjectID, opts.PipelineID)
+					slog.Debug("Caught up on project pipeline hierarchy", "project_id", opts.ProjectID, "pipeline_id", opts.PipelineID)
 				}
 			}
 		}()

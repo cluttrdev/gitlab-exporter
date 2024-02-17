@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log"
 	"strconv"
 
 	"github.com/cluttrdev/cli"
@@ -56,8 +55,6 @@ func (c *FetchJobLogConfig) Exec(ctx context.Context, args []string) error {
 	if len(args) != 2 {
 		return fmt.Errorf("invalid number of positional arguments: %v", args)
 	}
-
-	log.SetOutput(c.FetchConfig.RootConfig.out)
 
 	cfg := config.Default()
 	if err := loadConfig(c.FetchConfig.RootConfig.filename, &c.flags, &cfg); err != nil {

@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log"
 	"strconv"
 
 	"github.com/cluttrdev/cli"
@@ -63,8 +62,6 @@ func (c *FetchTestReportConfig) Exec(ctx context.Context, args []string) error {
 	if err != nil {
 		return fmt.Errorf("error parsing `pipeline_id` argument: %w", err)
 	}
-
-	log.SetOutput(c.FetchConfig.RootConfig.out)
 
 	cfg := config.Default()
 	if err := loadConfig(c.FetchConfig.RootConfig.filename, &c.flags, &cfg); err != nil {

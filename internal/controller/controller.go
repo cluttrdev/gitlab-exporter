@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"math"
 	"math/rand"
 	"time"
@@ -128,18 +128,20 @@ func (c *Controller) Run(ctx context.Context) error {
 		return err
 	}
 
-	log.Println("Starting workers...")
+	slog.Info("Starting workers...")
 	for _, w := range c.workers {
 		go w.Start(ctx)
 	}
+	slog.Info("Starting workers... done")
 
 	<-ctx.Done()
 
-	log.Println("Stopping workers...")
+	slog.Info("Stopping workers... ")
 	for _, w := range c.workers {
 		w.Stop()
 		<-w.Done()
 	}
+	slog.Info("Stopping workers... done")
 
 	return nil
 }
@@ -159,7 +161,7 @@ func (c *Controller) waitForReady(ctx context.Context) error {
 			return nil
 		}
 
-		log.Println(fmt.Errorf("Readiness check failed: %w", err))
+		slog.Error("Readiness check failed", "error", err)
 		delaySec := backoffBaseSec*math.Pow(2, float64(i)) + backoffJitterSec*rand.Float64()
 		delay := time.Duration(delaySec) * time.Second
 		ticker.Reset(delay)

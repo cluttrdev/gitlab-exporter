@@ -19,12 +19,15 @@ func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 		Projects []yaml.Node `yaml:"projects"`
 
 		Server Server `yaml:"server"`
+
+		Log Log `yaml:"log"`
 	}
 
 	var _cfg _Config
 	_cfg.GitLab = c.GitLab
 	_cfg.Endpoints = c.Endpoints
 	_cfg.Server = c.Server
+	_cfg.Log = c.Log
 
 	if err := v.Decode(&_cfg); err != nil {
 		return err
@@ -33,6 +36,7 @@ func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 	c.GitLab = _cfg.GitLab
 	c.Endpoints = _cfg.Endpoints
 	c.Server = _cfg.Server
+	c.Log = _cfg.Log
 
 	for _, n := range _cfg.Projects {
 		p := Project{

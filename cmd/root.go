@@ -76,7 +76,7 @@ func loadConfig(filename string, flags *flag.FlagSet, cfg *config.Config) error 
 	return nil
 }
 
-func writeConfig(cfg config.Config, out io.Writer) {
+func writeConfig(out io.Writer, cfg config.Config) {
 	fmt.Fprintln(out, "----")
 	fmt.Fprintf(out, "GitLab URL: %s\n", cfg.GitLab.Api.URL)
 	fmt.Fprintf(out, "GitLab Token: %x\n", sha256String(cfg.GitLab.Api.Token))

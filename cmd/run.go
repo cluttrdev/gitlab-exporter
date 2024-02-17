@@ -5,7 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"log"
+	"log/slog"
 	"os"
 	"os/signal"
 	"strconv"
@@ -25,6 +25,9 @@ type RunConfig struct {
 	RootConfig
 
 	projects projectList
+
+	logLevel  string
+	logFormat string
 }
 
 type projectList []int64
@@ -69,18 +72,31 @@ func (c *RunConfig) RegisterFlags(fs *flag.FlagSet) {
 	c.RootConfig.RegisterFlags(fs)
 
 	fs.Var(&c.projects, "projects", "Comma separated list of project ids.")
+
+	fs.StringVar(&c.logLevel, "log-level", "info", "The logging level, one of 'debug', 'info', 'warn', 'error'. (default: 'info')")
+	fs.StringVar(&c.logFormat, "log-format", "text", "The logging format, either 'text' or 'json'. (default: 'text')")
 }
 
 func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
-	// configure logging
-	log.SetOutput(c.out)
+	// setup daemon
+	ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
+	defer cancel()
 
 	// load configuration
-	log.Printf("Loading configuration from %s\n", c.RootConfig.filename)
 	cfg := config.Default()
 	if err := loadConfig(c.RootConfig.filename, &c.flags, &cfg); err != nil {
 		return fmt.Errorf("error loading configuration: %w", err)
 	}
+
+	// override values passed as env vars or flags
+	c.flags.Visit(func(f *flag.Flag) {
+		switch f.Name {
+		case "log-level":
+			cfg.Log.Level = f.Value.String()
+		case "log-format":
+			cfg.Log.Format = f.Value.String()
+		}
+	})
 
 	// add projects passed to run command
 	for _, pid := range c.projects {
@@ -96,35 +112,16 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 		}
 	}
 
-	// log configuration
-	writeConfig(cfg, c.out)
+	if cfg.Log.Level == "debug" {
+		writeConfig(c.out, cfg)
+	}
+	initLogging(c.out, cfg.Log)
 
 	// setup controller
 	ctl, err := controller.NewController(cfg)
 	if err != nil {
 		return fmt.Errorf("error constructing controller: %w", err)
 	}
-
-	// setup daemon
-	ctx, cancel := context.WithCancel(ctx)
-
-	signalChan := make(chan os.Signal, 1)
-	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
-
-	defer func() {
-		signal.Stop(signalChan)
-		cancel()
-	}()
-
-	go func() {
-		select {
-		case <-signalChan:
-			log.Println("Got SIGINT/SIGTERM, exiting")
-			cancel()
-		case <-ctx.Done():
-			log.Println("Done")
-		}
-	}()
 
 	go startServer(ctx, cfg.Server, ctl)
 
@@ -142,6 +139,63 @@ func startServer(ctx context.Context, cfg config.Server, ctl *controller.Control
 	})
 
 	if err := srv.Serve(ctx); err != nil {
-		log.Printf("error during server shutdown: %v\n", err)
+		slog.Error("error during server shutdown", "error", err)
 	}
+}
+
+func initLogging(out io.Writer, cfg config.Log) {
+	if out == nil {
+		out = os.Stderr
+	}
+
+	var level slog.Level
+	switch cfg.Level {
+	case "debug":
+		level = slog.LevelDebug
+	case "info":
+		level = slog.LevelInfo
+	case "warn":
+		level = slog.LevelWarn
+	case "error":
+		level = slog.LevelError
+	default:
+		level = slog.LevelInfo
+	}
+
+	opts := slog.HandlerOptions{
+		Level: level,
+	}
+
+	var handler slog.Handler
+	switch cfg.Format {
+	case "text":
+		handler = slog.NewTextHandler(out, &opts)
+	case "json":
+		handler = slog.NewJSONHandler(out, &opts)
+	default:
+		handler = slog.NewTextHandler(out, &opts)
+	}
+
+	logger := slog.New(handler)
+	slog.SetDefault(logger)
+}
+
+func setupDaemon(ctx context.Context) (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithCancel(ctx)
+
+	go func() {
+		signalChan := make(chan os.Signal, 1)
+		signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
+
+		select {
+		case <-signalChan:
+			slog.Debug("Got SIGINT/SIGTERM, exiting")
+			signal.Stop(signalChan)
+			cancel()
+		case <-ctx.Done():
+			slog.Debug("Done")
+		}
+	}()
+
+	return ctx, cancel
 }

@@ -9,6 +9,7 @@ type Config struct {
 	Endpoints []Endpoint `default:"[]" yaml:"endpoints"`
 	Projects  []Project  `default:"[]" yaml:"projects"`
 	Server    Server     `default:"{}" yaml:"server"`
+	Log       Log        `default:"{}" yaml:"log"`
 }
 
 type GitLab struct {
@@ -72,6 +73,11 @@ type ProjectCatchUp struct {
 type Server struct {
 	Host string `default:"127.0.0.1" yaml:"host"`
 	Port string `default:"8080" yaml:"port"`
+}
+
+type Log struct {
+	Level  string `default:"info" yaml:"level"`
+	Format string `default:"text" yaml:"format"`
 }
 
 func Default() Config {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"net/http/pprof"
 
@@ -68,7 +68,7 @@ func (s *Server) Serve(ctx context.Context) error {
 	go func() {
 		if err := srv.ListenAndServe(); err != nil {
 			if !errors.Is(err, http.ErrServerClosed) {
-				log.Println(err)
+				slog.Error(err.Error())
 			}
 		}
 	}()
