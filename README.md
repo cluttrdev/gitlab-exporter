@@ -77,8 +77,12 @@ variables, where flags take precedence.
 
 | Flag               | Environment Variable   | Default Value                 |
 | ---                | ---                    | ---                           |
+| # global options   |                        |                               |
 | --gitlab-api-url   | `GLE_GITLAB_API_URL`   | `"https://gitlab.com/api/v4"` |
 | --gitlab-api-token | `GLE_GITLAB_API_TOKEN` | **required**                  |
+| # run options      |                        |                               |
+| --log-level        | `GLE_LOG_LEVEL`        | `"info"`                      |
+| --log-format       | `GLE_LOG_FORMAT`       | `"text"`                      |
 
 ## Acknowledgements
 
