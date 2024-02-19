@@ -6,6 +6,10 @@ import (
 	"flag"
 	"fmt"
 	"io"
+	"log/slog"
+	"os"
+	"os/signal"
+	"syscall"
 
 	"github.com/cluttrdev/cli"
 
@@ -93,10 +97,70 @@ func writeConfig(out io.Writer, cfg config.Config) {
 	}
 	fmt.Fprintf(out, "Projects: %v\n", projects)
 	fmt.Fprintln(out, "----")
+	fmt.Fprintf(out, "Log Level: %s\n", cfg.Log.Level)
+	fmt.Fprintf(out, "Log Format: %s\n", cfg.Log.Format)
+	fmt.Fprintln(out, "----")
 }
 
 func sha256String(s string) []byte {
 	h := sha256.New()
 	h.Write([]byte(s))
 	return h.Sum(nil)
+}
+
+func initLogging(out io.Writer, cfg config.Log) {
+	if out == nil {
+		out = os.Stderr
+	}
+
+	var level slog.Level
+	switch cfg.Level {
+	case "debug":
+		level = slog.LevelDebug
+	case "info":
+		level = slog.LevelInfo
+	case "warn":
+		level = slog.LevelWarn
+	case "error":
+		level = slog.LevelError
+	default:
+		level = slog.LevelInfo
+	}
+
+	opts := slog.HandlerOptions{
+		Level: level,
+	}
+
+	var handler slog.Handler
+	switch cfg.Format {
+	case "text":
+		handler = slog.NewTextHandler(out, &opts)
+	case "json":
+		handler = slog.NewJSONHandler(out, &opts)
+	default:
+		handler = slog.NewTextHandler(out, &opts)
+	}
+
+	logger := slog.New(handler)
+	slog.SetDefault(logger)
+}
+
+func setupDaemon(ctx context.Context) (context.Context, context.CancelFunc) {
+	ctx, cancel := context.WithCancel(ctx)
+
+	go func() {
+		signalChan := make(chan os.Signal, 1)
+		signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
+
+		select {
+		case <-signalChan:
+			slog.Debug("Got SIGINT/SIGTERM, exiting")
+			signal.Stop(signalChan)
+			cancel()
+		case <-ctx.Done():
+			slog.Debug("Done")
+		}
+	}()
+
+	return ctx, cancel
 }

@@ -6,18 +6,23 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
-	"os"
 	"os/signal"
 	"strconv"
 	"strings"
+	"sync"
 	"syscall"
 
 	"golang.org/x/exp/slices"
 
 	"github.com/cluttrdev/cli"
 
+	"github.com/cluttrdev/gitlab-exporter/pkg/healthz"
+	"github.com/cluttrdev/gitlab-exporter/pkg/worker"
+
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
-	"github.com/cluttrdev/gitlab-exporter/internal/controller"
+	"github.com/cluttrdev/gitlab-exporter/internal/exporter"
+	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
+	"github.com/cluttrdev/gitlab-exporter/internal/jobs"
 	"github.com/cluttrdev/gitlab-exporter/internal/server"
 )
 
@@ -26,8 +31,7 @@ type RunConfig struct {
 
 	projects projectList
 
-	logLevel  string
-	logFormat string
+	flags *flag.FlagSet
 }
 
 type projectList []int64
@@ -49,22 +53,22 @@ func (f *projectList) Set(value string) error {
 }
 
 func NewRunCmd(out io.Writer) *cli.Command {
-	fs := flag.NewFlagSet(fmt.Sprintf("%s run", exeName), flag.ContinueOnError)
-
-	config := RunConfig{
+	cfg := RunConfig{
 		RootConfig: RootConfig{
 			out: out,
 		},
+
+		flags: flag.NewFlagSet("run", flag.ExitOnError),
 	}
 
-	config.RegisterFlags(fs)
+	cfg.RegisterFlags(cfg.flags)
 
 	return &cli.Command{
 		Name:       "run",
 		ShortUsage: fmt.Sprintf("%s run [option]...", exeName),
 		ShortHelp:  "Run in daemon mode",
-		Flags:      fs,
-		Exec:       config.Exec,
+		Flags:      cfg.flags,
+		Exec:       cfg.Exec,
 	}
 }
 
@@ -73,8 +77,8 @@ func (c *RunConfig) RegisterFlags(fs *flag.FlagSet) {
 
 	fs.Var(&c.projects, "projects", "Comma separated list of project ids.")
 
-	fs.StringVar(&c.logLevel, "log-level", "info", "The logging level, one of 'debug', 'info', 'warn', 'error'. (default: 'info')")
-	fs.StringVar(&c.logFormat, "log-format", "text", "The logging format, either 'text' or 'json'. (default: 'text')")
+	_ = fs.String("log-level", "info", "The logging level, one of 'debug', 'info', 'warn', 'error'. (default: 'info')")
+	_ = fs.String("log-format", "text", "The logging format, either 'text' or 'json'. (default: 'text')")
 }
 
 func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
@@ -84,7 +88,7 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 
 	// load configuration
 	cfg := config.Default()
-	if err := loadConfig(c.RootConfig.filename, &c.flags, &cfg); err != nil {
+	if err := loadConfig(c.RootConfig.filename, c.flags, &cfg); err != nil {
 		return fmt.Errorf("error loading configuration: %w", err)
 	}
 
@@ -117,85 +121,84 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 	}
 	initLogging(c.out, cfg.Log)
 
-	// setup controller
-	ctl, err := controller.NewController(cfg)
+	// create gitlab client
+	gitlabclient, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
+		URL:   cfg.GitLab.Api.URL,
+		Token: cfg.GitLab.Api.Token,
+
+		RateLimit: cfg.GitLab.Client.Rate.Limit,
+	})
 	if err != nil {
-		return fmt.Errorf("error constructing controller: %w", err)
+		return fmt.Errorf("error creating gitlab client: %w", err)
 	}
 
-	go startServer(ctx, cfg.Server, ctl)
+	// create exporter
+	endpoints := exporter.CreateEndpointConfigs(cfg.Endpoints)
+	exp, err := exporter.New(endpoints)
+	if err != nil {
+		return err
+	}
 
-	// run daemon
-	return ctl.Run(ctx)
+	// configure workers
+	pool := worker.NewWorkerPool(42)
+	var wg sync.WaitGroup
+	for _, p := range cfg.Projects {
+		if p.CatchUp.Enabled {
+			job := jobs.ProjectCatchUpJob{
+				Config:   p,
+				GitLab:   gitlabclient,
+				Exporter: exp,
+
+				WorkerPool: pool,
+			}
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				job.Run(ctx)
+			}()
+		}
+
+		job := jobs.ProjectExportJob{
+			Config:   p,
+			GitLab:   gitlabclient,
+			Exporter: exp,
+
+			WorkerPool: pool,
+		}
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			job.Run(ctx)
+		}()
+	}
+
+	go func() {
+		// cancel context when work is done to stop worker pool
+		wg.Wait()
+		cancel()
+	}()
+
+	go startServer(ctx, cfg.Server, func() error {
+		return gitlabclient.CheckReadiness(ctx)
+	})
+
+	slog.Info("Starting workers")
+	pool.Start(ctx)
+
+	<-ctx.Done()
+	return nil
 }
 
-func startServer(ctx context.Context, cfg config.Server, ctl *controller.Controller) {
+func startServer(ctx context.Context, cfg config.Server, ready healthz.Check) {
 	srv := server.New(server.ServerConfig{
 		Host:  cfg.Host,
 		Port:  cfg.Port,
 		Debug: false,
 
-		ReadinessCheck: func() error { return ctl.CheckReadiness(ctx) },
+		ReadinessCheck: ready,
 	})
 
 	if err := srv.Serve(ctx); err != nil {
 		slog.Error("error during server shutdown", "error", err)
 	}
-}
-
-func initLogging(out io.Writer, cfg config.Log) {
-	if out == nil {
-		out = os.Stderr
-	}
-
-	var level slog.Level
-	switch cfg.Level {
-	case "debug":
-		level = slog.LevelDebug
-	case "info":
-		level = slog.LevelInfo
-	case "warn":
-		level = slog.LevelWarn
-	case "error":
-		level = slog.LevelError
-	default:
-		level = slog.LevelInfo
-	}
-
-	opts := slog.HandlerOptions{
-		Level: level,
-	}
-
-	var handler slog.Handler
-	switch cfg.Format {
-	case "text":
-		handler = slog.NewTextHandler(out, &opts)
-	case "json":
-		handler = slog.NewJSONHandler(out, &opts)
-	default:
-		handler = slog.NewTextHandler(out, &opts)
-	}
-
-	logger := slog.New(handler)
-	slog.SetDefault(logger)
-}
-
-func setupDaemon(ctx context.Context) (context.Context, context.CancelFunc) {
-	ctx, cancel := context.WithCancel(ctx)
-
-	go func() {
-		signalChan := make(chan os.Signal, 1)
-		signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
-
-		select {
-		case <-signalChan:
-			slog.Debug("Got SIGINT/SIGTERM, exiting")
-			signal.Stop(signalChan)
-			cancel()
-		case <-ctx.Done():
-			slog.Debug("Done")
-		}
-	}()
-
-	return ctx, cancel
 }

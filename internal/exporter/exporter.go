@@ -1,4 +1,4 @@
-package controller
+package exporter
 
 import (
 	"context"
@@ -13,7 +13,7 @@ type Exporter struct {
 	clients []*grpc_client.Client
 }
 
-func NewExporter(endpoints []grpc_client.EndpointConfig) (*Exporter, error) {
+func New(endpoints []grpc_client.EndpointConfig) (*Exporter, error) {
 	var clients []*grpc_client.Client
 	for _, cfg := range endpoints {
 		c, err := grpc_client.NewCLient(cfg)

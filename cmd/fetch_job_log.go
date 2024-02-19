@@ -11,7 +11,6 @@ import (
 	"github.com/cluttrdev/cli"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
-	"github.com/cluttrdev/gitlab-exporter/internal/controller"
 	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
 )
 
@@ -61,9 +60,15 @@ func (c *FetchJobLogConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("error loading configuration: %w", err)
 	}
 
-	ctl, err := controller.NewController(cfg)
+	// create gitlab client
+	glc, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
+		URL:   cfg.GitLab.Api.URL,
+		Token: cfg.GitLab.Api.Token,
+
+		RateLimit: cfg.GitLab.Client.Rate.Limit,
+	})
 	if err != nil {
-		return fmt.Errorf("error constructing controller: %w", err)
+		return fmt.Errorf("error creating gitlab client: %w", err)
 	}
 
 	projectID, err := strconv.ParseInt(args[0], 10, 64)
@@ -76,7 +81,7 @@ func (c *FetchJobLogConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("error parsing `job_id` argument: %w", err)
 	}
 
-	trace, err := ctl.GitLab.GetJobLog(ctx, projectID, jobID)
+	trace, err := glc.GetJobLog(ctx, projectID, jobID)
 	if err != nil {
 		return fmt.Errorf("error fetching job log: %w", err)
 	}

@@ -10,7 +10,9 @@ import (
 	"github.com/cluttrdev/cli"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
-	"github.com/cluttrdev/gitlab-exporter/internal/controller"
+	"github.com/cluttrdev/gitlab-exporter/internal/exporter"
+	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
+	"github.com/cluttrdev/gitlab-exporter/internal/tasks"
 )
 
 type ExportPipelineConfig struct {
@@ -73,12 +75,25 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("error loading configuration: %w", err)
 	}
 
-	ctl, err := controller.NewController(cfg)
+	// create gitlab client
+	gitlabclient, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
+		URL:   cfg.GitLab.Api.URL,
+		Token: cfg.GitLab.Api.Token,
+
+		RateLimit: cfg.GitLab.Client.Rate.Limit,
+	})
 	if err != nil {
-		return fmt.Errorf("error constructing controller: %w", err)
+		return fmt.Errorf("error creating gitlab client: %w", err)
 	}
 
-	opts := controller.ExportPipelineHierarchyOptions{
+	// create exporter
+	endpoints := exporter.CreateEndpointConfigs(cfg.Endpoints)
+	exp, err := exporter.New(endpoints)
+	if err != nil {
+		return fmt.Errorf("error creating exporter: %w", err)
+	}
+
+	opts := tasks.ExportPipelineHierarchyOptions{
 		ProjectID:  projectID,
 		PipelineID: pipelineID,
 
@@ -88,5 +103,5 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 		ExportLogEmbeddedMetrics: c.exportMetrics,
 	}
 
-	return controller.ExportPipelineHierarchy(ctl, ctx, opts)
+	return tasks.ExportPipelineHierarchy(ctx, gitlabclient, exp, opts)
 }

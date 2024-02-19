@@ -11,7 +11,7 @@ import (
 	"github.com/cluttrdev/cli"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
-	"github.com/cluttrdev/gitlab-exporter/internal/controller"
+	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
 )
 
 type FetchTestReportConfig struct {
@@ -68,14 +68,20 @@ func (c *FetchTestReportConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("error loading configuration: %w", err)
 	}
 
-	ctl, err := controller.NewController(cfg)
+	// create gitlab client
+	glc, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
+		URL:   cfg.GitLab.Api.URL,
+		Token: cfg.GitLab.Api.Token,
+
+		RateLimit: cfg.GitLab.Client.Rate.Limit,
+	})
 	if err != nil {
-		return fmt.Errorf("error constructing controller: %w", err)
+		return fmt.Errorf("error creating gitlab client: %w", err)
 	}
 
 	var b []byte
 	if c.summary {
-		tr, err := ctl.GitLab.GetPipelineTestReportSummary(ctx, projectID, pipelineID)
+		tr, err := glc.GetPipelineTestReportSummary(ctx, projectID, pipelineID)
 		if err != nil {
 			return fmt.Errorf("error fetching pipeline testreport summary: %w", err)
 		}
@@ -86,7 +92,7 @@ func (c *FetchTestReportConfig) Exec(ctx context.Context, args []string) error {
 		}
 
 	} else {
-		tr, err := ctl.GitLab.GetPipelineTestReport(ctx, projectID, pipelineID)
+		tr, err := glc.GetPipelineTestReport(ctx, projectID, pipelineID)
 		if err != nil {
 			return fmt.Errorf("error fetching pipeline testreport: %w", err)
 		}
