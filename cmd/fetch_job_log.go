@@ -22,23 +22,22 @@ type FetchJobLogConfig struct {
 }
 
 func NewFetchJobLogCmd(out io.Writer) *cli.Command {
-	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch joblog", exeName), flag.ContinueOnError)
-
 	cfg := FetchJobLogConfig{
 		FetchConfig: FetchConfig{
 			RootConfig: RootConfig{
-				out: out,
+				out:   out,
+				flags: flag.NewFlagSet(fmt.Sprintf("%s fetch joblog", exeName), flag.ContinueOnError),
 			},
 		},
 	}
 
-	cfg.RegisterFlags(fs)
+	cfg.RegisterFlags(cfg.flags)
 
 	return &cli.Command{
 		Name:       "joblog",
 		ShortUsage: fmt.Sprintf("%s fetch joblog [option]... project_id job_id", exeName),
 		ShortHelp:  "Fetch job log",
-		Flags:      fs,
+		Flags:      cfg.flags,
 		Exec:       cfg.Exec,
 	}
 }
@@ -56,7 +55,7 @@ func (c *FetchJobLogConfig) Exec(ctx context.Context, args []string) error {
 	}
 
 	cfg := config.Default()
-	if err := loadConfig(c.FetchConfig.RootConfig.filename, &c.flags, &cfg); err != nil {
+	if err := loadConfig(c.FetchConfig.RootConfig.filename, c.flags, &cfg); err != nil {
 		return fmt.Errorf("error loading configuration: %w", err)
 	}
 

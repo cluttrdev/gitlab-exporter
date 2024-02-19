@@ -14,15 +14,14 @@ type ExportConfig struct {
 }
 
 func NewExportCmd(out io.Writer) *cli.Command {
-	fs := flag.NewFlagSet(fmt.Sprintf("%s export", exeName), flag.ContinueOnError)
-
 	cfg := ExportConfig{
 		RootConfig: RootConfig{
-			out: out,
+			out:   out,
+			flags: flag.NewFlagSet(fmt.Sprintf("%s export", exeName), flag.ContinueOnError),
 		},
 	}
 
-	cfg.RegisterFlags(fs)
+	cfg.RegisterFlags(cfg.flags)
 
 	var (
 		exportPipelineCmd = NewExportPipelineCmd(out)
@@ -32,7 +31,7 @@ func NewExportCmd(out io.Writer) *cli.Command {
 		Name:       "export",
 		ShortUsage: fmt.Sprintf("%s export <subcommand> [option]... [args]...", exeName),
 		ShortHelp:  "Export data from the GitLab API",
-		Flags:      fs,
+		Flags:      cfg.flags,
 		Subcommands: []*cli.Command{
 			exportPipelineCmd,
 		},

@@ -25,25 +25,23 @@ type RootConfig struct {
 	filename string
 
 	out   io.Writer
-	flags flag.FlagSet
+	flags *flag.FlagSet
 }
 
 func NewRootCmd(out io.Writer) *cli.Command {
-	fs := flag.NewFlagSet(exeName, flag.ContinueOnError)
-
 	cfg := RootConfig{
 		filename: "",
 
 		out:   out,
-		flags: *fs,
+		flags: flag.NewFlagSet(exeName, flag.ContinueOnError),
 	}
 
-	cfg.RegisterFlags(&cfg.flags)
+	cfg.RegisterFlags(cfg.flags)
 
 	return &cli.Command{
 		Name:       exeName,
 		ShortUsage: fmt.Sprintf("%s <subcommand> [option]... [arg]...", exeName),
-		Flags:      &cfg.flags,
+		Flags:      cfg.flags,
 		Exec:       cfg.Exec,
 	}
 }

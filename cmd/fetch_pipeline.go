@@ -24,24 +24,23 @@ type FetchPipelineConfig struct {
 }
 
 func NewFetchPipelineCmd(out io.Writer) *cli.Command {
-	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch pipeline", exeName), flag.ContinueOnError)
-
-	config := FetchPipelineConfig{
+	cfg := FetchPipelineConfig{
 		FetchConfig: FetchConfig{
 			RootConfig: RootConfig{
-				out: out,
+				out:   out,
+				flags: flag.NewFlagSet(fmt.Sprintf("%s fetch pipeline", exeName), flag.ContinueOnError),
 			},
 		},
 	}
 
-	config.RegisterFlags(fs)
+	cfg.RegisterFlags(cfg.flags)
 
 	return &cli.Command{
 		Name:       "pipeline",
 		ShortUsage: fmt.Sprintf("%s fetch pipeline [option]... project_id pipeline_id", exeName),
 		ShortHelp:  "Fetch pipeline data",
-		Flags:      fs,
-		Exec:       config.Exec,
+		Flags:      cfg.flags,
+		Exec:       cfg.Exec,
 	}
 }
 
@@ -59,7 +58,7 @@ func (c *FetchPipelineConfig) Exec(ctx context.Context, args []string) error {
 	}
 
 	cfg := config.Default()
-	if err := loadConfig(c.FetchConfig.RootConfig.filename, &c.flags, &cfg); err != nil {
+	if err := loadConfig(c.FetchConfig.RootConfig.filename, c.flags, &cfg); err != nil {
 		return fmt.Errorf("error loading configuration: %w", err)
 	}
 

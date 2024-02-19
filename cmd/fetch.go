@@ -14,15 +14,14 @@ type FetchConfig struct {
 }
 
 func NewFetchCmd(out io.Writer) *cli.Command {
-	fs := flag.NewFlagSet(fmt.Sprintf("%s fetch", exeName), flag.ContinueOnError)
-
 	cfg := FetchConfig{
 		RootConfig: RootConfig{
-			out: out,
+			out:   out,
+			flags: flag.NewFlagSet(fmt.Sprintf("%s fetch", exeName), flag.ContinueOnError),
 		},
 	}
 
-	cfg.RegisterFlags(fs)
+	cfg.RegisterFlags(cfg.flags)
 
 	var (
 		fetchPipelineCmd   = NewFetchPipelineCmd(out)
@@ -34,7 +33,7 @@ func NewFetchCmd(out io.Writer) *cli.Command {
 		Name:       "fetch",
 		ShortUsage: fmt.Sprintf("%s fetch <subcommand> [option]... [args]...", exeName),
 		ShortHelp:  "Fetch data from the GitLab API",
-		Flags:      fs,
+		Flags:      cfg.flags,
 		Subcommands: []*cli.Command{
 			fetchPipelineCmd,
 			fetchJobLogCmd,

@@ -22,17 +22,14 @@ import (
 
 type CatchUpConfig struct {
 	RootConfig
-
-	flags *flag.FlagSet
 }
 
 func NewCatchUpCmd(out io.Writer) *cli.Command {
 	cfg := CatchUpConfig{
 		RootConfig: RootConfig{
-			out: out,
+			out:   out,
+			flags: flag.NewFlagSet("catchup", flag.ExitOnError),
 		},
-
-		flags: flag.NewFlagSet("catchup", flag.ExitOnError),
 	}
 
 	cfg.RegisterFlags(cfg.flags)

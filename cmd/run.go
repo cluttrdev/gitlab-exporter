@@ -31,8 +31,6 @@ type RunConfig struct {
 
 	projects projectList
 	catchup  bool
-
-	flags *flag.FlagSet
 }
 
 type projectList []int64
@@ -56,10 +54,9 @@ func (f *projectList) Set(value string) error {
 func NewRunCmd(out io.Writer) *cli.Command {
 	cfg := RunConfig{
 		RootConfig: RootConfig{
-			out: out,
+			out:   out,
+			flags: flag.NewFlagSet("run", flag.ExitOnError),
 		},
-
-		flags: flag.NewFlagSet("run", flag.ExitOnError),
 	}
 
 	cfg.RegisterFlags(cfg.flags)

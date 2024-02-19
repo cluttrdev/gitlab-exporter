@@ -25,24 +25,23 @@ type ExportPipelineConfig struct {
 }
 
 func NewExportPipelineCmd(out io.Writer) *cli.Command {
-	fs := flag.NewFlagSet(fmt.Sprintf("%s export pipeline", exeName), flag.ContinueOnError)
-
-	config := &ExportPipelineConfig{
+	cfg := &ExportPipelineConfig{
 		ExportConfig: ExportConfig{
 			RootConfig: RootConfig{
-				out: out,
+				out:   out,
+				flags: flag.NewFlagSet(fmt.Sprintf("%s export pipeline", exeName), flag.ContinueOnError),
 			},
 		},
 	}
 
-	config.RegisterFlags(fs)
+	cfg.RegisterFlags(cfg.flags)
 
 	return &cli.Command{
 		Name:       "pipeline",
 		ShortUsage: fmt.Sprintf("%s export pipeline [option]... project_id pipeline_id", exeName),
 		ShortHelp:  "Export pipeline data",
-		Flags:      fs,
-		Exec:       config.Exec,
+		Flags:      cfg.flags,
+		Exec:       cfg.Exec,
 	}
 }
 
@@ -71,7 +70,7 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 	}
 
 	cfg := config.Default()
-	if err := loadConfig(c.ExportConfig.RootConfig.filename, &c.flags, &cfg); err != nil {
+	if err := loadConfig(c.ExportConfig.RootConfig.filename, c.flags, &cfg); err != nil {
 		return fmt.Errorf("error loading configuration: %w", err)
 	}
 
