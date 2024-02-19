@@ -30,6 +30,7 @@ type RunConfig struct {
 	RootConfig
 
 	projects projectList
+	catchup  bool
 
 	flags *flag.FlagSet
 }
@@ -76,6 +77,7 @@ func (c *RunConfig) RegisterFlags(fs *flag.FlagSet) {
 	c.RootConfig.RegisterFlags(fs)
 
 	fs.Var(&c.projects, "projects", "Comma separated list of project ids.")
+	fs.BoolVar(&c.catchup, "catchup", false, "Whether to export historical data. (default: false)")
 
 	_ = fs.String("log-level", "info", "The logging level, one of 'debug', 'info', 'warn', 'error'. (default: 'info')")
 	_ = fs.String("log-format", "text", "The logging format, either 'text' or 'json'. (default: 'text')")
@@ -143,7 +145,7 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 	pool := worker.NewWorkerPool(42)
 	var wg sync.WaitGroup
 	for _, p := range cfg.Projects {
-		if p.CatchUp.Enabled {
+		if c.catchup && p.CatchUp.Enabled {
 			job := jobs.ProjectCatchUpJob{
 				Config:   p,
 				GitLab:   gitlabclient,
