@@ -113,13 +113,13 @@ func RecordTestCases(c *Client, ctx context.Context, data []*pb.TestCase) error 
 	return send[pb.TestCase](stream, data)
 }
 
-func RecordLogEmbeddedMetrics(c *Client, ctx context.Context, data []*pb.LogEmbeddedMetric) error {
-	stream, err := c.client.RecordLogEmbeddedMetrics(ctx)
+func RecordMetrics(c *Client, ctx context.Context, data []*pb.Metric) error {
+	stream, err := c.client.RecordMetrics(ctx)
 	if err != nil {
 		return err
 	}
 
-	return send[pb.LogEmbeddedMetric](stream, data)
+	return send[pb.Metric](stream, data)
 }
 
 func RecordTraces(c *Client, ctx context.Context, data []*pb.Trace) error {

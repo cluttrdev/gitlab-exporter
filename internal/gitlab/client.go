@@ -93,9 +93,9 @@ type GetPipelineHierarchyOptions struct {
 }
 
 type GetPipelineHierarchyResult struct {
-	PipelineHierarchy  *models.PipelineHierarchy
-	LogEmbeddedMetrics []*pb.LogEmbeddedMetric
-	Error              error
+	PipelineHierarchy *models.PipelineHierarchy
+	Metrics           []*pb.Metric
+	Error             error
 }
 
 func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipelineID int64, opt *GetPipelineHierarchyOptions) <-chan GetPipelineHierarchyResult {
@@ -114,7 +114,7 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 
 		jobs := []*pb.Job{}
 		sections := []*pb.Section{}
-		metrics := []*pb.LogEmbeddedMetric{}
+		metrics := []*pb.Metric{}
 		for jr := range c.ListPipelineJobs(ctx, projectID, pipelineID) {
 			if jr.Error != nil {
 				ch <- GetPipelineHierarchyResult{
@@ -164,12 +164,12 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 
 				if opt.FetchJobMetrics {
 					for _, m := range data.Metrics {
-						metric := &pb.LogEmbeddedMetric{
+						metric := &pb.Metric{
 							Name:      m.Name,
 							Labels:    models.ConvertLabels(m.Labels),
 							Value:     m.Value,
 							Timestamp: models.ConvertUnixMilli(m.Timestamp),
-							Job: &pb.LogEmbeddedMetric_JobReference{
+							Job: &pb.Metric_JobReference{
 								Id:   job.Id,
 								Name: job.Name,
 							},
@@ -215,7 +215,7 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 				Bridges:             bridges,
 				DownstreamPipelines: dps,
 			},
-			LogEmbeddedMetrics: metrics,
+			Metrics: metrics,
 		}
 	}()
 

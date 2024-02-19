@@ -19,15 +19,15 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	GitLabExporter_RecordPipelines_FullMethodName          = "/gitlabexporter.proto.exporter.GitLabExporter/RecordPipelines"
-	GitLabExporter_RecordJobs_FullMethodName               = "/gitlabexporter.proto.exporter.GitLabExporter/RecordJobs"
-	GitLabExporter_RecordSections_FullMethodName           = "/gitlabexporter.proto.exporter.GitLabExporter/RecordSections"
-	GitLabExporter_RecordBridges_FullMethodName            = "/gitlabexporter.proto.exporter.GitLabExporter/RecordBridges"
-	GitLabExporter_RecordTestReports_FullMethodName        = "/gitlabexporter.proto.exporter.GitLabExporter/RecordTestReports"
-	GitLabExporter_RecordTestSuites_FullMethodName         = "/gitlabexporter.proto.exporter.GitLabExporter/RecordTestSuites"
-	GitLabExporter_RecordTestCases_FullMethodName          = "/gitlabexporter.proto.exporter.GitLabExporter/RecordTestCases"
-	GitLabExporter_RecordLogEmbeddedMetrics_FullMethodName = "/gitlabexporter.proto.exporter.GitLabExporter/RecordLogEmbeddedMetrics"
-	GitLabExporter_RecordTraces_FullMethodName             = "/gitlabexporter.proto.exporter.GitLabExporter/RecordTraces"
+	GitLabExporter_RecordPipelines_FullMethodName   = "/gitlabexporter.proto.exporter.GitLabExporter/RecordPipelines"
+	GitLabExporter_RecordJobs_FullMethodName        = "/gitlabexporter.proto.exporter.GitLabExporter/RecordJobs"
+	GitLabExporter_RecordSections_FullMethodName    = "/gitlabexporter.proto.exporter.GitLabExporter/RecordSections"
+	GitLabExporter_RecordBridges_FullMethodName     = "/gitlabexporter.proto.exporter.GitLabExporter/RecordBridges"
+	GitLabExporter_RecordTestReports_FullMethodName = "/gitlabexporter.proto.exporter.GitLabExporter/RecordTestReports"
+	GitLabExporter_RecordTestSuites_FullMethodName  = "/gitlabexporter.proto.exporter.GitLabExporter/RecordTestSuites"
+	GitLabExporter_RecordTestCases_FullMethodName   = "/gitlabexporter.proto.exporter.GitLabExporter/RecordTestCases"
+	GitLabExporter_RecordMetrics_FullMethodName     = "/gitlabexporter.proto.exporter.GitLabExporter/RecordMetrics"
+	GitLabExporter_RecordTraces_FullMethodName      = "/gitlabexporter.proto.exporter.GitLabExporter/RecordTraces"
 )
 
 // GitLabExporterClient is the client API for GitLabExporter service.
@@ -41,7 +41,7 @@ type GitLabExporterClient interface {
 	RecordTestReports(ctx context.Context, opts ...grpc.CallOption) (GitLabExporter_RecordTestReportsClient, error)
 	RecordTestSuites(ctx context.Context, opts ...grpc.CallOption) (GitLabExporter_RecordTestSuitesClient, error)
 	RecordTestCases(ctx context.Context, opts ...grpc.CallOption) (GitLabExporter_RecordTestCasesClient, error)
-	RecordLogEmbeddedMetrics(ctx context.Context, opts ...grpc.CallOption) (GitLabExporter_RecordLogEmbeddedMetricsClient, error)
+	RecordMetrics(ctx context.Context, opts ...grpc.CallOption) (GitLabExporter_RecordMetricsClient, error)
 	RecordTraces(ctx context.Context, opts ...grpc.CallOption) (GitLabExporter_RecordTracesClient, error)
 }
 
@@ -291,30 +291,30 @@ func (x *gitLabExporterRecordTestCasesClient) CloseAndRecv() (*RecordSummary, er
 	return m, nil
 }
 
-func (c *gitLabExporterClient) RecordLogEmbeddedMetrics(ctx context.Context, opts ...grpc.CallOption) (GitLabExporter_RecordLogEmbeddedMetricsClient, error) {
-	stream, err := c.cc.NewStream(ctx, &GitLabExporter_ServiceDesc.Streams[7], GitLabExporter_RecordLogEmbeddedMetrics_FullMethodName, opts...)
+func (c *gitLabExporterClient) RecordMetrics(ctx context.Context, opts ...grpc.CallOption) (GitLabExporter_RecordMetricsClient, error) {
+	stream, err := c.cc.NewStream(ctx, &GitLabExporter_ServiceDesc.Streams[7], GitLabExporter_RecordMetrics_FullMethodName, opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &gitLabExporterRecordLogEmbeddedMetricsClient{stream}
+	x := &gitLabExporterRecordMetricsClient{stream}
 	return x, nil
 }
 
-type GitLabExporter_RecordLogEmbeddedMetricsClient interface {
-	Send(*LogEmbeddedMetric) error
+type GitLabExporter_RecordMetricsClient interface {
+	Send(*Metric) error
 	CloseAndRecv() (*RecordSummary, error)
 	grpc.ClientStream
 }
 
-type gitLabExporterRecordLogEmbeddedMetricsClient struct {
+type gitLabExporterRecordMetricsClient struct {
 	grpc.ClientStream
 }
 
-func (x *gitLabExporterRecordLogEmbeddedMetricsClient) Send(m *LogEmbeddedMetric) error {
+func (x *gitLabExporterRecordMetricsClient) Send(m *Metric) error {
 	return x.ClientStream.SendMsg(m)
 }
 
-func (x *gitLabExporterRecordLogEmbeddedMetricsClient) CloseAndRecv() (*RecordSummary, error) {
+func (x *gitLabExporterRecordMetricsClient) CloseAndRecv() (*RecordSummary, error) {
 	if err := x.ClientStream.CloseSend(); err != nil {
 		return nil, err
 	}
@@ -370,7 +370,7 @@ type GitLabExporterServer interface {
 	RecordTestReports(GitLabExporter_RecordTestReportsServer) error
 	RecordTestSuites(GitLabExporter_RecordTestSuitesServer) error
 	RecordTestCases(GitLabExporter_RecordTestCasesServer) error
-	RecordLogEmbeddedMetrics(GitLabExporter_RecordLogEmbeddedMetricsServer) error
+	RecordMetrics(GitLabExporter_RecordMetricsServer) error
 	RecordTraces(GitLabExporter_RecordTracesServer) error
 	mustEmbedUnimplementedGitLabExporterServer()
 }
@@ -400,8 +400,8 @@ func (UnimplementedGitLabExporterServer) RecordTestSuites(GitLabExporter_RecordT
 func (UnimplementedGitLabExporterServer) RecordTestCases(GitLabExporter_RecordTestCasesServer) error {
 	return status.Errorf(codes.Unimplemented, "method RecordTestCases not implemented")
 }
-func (UnimplementedGitLabExporterServer) RecordLogEmbeddedMetrics(GitLabExporter_RecordLogEmbeddedMetricsServer) error {
-	return status.Errorf(codes.Unimplemented, "method RecordLogEmbeddedMetrics not implemented")
+func (UnimplementedGitLabExporterServer) RecordMetrics(GitLabExporter_RecordMetricsServer) error {
+	return status.Errorf(codes.Unimplemented, "method RecordMetrics not implemented")
 }
 func (UnimplementedGitLabExporterServer) RecordTraces(GitLabExporter_RecordTracesServer) error {
 	return status.Errorf(codes.Unimplemented, "method RecordTraces not implemented")
@@ -601,26 +601,26 @@ func (x *gitLabExporterRecordTestCasesServer) Recv() (*TestCase, error) {
 	return m, nil
 }
 
-func _GitLabExporter_RecordLogEmbeddedMetrics_Handler(srv interface{}, stream grpc.ServerStream) error {
-	return srv.(GitLabExporterServer).RecordLogEmbeddedMetrics(&gitLabExporterRecordLogEmbeddedMetricsServer{stream})
+func _GitLabExporter_RecordMetrics_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(GitLabExporterServer).RecordMetrics(&gitLabExporterRecordMetricsServer{stream})
 }
 
-type GitLabExporter_RecordLogEmbeddedMetricsServer interface {
+type GitLabExporter_RecordMetricsServer interface {
 	SendAndClose(*RecordSummary) error
-	Recv() (*LogEmbeddedMetric, error)
+	Recv() (*Metric, error)
 	grpc.ServerStream
 }
 
-type gitLabExporterRecordLogEmbeddedMetricsServer struct {
+type gitLabExporterRecordMetricsServer struct {
 	grpc.ServerStream
 }
 
-func (x *gitLabExporterRecordLogEmbeddedMetricsServer) SendAndClose(m *RecordSummary) error {
+func (x *gitLabExporterRecordMetricsServer) SendAndClose(m *RecordSummary) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *gitLabExporterRecordLogEmbeddedMetricsServer) Recv() (*LogEmbeddedMetric, error) {
-	m := new(LogEmbeddedMetric)
+func (x *gitLabExporterRecordMetricsServer) Recv() (*Metric, error) {
+	m := new(Metric)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -697,8 +697,8 @@ var GitLabExporter_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 		{
-			StreamName:    "RecordLogEmbeddedMetrics",
-			Handler:       _GitLabExporter_RecordLogEmbeddedMetrics_Handler,
+			StreamName:    "RecordMetrics",
+			Handler:       _GitLabExporter_RecordMetrics_Handler,
 			ClientStreams: true,
 		},
 		{

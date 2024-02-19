@@ -12,10 +12,10 @@ type ExportPipelineHierarchyOptions struct {
 	ProjectID  int64
 	PipelineID int64
 
-	ExportSections           bool
-	ExportTestReports        bool
-	ExportTraces             bool
-	ExportLogEmbeddedMetrics bool
+	ExportSections    bool
+	ExportTestReports bool
+	ExportTraces      bool
+	ExportMetrics     bool
 }
 
 func ExportPipelineHierarchy(ctx context.Context, glc *gitlab.Client, exp *exporter.Exporter, opts ExportPipelineHierarchyOptions) error {
@@ -41,9 +41,9 @@ func ExportPipelineHierarchy(ctx context.Context, glc *gitlab.Client, exp *expor
 		}
 	}
 
-	if opts.ExportLogEmbeddedMetrics {
-		if err := exp.ExportLogEmbeddedMetrics(ctx, phr.LogEmbeddedMetrics); err != nil {
-			return fmt.Errorf("error exporting log embedded metrics: %w", err)
+	if opts.ExportMetrics {
+		if err := exp.ExportMetrics(ctx, phr.Metrics); err != nil {
+			return fmt.Errorf("error exporting metrics: %w", err)
 		}
 	}
 

@@ -6,7 +6,7 @@ package gitlabexporter.proto.models;
 
 import "google/protobuf/timestamp.proto";
 
-message LogEmbeddedMetric {
+message Metric {
     string name = 1;
 
     message Label {

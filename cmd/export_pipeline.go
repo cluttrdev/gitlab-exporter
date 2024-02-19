@@ -97,10 +97,10 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 		ProjectID:  projectID,
 		PipelineID: pipelineID,
 
-		ExportSections:           c.exportSections,
-		ExportTestReports:        c.exportTestReports,
-		ExportTraces:             c.exportTraces,
-		ExportLogEmbeddedMetrics: c.exportMetrics,
+		ExportSections:    c.exportSections,
+		ExportTestReports: c.exportTestReports,
+		ExportTraces:      c.exportTraces,
+		ExportMetrics:     c.exportMetrics,
 	}
 
 	return tasks.ExportPipelineHierarchy(ctx, gitlabclient, exp, opts)

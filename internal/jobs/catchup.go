@@ -74,10 +74,10 @@ func (j *ProjectCatchUpJob) export(ctx context.Context, pipelineID int64) error 
 		ProjectID:  j.Config.Id,
 		PipelineID: pipelineID,
 
-		ExportSections:           j.Config.Export.Sections.Enabled,
-		ExportTestReports:        j.Config.Export.TestReports.Enabled,
-		ExportTraces:             j.Config.Export.Traces.Enabled,
-		ExportLogEmbeddedMetrics: j.Config.Export.LogEmbeddedMetrics.Enabled,
+		ExportSections:    j.Config.Export.Sections.Enabled,
+		ExportTestReports: j.Config.Export.TestReports.Enabled,
+		ExportTraces:      j.Config.Export.Traces.Enabled,
+		ExportMetrics:     j.Config.Export.Metrics.Enabled,
 	}
 
 	return tasks.ExportPipelineHierarchy(ctx, j.GitLab, j.Exporter, options)

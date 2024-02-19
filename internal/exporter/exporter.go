@@ -71,8 +71,8 @@ func (e *Exporter) ExportTestCases(ctx context.Context, data []*pb.TestCase) err
 	return export[pb.TestCase](e, ctx, data, grpc_client.RecordTestCases)
 }
 
-func (e *Exporter) ExportLogEmbeddedMetrics(ctx context.Context, data []*pb.LogEmbeddedMetric) error {
-	return export[pb.LogEmbeddedMetric](e, ctx, data, grpc_client.RecordLogEmbeddedMetrics)
+func (e *Exporter) ExportMetrics(ctx context.Context, data []*pb.Metric) error {
+	return export[pb.Metric](e, ctx, data, grpc_client.RecordMetrics)
 }
 
 func (e *Exporter) ExportTraces(ctx context.Context, data []*pb.Trace) error {

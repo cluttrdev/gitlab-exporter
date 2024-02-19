@@ -26,7 +26,7 @@ service GitLabExporter {
 
     rpc RecordTestCases(stream gitlabexporter.proto.models.TestCase) returns (RecordSummary) {}
 
-    rpc RecordLogEmbeddedMetrics(stream gitlabexporter.proto.models.LogEmbeddedMetric) returns (RecordSummary) {}
+    rpc RecordMetrics(stream gitlabexporter.proto.models.Metric) returns (RecordSummary) {}
 
     rpc RecordTraces(stream gitlabexporter.proto.models.Trace) returns (RecordSummary) {}
 }
