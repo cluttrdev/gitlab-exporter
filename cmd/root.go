@@ -17,8 +17,7 @@ import (
 )
 
 const (
-	exeName      string = "gitlab-exporter"
-	envVarPrefix string = "GLE"
+	exeName string = "gitlab-exporter"
 )
 
 type RootConfig struct {

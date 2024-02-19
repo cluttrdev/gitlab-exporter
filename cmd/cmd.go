@@ -32,7 +32,11 @@ func Execute() error {
 		catchupCmd,
 	}
 
-	if err := rootCmd.Parse(os.Args[1:]); err != nil {
+	opts := []cli.ParseOption{
+		cli.WithEnvVarPrefix("GLE"),
+	}
+
+	if err := rootCmd.Parse(os.Args[1:], opts...); err != nil {
 		if errors.Is(err, flag.ErrHelp) {
 			return nil
 		} else {
