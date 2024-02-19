@@ -33,9 +33,14 @@ projects: []
   #     traces:
   #       # Whether or not to export pipeline hierarchies as traces.
   #       enabled: true
+  #
+  #     metrics:
+  #       # Whether or not to export metrics embedded in job logs.
+  #       enabled: true
   #   
   #   catch_up:
   #     # Whether to export data from past pipelines at startup.
+  #     # This is ignored when using the `run` command, unless the `--catchup` flag is set.
   #     enabled: false
   #
   #     # Wheter to force export data of pipelines that have not been updated.
