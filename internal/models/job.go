@@ -4,15 +4,15 @@ import (
 	gitlab "github.com/xanzy/go-gitlab"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	pb "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb"
+	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
-func ConvertJob(job *gitlab.Job) *pb.Job {
-	return &pb.Job{
+func ConvertJob(job *gitlab.Job) *typespb.Job {
+	return &typespb.Job{
 		// Commit: ConvertCommit(job.Commit),
 		Id:   int64(job.ID),
 		Name: job.Name,
-		Pipeline: &pb.PipelineReference{
+		Pipeline: &typespb.PipelineReference{
 			Id:        int64(job.Pipeline.ID),
 			ProjectId: int64(job.Pipeline.ProjectID),
 			Ref:       job.Pipeline.Ref,
@@ -42,16 +42,16 @@ func ConvertJob(job *gitlab.Job) *pb.Job {
 	}
 }
 
-func ConvertBridge(bridge *gitlab.Bridge) *pb.Bridge {
+func ConvertBridge(bridge *gitlab.Bridge) *typespb.Bridge {
 	// account for downstream pipeline creation failures
-	downstreamPipeline := &pb.PipelineInfo{
+	downstreamPipeline := &typespb.PipelineInfo{
 		CreatedAt: &timestamppb.Timestamp{},
 		UpdatedAt: &timestamppb.Timestamp{},
 	}
 	if bridge.DownstreamPipeline != nil {
 		downstreamPipeline = ConvertPipelineInfo(bridge.DownstreamPipeline)
 	}
-	return &pb.Bridge{
+	return &typespb.Bridge{
 		// Commit: ConvertCommit(bridge.Commit),
 		Id:             int64(bridge.ID),
 		Name:           bridge.Name,

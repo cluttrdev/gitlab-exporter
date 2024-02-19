@@ -1,13 +1,13 @@
 package models
 
 import (
-	pb "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb"
+	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
-func ConvertLabels(labels map[string]string) []*pb.Metric_Label {
-	list := make([]*pb.Metric_Label, 0, len(labels))
+func ConvertLabels(labels map[string]string) []*typespb.Metric_Label {
+	list := make([]*typespb.Metric_Label, 0, len(labels))
 	for name, value := range labels {
-		list = append(list, &pb.Metric_Label{
+		list = append(list, &typespb.Metric_Label{
 			Name:  name,
 			Value: value,
 		})

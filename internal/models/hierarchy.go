@@ -3,19 +3,19 @@ package models
 import (
 	"fmt"
 
-	pb "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb"
+	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
 type PipelineHierarchy struct {
-	Pipeline            *pb.Pipeline         `json:"pipeline"`
-	Jobs                []*pb.Job            `json:"jobs"`
-	Sections            []*pb.Section        `json:"sections"`
-	Bridges             []*pb.Bridge         `json:"bridges"`
+	Pipeline            *typespb.Pipeline    `json:"pipeline"`
+	Jobs                []*typespb.Job       `json:"jobs"`
+	Sections            []*typespb.Section   `json:"sections"`
+	Bridges             []*typespb.Bridge    `json:"bridges"`
 	DownstreamPipelines []*PipelineHierarchy `json:"downstream_pipelines"`
 }
 
-func (ph *PipelineHierarchy) GetAllPipelines() []*pb.Pipeline {
-	pipelines := []*pb.Pipeline{ph.Pipeline}
+func (ph *PipelineHierarchy) GetAllPipelines() []*typespb.Pipeline {
+	pipelines := []*typespb.Pipeline{ph.Pipeline}
 
 	for _, dph := range ph.DownstreamPipelines {
 		pipelines = append(pipelines, dph.GetAllPipelines()...)
@@ -24,7 +24,7 @@ func (ph *PipelineHierarchy) GetAllPipelines() []*pb.Pipeline {
 	return pipelines
 }
 
-func (ph *PipelineHierarchy) GetAllJobs() []*pb.Job {
+func (ph *PipelineHierarchy) GetAllJobs() []*typespb.Job {
 	jobs := ph.Jobs
 
 	for _, dph := range ph.DownstreamPipelines {
@@ -34,7 +34,7 @@ func (ph *PipelineHierarchy) GetAllJobs() []*pb.Job {
 	return jobs
 }
 
-func (ph *PipelineHierarchy) GetAllSections() []*pb.Section {
+func (ph *PipelineHierarchy) GetAllSections() []*typespb.Section {
 	sections := ph.Sections
 
 	for _, dph := range ph.DownstreamPipelines {
@@ -44,7 +44,7 @@ func (ph *PipelineHierarchy) GetAllSections() []*pb.Section {
 	return sections
 }
 
-func (ph *PipelineHierarchy) GetAllBridges() []*pb.Bridge {
+func (ph *PipelineHierarchy) GetAllBridges() []*typespb.Bridge {
 	bridges := ph.Bridges
 
 	for _, dph := range ph.DownstreamPipelines {
@@ -54,14 +54,14 @@ func (ph *PipelineHierarchy) GetAllBridges() []*pb.Bridge {
 	return bridges
 }
 
-func (ph *PipelineHierarchy) GetTrace() *pb.Trace {
+func (ph *PipelineHierarchy) GetTrace() *typespb.Trace {
 	traceID := fmt.Sprintf("%d", ph.Pipeline.Id)
 	parentID := ""
 	return NewPipelineHierarchyTrace([]byte(traceID), []byte(parentID), ph)
 }
 
-func (ph *PipelineHierarchy) GetAllTraces() []*pb.Trace {
-	traces := []*pb.Trace{ph.GetTrace()}
+func (ph *PipelineHierarchy) GetAllTraces() []*typespb.Trace {
+	traces := []*typespb.Trace{ph.GetTrace()}
 	for _, dph := range ph.DownstreamPipelines {
 		traces = append(traces, dph.GetAllTraces()...)
 	}

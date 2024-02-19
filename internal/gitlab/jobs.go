@@ -5,12 +5,12 @@ import (
 
 	_gitlab "github.com/xanzy/go-gitlab"
 
-	pb "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb"
 	"github.com/cluttrdev/gitlab-exporter/internal/models"
+	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
 type ListPipelineJobsResult struct {
-	Job   *pb.Job
+	Job   *typespb.Job
 	Error error
 }
 
@@ -57,7 +57,7 @@ func (c *Client) ListPipelineJobs(ctx context.Context, projectID int64, pipeline
 }
 
 type ListPipelineBridgesResult struct {
-	Bridge *pb.Bridge
+	Bridge *typespb.Bridge
 	Error  error
 }
 

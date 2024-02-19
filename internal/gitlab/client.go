@@ -10,8 +10,8 @@ import (
 
 	_gitlab "github.com/xanzy/go-gitlab"
 
-	pb "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb"
 	"github.com/cluttrdev/gitlab-exporter/internal/models"
+	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
 type Client struct {
@@ -94,7 +94,7 @@ type GetPipelineHierarchyOptions struct {
 
 type GetPipelineHierarchyResult struct {
 	PipelineHierarchy *models.PipelineHierarchy
-	Metrics           []*pb.Metric
+	Metrics           []*typespb.Metric
 	Error             error
 }
 
@@ -112,9 +112,9 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 			return
 		}
 
-		jobs := []*pb.Job{}
-		sections := []*pb.Section{}
-		metrics := []*pb.Metric{}
+		jobs := []*typespb.Job{}
+		sections := []*typespb.Section{}
+		metrics := []*typespb.Metric{}
 		for jr := range c.ListPipelineJobs(ctx, projectID, pipelineID) {
 			if jr.Error != nil {
 				ch <- GetPipelineHierarchyResult{
@@ -144,9 +144,9 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 
 				if opt.FetchSections {
 					for secnum, secdat := range data.Sections {
-						section := &pb.Section{
+						section := &typespb.Section{
 							Id: job.Id*1000 + int64(secnum),
-							Job: &pb.JobReference{
+							Job: &typespb.JobReference{
 								Id:     job.Id,
 								Name:   job.Name,
 								Status: job.Status,
@@ -164,12 +164,12 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 
 				if opt.FetchJobMetrics {
 					for _, m := range data.Metrics {
-						metric := &pb.Metric{
+						metric := &typespb.Metric{
 							Name:      m.Name,
 							Labels:    models.ConvertLabels(m.Labels),
 							Value:     m.Value,
 							Timestamp: models.ConvertUnixMilli(m.Timestamp),
-							Job: &pb.Metric_JobReference{
+							Job: &typespb.Metric_JobReference{
 								Id:   job.Id,
 								Name: job.Name,
 							},
@@ -181,7 +181,7 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 			}
 		}
 
-		bridges := []*pb.Bridge{}
+		bridges := []*typespb.Bridge{}
 		dps := []*models.PipelineHierarchy{}
 		for br := range c.ListPipelineBridges(ctx, projectID, pipelineID) {
 			if br.Error != nil {

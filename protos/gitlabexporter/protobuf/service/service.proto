@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+option go_package = "github.com/cluttrdev/gitlab-exporter/protobuf/servicepb";
+
+package gitlabexporter.protobuf.service;
+
+import "gitlabexporter/protobuf/pipeline.proto";
+import "gitlabexporter/protobuf/job.proto";
+import "gitlabexporter/protobuf/section.proto";
+import "gitlabexporter/protobuf/testreport.proto";
+import "gitlabexporter/protobuf/metric.proto";
+import "gitlabexporter/protobuf/trace.proto";
+
+service GitLabExporter {
+    rpc RecordPipelines(stream gitlabexporter.protobuf.Pipeline) returns (RecordSummary) {}
+    
+    rpc RecordJobs(stream gitlabexporter.protobuf.Job) returns (RecordSummary) {}
+
+    rpc RecordSections(stream gitlabexporter.protobuf.Section) returns (RecordSummary) {}
+
+    rpc RecordBridges(stream gitlabexporter.protobuf.Bridge) returns (RecordSummary) {}
+
+    rpc RecordTestReports(stream gitlabexporter.protobuf.TestReport) returns (RecordSummary) {}
+
+    rpc RecordTestSuites(stream gitlabexporter.protobuf.TestSuite) returns (RecordSummary) {}
+
+    rpc RecordTestCases(stream gitlabexporter.protobuf.TestCase) returns (RecordSummary) {}
+
+    rpc RecordMetrics(stream gitlabexporter.protobuf.Metric) returns (RecordSummary) {}
+
+    rpc RecordTraces(stream gitlabexporter.protobuf.Trace) returns (RecordSummary) {}
+}
+
+message RecordSummary {
+    int32 recorded_count = 1;
+}

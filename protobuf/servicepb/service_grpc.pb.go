@@ -2,12 +2,13 @@
 // versions:
 // - protoc-gen-go-grpc v1.3.0
 // - protoc             v4.22.2
-// source: gitlabexporter/proto/service/service.proto
+// source: gitlabexporter/protobuf/service/service.proto
 
-package exporterpb
+package servicepb
 
 import (
 	context "context"
+	typespb "github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
@@ -19,15 +20,15 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	GitLabExporter_RecordPipelines_FullMethodName   = "/gitlabexporter.proto.exporter.GitLabExporter/RecordPipelines"
-	GitLabExporter_RecordJobs_FullMethodName        = "/gitlabexporter.proto.exporter.GitLabExporter/RecordJobs"
-	GitLabExporter_RecordSections_FullMethodName    = "/gitlabexporter.proto.exporter.GitLabExporter/RecordSections"
-	GitLabExporter_RecordBridges_FullMethodName     = "/gitlabexporter.proto.exporter.GitLabExporter/RecordBridges"
-	GitLabExporter_RecordTestReports_FullMethodName = "/gitlabexporter.proto.exporter.GitLabExporter/RecordTestReports"
-	GitLabExporter_RecordTestSuites_FullMethodName  = "/gitlabexporter.proto.exporter.GitLabExporter/RecordTestSuites"
-	GitLabExporter_RecordTestCases_FullMethodName   = "/gitlabexporter.proto.exporter.GitLabExporter/RecordTestCases"
-	GitLabExporter_RecordMetrics_FullMethodName     = "/gitlabexporter.proto.exporter.GitLabExporter/RecordMetrics"
-	GitLabExporter_RecordTraces_FullMethodName      = "/gitlabexporter.proto.exporter.GitLabExporter/RecordTraces"
+	GitLabExporter_RecordPipelines_FullMethodName   = "/gitlabexporter.protobuf.service.GitLabExporter/RecordPipelines"
+	GitLabExporter_RecordJobs_FullMethodName        = "/gitlabexporter.protobuf.service.GitLabExporter/RecordJobs"
+	GitLabExporter_RecordSections_FullMethodName    = "/gitlabexporter.protobuf.service.GitLabExporter/RecordSections"
+	GitLabExporter_RecordBridges_FullMethodName     = "/gitlabexporter.protobuf.service.GitLabExporter/RecordBridges"
+	GitLabExporter_RecordTestReports_FullMethodName = "/gitlabexporter.protobuf.service.GitLabExporter/RecordTestReports"
+	GitLabExporter_RecordTestSuites_FullMethodName  = "/gitlabexporter.protobuf.service.GitLabExporter/RecordTestSuites"
+	GitLabExporter_RecordTestCases_FullMethodName   = "/gitlabexporter.protobuf.service.GitLabExporter/RecordTestCases"
+	GitLabExporter_RecordMetrics_FullMethodName     = "/gitlabexporter.protobuf.service.GitLabExporter/RecordMetrics"
+	GitLabExporter_RecordTraces_FullMethodName      = "/gitlabexporter.protobuf.service.GitLabExporter/RecordTraces"
 )
 
 // GitLabExporterClient is the client API for GitLabExporter service.
@@ -63,7 +64,7 @@ func (c *gitLabExporterClient) RecordPipelines(ctx context.Context, opts ...grpc
 }
 
 type GitLabExporter_RecordPipelinesClient interface {
-	Send(*Pipeline) error
+	Send(*typespb.Pipeline) error
 	CloseAndRecv() (*RecordSummary, error)
 	grpc.ClientStream
 }
@@ -72,7 +73,7 @@ type gitLabExporterRecordPipelinesClient struct {
 	grpc.ClientStream
 }
 
-func (x *gitLabExporterRecordPipelinesClient) Send(m *Pipeline) error {
+func (x *gitLabExporterRecordPipelinesClient) Send(m *typespb.Pipeline) error {
 	return x.ClientStream.SendMsg(m)
 }
 
@@ -97,7 +98,7 @@ func (c *gitLabExporterClient) RecordJobs(ctx context.Context, opts ...grpc.Call
 }
 
 type GitLabExporter_RecordJobsClient interface {
-	Send(*Job) error
+	Send(*typespb.Job) error
 	CloseAndRecv() (*RecordSummary, error)
 	grpc.ClientStream
 }
@@ -106,7 +107,7 @@ type gitLabExporterRecordJobsClient struct {
 	grpc.ClientStream
 }
 
-func (x *gitLabExporterRecordJobsClient) Send(m *Job) error {
+func (x *gitLabExporterRecordJobsClient) Send(m *typespb.Job) error {
 	return x.ClientStream.SendMsg(m)
 }
 
@@ -131,7 +132,7 @@ func (c *gitLabExporterClient) RecordSections(ctx context.Context, opts ...grpc.
 }
 
 type GitLabExporter_RecordSectionsClient interface {
-	Send(*Section) error
+	Send(*typespb.Section) error
 	CloseAndRecv() (*RecordSummary, error)
 	grpc.ClientStream
 }
@@ -140,7 +141,7 @@ type gitLabExporterRecordSectionsClient struct {
 	grpc.ClientStream
 }
 
-func (x *gitLabExporterRecordSectionsClient) Send(m *Section) error {
+func (x *gitLabExporterRecordSectionsClient) Send(m *typespb.Section) error {
 	return x.ClientStream.SendMsg(m)
 }
 
@@ -165,7 +166,7 @@ func (c *gitLabExporterClient) RecordBridges(ctx context.Context, opts ...grpc.C
 }
 
 type GitLabExporter_RecordBridgesClient interface {
-	Send(*Bridge) error
+	Send(*typespb.Bridge) error
 	CloseAndRecv() (*RecordSummary, error)
 	grpc.ClientStream
 }
@@ -174,7 +175,7 @@ type gitLabExporterRecordBridgesClient struct {
 	grpc.ClientStream
 }
 
-func (x *gitLabExporterRecordBridgesClient) Send(m *Bridge) error {
+func (x *gitLabExporterRecordBridgesClient) Send(m *typespb.Bridge) error {
 	return x.ClientStream.SendMsg(m)
 }
 
@@ -199,7 +200,7 @@ func (c *gitLabExporterClient) RecordTestReports(ctx context.Context, opts ...gr
 }
 
 type GitLabExporter_RecordTestReportsClient interface {
-	Send(*TestReport) error
+	Send(*typespb.TestReport) error
 	CloseAndRecv() (*RecordSummary, error)
 	grpc.ClientStream
 }
@@ -208,7 +209,7 @@ type gitLabExporterRecordTestReportsClient struct {
 	grpc.ClientStream
 }
 
-func (x *gitLabExporterRecordTestReportsClient) Send(m *TestReport) error {
+func (x *gitLabExporterRecordTestReportsClient) Send(m *typespb.TestReport) error {
 	return x.ClientStream.SendMsg(m)
 }
 
@@ -233,7 +234,7 @@ func (c *gitLabExporterClient) RecordTestSuites(ctx context.Context, opts ...grp
 }
 
 type GitLabExporter_RecordTestSuitesClient interface {
-	Send(*TestSuite) error
+	Send(*typespb.TestSuite) error
 	CloseAndRecv() (*RecordSummary, error)
 	grpc.ClientStream
 }
@@ -242,7 +243,7 @@ type gitLabExporterRecordTestSuitesClient struct {
 	grpc.ClientStream
 }
 
-func (x *gitLabExporterRecordTestSuitesClient) Send(m *TestSuite) error {
+func (x *gitLabExporterRecordTestSuitesClient) Send(m *typespb.TestSuite) error {
 	return x.ClientStream.SendMsg(m)
 }
 
@@ -267,7 +268,7 @@ func (c *gitLabExporterClient) RecordTestCases(ctx context.Context, opts ...grpc
 }
 
 type GitLabExporter_RecordTestCasesClient interface {
-	Send(*TestCase) error
+	Send(*typespb.TestCase) error
 	CloseAndRecv() (*RecordSummary, error)
 	grpc.ClientStream
 }
@@ -276,7 +277,7 @@ type gitLabExporterRecordTestCasesClient struct {
 	grpc.ClientStream
 }
 
-func (x *gitLabExporterRecordTestCasesClient) Send(m *TestCase) error {
+func (x *gitLabExporterRecordTestCasesClient) Send(m *typespb.TestCase) error {
 	return x.ClientStream.SendMsg(m)
 }
 
@@ -301,7 +302,7 @@ func (c *gitLabExporterClient) RecordMetrics(ctx context.Context, opts ...grpc.C
 }
 
 type GitLabExporter_RecordMetricsClient interface {
-	Send(*Metric) error
+	Send(*typespb.Metric) error
 	CloseAndRecv() (*RecordSummary, error)
 	grpc.ClientStream
 }
@@ -310,7 +311,7 @@ type gitLabExporterRecordMetricsClient struct {
 	grpc.ClientStream
 }
 
-func (x *gitLabExporterRecordMetricsClient) Send(m *Metric) error {
+func (x *gitLabExporterRecordMetricsClient) Send(m *typespb.Metric) error {
 	return x.ClientStream.SendMsg(m)
 }
 
@@ -335,7 +336,7 @@ func (c *gitLabExporterClient) RecordTraces(ctx context.Context, opts ...grpc.Ca
 }
 
 type GitLabExporter_RecordTracesClient interface {
-	Send(*Trace) error
+	Send(*typespb.Trace) error
 	CloseAndRecv() (*RecordSummary, error)
 	grpc.ClientStream
 }
@@ -344,7 +345,7 @@ type gitLabExporterRecordTracesClient struct {
 	grpc.ClientStream
 }
 
-func (x *gitLabExporterRecordTracesClient) Send(m *Trace) error {
+func (x *gitLabExporterRecordTracesClient) Send(m *typespb.Trace) error {
 	return x.ClientStream.SendMsg(m)
 }
 
@@ -425,7 +426,7 @@ func _GitLabExporter_RecordPipelines_Handler(srv interface{}, stream grpc.Server
 
 type GitLabExporter_RecordPipelinesServer interface {
 	SendAndClose(*RecordSummary) error
-	Recv() (*Pipeline, error)
+	Recv() (*typespb.Pipeline, error)
 	grpc.ServerStream
 }
 
@@ -437,8 +438,8 @@ func (x *gitLabExporterRecordPipelinesServer) SendAndClose(m *RecordSummary) err
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *gitLabExporterRecordPipelinesServer) Recv() (*Pipeline, error) {
-	m := new(Pipeline)
+func (x *gitLabExporterRecordPipelinesServer) Recv() (*typespb.Pipeline, error) {
+	m := new(typespb.Pipeline)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -451,7 +452,7 @@ func _GitLabExporter_RecordJobs_Handler(srv interface{}, stream grpc.ServerStrea
 
 type GitLabExporter_RecordJobsServer interface {
 	SendAndClose(*RecordSummary) error
-	Recv() (*Job, error)
+	Recv() (*typespb.Job, error)
 	grpc.ServerStream
 }
 
@@ -463,8 +464,8 @@ func (x *gitLabExporterRecordJobsServer) SendAndClose(m *RecordSummary) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *gitLabExporterRecordJobsServer) Recv() (*Job, error) {
-	m := new(Job)
+func (x *gitLabExporterRecordJobsServer) Recv() (*typespb.Job, error) {
+	m := new(typespb.Job)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -477,7 +478,7 @@ func _GitLabExporter_RecordSections_Handler(srv interface{}, stream grpc.ServerS
 
 type GitLabExporter_RecordSectionsServer interface {
 	SendAndClose(*RecordSummary) error
-	Recv() (*Section, error)
+	Recv() (*typespb.Section, error)
 	grpc.ServerStream
 }
 
@@ -489,8 +490,8 @@ func (x *gitLabExporterRecordSectionsServer) SendAndClose(m *RecordSummary) erro
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *gitLabExporterRecordSectionsServer) Recv() (*Section, error) {
-	m := new(Section)
+func (x *gitLabExporterRecordSectionsServer) Recv() (*typespb.Section, error) {
+	m := new(typespb.Section)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -503,7 +504,7 @@ func _GitLabExporter_RecordBridges_Handler(srv interface{}, stream grpc.ServerSt
 
 type GitLabExporter_RecordBridgesServer interface {
 	SendAndClose(*RecordSummary) error
-	Recv() (*Bridge, error)
+	Recv() (*typespb.Bridge, error)
 	grpc.ServerStream
 }
 
@@ -515,8 +516,8 @@ func (x *gitLabExporterRecordBridgesServer) SendAndClose(m *RecordSummary) error
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *gitLabExporterRecordBridgesServer) Recv() (*Bridge, error) {
-	m := new(Bridge)
+func (x *gitLabExporterRecordBridgesServer) Recv() (*typespb.Bridge, error) {
+	m := new(typespb.Bridge)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -529,7 +530,7 @@ func _GitLabExporter_RecordTestReports_Handler(srv interface{}, stream grpc.Serv
 
 type GitLabExporter_RecordTestReportsServer interface {
 	SendAndClose(*RecordSummary) error
-	Recv() (*TestReport, error)
+	Recv() (*typespb.TestReport, error)
 	grpc.ServerStream
 }
 
@@ -541,8 +542,8 @@ func (x *gitLabExporterRecordTestReportsServer) SendAndClose(m *RecordSummary) e
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *gitLabExporterRecordTestReportsServer) Recv() (*TestReport, error) {
-	m := new(TestReport)
+func (x *gitLabExporterRecordTestReportsServer) Recv() (*typespb.TestReport, error) {
+	m := new(typespb.TestReport)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -555,7 +556,7 @@ func _GitLabExporter_RecordTestSuites_Handler(srv interface{}, stream grpc.Serve
 
 type GitLabExporter_RecordTestSuitesServer interface {
 	SendAndClose(*RecordSummary) error
-	Recv() (*TestSuite, error)
+	Recv() (*typespb.TestSuite, error)
 	grpc.ServerStream
 }
 
@@ -567,8 +568,8 @@ func (x *gitLabExporterRecordTestSuitesServer) SendAndClose(m *RecordSummary) er
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *gitLabExporterRecordTestSuitesServer) Recv() (*TestSuite, error) {
-	m := new(TestSuite)
+func (x *gitLabExporterRecordTestSuitesServer) Recv() (*typespb.TestSuite, error) {
+	m := new(typespb.TestSuite)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -581,7 +582,7 @@ func _GitLabExporter_RecordTestCases_Handler(srv interface{}, stream grpc.Server
 
 type GitLabExporter_RecordTestCasesServer interface {
 	SendAndClose(*RecordSummary) error
-	Recv() (*TestCase, error)
+	Recv() (*typespb.TestCase, error)
 	grpc.ServerStream
 }
 
@@ -593,8 +594,8 @@ func (x *gitLabExporterRecordTestCasesServer) SendAndClose(m *RecordSummary) err
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *gitLabExporterRecordTestCasesServer) Recv() (*TestCase, error) {
-	m := new(TestCase)
+func (x *gitLabExporterRecordTestCasesServer) Recv() (*typespb.TestCase, error) {
+	m := new(typespb.TestCase)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -607,7 +608,7 @@ func _GitLabExporter_RecordMetrics_Handler(srv interface{}, stream grpc.ServerSt
 
 type GitLabExporter_RecordMetricsServer interface {
 	SendAndClose(*RecordSummary) error
-	Recv() (*Metric, error)
+	Recv() (*typespb.Metric, error)
 	grpc.ServerStream
 }
 
@@ -619,8 +620,8 @@ func (x *gitLabExporterRecordMetricsServer) SendAndClose(m *RecordSummary) error
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *gitLabExporterRecordMetricsServer) Recv() (*Metric, error) {
-	m := new(Metric)
+func (x *gitLabExporterRecordMetricsServer) Recv() (*typespb.Metric, error) {
+	m := new(typespb.Metric)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -633,7 +634,7 @@ func _GitLabExporter_RecordTraces_Handler(srv interface{}, stream grpc.ServerStr
 
 type GitLabExporter_RecordTracesServer interface {
 	SendAndClose(*RecordSummary) error
-	Recv() (*Trace, error)
+	Recv() (*typespb.Trace, error)
 	grpc.ServerStream
 }
 
@@ -645,8 +646,8 @@ func (x *gitLabExporterRecordTracesServer) SendAndClose(m *RecordSummary) error 
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *gitLabExporterRecordTracesServer) Recv() (*Trace, error) {
-	m := new(Trace)
+func (x *gitLabExporterRecordTracesServer) Recv() (*typespb.Trace, error) {
+	m := new(typespb.Trace)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}
@@ -657,7 +658,7 @@ func (x *gitLabExporterRecordTracesServer) Recv() (*Trace, error) {
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var GitLabExporter_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "gitlabexporter.proto.exporter.GitLabExporter",
+	ServiceName: "gitlabexporter.protobuf.service.GitLabExporter",
 	HandlerType: (*GitLabExporterServer)(nil),
 	Methods:     []grpc.MethodDesc{},
 	Streams: []grpc.StreamDesc{
@@ -707,5 +708,5 @@ var GitLabExporter_ServiceDesc = grpc.ServiceDesc{
 			ClientStreams: true,
 		},
 	},
-	Metadata: "gitlabexporter/proto/service/service.proto",
+	Metadata: "gitlabexporter/protobuf/service/service.proto",
 }

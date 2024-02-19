@@ -5,7 +5,8 @@ import (
 
 	"google.golang.org/grpc"
 
-	pb "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb"
+	"github.com/cluttrdev/gitlab-exporter/protobuf/servicepb"
+	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
 type EndpointConfig struct {
@@ -15,7 +16,7 @@ type EndpointConfig struct {
 
 type Client struct {
 	conn   grpc.ClientConnInterface
-	client pb.GitLabExporterClient
+	client servicepb.GitLabExporterClient
 }
 
 func NewCLient(cfg EndpointConfig) (*Client, error) {
@@ -24,7 +25,7 @@ func NewCLient(cfg EndpointConfig) (*Client, error) {
 		return nil, err
 	}
 
-	client := pb.NewGitLabExporterClient(conn)
+	client := servicepb.NewGitLabExporterClient(conn)
 
 	return &Client{
 		conn:   conn,
@@ -43,90 +44,90 @@ func send[T any](stream grpc.ClientStream, data []*T) error {
 		return err
 	}
 
-	m := new(pb.RecordSummary)
+	m := new(servicepb.RecordSummary)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
 	return nil
 }
 
-func RecordPipelines(c *Client, ctx context.Context, data []*pb.Pipeline) error {
+func RecordPipelines(c *Client, ctx context.Context, data []*typespb.Pipeline) error {
 	stream, err := c.client.RecordPipelines(ctx)
 	if err != nil {
 		return err
 	}
 
-	return send[pb.Pipeline](stream, data)
+	return send[typespb.Pipeline](stream, data)
 }
 
-func RecordJobs(c *Client, ctx context.Context, data []*pb.Job) error {
+func RecordJobs(c *Client, ctx context.Context, data []*typespb.Job) error {
 	stream, err := c.client.RecordJobs(ctx)
 	if err != nil {
 		return err
 	}
 
-	return send[pb.Job](stream, data)
+	return send[typespb.Job](stream, data)
 }
 
-func RecordSections(c *Client, ctx context.Context, data []*pb.Section) error {
+func RecordSections(c *Client, ctx context.Context, data []*typespb.Section) error {
 	stream, err := c.client.RecordSections(ctx)
 	if err != nil {
 		return err
 	}
 
-	return send[pb.Section](stream, data)
+	return send[typespb.Section](stream, data)
 }
 
-func RecordBridges(c *Client, ctx context.Context, data []*pb.Bridge) error {
+func RecordBridges(c *Client, ctx context.Context, data []*typespb.Bridge) error {
 	stream, err := c.client.RecordBridges(ctx)
 	if err != nil {
 		return err
 	}
 
-	return send[pb.Bridge](stream, data)
+	return send[typespb.Bridge](stream, data)
 }
 
-func RecordTestReports(c *Client, ctx context.Context, data []*pb.TestReport) error {
+func RecordTestReports(c *Client, ctx context.Context, data []*typespb.TestReport) error {
 	stream, err := c.client.RecordTestReports(ctx)
 	if err != nil {
 		return err
 	}
 
-	return send[pb.TestReport](stream, data)
+	return send[typespb.TestReport](stream, data)
 }
 
-func RecordTestSuites(c *Client, ctx context.Context, data []*pb.TestSuite) error {
+func RecordTestSuites(c *Client, ctx context.Context, data []*typespb.TestSuite) error {
 	stream, err := c.client.RecordTestSuites(ctx)
 	if err != nil {
 		return err
 	}
 
-	return send[pb.TestSuite](stream, data)
+	return send[typespb.TestSuite](stream, data)
 }
 
-func RecordTestCases(c *Client, ctx context.Context, data []*pb.TestCase) error {
+func RecordTestCases(c *Client, ctx context.Context, data []*typespb.TestCase) error {
 	stream, err := c.client.RecordTestCases(ctx)
 	if err != nil {
 		return err
 	}
 
-	return send[pb.TestCase](stream, data)
+	return send[typespb.TestCase](stream, data)
 }
 
-func RecordMetrics(c *Client, ctx context.Context, data []*pb.Metric) error {
+func RecordMetrics(c *Client, ctx context.Context, data []*typespb.Metric) error {
 	stream, err := c.client.RecordMetrics(ctx)
 	if err != nil {
 		return err
 	}
 
-	return send[pb.Metric](stream, data)
+	return send[typespb.Metric](stream, data)
 }
 
-func RecordTraces(c *Client, ctx context.Context, data []*pb.Trace) error {
+func RecordTraces(c *Client, ctx context.Context, data []*typespb.Trace) error {
 	stream, err := c.client.RecordTraces(ctx)
 	if err != nil {
 		return err
 	}
 
-	return send[pb.Trace](stream, data)
+	return send[typespb.Trace](stream, data)
 }

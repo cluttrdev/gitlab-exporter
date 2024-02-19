@@ -5,11 +5,11 @@ import (
 
 	gitlab "github.com/xanzy/go-gitlab"
 
-	pb "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb"
+	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
-func ConvertPipelineInfo(pipeline *gitlab.PipelineInfo) *pb.PipelineInfo {
-	return &pb.PipelineInfo{
+func ConvertPipelineInfo(pipeline *gitlab.PipelineInfo) *typespb.PipelineInfo {
+	return &typespb.PipelineInfo{
 		Id:        int64(pipeline.ID),
 		Iid:       int64(pipeline.IID),
 		ProjectId: int64(pipeline.ProjectID),
@@ -23,8 +23,8 @@ func ConvertPipelineInfo(pipeline *gitlab.PipelineInfo) *pb.PipelineInfo {
 	}
 }
 
-func ConvertPipeline(pipeline *gitlab.Pipeline) *pb.Pipeline {
-	return &pb.Pipeline{
+func ConvertPipeline(pipeline *gitlab.Pipeline) *typespb.Pipeline {
+	return &typespb.Pipeline{
 		Id:         int64(pipeline.ID),
 		Iid:        int64(pipeline.IID),
 		ProjectId:  int64(pipeline.ProjectID),

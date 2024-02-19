@@ -6,15 +6,15 @@ import (
 
 	_gitlab "github.com/xanzy/go-gitlab"
 
-	pb "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb"
 	"github.com/cluttrdev/gitlab-exporter/internal/models"
+	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
 type ListOptions = _gitlab.ListOptions
 type ListProjectPipelinesOptions = _gitlab.ListProjectPipelinesOptions
 
 type ListProjectPipelinesResult struct {
-	Pipeline *pb.PipelineInfo
+	Pipeline *typespb.PipelineInfo
 	Error    error
 }
 
@@ -51,7 +51,7 @@ func (c *Client) ListProjectPipelines(ctx context.Context, projectID int64, opt 
 	return out
 }
 
-func (c *Client) GetPipeline(ctx context.Context, projectID int64, pipelineID int64) (*pb.Pipeline, error) {
+func (c *Client) GetPipeline(ctx context.Context, projectID int64, pipelineID int64) (*typespb.Pipeline, error) {
 	c.RLock()
 	pipeline, _, err := c.client.Pipelines.GetPipeline(int(projectID), int(pipelineID), _gitlab.WithContext(ctx))
 	c.RUnlock()

@@ -1,8 +1,8 @@
 syntax = "proto3";
 
-option go_package = "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb";
+option go_package = "github.com/cluttrdev/gitlab-exporter/protobuf/typespb";
 
-package gitlabexporter.proto.models;
+package gitlabexporter.protobuf;
 
 message TestReport {
     string id = 1;

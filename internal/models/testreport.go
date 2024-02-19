@@ -5,11 +5,11 @@ import (
 
 	gitlab "github.com/xanzy/go-gitlab"
 
-	pb "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb"
+	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
-func ConvertTestReport(pipelineID int64, report *gitlab.PipelineTestReport) (*pb.TestReport, []*pb.TestSuite, []*pb.TestCase) {
-	testreport := &pb.TestReport{
+func ConvertTestReport(pipelineID int64, report *gitlab.PipelineTestReport) (*typespb.TestReport, []*typespb.TestSuite, []*typespb.TestCase) {
+	testreport := &typespb.TestReport{
 		Id:           testReportID(pipelineID),
 		PipelineId:   pipelineID,
 		TotalTime:    report.TotalTime,
@@ -20,11 +20,11 @@ func ConvertTestReport(pipelineID int64, report *gitlab.PipelineTestReport) (*pb
 		ErrorCount:   int64(report.ErrorCount),
 	}
 
-	testsuites := make([]*pb.TestSuite, 0, len(report.TestSuites))
-	testcases := []*pb.TestCase{}
+	testsuites := make([]*typespb.TestSuite, 0, len(report.TestSuites))
+	testcases := []*typespb.TestCase{}
 	for i, testsuite := range report.TestSuites {
 		testsuiteID := testSuiteID(testreport.Id, i)
-		testsuites = append(testsuites, &pb.TestSuite{
+		testsuites = append(testsuites, &typespb.TestSuite{
 			Id:           testsuiteID,
 			TestreportId: testreport.Id,
 			PipelineId:   pipelineID,
@@ -37,9 +37,9 @@ func ConvertTestReport(pipelineID int64, report *gitlab.PipelineTestReport) (*pb
 			ErrorCount:   int64(testsuite.ErrorCount),
 		})
 
-		cases := make([]*pb.TestCase, 0, len(testsuite.TestCases))
+		cases := make([]*typespb.TestCase, 0, len(testsuite.TestCases))
 		for j, testcase := range testsuite.TestCases {
-			cases = append(cases, &pb.TestCase{
+			cases = append(cases, &typespb.TestCase{
 				Id:             testCaseID(testsuiteID, j),
 				TestsuiteId:    testsuiteID,
 				TestreportId:   testreport.Id,
@@ -61,8 +61,8 @@ func ConvertTestReport(pipelineID int64, report *gitlab.PipelineTestReport) (*pb
 	return testreport, testsuites, testcases
 }
 
-func convertTestCaseRecentFailures(f *gitlab.RecentFailures) *pb.TestCase_RecentFailures {
-	var r pb.TestCase_RecentFailures
+func convertTestCaseRecentFailures(f *gitlab.RecentFailures) *typespb.TestCase_RecentFailures {
+	var r typespb.TestCase_RecentFailures
 	if f != nil {
 		r.Count = int64(f.Count)
 		r.BaseBranch = f.BaseBranch

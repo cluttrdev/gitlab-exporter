@@ -9,10 +9,10 @@ import (
 	"golang.org/x/exp/slices"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	pb "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb"
+	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
-func NewPipelineHierarchyTrace(traceID []byte, parentID []byte, ph *PipelineHierarchy) *pb.Trace {
+func NewPipelineHierarchyTrace(traceID []byte, parentID []byte, ph *PipelineHierarchy) *typespb.Trace {
 	var data tracepb.TracesData
 
 	if len(traceID) == 0 {
@@ -41,12 +41,12 @@ func NewPipelineHierarchyTrace(traceID []byte, parentID []byte, ph *PipelineHier
 		}
 	}
 
-	return &pb.Trace{
+	return &typespb.Trace{
 		Data: &data,
 	}
 }
 
-func NewPipelineSpan(traceID []byte, parentID []byte, pipeline *pb.Pipeline) *tracepb.ResourceSpans {
+func NewPipelineSpan(traceID []byte, parentID []byte, pipeline *typespb.Pipeline) *tracepb.ResourceSpans {
 	return &tracepb.ResourceSpans{
 		Resource: &resourcepb.Resource{
 			Attributes: convertAttributes(map[string]string{
@@ -91,7 +91,7 @@ func NewPipelineSpan(traceID []byte, parentID []byte, pipeline *pb.Pipeline) *tr
 	}
 }
 
-func NewJobSpan(traceID []byte, job *pb.Job) *tracepb.ResourceSpans {
+func NewJobSpan(traceID []byte, job *typespb.Job) *tracepb.ResourceSpans {
 	return &tracepb.ResourceSpans{
 		Resource: &resourcepb.Resource{
 			Attributes: convertAttributes(map[string]string{
@@ -136,7 +136,7 @@ func NewJobSpan(traceID []byte, job *pb.Job) *tracepb.ResourceSpans {
 	}
 }
 
-func NewBridgeSpan(traceID []byte, bridge *pb.Bridge) *tracepb.ResourceSpans {
+func NewBridgeSpan(traceID []byte, bridge *typespb.Bridge) *tracepb.ResourceSpans {
 	attrs := map[string]string{
 		"ci.job.status":  bridge.Status,
 		"ci.job.web_url": bridge.WebUrl,
@@ -187,7 +187,7 @@ func NewBridgeSpan(traceID []byte, bridge *pb.Bridge) *tracepb.ResourceSpans {
 	}
 }
 
-func NewSectionSpan(traceID []byte, section *pb.Section) *tracepb.ResourceSpans {
+func NewSectionSpan(traceID []byte, section *typespb.Section) *tracepb.ResourceSpans {
 	return &tracepb.ResourceSpans{
 		Resource: &resourcepb.Resource{
 			Attributes: convertAttributes(map[string]string{

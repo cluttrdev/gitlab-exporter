@@ -8,14 +8,14 @@ import (
 	_gitlab "github.com/xanzy/go-gitlab"
 	"golang.org/x/exp/slices"
 
-	pb "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb"
 	"github.com/cluttrdev/gitlab-exporter/internal/models"
+	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
 type PipelineTestReportData struct {
-	TestReports []*pb.TestReport
-	TestSuites  []*pb.TestSuite
-	TestCases   []*pb.TestCase
+	TestReports []*typespb.TestReport
+	TestSuites  []*typespb.TestSuite
+	TestCases   []*typespb.TestCase
 }
 
 func (c *Client) GetPipelineTestReport(ctx context.Context, projectID int64, pipelineID int64) (*PipelineTestReportData, error) {
@@ -37,7 +37,7 @@ func (c *Client) GetPipelineTestReport(ctx context.Context, projectID int64, pip
 	}
 
 	return &PipelineTestReportData{
-		TestReports: []*pb.TestReport{testreport},
+		TestReports: []*typespb.TestReport{testreport},
 		TestSuites:  testsuites,
 		TestCases:   testcases,
 	}, nil
@@ -116,7 +116,7 @@ func (c *Client) GetPipelineTestReportSummary(ctx context.Context, projectID int
 	return p, nil
 }
 
-func overrideIDs(pipelineID int64, summary *PipelineTestReportSummary, report *pb.TestReport, suites []*pb.TestSuite, cases []*pb.TestCase) error {
+func overrideIDs(pipelineID int64, summary *PipelineTestReportSummary, report *typespb.TestReport, suites []*typespb.TestSuite, cases []*typespb.TestCase) error {
 	trID := fmt.Sprint(pipelineID)
 
 	report.Id = fmt.Sprint(pipelineID)

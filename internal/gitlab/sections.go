@@ -11,12 +11,12 @@ import (
 
 	_gitlab "github.com/xanzy/go-gitlab"
 
-	pb "github.com/cluttrdev/gitlab-exporter/grpc/exporterpb"
 	"github.com/cluttrdev/gitlab-exporter/internal/models"
+	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
 type ListJobSectionsResult struct {
-	Section *pb.Section
+	Section *typespb.Section
 	Error   error
 }
 
@@ -55,7 +55,7 @@ func (c *Client) ListJobSections(ctx context.Context, projectID int64, jobID int
 		}
 
 		for secnum, secdat := range data {
-			section := &pb.Section{
+			section := &typespb.Section{
 				Name:       secdat.Name,
 				StartedAt:  models.ConvertUnixSeconds(secdat.Start),
 				FinishedAt: models.ConvertUnixSeconds(secdat.End),
