@@ -4,6 +4,6 @@ name: gitlab-exporter
 description: An exporter for GitLab analytics data.
 type: application
 
-version: 1.1.0
-appVersion: "v0.5.1"
+version: 1.2.0
+appVersion: "v0.6.0"
 
