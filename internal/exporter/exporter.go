@@ -31,6 +31,9 @@ func New(endpoints []grpc_client.EndpointConfig) (*Exporter, error) {
 type recordFunc[T any] func(client *grpc_client.Client, ctx context.Context, data []*T) error
 
 func export[T any](exporter *Exporter, ctx context.Context, data []*T, record recordFunc[T]) error {
+	if len(data) == 0 {
+		return nil
+	}
 	var errs error
 	for _, client := range exporter.clients {
 		if err := record(client, ctx, data); err != nil {
