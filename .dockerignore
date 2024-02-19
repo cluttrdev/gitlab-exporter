@@ -10,6 +10,7 @@
 ## Go source files
 !main.go
 !cmd/
-!pkg/
-!grpc/
 !internal/
+!grpc/
+!pkg/
+!protobuf/
