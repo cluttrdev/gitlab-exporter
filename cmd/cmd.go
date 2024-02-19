@@ -21,6 +21,7 @@ func Execute() error {
 		runCmd     = NewRunCmd(out)
 		fetchCmd   = NewFetchCmd(out)
 		exportCmd  = NewExportCmd(out)
+		catchupCmd = NewCatchUpCmd(out)
 	)
 
 	rootCmd.Subcommands = []*cli.Command{
@@ -28,6 +29,7 @@ func Execute() error {
 		runCmd,
 		fetchCmd,
 		exportCmd,
+		catchupCmd,
 	}
 
 	if err := rootCmd.Parse(os.Args[1:]); err != nil {
