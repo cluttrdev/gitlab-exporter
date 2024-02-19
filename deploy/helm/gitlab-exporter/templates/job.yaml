@@ -1,0 +1,70 @@
+{{/*
+helm template --set _renderCatchUpJob=true --show-only templates/job.yaml RELEASE_NAME .
+*/}}
+{{- if .Values._renderCatchUpJob | default false }}
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "gitlab-exporter.fullname" . }}-catchup
+  labels:
+    {{- include "gitlab-exporter.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "gitlab-exporter.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "gitlab-exporter.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "gitlab-exporter.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+              {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          resources:
+              {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+              - name: config
+                mountPath: /etc/gitlab-exporter/
+          ports:
+            - name: http
+              {{- $serverConfig := .Values.config.server | default dict }}
+              containerPort: {{ $serverConfig.port | default "8080" }}
+              protocol: TCP
+          livenessProbe:
+            httpGet:
+              path: /healthz/live
+              port: http
+          readinessProbe:
+            httpGet:
+              path: /healthz/ready
+              port: http
+          env: 
+            {{- tpl (toYaml .Values.env) $ | nindent 12 }}
+          args: ["catchup", "--config", "/etc/gitlab-exporter/config.yaml"]
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "gitlab-exporter.fullname" . }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+{{- end }}
