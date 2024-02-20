@@ -44,16 +44,16 @@ func (c *Client) GetPipelineTestReport(ctx context.Context, projectID int64, pip
 }
 
 func (c *Client) GetPipelineHierarchyTestReports(ctx context.Context, ph *models.PipelineHierarchy) (*PipelineTestReportData, error) {
-	var results PipelineTestReportData
+	var results = new(PipelineTestReportData)
 
-	result, err := c.GetPipelineTestReport(ctx, ph.Pipeline.ProjectId, ph.Pipeline.Id)
+	r, err := c.GetPipelineTestReport(ctx, ph.Pipeline.ProjectId, ph.Pipeline.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	results.TestReports = append(result.TestReports, result.TestReports...)
-	results.TestSuites = append(result.TestSuites, result.TestSuites...)
-	results.TestCases = append(result.TestCases, result.TestCases...)
+	results.TestReports = append(results.TestReports, r.TestReports...)
+	results.TestSuites = append(results.TestSuites, r.TestSuites...)
+	results.TestCases = append(results.TestCases, r.TestCases...)
 
 	for _, dph := range ph.DownstreamPipelines {
 		rs, err := c.GetPipelineHierarchyTestReports(ctx, dph)
@@ -65,7 +65,7 @@ func (c *Client) GetPipelineHierarchyTestReports(ctx context.Context, ph *models
 		results.TestCases = append(results.TestCases, rs.TestCases...)
 	}
 
-	return &results, nil
+	return results, nil
 }
 
 type PipelineTestReportSummary struct {
