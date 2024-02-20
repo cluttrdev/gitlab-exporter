@@ -51,8 +51,12 @@ func (j *ProjectCatchUpJob) Run(ctx context.Context) {
 	pipelines := j.GitLab.ListProjectPipelines(ctx, j.Config.Id, opt)
 	var wg sync.WaitGroup
 	for r := range pipelines {
-		if r.Error != nil && !errors.Is(r.Error, context.Canceled) {
-			slog.Error("error listing project pipelines", "error", r.Error)
+		if r.Error != nil {
+			if errors.Is(r.Error, context.Canceled) {
+				return
+			} else {
+				slog.Error("error listing project pipelines", "error", r.Error)
+			}
 			continue
 		}
 
