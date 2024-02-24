@@ -8,7 +8,7 @@ type Config struct {
 	GitLab    GitLab     `default:"{}" yaml:"gitlab"`
 	Endpoints []Endpoint `default:"[]" yaml:"endpoints"`
 	Projects  []Project  `default:"[]" yaml:"projects"`
-	Server    Server     `default:"{}" yaml:"server"`
+	HTTP      HTTP       `default:"{}" yaml:"http"`
 	Log       Log        `default:"{}" yaml:"log"`
 }
 
@@ -70,7 +70,7 @@ type ProjectCatchUp struct {
 	UpdatedBefore string `default:"" yaml:"updated_before"`
 }
 
-type Server struct {
+type HTTP struct {
 	Host string `default:"127.0.0.1" yaml:"host"`
 	Port string `default:"8080" yaml:"port"`
 }

@@ -18,7 +18,7 @@ func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 
 		Projects []yaml.Node `yaml:"projects"`
 
-		Server Server `yaml:"server"`
+		HTTP HTTP `yaml:"server"`
 
 		Log Log `yaml:"log"`
 	}
@@ -26,7 +26,7 @@ func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 	var _cfg _Config
 	_cfg.GitLab = c.GitLab
 	_cfg.Endpoints = c.Endpoints
-	_cfg.Server = c.Server
+	_cfg.HTTP = c.HTTP
 	_cfg.Log = c.Log
 
 	if err := v.Decode(&_cfg); err != nil {
@@ -35,7 +35,7 @@ func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 
 	c.GitLab = _cfg.GitLab
 	c.Endpoints = _cfg.Endpoints
-	c.Server = _cfg.Server
+	c.HTTP = _cfg.HTTP
 	c.Log = _cfg.Log
 
 	for _, n := range _cfg.Projects {

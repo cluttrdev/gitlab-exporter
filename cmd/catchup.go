@@ -127,6 +127,8 @@ func (c *CatchUpConfig) Exec(ctx context.Context, args []string) error {
 	slog.Info("Starting workers")
 	pool.Start(ctx)
 
+	go startServer(ctx, cfg.HTTP, func() error { return nil })
+
 	<-ctx.Done()
 	return nil
 }

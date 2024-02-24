@@ -177,7 +177,7 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 		cancel()
 	}()
 
-	go startServer(ctx, cfg.Server, func() error {
+	go startServer(ctx, cfg.HTTP, func() error {
 		return gitlabclient.CheckReadiness(ctx)
 	})
 
@@ -188,7 +188,7 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 	return nil
 }
 
-func startServer(ctx context.Context, cfg config.Server, ready healthz.Check) {
+func startServer(ctx context.Context, cfg config.HTTP, ready healthz.Check) {
 	srv := server.New(server.ServerConfig{
 		Host:  cfg.Host,
 		Port:  cfg.Port,
