@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"google.golang.org/grpc"
+
 	grpc_client "github.com/cluttrdev/gitlab-exporter/grpc/client"
 	"github.com/cluttrdev/gitlab-exporter/internal/models"
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
@@ -13,10 +15,15 @@ type Exporter struct {
 	clients []*grpc_client.Client
 }
 
-func New(endpoints []grpc_client.EndpointConfig) (*Exporter, error) {
+type EndpointConfig struct {
+	Address string
+	Options []grpc.DialOption
+}
+
+func New(endpoints []EndpointConfig) (*Exporter, error) {
 	var clients []*grpc_client.Client
 	for _, cfg := range endpoints {
-		c, err := grpc_client.NewCLient(cfg)
+		c, err := grpc_client.NewCLient(cfg.Address, cfg.Options...)
 		if err != nil {
 			return nil, err
 		}

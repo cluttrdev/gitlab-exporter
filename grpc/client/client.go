@@ -2,6 +2,7 @@ package client
 
 import (
 	"context"
+	"fmt"
 
 	"google.golang.org/grpc"
 
@@ -9,125 +10,129 @@ import (
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
-type EndpointConfig struct {
-	Address string
-	Options []grpc.DialOption
-}
-
 type Client struct {
-	conn   grpc.ClientConnInterface
-	client servicepb.GitLabExporterClient
+	conn grpc.ClientConnInterface
+	stub servicepb.GitLabExporterClient
 }
 
-func NewCLient(cfg EndpointConfig) (*Client, error) {
-	conn, err := grpc.Dial(cfg.Address, cfg.Options...)
+func NewCLient(addr string, opts ...grpc.DialOption) (*Client, error) {
+	conn, err := grpc.Dial(addr, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	client := servicepb.NewGitLabExporterClient(conn)
+	stub := servicepb.NewGitLabExporterClient(conn)
 
 	return &Client{
-		conn:   conn,
-		client: client,
+		conn: conn,
+		stub: stub,
 	}, nil
 }
 
-func send[T any](stream grpc.ClientStream, data []*T) error {
-	for _, msg := range data {
-		if err := stream.SendMsg(msg); err != nil {
-			return err
-		}
+func RecordPipelines(c *Client, ctx context.Context, data []*typespb.Pipeline) error {
+	req := &servicepb.RecordPipelinesRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordPipelines(ctx, req /* opts ...grpc.CallOption */)
+	if err != nil {
+		return fmt.Errorf("error recording pipelines: %w", err)
 	}
 
-	if err := stream.CloseSend(); err != nil {
-		return err
-	}
-
-	m := new(servicepb.RecordSummary)
-	if err := stream.RecvMsg(m); err != nil {
-		return err
-	}
 	return nil
 }
 
-func RecordPipelines(c *Client, ctx context.Context, data []*typespb.Pipeline) error {
-	stream, err := c.client.RecordPipelines(ctx)
-	if err != nil {
-		return err
-	}
-
-	return send[typespb.Pipeline](stream, data)
-}
-
 func RecordJobs(c *Client, ctx context.Context, data []*typespb.Job) error {
-	stream, err := c.client.RecordJobs(ctx)
+	req := &servicepb.RecordJobsRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordJobs(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return err
+		return fmt.Errorf("error recording jobs: %w", err)
 	}
 
-	return send[typespb.Job](stream, data)
+	return nil
 }
 
 func RecordSections(c *Client, ctx context.Context, data []*typespb.Section) error {
-	stream, err := c.client.RecordSections(ctx)
+	req := &servicepb.RecordSectionsRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordSections(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return err
+		return fmt.Errorf("error recording sections: %w", err)
 	}
 
-	return send[typespb.Section](stream, data)
+	return nil
 }
 
 func RecordBridges(c *Client, ctx context.Context, data []*typespb.Bridge) error {
-	stream, err := c.client.RecordBridges(ctx)
+	req := &servicepb.RecordBridgesRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordBridges(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return err
+		return fmt.Errorf("error recording brodges: %w", err)
 	}
 
-	return send[typespb.Bridge](stream, data)
+	return nil
 }
 
 func RecordTestReports(c *Client, ctx context.Context, data []*typespb.TestReport) error {
-	stream, err := c.client.RecordTestReports(ctx)
+	req := &servicepb.RecordTestReportsRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordTestReports(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return err
+		return fmt.Errorf("error recording testreports: %w", err)
 	}
 
-	return send[typespb.TestReport](stream, data)
+	return nil
 }
 
 func RecordTestSuites(c *Client, ctx context.Context, data []*typespb.TestSuite) error {
-	stream, err := c.client.RecordTestSuites(ctx)
+	req := &servicepb.RecordTestSuitesRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordTestSuites(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return err
+		return fmt.Errorf("error recording testsuites: %w", err)
 	}
 
-	return send[typespb.TestSuite](stream, data)
+	return nil
 }
 
 func RecordTestCases(c *Client, ctx context.Context, data []*typespb.TestCase) error {
-	stream, err := c.client.RecordTestCases(ctx)
+	req := &servicepb.RecordTestCasesRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordTestCases(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return err
+		return fmt.Errorf("error recording testcases: %w", err)
 	}
 
-	return send[typespb.TestCase](stream, data)
+	return nil
 }
 
 func RecordMetrics(c *Client, ctx context.Context, data []*typespb.Metric) error {
-	stream, err := c.client.RecordMetrics(ctx)
+	req := &servicepb.RecordMetricsRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordMetrics(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return err
+		return fmt.Errorf("error recording metrics: %w", err)
 	}
 
-	return send[typespb.Metric](stream, data)
+	return nil
 }
 
 func RecordTraces(c *Client, ctx context.Context, data []*typespb.Trace) error {
-	stream, err := c.client.RecordTraces(ctx)
+	req := &servicepb.RecordTracesRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordTraces(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return err
+		return fmt.Errorf("error recording traces: %w", err)
 	}
 
-	return send[typespb.Trace](stream, data)
+	return nil
 }

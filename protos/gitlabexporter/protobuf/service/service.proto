@@ -12,25 +12,62 @@ import "gitlabexporter/protobuf/metric.proto";
 import "gitlabexporter/protobuf/trace.proto";
 
 service GitLabExporter {
-    rpc RecordPipelines(stream gitlabexporter.protobuf.Pipeline) returns (RecordSummary) {}
+
+    rpc RecordPipelines(RecordPipelinesRequest) returns (RecordSummary) {}
     
-    rpc RecordJobs(stream gitlabexporter.protobuf.Job) returns (RecordSummary) {}
+    rpc RecordJobs(RecordJobsRequest) returns (RecordSummary) {}
 
-    rpc RecordSections(stream gitlabexporter.protobuf.Section) returns (RecordSummary) {}
+    rpc RecordSections(RecordSectionsRequest) returns (RecordSummary) {}
 
-    rpc RecordBridges(stream gitlabexporter.protobuf.Bridge) returns (RecordSummary) {}
+    rpc RecordBridges(RecordBridgesRequest) returns (RecordSummary) {}
 
-    rpc RecordTestReports(stream gitlabexporter.protobuf.TestReport) returns (RecordSummary) {}
+    rpc RecordTestReports(RecordTestReportsRequest) returns (RecordSummary) {}
 
-    rpc RecordTestSuites(stream gitlabexporter.protobuf.TestSuite) returns (RecordSummary) {}
+    rpc RecordTestSuites(RecordTestSuitesRequest) returns (RecordSummary) {}
 
-    rpc RecordTestCases(stream gitlabexporter.protobuf.TestCase) returns (RecordSummary) {}
+    rpc RecordTestCases(RecordTestCasesRequest) returns (RecordSummary) {}
 
-    rpc RecordMetrics(stream gitlabexporter.protobuf.Metric) returns (RecordSummary) {}
+    rpc RecordMetrics(RecordMetricsRequest) returns (RecordSummary) {}
 
-    rpc RecordTraces(stream gitlabexporter.protobuf.Trace) returns (RecordSummary) {}
+    rpc RecordTraces(RecordTracesRequest) returns (RecordSummary) {}
 }
 
 message RecordSummary {
     int32 recorded_count = 1;
+}
+
+message RecordPipelinesRequest {
+    repeated gitlabexporter.protobuf.Pipeline data = 1;
+}
+
+message RecordJobsRequest {
+    repeated gitlabexporter.protobuf.Job data = 1;
+}
+
+message RecordSectionsRequest {
+    repeated gitlabexporter.protobuf.Section data = 1;
+}
+
+message RecordBridgesRequest {
+    repeated gitlabexporter.protobuf.Bridge data = 1;
+}
+
+message RecordTestReportsRequest {
+    repeated gitlabexporter.protobuf.TestReport data = 1;
+}
+
+message RecordTestSuitesRequest {
+    repeated gitlabexporter.protobuf.TestSuite data = 1;
+}
+
+message RecordTestCasesRequest {
+    repeated gitlabexporter.protobuf.TestCase data = 1;
+}
+
+message RecordMetricsRequest {
+    repeated gitlabexporter.protobuf.Metric data = 1;
+}
+
+message RecordTracesRequest {
+    repeated gitlabexporter.protobuf.Trace data = 1;
 }
