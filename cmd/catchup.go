@@ -121,7 +121,7 @@ func (c *CatchUpConfig) Exec(ctx context.Context, args []string) error {
 		})
 	}
 
-	{ // jobs
+	if len(cfg.Projects) > 0 { // jobs
 		ctx, cancel := context.WithCancel(context.Background())
 
 		g.Add(func() error { // execute
@@ -153,6 +153,8 @@ func (c *CatchUpConfig) Exec(ctx context.Context, args []string) error {
 			<-ctx.Done()
 			slog.Info("Cancelling jobs... done")
 		})
+	} else {
+		slog.Warn("There are no projects configured for export")
 	}
 
 	if cfg.HTTP.Enabled {

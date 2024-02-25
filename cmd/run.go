@@ -166,7 +166,7 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 		})
 	}
 
-	{ // jobs
+	if len(cfg.Projects) > 0 { // jobs
 		ctx, cancel := context.WithCancel(context.Background())
 
 		g.Add(func() error { // execute
@@ -209,6 +209,8 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 			<-ctx.Done()
 			slog.Info("Cancelling jobs... done")
 		})
+	} else {
+		slog.Warn("There are no projects configured for export")
 	}
 
 	if cfg.HTTP.Enabled {
