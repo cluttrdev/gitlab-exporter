@@ -24,6 +24,7 @@ spec:
       serviceAccountName: {{ include "gitlab-exporter.serviceAccountName" . }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      restartPolicy: Never
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -37,8 +38,8 @@ spec:
                 mountPath: /etc/gitlab-exporter/
           ports:
             - name: http
-              {{- $serverConfig := .Values.config.server | default dict }}
-              containerPort: {{ $serverConfig.port | default "8080" }}
+              {{- $httpConfig := .Values.config.http | default dict }}
+              containerPort: {{ $httpConfig.port | default "9100" | quote }}
               protocol: TCP
           livenessProbe:
             httpGet:
