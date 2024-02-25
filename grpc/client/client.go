@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 
+	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
+	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
 
 	"github.com/cluttrdev/gitlab-exporter/protobuf/servicepb"
@@ -13,9 +15,22 @@ import (
 type Client struct {
 	conn grpc.ClientConnInterface
 	stub servicepb.GitLabExporterClient
+
+	metrics *grpcprom.ClientMetrics
 }
 
 func NewCLient(addr string, opts ...grpc.DialOption) (*Client, error) {
+	metrics := grpcprom.NewClientMetrics( /* opts ...grpcprom.ClientMetricsOption */ )
+
+	opts = append(opts,
+		grpc.WithChainUnaryInterceptor(
+			metrics.UnaryClientInterceptor( /* opts ..grpcprom.Option */ ),
+		),
+		grpc.WithChainStreamInterceptor(
+			metrics.StreamClientInterceptor( /* opts ..grpcprom.Option */ ),
+		),
+	)
+
 	conn, err := grpc.Dial(addr, opts...)
 	if err != nil {
 		return nil, err
@@ -24,9 +39,14 @@ func NewCLient(addr string, opts ...grpc.DialOption) (*Client, error) {
 	stub := servicepb.NewGitLabExporterClient(conn)
 
 	return &Client{
-		conn: conn,
-		stub: stub,
+		conn:    conn,
+		stub:    stub,
+		metrics: metrics,
 	}, nil
+}
+
+func (c *Client) MetricsCollector() prometheus.Collector {
+	return c.metrics
 }
 
 func RecordPipelines(c *Client, ctx context.Context, data []*typespb.Pipeline) error {

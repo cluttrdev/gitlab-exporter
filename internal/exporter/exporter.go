@@ -9,10 +9,11 @@ import (
 	grpc_client "github.com/cluttrdev/gitlab-exporter/grpc/client"
 	"github.com/cluttrdev/gitlab-exporter/internal/models"
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
+	"github.com/prometheus/client_golang/prometheus"
 )
 
 type Exporter struct {
-	clients []*grpc_client.Client
+	clients map[string]*grpc_client.Client
 }
 
 type EndpointConfig struct {
@@ -21,18 +22,26 @@ type EndpointConfig struct {
 }
 
 func New(endpoints []EndpointConfig) (*Exporter, error) {
-	var clients []*grpc_client.Client
+	clients := make(map[string]*grpc_client.Client, len(endpoints))
 	for _, cfg := range endpoints {
 		c, err := grpc_client.NewCLient(cfg.Address, cfg.Options...)
 		if err != nil {
 			return nil, err
 		}
-		clients = append(clients, c)
+		clients[cfg.Address] = c
 	}
 
 	return &Exporter{
 		clients: clients,
 	}, nil
+}
+
+func (e *Exporter) MetricsCollectorFor(endpoint string) prometheus.Collector {
+	c, ok := e.clients[endpoint]
+	if !ok {
+		return nil
+	}
+	return c.MetricsCollector()
 }
 
 type recordFunc[T any] func(client *grpc_client.Client, ctx context.Context, data []*T) error
