@@ -29,6 +29,7 @@ import (
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/internal/exporter"
 	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
+	"github.com/cluttrdev/gitlab-exporter/internal/healthz"
 	"github.com/cluttrdev/gitlab-exporter/internal/jobs"
 )
 
@@ -229,11 +230,11 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 	{ // signal handler
 		ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
 		g.Add(func() error { // execute
-            <-ctx.Done()
-            err := ctx.Err()
-            if !errors.Is(err, context.Canceled) {
-                slog.Info("Got SIGINT/SIGTERM, exiting")
-            }
+			<-ctx.Done()
+			err := ctx.Err()
+			if !errors.Is(err, context.Canceled) {
+				slog.Info("Got SIGINT/SIGTERM, exiting")
+			}
 			return err
 		}, func(err error) { // interrupt
 			cancel()
@@ -245,6 +246,8 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 
 func serveHTTP(cfg config.HTTP, reg *prometheus.Registry) (func() error, func(error)) {
 	m := http.NewServeMux()
+
+	m.Handle("/healthz/", http.StripPrefix("/healthz", healthz.NewHandler()))
 
 	m.Handle(
 		"/metrics",
