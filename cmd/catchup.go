@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -174,7 +175,11 @@ func (c *CatchUpConfig) Exec(ctx context.Context, args []string) error {
 		ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
 		g.Add(func() error { // execute
 			<-ctx.Done()
-			return ctx.Err()
+            err := ctx.Err()
+            if !errors.Is(err, context.Canceled) {
+                slog.Info("Got SIGINT/SIGTERM, exiting")
+            }
+			return err
 		}, func(err error) { // interrupt
 			cancel()
 		})
