@@ -71,8 +71,10 @@ type ProjectCatchUp struct {
 }
 
 type HTTP struct {
-	Host string `default:"127.0.0.1" yaml:"host"`
-	Port string `default:"8080" yaml:"port"`
+	Enabled bool   `default:"true" yaml:"enabled"`
+	Host    string `default:"127.0.0.1" yaml:"host"`
+	Port    string `default:"9100" yaml:"port"`
+	Debug   bool   `default:"false" yaml:"debug"`
 }
 
 type Log struct {

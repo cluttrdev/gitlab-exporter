@@ -19,8 +19,10 @@ func defaultConfig() config.Config {
 
 	cfg.Projects = []config.Project{}
 
+	cfg.HTTP.Enabled = true
 	cfg.HTTP.Host = "127.0.0.1"
-	cfg.HTTP.Port = "8080"
+	cfg.HTTP.Port = "9100"
+	cfg.HTTP.Debug = false
 
 	cfg.Log.Level = "info"
 	cfg.Log.Format = "text"

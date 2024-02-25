@@ -18,7 +18,7 @@ func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 
 		Projects []yaml.Node `yaml:"projects"`
 
-		HTTP HTTP `yaml:"server"`
+		HTTP HTTP `yaml:"http"`
 
 		Log Log `yaml:"log"`
 	}
