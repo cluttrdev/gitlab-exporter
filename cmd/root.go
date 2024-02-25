@@ -25,6 +25,8 @@ type RootConfig struct {
 
 	out   io.Writer
 	flags *flag.FlagSet
+
+	debug bool
 }
 
 func NewRootCmd(out io.Writer) *cli.Command {
@@ -52,6 +54,7 @@ func (c *RootConfig) RegisterFlags(fs *flag.FlagSet) {
 	fs.String("gitlab-api-token", defaults.GitLab.Api.Token, fmt.Sprintf("The GitLab API Token (default: '%s').", defaults.GitLab.Api.Token))
 
 	fs.StringVar(&c.filename, "config", "", "Configuration file to use.")
+	fs.BoolVar(&c.debug, "debug", false, "Enable debug mode.")
 }
 
 func (c *RootConfig) Exec(context.Context, []string) error {

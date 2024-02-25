@@ -2,10 +2,13 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"log/slog"
+	"net/http"
+	"net/http/pprof"
 	"os/signal"
 	"strconv"
 	"strings"
@@ -14,16 +17,19 @@ import (
 
 	"golang.org/x/exp/slices"
 
+	"github.com/oklog/run"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+
 	"github.com/cluttrdev/cli"
 
-	"github.com/cluttrdev/gitlab-exporter/pkg/healthz"
 	"github.com/cluttrdev/gitlab-exporter/pkg/worker"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/internal/exporter"
 	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
 	"github.com/cluttrdev/gitlab-exporter/internal/jobs"
-	"github.com/cluttrdev/gitlab-exporter/internal/server"
 )
 
 type RunConfig struct {
@@ -81,10 +87,6 @@ func (c *RunConfig) RegisterFlags(fs *flag.FlagSet) {
 }
 
 func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
-	// setup daemon
-	ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
-	defer cancel()
-
 	// load configuration
 	cfg := config.Default()
 	if err := loadConfig(c.RootConfig.filename, c.flags, &cfg); err != nil {
@@ -100,6 +102,12 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 			cfg.Log.Format = f.Value.String()
 		}
 	})
+
+	if c.debug {
+		cfg.HTTP.Enabled = true
+		cfg.HTTP.Debug = true
+		cfg.Log.Level = "debug"
+	}
 
 	// add projects passed to run command
 	for _, pid := range c.projects {
@@ -138,66 +146,136 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 		return err
 	}
 
-	// configure workers
+	g := &run.Group{}
+
 	pool := worker.NewWorkerPool(42)
-	var wg sync.WaitGroup
-	for _, p := range cfg.Projects {
-		if c.catchup && p.CatchUp.Enabled {
-			job := jobs.ProjectCatchUpJob{
-				Config:   p,
-				GitLab:   gitlabclient,
-				Exporter: exp,
+	{ // worker pool
+		ctx, cancel := context.WithCancel(context.Background())
 
-				WorkerPool: pool,
-			}
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-				job.Run(ctx)
-			}()
-		}
-
-		job := jobs.ProjectExportJob{
-			Config:   p,
-			GitLab:   gitlabclient,
-			Exporter: exp,
-
-			WorkerPool: pool,
-		}
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			job.Run(ctx)
-		}()
+		g.Add(func() error { // execute
+			slog.Info("Starting worker pool")
+			pool.Start(ctx)
+			<-ctx.Done()
+			return ctx.Err()
+		}, func(err error) { // interrupt
+			defer cancel()
+			slog.Info("Stopping worker pool...")
+			pool.Stop()
+			slog.Info("Stopping worker pool... done")
+		})
 	}
 
-	go func() {
-		// cancel context when work is done to stop worker pool
-		wg.Wait()
-		cancel()
-	}()
+	{ // jobs
+		ctx, cancel := context.WithCancel(context.Background())
 
-	go startServer(ctx, cfg.HTTP, func() error {
-		return gitlabclient.CheckReadiness(ctx)
-	})
+		g.Add(func() error { // execute
+			var wg sync.WaitGroup
+			for _, p := range cfg.Projects {
+				if c.catchup && p.CatchUp.Enabled {
+					job := jobs.ProjectCatchUpJob{
+						Config:   p,
+						GitLab:   gitlabclient,
+						Exporter: exp,
 
-	slog.Info("Starting workers")
-	pool.Start(ctx)
+						WorkerPool: pool,
+					}
+					wg.Add(1)
+					go func() {
+						defer wg.Done()
+						job.Run(ctx)
+					}()
+				}
 
-	<-ctx.Done()
-	return nil
+				job := jobs.ProjectExportJob{
+					Config:   p,
+					GitLab:   gitlabclient,
+					Exporter: exp,
+
+					WorkerPool: pool,
+				}
+				wg.Add(1)
+				go func() {
+					defer wg.Done()
+					job.Run(ctx)
+				}()
+			}
+
+			wg.Wait()
+			return nil
+		}, func(err error) { // interrupt
+			slog.Info("Cancelling jobs...")
+			cancel()
+			<-ctx.Done()
+			slog.Info("Cancelling jobs... done")
+		})
+	}
+
+	if cfg.HTTP.Enabled {
+		colls := []prometheus.Collector{
+			collectors.NewGoCollector(),
+			collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
+		}
+		for _, endpoint := range cfg.Endpoints {
+			if mc := exp.MetricsCollectorFor(endpoint.Address); mc != nil {
+				colls = append(colls, mc)
+			}
+		}
+		reg := prometheus.NewRegistry()
+		reg.MustRegister(colls...)
+
+		g.Add(serveHTTP(cfg.HTTP, reg))
+	}
+
+	{ // signal handler
+		ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
+		g.Add(func() error { // execute
+			<-ctx.Done()
+			return ctx.Err()
+		}, func(err error) { // interrupt
+			cancel()
+		})
+	}
+
+	return g.Run()
 }
 
-func startServer(ctx context.Context, cfg config.HTTP, ready healthz.Check) {
-	srv := server.New(server.ServerConfig{
-		Host:  cfg.Host,
-		Port:  cfg.Port,
-		Debug: false,
+func serveHTTP(cfg config.HTTP, reg *prometheus.Registry) (func() error, func(error)) {
+	m := http.NewServeMux()
 
-		ReadinessCheck: ready,
-	})
+	m.Handle(
+		"/metrics",
+		promhttp.InstrumentMetricHandler(
+			reg, promhttp.HandlerFor(reg, promhttp.HandlerOpts{}),
+		),
+	)
 
-	if err := srv.Serve(ctx); err != nil {
-		slog.Error("error during server shutdown", "error", err)
+	if cfg.Debug {
+		m.HandleFunc("/debug/pprof/", pprof.Index)
+		m.HandleFunc("/debug/pprof/cmdline", pprof.Cmdline)
+		m.HandleFunc("/debug/pprof/profile", pprof.Profile)
+		m.HandleFunc("/debug/pprof/symbol", pprof.Symbol)
+		m.HandleFunc("/debug/pprof/trace", pprof.Trace)
 	}
+
+	httpServer := &http.Server{
+		Addr:    fmt.Sprintf("%s:%s", cfg.Host, cfg.Port),
+		Handler: m,
+	}
+
+	execute := func() error {
+		slog.Info("Starting http server", "addr", httpServer.Addr)
+		return httpServer.ListenAndServe()
+	}
+
+	interrupt := func(error) {
+		slog.Info("Stopping http server...")
+		if err := httpServer.Shutdown(context.Background()); err != nil {
+			if !errors.Is(err, http.ErrServerClosed) {
+				slog.Error("error shutting down http server", "error", err)
+			}
+		}
+		slog.Info("Stopping http server... done")
+	}
+
+	return execute, interrupt
 }

@@ -11,6 +11,9 @@ import (
 	"syscall"
 
 	"github.com/cluttrdev/cli"
+	"github.com/oklog/run"
+	"github.com/prometheus/client_golang/prometheus"
+	"github.com/prometheus/client_golang/prometheus/collectors"
 
 	"github.com/cluttrdev/gitlab-exporter/pkg/worker"
 
@@ -53,10 +56,6 @@ func (c *CatchUpConfig) RegisterFlags(fs *flag.FlagSet) {
 }
 
 func (c *CatchUpConfig) Exec(ctx context.Context, args []string) error {
-	// setup daemon
-	ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
-	defer cancel()
-
 	// load configuration
 	cfg := config.Default()
 	if err := loadConfig(c.RootConfig.filename, c.flags, &cfg); err != nil {
@@ -72,6 +71,12 @@ func (c *CatchUpConfig) Exec(ctx context.Context, args []string) error {
 			cfg.Log.Format = f.Value.String()
 		}
 	})
+
+	if c.debug {
+		cfg.HTTP.Enabled = true
+		cfg.HTTP.Debug = true
+		cfg.Log.Level = "debug"
+	}
 
 	if cfg.Log.Level == "debug" {
 		writeConfig(c.out, cfg)
@@ -96,39 +101,84 @@ func (c *CatchUpConfig) Exec(ctx context.Context, args []string) error {
 		return err
 	}
 
-	// configure workers
+	g := &run.Group{}
+
 	pool := worker.NewWorkerPool(42)
-	var wg sync.WaitGroup
-	for _, p := range cfg.Projects {
-		if !p.CatchUp.Enabled {
-			continue
-		}
+	{ // worker pool
+		ctx, cancel := context.WithCancel(context.Background())
 
-		job := jobs.ProjectCatchUpJob{
-			Config:   p,
-			GitLab:   gitlabclient,
-			Exporter: exp,
-
-			WorkerPool: pool,
-		}
-		wg.Add(1)
-		go func() {
-			defer wg.Done()
-			job.Run(ctx)
-		}()
+		g.Add(func() error { // execute
+			slog.Info("Starting worker pool")
+			pool.Start(ctx)
+			<-ctx.Done()
+			return ctx.Err()
+		}, func(err error) { // interrupt
+			defer cancel()
+			slog.Info("Stopping worker pool...")
+			pool.Stop()
+			slog.Info("Stopping worker pool... done")
+		})
 	}
 
-	go func() {
-		// cancel context when work is done to stop worker pool
-		wg.Wait()
-		cancel()
-	}()
+	{ // jobs
+		ctx, cancel := context.WithCancel(context.Background())
 
-	slog.Info("Starting workers")
-	pool.Start(ctx)
+		g.Add(func() error { // execute
+			var wg sync.WaitGroup
+			for _, p := range cfg.Projects {
+				if !p.CatchUp.Enabled {
+					continue
+				}
 
-	go startServer(ctx, cfg.HTTP, func() error { return nil })
+				job := jobs.ProjectCatchUpJob{
+					Config:   p,
+					GitLab:   gitlabclient,
+					Exporter: exp,
 
-	<-ctx.Done()
-	return nil
+					WorkerPool: pool,
+				}
+				wg.Add(1)
+				go func() {
+					defer wg.Done()
+					job.Run(ctx)
+				}()
+			}
+
+			wg.Wait()
+			return nil
+		}, func(err error) { // interrupt
+			slog.Info("Cancelling jobs...")
+			cancel()
+			<-ctx.Done()
+			slog.Info("Cancelling jobs... done")
+		})
+	}
+
+	if cfg.HTTP.Enabled {
+		colls := []prometheus.Collector{
+			collectors.NewGoCollector(),
+			collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
+		}
+		for _, endpoint := range cfg.Endpoints {
+			if mc := exp.MetricsCollectorFor(endpoint.Address); mc != nil {
+				colls = append(colls, mc)
+			}
+		}
+		reg := prometheus.NewRegistry()
+		reg.MustRegister(colls...)
+
+		g.Add(serveHTTP(cfg.HTTP, reg))
+	}
+
+	{ // signal handler
+		ctx, cancel := signal.NotifyContext(ctx, syscall.SIGINT, syscall.SIGTERM)
+		g.Add(func() error { // execute
+			<-ctx.Done()
+			return ctx.Err()
+		}, func(err error) { // interrupt
+			cancel()
+		})
+	}
+
+	return g.Run()
 }
