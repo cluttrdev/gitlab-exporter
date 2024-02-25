@@ -1,3 +1,4 @@
+# GitLab API client settings
 gitlab:
   api:
     # URL for accessing the GitLab API.
@@ -55,11 +56,15 @@ projects: []
   #     updated_before: ""
 
 # HTTP server settings
-server:
+http:
+  # Whether to enable serving http endpoint (metrics, debug info)
+  enabled: true
   # The host part of the server address
   host: "127.0.0.1"
   # The port the server listens on
-  port: "8080"
+  port: "9100"
+  # Whether to enable debug endpoints
+  debug: false
 
 # Log configuration
 log:
