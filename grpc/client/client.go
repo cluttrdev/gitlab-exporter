@@ -19,7 +19,7 @@ type Client struct {
 	metrics *grpcprom.ClientMetrics
 }
 
-func NewCLient(addr string, opts ...grpc.DialOption) (*Client, error) {
+func NewCLient(ctx context.Context, target string, opts ...grpc.DialOption) (*Client, error) {
 	metrics := grpcprom.NewClientMetrics( /* opts ...grpcprom.ClientMetricsOption */ )
 
 	opts = append(opts,
@@ -31,7 +31,7 @@ func NewCLient(addr string, opts ...grpc.DialOption) (*Client, error) {
 		),
 	)
 
-	conn, err := grpc.Dial(addr, opts...)
+	conn, err := grpc.DialContext(ctx, target, opts...)
 	if err != nil {
 		return nil, err
 	}

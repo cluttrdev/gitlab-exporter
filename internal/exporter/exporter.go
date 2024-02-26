@@ -24,7 +24,7 @@ type EndpointConfig struct {
 func New(endpoints []EndpointConfig) (*Exporter, error) {
 	clients := make(map[string]*grpc_client.Client, len(endpoints))
 	for _, cfg := range endpoints {
-		c, err := grpc_client.NewCLient(cfg.Address, cfg.Options...)
+		c, err := grpc_client.NewCLient(context.Background(), cfg.Address, cfg.Options...)
 		if err != nil {
 			return nil, err
 		}
