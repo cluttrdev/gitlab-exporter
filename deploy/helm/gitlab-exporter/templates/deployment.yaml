@@ -35,10 +35,10 @@ spec:
           volumeMounts:
               - name: config
                 mountPath: /etc/gitlab-exporter/
+          {{- if .Values.service.enabled }}
           ports:
             - name: http
-              {{- $serverConfig := .Values.config.server | default dict }}
-              containerPort: {{ $serverConfig.port | default "8080" }}
+              containerPort: {{ .Values.service.ports.http }}
               protocol: TCP
           livenessProbe:
             httpGet:
@@ -48,6 +48,7 @@ spec:
             httpGet:
               path: /healthz/ready
               port: http
+         {{- end }}
           env: 
             {{- tpl (toYaml .Values.env) $ | nindent 12 }}
           args: ["run", "--config", "/etc/gitlab-exporter/config.yaml"]
