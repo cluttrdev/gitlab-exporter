@@ -39,7 +39,6 @@ service:
 
 monitoring:
   enabled: true
-  port: 9100
   path: /metrics
   interval: 1m
 

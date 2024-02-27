@@ -1,4 +1,4 @@
-{{- if .Values.monitoring.enabled }}
+{{- if (and .Values.monitoring.enabled .Values.config.http.enabled ) }}
 
 apiVersion: monitoring.coreos.com/v1
 kind: PodMonitor
@@ -14,7 +14,7 @@ spec:
     matchNames:
       - {{ .Release.Namespace }}
   podMetricsEndpoints:
-    - port: {{ .Values.monitoring.port | quote }}
+    - port: http
       path: {{ .Values.monitoring.path | quote }}
       interval: {{ .Values.monitoring.interval | quote }} 
 

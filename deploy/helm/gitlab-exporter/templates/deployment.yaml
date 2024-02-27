@@ -35,10 +35,10 @@ spec:
           volumeMounts:
               - name: config
                 mountPath: /etc/gitlab-exporter/
-          {{- if .Values.service.enabled }}
+          {{- if .Values.config.http.enabled }}
           ports:
             - name: http
-              containerPort: {{ .Values.service.ports.http }}
+              containerPort: {{ .Values.config.http.port }}
               protocol: TCP
           livenessProbe:
             httpGet:
