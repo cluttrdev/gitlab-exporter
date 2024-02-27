@@ -26,40 +26,40 @@ func ExportPipelineHierarchy(ctx context.Context, glc *gitlab.Client, exp *expor
 
 	phr := <-glc.GetPipelineHierarchy(ctx, opts.ProjectID, opts.PipelineID, opt)
 	if err := phr.Error; err != nil {
-		return fmt.Errorf("error getting pipeline hierarchy: %w", err)
+		return fmt.Errorf("error getting pipeline hierarchy (project=%d pipeline=%d): %w", opts.ProjectID, opts.PipelineID, err)
 	}
 	ph := phr.PipelineHierarchy
 
 	if err := exp.ExportPipelineHierarchy(ctx, ph); err != nil {
-		return fmt.Errorf("error exporting pipeline hierarchy: %w", err)
+		return fmt.Errorf("error exporting pipeline hierarchy (project=%d pipeline=%d): %w", opts.ProjectID, opts.PipelineID, err)
 	}
 
 	if opts.ExportTraces {
 		traces := ph.GetAllTraces()
 		if err := exp.ExportTraces(ctx, traces); err != nil {
-			return fmt.Errorf("error exporting traces: %w", err)
+			return fmt.Errorf("error exporting traces (project=%d pipeline=%d): %w", opts.ProjectID, opts.PipelineID, err)
 		}
 	}
 
 	if opts.ExportMetrics {
 		if err := exp.ExportMetrics(ctx, phr.Metrics); err != nil {
-			return fmt.Errorf("error exporting metrics: %w", err)
+			return fmt.Errorf("error exporting metrics (project=%d pipeline=%d): %w", opts.ProjectID, opts.PipelineID, err)
 		}
 	}
 
 	if opts.ExportTestReports {
 		results, err := glc.GetPipelineHierarchyTestReports(ctx, ph)
 		if err != nil {
-			return fmt.Errorf("error getting testreports: %w", err)
+			return fmt.Errorf("error getting testreports (project=%d pipeline=%d): %w", opts.ProjectID, opts.PipelineID, err)
 		}
 		if err := exp.ExportTestReports(ctx, results.TestReports); err != nil {
-			return fmt.Errorf("error exporting testreports: %w", err)
+			return fmt.Errorf("error exporting testreports (project=%d pipeline=%d): %w", opts.ProjectID, opts.PipelineID, err)
 		}
 		if err := exp.ExportTestSuites(ctx, results.TestSuites); err != nil {
-			return fmt.Errorf("error exporting testsuites: %w", err)
+			return fmt.Errorf("error exporting testsuites (project=%d pipeline=%d): %w", opts.ProjectID, opts.PipelineID, err)
 		}
 		if err := exp.ExportTestCases(ctx, results.TestCases); err != nil {
-			return fmt.Errorf("error exporting testcases: %w", err)
+			return fmt.Errorf("error exporting testcases (project=%d pipeline=%d): %w", opts.ProjectID, opts.PipelineID, err)
 		}
 	}
 
