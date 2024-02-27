@@ -42,7 +42,7 @@ Selector labels
 */}}
 {{- define "gitlab-exporter.selectorLabels" -}}
 app.kubernetes.io/name: {{ include "gitlab-exporter.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/instance: {{ include "gitlab-exporter.fullname" . }}
 {{- end }}
 
 {{/*
