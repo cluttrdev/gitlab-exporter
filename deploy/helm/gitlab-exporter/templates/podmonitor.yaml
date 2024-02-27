@@ -10,7 +10,10 @@ spec:
   selector:
     matchLabels:
       {{- include "gitlab-exporter.selectorLabels" . | nindent 6 }}
-  endpoints:
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  podMetricsEndpoints:
     - port: {{ .Values.monitoring.port | quote }}
       path: {{ .Values.monitoring.path | quote }}
       interval: {{ .Values.monitoring.interval | quote }} 
