@@ -31,9 +31,17 @@ resources: {}
 #    cpu: 200m
 #    memory: 256Mi
 
+monitoring:
+  enabled: &monitoringEnabled false
+  port: &monitoringPort 9100
+  path: /metrics
+  interval: 1m
+
 service:
+  enabled: false
   type: ClusterIP
-  port: 80
+  ports:
+    http: *monitoringPort
 
 serviceAccount:
   # Specifies whether a service account should be created
@@ -54,5 +62,10 @@ env: []
 
 # ---
 
-config: {}
-
+# See here for all available configuration options and their default values:
+# https://github.com/cluttrdev/gitlab-exporter/blob/main/configs/gitlab-exporter.yaml
+config:
+  http:
+    enabled: *monitoringEnabled
+    host: 0.0.0.0
+    port: *monitoringPort

@@ -1,0 +1,19 @@
+{{- if .Values.monitoring.enabled }}
+
+apiVersion: monitoring.coreos.com/v1
+kind: PodMonitor
+metadata:
+  name: {{ include "gitlab-exporter.fullname" . }}
+  labels:
+    {{- include "gitlab-exporter.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "gitlab-exporter.selectorLabels" . | nindent 6 }}
+  endpoints:
+    - port: {{ .Values.monitoring.port | quote }}
+      path: {{ .Values.monitoring.path | quote }}
+      interval: {{ .Values.monitoring.interval | quote }} 
+
+{{- end }}
+
