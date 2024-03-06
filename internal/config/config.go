@@ -4,12 +4,20 @@ import (
 	"github.com/creasty/defaults"
 )
 
+// Config holds all the parameter settings for the application.
 type Config struct {
-	GitLab    GitLab     `default:"{}" yaml:"gitlab"`
+	// GitLab client settings
+	GitLab GitLab `default:"{}" yaml:"gitlab"`
+	// List of recorder endpoints to export to
 	Endpoints []Endpoint `default:"[]" yaml:"endpoints"`
-	Projects  []Project  `default:"[]" yaml:"projects"`
-	HTTP      HTTP       `default:"{}" yaml:"http"`
-	Log       Log        `default:"{}" yaml:"log"`
+	// Default settings for projects
+	ProjectDefaults ProjectSettings `default:"{}" yaml:"project_defaults"`
+	// List of project to export
+	Projects []Project `default:"[]" yaml:"projects"`
+	// HTTP server settings
+	HTTP HTTP `default:"{}" yaml:"http"`
+	// Log configuration settings
+	Log Log `default:"{}" yaml:"log"`
 }
 
 type GitLab struct {

@@ -12,20 +12,18 @@ import (
 // Config implements the Unmarshaler interface
 func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 	type _Config struct {
-		GitLab GitLab `yaml:"gitlab"`
-
-		Endpoints []Endpoint `yaml:"endpoints"`
-
-		Projects []yaml.Node `yaml:"projects"`
-
-		HTTP HTTP `yaml:"http"`
-
-		Log Log `yaml:"log"`
+		GitLab          GitLab          `yaml:"gitlab"`
+		Endpoints       []Endpoint      `yaml:"endpoints"`
+		ProjectDefaults ProjectSettings `yaml:"project_defaults"`
+		Projects        []yaml.Node     `yaml:"projects"`
+		HTTP            HTTP            `yaml:"http"`
+		Log             Log             `yaml:"log"`
 	}
 
 	var _cfg _Config
 	_cfg.GitLab = c.GitLab
 	_cfg.Endpoints = c.Endpoints
+	_cfg.ProjectDefaults = c.ProjectDefaults
 	_cfg.HTTP = c.HTTP
 	_cfg.Log = c.Log
 
@@ -35,12 +33,13 @@ func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 
 	c.GitLab = _cfg.GitLab
 	c.Endpoints = _cfg.Endpoints
+	c.ProjectDefaults = _cfg.ProjectDefaults
 	c.HTTP = _cfg.HTTP
 	c.Log = _cfg.Log
 
 	for _, n := range _cfg.Projects {
 		p := Project{
-			ProjectSettings: DefaultProjectSettings(),
+			ProjectSettings: c.ProjectDefaults,
 		}
 
 		if err := n.Decode(&p); err != nil {

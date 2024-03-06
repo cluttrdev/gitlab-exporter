@@ -15,45 +15,51 @@ gitlab:
 endpoints: []
   # - address: "127.0.0.1:36275"
 
+# Default settings for projects
+project_defaults:
+  export:
+    sections:
+      # Whether or not to export job section data.
+      # If enabled, this may significantly increase the export time since it
+      # requires fetching entire job logs to parse for section information.
+      enabled: true
+    
+    testreports:
+      # Whether or not to export pipeline testreports.
+      enabled: true
+    
+    traces:
+      # Whether or not to export pipeline hierarchies as traces.
+      enabled: true
+  
+    metrics:
+      # Whether or not to export metrics embedded in job logs.
+      # If enabled, this may significantly increase the export time since it
+      # requires fetching entire job logs to parse for embedded metrics.
+      enabled: true
+  
+  catch_up:
+    # Whether to export data from past pipelines at startup.
+    # This is ignored when using the `run` command, unless the `--catchup` flag is set.
+    enabled: false
+  
+    # Export pipelines updated after the specified date.
+    # Expected in ISO 8601 format (2019-03-15T08:00:00Z)
+    updated_after: ""
+  
+    # Export pipelines updated before the specified date.
+    # Expected in ISO 8601 format (2019-03-15T08:00:00Z)
+    updated_before: ""
+  
+
 # List of projects to export
 projects: []
   # - # Project ID project (required).
   #   id: 50817395  # cluttrdev/gitlab-exporter
-  #
-  #   export:
-  #     sections:
-  #       # Whether or not to export job section data.
-  #       # If enabled, this may significantly increase the export time since it
-  #       # requires fetching entire job logs to parse for section information.
-  #       enabled: true
-  #     
-  #     testreports:
-  #       # Whether or not to export pipeline testreports.
-  #       enabled: true
-  #     
-  #     traces:
-  #       # Whether or not to export pipeline hierarchies as traces.
-  #       enabled: true
-  #
-  #     metrics:
-  #       # Whether or not to export metrics embedded in job logs.
-  #       enabled: true
   #   
-  #   catch_up:
-  #     # Whether to export data from past pipelines at startup.
-  #     # This is ignored when using the `run` command, unless the `--catchup` flag is set.
-  #     enabled: false
-  #
-  #     # Wheter to force export data of pipelines that have not been updated.
-  #     forced: false
-  #
-  #     # Export pipelines updated after the specified date.
-  #     # Expected in ISO 8601 format (2019-03-15T08:00:00Z)
-  #     updated_after: ""
-  #
-  #     # Export pipelines updated before the specified date.
-  #     # Expected in ISO 8601 format (2019-03-15T08:00:00Z)
-  #     updated_before: ""
+  #   # See `project_defaults` for settings that can be overwritten here.
+  #   export: {}
+  #   catch_up: {}
 
 # HTTP server settings
 http:

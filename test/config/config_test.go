@@ -17,6 +17,15 @@ func defaultConfig() config.Config {
 
 	cfg.Endpoints = []config.Endpoint{}
 
+	cfg.ProjectDefaults.Export.Sections.Enabled = true
+	cfg.ProjectDefaults.Export.TestReports.Enabled = true
+	cfg.ProjectDefaults.Export.Traces.Enabled = true
+	cfg.ProjectDefaults.Export.Metrics.Enabled = true
+	cfg.ProjectDefaults.CatchUp.Enabled = false
+	cfg.ProjectDefaults.CatchUp.Forced = false
+	cfg.ProjectDefaults.CatchUp.UpdatedAfter = ""
+	cfg.ProjectDefaults.CatchUp.UpdatedBefore = ""
+
 	cfg.Projects = []config.Project{}
 
 	cfg.HTTP.Enabled = true
@@ -240,6 +249,108 @@ func TestLoad_DataWithProjects(t *testing.T) {
 				},
 			},
 			Id: 42, // "42",
+		},
+	)
+
+	cfg := defaultConfig()
+	if err := config.Load(data, &cfg); err != nil {
+		t.Errorf("Expected no error, got: %v", err)
+	}
+
+	checkConfig(t, expected, cfg)
+}
+
+func TestLoad_DataWithProjectDefaults(t *testing.T) {
+	data := []byte(`
+    project_defaults:
+      export:
+        traces:
+          enabled: false
+        metrics:
+          enabled: false
+      catch_up:
+        enabled: true
+    projects:
+      - id: 314
+      - id: 1337
+        catchup: {}
+      - id: 42
+        export:
+          sections:
+            enabled: false
+          testreports:
+            enabled: true
+          traces:
+            enabled: true
+          metrics:
+            enabled: false
+        catch_up:
+          enabled: true
+          updated_after: "2019-03-15T08:00:00Z"
+    `)
+
+	expected := defaultConfig()
+	expected.ProjectDefaults = config.ProjectSettings{
+		Export: config.ProjectExport{
+			Sections:    config.ProjectExportSections{Enabled: true},
+			TestReports: config.ProjectExportTestReports{Enabled: true},
+			Traces:      config.ProjectExportTraces{Enabled: false},
+			Metrics:     config.ProjectExportMetrics{Enabled: false},
+		},
+		CatchUp: config.ProjectCatchUp{
+			Enabled:       true,
+			UpdatedAfter:  "",
+			UpdatedBefore: "",
+		},
+	}
+	expected.Projects = append(expected.Projects,
+		config.Project{
+			ProjectSettings: config.ProjectSettings{
+				Export: config.ProjectExport{
+					Sections:    config.ProjectExportSections{Enabled: true},
+					TestReports: config.ProjectExportTestReports{Enabled: true},
+					Traces:      config.ProjectExportTraces{Enabled: false},
+					Metrics:     config.ProjectExportMetrics{Enabled: false},
+				},
+				CatchUp: config.ProjectCatchUp{
+					Enabled:       true,
+					UpdatedAfter:  "",
+					UpdatedBefore: "",
+				},
+			},
+			Id: 314,
+		},
+		config.Project{
+			ProjectSettings: config.ProjectSettings{
+				Export: config.ProjectExport{
+					Sections:    config.ProjectExportSections{Enabled: true},
+					TestReports: config.ProjectExportTestReports{Enabled: true},
+					Traces:      config.ProjectExportTraces{Enabled: false},
+					Metrics:     config.ProjectExportMetrics{Enabled: false},
+				},
+				CatchUp: config.ProjectCatchUp{
+					Enabled:       true,
+					UpdatedAfter:  "",
+					UpdatedBefore: "",
+				},
+			},
+			Id: 1337,
+		},
+		config.Project{
+			ProjectSettings: config.ProjectSettings{
+				Export: config.ProjectExport{
+					Sections:    config.ProjectExportSections{Enabled: false},
+					TestReports: config.ProjectExportTestReports{Enabled: true},
+					Traces:      config.ProjectExportTraces{Enabled: true},
+					Metrics:     config.ProjectExportMetrics{Enabled: false},
+				},
+				CatchUp: config.ProjectCatchUp{
+					Enabled:       true,
+					UpdatedAfter:  "2019-03-15T08:00:00Z",
+					UpdatedBefore: "",
+				},
+			},
+			Id: 42,
 		},
 	)
 
