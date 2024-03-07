@@ -60,12 +60,30 @@ test:
   stage: test
   cache:
     - <<: *cache-defaults
-  before_script:
-    - go install gotest.tools/gotestsum@latest
   script:
+    - |
+      # Start script_step_before section
+      echo -e "\e[0Ksection_start:$(date +%s):script_step_before\r\e[0KRunning script_step_before"
+    - go install gotest.tools/gotestsum@latest
+    - |
+      # End script_step_before section
+      echo -e "\e[0Ksection_end:$(date +%s):script_step_before\r\e[0K"
+
+    - |
+      # Start script_step_run section
+      echo -e "\e[0Ksection_start:$(date +%s):script_step_run\r\e[0KRunning script_step_run"
     - ${GOPATH}/bin/gotestsum --junitfile report.xml --format testname ./test/...
-  after_script:
+    - |
+      # End script_step_run section
+      echo -e "\e[0Ksection_end:$(date +%s):script_step_run\r\e[0K"
+
+    - |
+      # Start script_step_after section
+      echo -e "\e[0Ksection_start:$(date +%s):script_step_after\r\e[0KRunning script_step_after"
     - go run ./tools/junitmetrics ./report.xml
+    - |
+      # End script_step_after section
+      echo -e "\e[0Ksection_end:$(date +%s):script_step_after\r\e[0K"
   artifacts:
     when: always
     reports:
