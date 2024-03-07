@@ -22,7 +22,6 @@ func defaultConfig() config.Config {
 	cfg.ProjectDefaults.Export.Traces.Enabled = true
 	cfg.ProjectDefaults.Export.Metrics.Enabled = true
 	cfg.ProjectDefaults.CatchUp.Enabled = false
-	cfg.ProjectDefaults.CatchUp.Forced = false
 	cfg.ProjectDefaults.CatchUp.UpdatedAfter = ""
 	cfg.ProjectDefaults.CatchUp.UpdatedBefore = ""
 
@@ -48,7 +47,6 @@ func defaultProjectSettings() config.ProjectSettings {
 	cfg.Export.Metrics.Enabled = true
 
 	cfg.CatchUp.Enabled = false
-	cfg.CatchUp.Forced = false
 	cfg.CatchUp.UpdatedAfter = ""
 	cfg.CatchUp.UpdatedBefore = ""
 
@@ -181,7 +179,6 @@ func TestLoad_DataWithProjects(t *testing.T) {
             enabled: true
         catch_up:
           enabled: true
-          forced: true
       - id: 42
         export:
           sections:
@@ -219,7 +216,6 @@ func TestLoad_DataWithProjects(t *testing.T) {
 				},
 				CatchUp: config.ProjectCatchUp{
 					Enabled:       true,
-					Forced:        true,
 					UpdatedAfter:  "",
 					UpdatedBefore: "",
 				},
