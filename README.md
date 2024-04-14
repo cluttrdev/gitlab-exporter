@@ -1,41 +1,70 @@
 # gitlab-exporter
 
 `gitlab-exporter` can help you build an observability and analytics solution to
-gain insights into your CI pipelines. 
-It provides the [protocol buffer][protobuf] schemas and client implementation 
-for a [gRPC] service to record data fetched from the [GitLab API][gitlab-api].
-This allows the data to be exported and stored in various storage backends by
-implementing the correspondong gRPC server interface.
+gain insights into your CI pipelines.
 
-The following server implementations are available:
+It fetches data from the [GitLab API][gitlab-api] and sends it to one or more
+_recorders_. These recorders then can store it in a datastore of their choosing.
 
-  - [gitlab-clickhouse-exporter][gh-glche]
+The communication between the exporter and recorders is defined as a [gRPC]
+service using [protocol buffers][protobuf] where the exporter acts as a client
+and the recorders implement the server interface. This allows the data to be
+flexibly stored in various storage backends.
 
-<p>
+<img src="./assets/dataflow.png" />
+
+### Recorders
+
+There are recorder implementations available for the following datastore backends:
+
+  - [ClickHouse][gh-glechr]
+
+### Screenshots
+
+<details>
+    <summary>Project Overviews</summary>
     <img src="./assets/project-overview.webp" />
+</details>
+
+<details>
+    <summary>Pipeline Traces</summary>
     <img src="./assets/pipeline-trace.webp" />
-</p>
+</details>
 
 ## Installation
+
+### Binaries
 
 To install `gitlab-exporter` you can download a 
 [prebuilt binary][prebuilt-binaries] that matches your system, e.g.
 
 ```shell
-# download latest release archive
+# download latest release distribution archive
 RELEASE_TAG=$(curl -sSfL https://api.github.com/repos/cluttrdev/gitlab-exporter/releases/latest | jq -r '.tag_name')
-curl -sSfL -o /tmp/gitlab-exporter.tar.gz \
-    https://github.com/cluttrdev/gitlab-exporter/releases/download/${RELEASE_TAG}/gitlab-exporter_${RELEASE_TAG}_linux_amd64.tar.gz
-# extract executable binary into install dir (must exist)
-INSTALL_DIR=$HOME/.local/bin
-tar -C ${INSTALL_DIR} -zxof /tmp/gitlab-exporter.tar.gz gitlab-exporter
+curl -sSfL \
+    --output /tmp/gitlab-exporter.tar.gz \
+    --url https://github.com/cluttrdev/gitlab-exporter/releases/download/${RELEASE_TAG}/gitlab-exporter_${RELEASE_TAG}_linux_amd64.tar.gz
+
+# extract executable binary
+tar -zxof /tmp/gitlab-exporter.tar.gz gitlab-exporter
+
+# check
+./gitlab-exporter version
 ```
 
-Alternatively, if you have the [Go][go-install] tools installed on your
-machine, you can use
+### Docker
 
 ```shell
-go install github.com/cluttrdev/gitlab-exporter@latest
+docker run -it --rm ghcr.io/cluttrdev/gitlab-exporter:latest
+```
+
+### Helm
+
+If you want to deploy on [Kubernetes](http://kubernetes.io) there is a
+[Helm](https://helm.sh) chart you can use:
+
+```shell
+helm pull oci://ghcr.io/cluttrdev/gitlab-exporter
 ```
 
 ## Usage
@@ -51,8 +80,8 @@ To run `gitlab-exporter` in daemon mode use:
 gitlab-exporter run --config CONFIG_FILE 
 ```
 
-This will periodically fetch data of the configured projects and send it to
-configured gRPC server endpoints.
+This will periodically fetch data of the configured projects and send it to a
+list of recorders.
 See [Configuration](#configuration) for configuration options.
 
 ### Command Mode
@@ -99,7 +128,7 @@ This project is licensed under the [MIT License](./LICENSE).
 [protobuf]: https://protobuf.dev/
 [grpc]: https://grpc.io/
 [gitlab-api]: https://docs.gitlab.com/ee/api/rest/
-[gh-glche]: https://github.com/cluttrdev/gitlab-clickhouse-exporter
+[gh-glechr]: https://github.com/cluttrdev/gitlab-clickhouse-exporter
 [go-install]: https://go.dev/doc/install
 [prebuilt-binaries]: https://github.com/cluttrdev/gitlab-exporter/releases/latest
 [github-gcpe]: https://github.com/mvisonneau/gitlab-ci-pipelines-exporter
