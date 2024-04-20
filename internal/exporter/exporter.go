@@ -84,7 +84,19 @@ func (e *Exporter) ExportTestSuites(ctx context.Context, data []*typespb.TestSui
 }
 
 func (e *Exporter) ExportTestCases(ctx context.Context, data []*typespb.TestCase) error {
-	return export[typespb.TestCase](e, ctx, data, grpc_client.RecordTestCases)
+	// testcases can easily go into millions
+	// to avoid message getting too large we export testcases in chunks
+	const chunkSize int = 1000
+	for begin := 0; begin < len(data); begin += chunkSize {
+		end := begin + chunkSize
+		if end > len(data) {
+			end = len(data)
+		}
+		if err := export[typespb.TestCase](e, ctx, data[begin:end], grpc_client.RecordTestCases); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (e *Exporter) ExportMetrics(ctx context.Context, data []*typespb.Metric) error {
