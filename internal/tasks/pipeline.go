@@ -6,6 +6,8 @@ import (
 
 	"github.com/cluttrdev/gitlab-exporter/internal/exporter"
 	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
+	"github.com/cluttrdev/gitlab-exporter/internal/models"
+	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
 type ExportPipelineHierarchyOptions struct {
@@ -48,18 +50,38 @@ func ExportPipelineHierarchy(ctx context.Context, glc *gitlab.Client, exp *expor
 	}
 
 	if opts.ExportTestReports {
-		results, err := glc.GetPipelineHierarchyTestReports(ctx, ph)
-		if err != nil {
-			return fmt.Errorf("error getting testreports (project=%d pipeline=%d): %w", opts.ProjectID, opts.PipelineID, err)
+		if err := exportPipelineHierarchyTestReports(ctx, glc, exp, ph); err != nil {
+			return err
 		}
-		if err := exp.ExportTestReports(ctx, results.TestReports); err != nil {
-			return fmt.Errorf("error exporting testreports (project=%d pipeline=%d): %w", opts.ProjectID, opts.PipelineID, err)
-		}
-		if err := exp.ExportTestSuites(ctx, results.TestSuites); err != nil {
-			return fmt.Errorf("error exporting testsuites (project=%d pipeline=%d): %w", opts.ProjectID, opts.PipelineID, err)
-		}
-		if err := exp.ExportTestCases(ctx, results.TestCases); err != nil {
-			return fmt.Errorf("error exporting testcases (project=%d pipeline=%d): %w", opts.ProjectID, opts.PipelineID, err)
+	}
+
+	return nil
+}
+
+func exportPipelineHierarchyTestReports(ctx context.Context, glab *gitlab.Client, exp *exporter.Exporter, ph *models.PipelineHierarchy) error {
+	var (
+		projectID  = ph.Pipeline.ProjectId
+		pipelineID = ph.Pipeline.Id
+	)
+
+	r, err := glab.GetPipelineTestReport(ctx, projectID, pipelineID)
+	if err != nil {
+		return fmt.Errorf("error getting testreports (project=%d pipeline=%d): %w", projectID, pipelineID, err)
+	}
+
+	if err := exp.ExportTestReports(ctx, []*typespb.TestReport{r.TestReport}); err != nil {
+		return fmt.Errorf("error exporting testreports (project=%d pipeline=%d): %w", projectID, pipelineID, err)
+	}
+	if err := exp.ExportTestSuites(ctx, r.TestSuites); err != nil {
+		return fmt.Errorf("error exporting testsuites (project=%d pipeline=%d): %w", projectID, pipelineID, err)
+	}
+	if err := exp.ExportTestCases(ctx, r.TestCases); err != nil {
+		return fmt.Errorf("error exporting testcases (project=%d pipeline=%d): %w", projectID, pipelineID, err)
+	}
+
+	for _, dph := range ph.DownstreamPipelines {
+		if err := exportPipelineHierarchyTestReports(ctx, glab, exp, dph); err != nil {
+			return err
 		}
 	}
 

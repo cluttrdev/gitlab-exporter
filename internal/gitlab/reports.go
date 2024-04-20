@@ -13,9 +13,9 @@ import (
 )
 
 type PipelineTestReportData struct {
-	TestReports []*typespb.TestReport
-	TestSuites  []*typespb.TestSuite
-	TestCases   []*typespb.TestCase
+	TestReport *typespb.TestReport
+	TestSuites []*typespb.TestSuite
+	TestCases  []*typespb.TestCase
 }
 
 func (c *Client) GetPipelineTestReport(ctx context.Context, projectID int64, pipelineID int64) (*PipelineTestReportData, error) {
@@ -37,35 +37,10 @@ func (c *Client) GetPipelineTestReport(ctx context.Context, projectID int64, pip
 	}
 
 	return &PipelineTestReportData{
-		TestReports: []*typespb.TestReport{testreport},
-		TestSuites:  testsuites,
-		TestCases:   testcases,
+		TestReport: testreport,
+		TestSuites: testsuites,
+		TestCases:  testcases,
 	}, nil
-}
-
-func (c *Client) GetPipelineHierarchyTestReports(ctx context.Context, ph *models.PipelineHierarchy) (*PipelineTestReportData, error) {
-	var results = new(PipelineTestReportData)
-
-	r, err := c.GetPipelineTestReport(ctx, ph.Pipeline.ProjectId, ph.Pipeline.Id)
-	if err != nil {
-		return nil, err
-	}
-
-	results.TestReports = append(results.TestReports, r.TestReports...)
-	results.TestSuites = append(results.TestSuites, r.TestSuites...)
-	results.TestCases = append(results.TestCases, r.TestCases...)
-
-	for _, dph := range ph.DownstreamPipelines {
-		rs, err := c.GetPipelineHierarchyTestReports(ctx, dph)
-		if err != nil {
-			return nil, err
-		}
-		results.TestReports = append(results.TestReports, rs.TestReports...)
-		results.TestSuites = append(results.TestSuites, rs.TestSuites...)
-		results.TestCases = append(results.TestCases, rs.TestCases...)
-	}
-
-	return results, nil
 }
 
 type PipelineTestReportSummary struct {
