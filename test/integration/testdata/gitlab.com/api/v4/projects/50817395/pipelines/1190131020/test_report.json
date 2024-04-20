@@ -1,0 +1,122 @@
+{
+  "total_time": 0.0,
+  "total_count": 10,
+  "success_count": 10,
+  "failed_count": 0,
+  "skipped_count": 0,
+  "error_count": 0,
+  "test_suites": [
+    {
+      "name": "test",
+      "total_time": 0.0,
+      "total_count": 10,
+      "success_count": 10,
+      "failed_count": 0,
+      "skipped_count": 0,
+      "error_count": 0,
+      "suite_error": null,
+      "test_cases": [
+        {
+          "status": "success",
+          "name": "Test_NewDefault",
+          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "file": null,
+          "execution_time": 0.0,
+          "system_output": null,
+          "stack_trace": null,
+          "recent_failures": null
+        },
+        {
+          "status": "success",
+          "name": "Test_NewDefaultProjectSettings",
+          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "file": null,
+          "execution_time": 0.0,
+          "system_output": null,
+          "stack_trace": null,
+          "recent_failures": null
+        },
+        {
+          "status": "success",
+          "name": "TestLoad_EmptyData",
+          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "file": null,
+          "execution_time": 0.0,
+          "system_output": null,
+          "stack_trace": null,
+          "recent_failures": null
+        },
+        {
+          "status": "success",
+          "name": "TestLoad_PartialData",
+          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "file": null,
+          "execution_time": 0.0,
+          "system_output": null,
+          "stack_trace": null,
+          "recent_failures": null
+        },
+        {
+          "status": "success",
+          "name": "TestLoad_UnknownData",
+          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "file": null,
+          "execution_time": 0.0,
+          "system_output": null,
+          "stack_trace": null,
+          "recent_failures": null
+        },
+        {
+          "status": "success",
+          "name": "TestLoad_InvalidData",
+          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "file": null,
+          "execution_time": 0.0,
+          "system_output": null,
+          "stack_trace": null,
+          "recent_failures": null
+        },
+        {
+          "status": "success",
+          "name": "TestLoad_DataWithDefaults",
+          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "file": null,
+          "execution_time": 0.0,
+          "system_output": null,
+          "stack_trace": null,
+          "recent_failures": null
+        },
+        {
+          "status": "success",
+          "name": "TestLoad_DataWithProjects",
+          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "file": null,
+          "execution_time": 0.0,
+          "system_output": null,
+          "stack_trace": null,
+          "recent_failures": null
+        },
+        {
+          "status": "success",
+          "name": "TestLoad_DataWithCustomServerAddress",
+          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "file": null,
+          "execution_time": 0.0,
+          "system_output": null,
+          "stack_trace": null,
+          "recent_failures": null
+        },
+        {
+          "status": "success",
+          "name": "TestLoad_DataWithEndpoints",
+          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "file": null,
+          "execution_time": 0.0,
+          "system_output": null,
+          "stack_trace": null,
+          "recent_failures": null
+        }
+      ]
+    }
+  ]
+}

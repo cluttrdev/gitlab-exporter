@@ -1,0 +1,26 @@
+{
+  "total": {
+    "time": 0.0,
+    "count": 10,
+    "success": 10,
+    "failed": 0,
+    "skipped": 0,
+    "error": 0,
+    "suite_error": null
+  },
+  "test_suites": [
+    {
+      "name": "test",
+      "total_time": 0.0,
+      "total_count": 10,
+      "success_count": 10,
+      "failed_count": 0,
+      "skipped_count": 0,
+      "error_count": 0,
+      "build_ids": [
+        6252785905
+      ],
+      "suite_error": null
+    }
+  ]
+}

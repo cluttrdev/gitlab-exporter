@@ -1,0 +1,42 @@
+{
+  "id": 1097349658,
+  "iid": 15,
+  "project_id": 50817395,
+  "sha": "85ff3602e090f7a5c2e2691982ff3d8a6dfb1e22",
+  "ref": "main",
+  "status": "canceled",
+  "source": "push",
+  "created_at": "2023-12-06T12:43:21.693Z",
+  "updated_at": "2023-12-06T14:09:19.155Z",
+  "web_url": "https://gitlab.com/cluttrdev/gitlab-exporter/-/pipelines/1097349658",
+  "before_sha": "3c530002e6dc209390af18b9835dd02a8441f981",
+  "tag": false,
+  "yaml_errors": null,
+  "user": {
+    "id": 10367592,
+    "username": "cluttrdev",
+    "name": "Andreas Kunze",
+    "state": "active",
+    "locked": false,
+    "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/10367592/avatar.png",
+    "web_url": "https://gitlab.com/cluttrdev"
+  },
+  "started_at": null,
+  "finished_at": "2023-12-06T14:09:19.154Z",
+  "committed_at": null,
+  "duration": null,
+  "queued_duration": null,
+  "coverage": null,
+  "detailed_status": {
+    "icon": "status_canceled",
+    "text": "Canceled",
+    "label": "canceled",
+    "group": "canceled",
+    "tooltip": "canceled",
+    "has_details": false,
+    "details_path": "/cluttrdev/gitlab-exporter/-/pipelines/1097349658",
+    "illustration": null,
+    "favicon": "/assets/ci_favicons/favicon_status_canceled-ca35321a6cda9943ebdf6631c8057ffd54064f3ba20cfe0ebc4b0b992041c430.png"
+  },
+  "name": null
+}

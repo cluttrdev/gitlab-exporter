@@ -1,0 +1,42 @@
+{
+  "id": 1152841291,
+  "iid": 16,
+  "project_id": 50817395,
+  "sha": "5e0c3f2408466c952ea366346c5d8dc6fb8486f7",
+  "ref": "main",
+  "status": "failed",
+  "source": "push",
+  "created_at": "2024-01-26T05:45:54.032Z",
+  "updated_at": "2024-01-26T05:46:21.720Z",
+  "web_url": "https://gitlab.com/cluttrdev/gitlab-exporter/-/pipelines/1152841291",
+  "before_sha": "85ff3602e090f7a5c2e2691982ff3d8a6dfb1e22",
+  "tag": false,
+  "yaml_errors": null,
+  "user": {
+    "id": 10367592,
+    "username": "cluttrdev",
+    "name": "Andreas Kunze",
+    "state": "active",
+    "locked": false,
+    "avatar_url": "https://gitlab.com/uploads/-/system/user/avatar/10367592/avatar.png",
+    "web_url": "https://gitlab.com/cluttrdev"
+  },
+  "started_at": "2024-01-26T05:45:54.976Z",
+  "finished_at": "2024-01-26T05:46:21.713Z",
+  "committed_at": null,
+  "duration": 26,
+  "queued_duration": null,
+  "coverage": null,
+  "detailed_status": {
+    "icon": "status_failed",
+    "text": "Failed",
+    "label": "failed",
+    "group": "failed",
+    "tooltip": "failed",
+    "has_details": false,
+    "details_path": "/cluttrdev/gitlab-exporter/-/pipelines/1152841291",
+    "illustration": null,
+    "favicon": "/assets/ci_favicons/favicon_status_failed-41304d7f7e3828808b0c26771f0309e55296819a9beea3ea9fbf6689d9857c12.png"
+  },
+  "name": null
+}
