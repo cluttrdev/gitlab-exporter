@@ -8,15 +8,14 @@ import (
 
 	"golang.org/x/time/rate"
 
-	_gitlab "github.com/xanzy/go-gitlab"
+	gitlab "github.com/xanzy/go-gitlab"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/models"
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
 type Client struct {
 	sync.RWMutex
-	client *_gitlab.Client
+	client *gitlab.Client
 }
 
 type ClientConfig struct {
@@ -37,8 +36,8 @@ func NewGitLabClient(cfg ClientConfig) (*Client, error) {
 }
 
 func (c *Client) Configure(cfg ClientConfig) error {
-	opts := []_gitlab.ClientOptionFunc{
-		_gitlab.WithBaseURL(cfg.URL),
+	opts := []gitlab.ClientOptionFunc{
+		gitlab.WithBaseURL(cfg.URL),
 	}
 
 	if cfg.RateLimit > 0 {
@@ -46,10 +45,10 @@ func (c *Client) Configure(cfg ClientConfig) error {
 		burst := cfg.RateLimit * 0.33
 		limiter := rate.NewLimiter(limit, int(burst))
 
-		opts = append(opts, _gitlab.WithCustomLimiter(limiter))
+		opts = append(opts, gitlab.WithCustomLimiter(limiter))
 	}
 
-	client, err := _gitlab.NewOAuthClient(cfg.Token, opts...)
+	client, err := gitlab.NewOAuthClient(cfg.Token, opts...)
 	if err != nil {
 		return err
 	}
@@ -67,7 +66,7 @@ func (c *Client) CheckReadiness(ctx context.Context) error {
 		http.MethodGet,
 		readinessEndpoint,
 		nil,
-		[]_gitlab.RequestOptionFunc{_gitlab.WithContext(ctx)},
+		[]gitlab.RequestOptionFunc{gitlab.WithContext(ctx)},
 	)
 	if err != nil {
 		return err
@@ -93,7 +92,7 @@ type GetPipelineHierarchyOptions struct {
 }
 
 type GetPipelineHierarchyResult struct {
-	PipelineHierarchy *models.PipelineHierarchy
+	PipelineHierarchy *PipelineHierarchy
 	Metrics           []*typespb.Metric
 	Error             error
 }
@@ -153,9 +152,9 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 							},
 							Pipeline:   job.Pipeline,
 							Name:       secdat.Name,
-							StartedAt:  models.ConvertUnixSeconds(secdat.Start),
-							FinishedAt: models.ConvertUnixSeconds(secdat.End),
-							Duration:   models.ConvertDuration(float64(secdat.End - secdat.Start)),
+							StartedAt:  convertUnixSeconds(secdat.Start),
+							FinishedAt: convertUnixSeconds(secdat.End),
+							Duration:   convertDuration(float64(secdat.End - secdat.Start)),
 						}
 
 						sections = append(sections, section)
@@ -166,9 +165,9 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 					for _, m := range data.Metrics {
 						metric := &typespb.Metric{
 							Name:      m.Name,
-							Labels:    models.ConvertLabels(m.Labels),
+							Labels:    convertLabels(m.Labels),
 							Value:     m.Value,
-							Timestamp: models.ConvertUnixMilli(m.Timestamp),
+							Timestamp: convertUnixMilli(m.Timestamp),
 							Job: &typespb.Metric_JobReference{
 								Id:   job.Id,
 								Name: job.Name,
@@ -182,7 +181,7 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 		}
 
 		bridges := []*typespb.Bridge{}
-		dps := []*models.PipelineHierarchy{}
+		dps := []*PipelineHierarchy{}
 		for br := range c.ListPipelineBridges(ctx, projectID, pipelineID) {
 			if br.Error != nil {
 				ch <- GetPipelineHierarchyResult{
@@ -208,7 +207,7 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 		}
 
 		ch <- GetPipelineHierarchyResult{
-			PipelineHierarchy: &models.PipelineHierarchy{
+			PipelineHierarchy: &PipelineHierarchy{
 				Pipeline:            pipeline,
 				Jobs:                jobs,
 				Sections:            sections,
@@ -220,4 +219,15 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 	}()
 
 	return ch
+}
+
+func convertLabels(labels map[string]string) []*typespb.Metric_Label {
+	list := make([]*typespb.Metric_Label, 0, len(labels))
+	for name, value := range labels {
+		list = append(list, &typespb.Metric_Label{
+			Name:  name,
+			Value: value,
+		})
+	}
+	return list
 }

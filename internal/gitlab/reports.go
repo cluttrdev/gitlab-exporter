@@ -5,10 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	_gitlab "github.com/xanzy/go-gitlab"
+	gitlab "github.com/xanzy/go-gitlab"
 	"golang.org/x/exp/slices"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/models"
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
@@ -21,7 +20,7 @@ type PipelineTestReportData struct {
 func (c *Client) GetPipelineTestReport(ctx context.Context, projectID int64, pipelineID int64) (*PipelineTestReportData, error) {
 	c.RLock()
 	defer c.RUnlock()
-	report, _, err := c.client.Pipelines.GetPipelineTestReport(int(projectID), int(pipelineID), _gitlab.WithContext(ctx))
+	report, _, err := c.client.Pipelines.GetPipelineTestReport(int(projectID), int(pipelineID), gitlab.WithContext(ctx))
 	if err != nil {
 		return nil, fmt.Errorf("error getting pipeline test report: %w", err)
 	}
@@ -30,7 +29,7 @@ func (c *Client) GetPipelineTestReport(ctx context.Context, projectID int64, pip
 		return nil, fmt.Errorf("error getting pipeline test report summary: %w", err)
 	}
 
-	testreport, testsuites, testcases := models.ConvertTestReport(pipelineID, report)
+	testreport, testsuites, testcases := convertTestReport(pipelineID, report)
 
 	if err := overrideIDs(pipelineID, summary, testreport, testsuites, testcases); err != nil {
 		return nil, fmt.Errorf("error setting test report ids: %w", err)
@@ -73,8 +72,8 @@ type PipelineTestReportSummaryTestSuite struct {
 func (c *Client) GetPipelineTestReportSummary(ctx context.Context, projectID int64, pipelineID int64) (*PipelineTestReportSummary, error) {
 	u := fmt.Sprintf("projects/%d/pipelines/%d/test_report_summary", int(projectID), int(pipelineID))
 
-	options := []_gitlab.RequestOptionFunc{
-		_gitlab.WithContext(ctx),
+	options := []gitlab.RequestOptionFunc{
+		gitlab.WithContext(ctx),
 	}
 
 	req, err := c.client.NewRequest(http.MethodGet, u, nil, options)
@@ -128,4 +127,78 @@ func overrideIDs(pipelineID int64, summary *PipelineTestReportSummary, report *t
 	}
 
 	return nil
+}
+
+func convertTestReport(pipelineID int64, report *gitlab.PipelineTestReport) (*typespb.TestReport, []*typespb.TestSuite, []*typespb.TestCase) {
+	testreport := &typespb.TestReport{
+		Id:           testReportID(pipelineID),
+		PipelineId:   pipelineID,
+		TotalTime:    report.TotalTime,
+		TotalCount:   int64(report.TotalCount),
+		SuccessCount: int64(report.SuccessCount),
+		FailedCount:  int64(report.FailedCount),
+		SkippedCount: int64(report.SkippedCount),
+		ErrorCount:   int64(report.ErrorCount),
+	}
+
+	testsuites := make([]*typespb.TestSuite, 0, len(report.TestSuites))
+	testcases := []*typespb.TestCase{}
+	for i, testsuite := range report.TestSuites {
+		testsuiteID := testSuiteID(testreport.Id, i)
+		testsuites = append(testsuites, &typespb.TestSuite{
+			Id:           testsuiteID,
+			TestreportId: testreport.Id,
+			PipelineId:   pipelineID,
+			Name:         testsuite.Name,
+			TotalTime:    testsuite.TotalTime,
+			TotalCount:   int64(testsuite.TotalCount),
+			SuccessCount: int64(testsuite.SuccessCount),
+			FailedCount:  int64(testsuite.FailedCount),
+			SkippedCount: int64(testsuite.SkippedCount),
+			ErrorCount:   int64(testsuite.ErrorCount),
+		})
+
+		cases := make([]*typespb.TestCase, 0, len(testsuite.TestCases))
+		for j, testcase := range testsuite.TestCases {
+			cases = append(cases, &typespb.TestCase{
+				Id:             testCaseID(testsuiteID, j),
+				TestsuiteId:    testsuiteID,
+				TestreportId:   testreport.Id,
+				PipelineId:     pipelineID,
+				Status:         testcase.Status,
+				Name:           testcase.Name,
+				Classname:      testcase.Classname,
+				File:           testcase.File,
+				ExecutionTime:  testcase.ExecutionTime,
+				SystemOutput:   fmt.Sprint(testcase.SystemOutput),
+				StackTrace:     testcase.StackTrace,
+				AttachmentUrl:  testcase.AttachmentURL,
+				RecentFailures: convertTestCaseRecentFailures(testcase.RecentFailures),
+			})
+		}
+		testcases = append(testcases, cases...)
+	}
+
+	return testreport, testsuites, testcases
+}
+
+func convertTestCaseRecentFailures(f *gitlab.RecentFailures) *typespb.TestCase_RecentFailures {
+	var r typespb.TestCase_RecentFailures
+	if f != nil {
+		r.Count = int64(f.Count)
+		r.BaseBranch = f.BaseBranch
+	}
+	return &r
+}
+
+func testReportID(pipelineID int64) string {
+	return fmt.Sprint(pipelineID)
+}
+
+func testSuiteID(reportID string, suiteIndex int) string {
+	return fmt.Sprintf("%s-%d", reportID, suiteIndex+1)
+}
+
+func testCaseID(suiteID string, caseIndex int) string {
+	return fmt.Sprintf("%s-%d", suiteID, caseIndex+1)
 }

@@ -7,7 +7,7 @@ import (
 	"google.golang.org/grpc"
 
 	grpc_client "github.com/cluttrdev/gitlab-exporter/grpc/client"
-	"github.com/cluttrdev/gitlab-exporter/internal/models"
+	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -107,7 +107,7 @@ func (e *Exporter) ExportTraces(ctx context.Context, data []*typespb.Trace) erro
 	return export[typespb.Trace](e, ctx, data, grpc_client.RecordTraces)
 }
 
-func (e *Exporter) ExportPipelineHierarchy(ctx context.Context, ph *models.PipelineHierarchy) error {
+func (e *Exporter) ExportPipelineHierarchy(ctx context.Context, ph *gitlab.PipelineHierarchy) error {
 	data, err := flattenPipelineHierarchy(ph)
 	if err != nil {
 		return err
@@ -143,7 +143,7 @@ type pipelineData struct {
 	Bridges   []*typespb.Bridge
 }
 
-func flattenPipelineHierarchy(ph *models.PipelineHierarchy) (pipelineData, error) {
+func flattenPipelineHierarchy(ph *gitlab.PipelineHierarchy) (pipelineData, error) {
 	var data pipelineData
 
 	data.Pipelines = append(data.Pipelines, ph.Pipeline)

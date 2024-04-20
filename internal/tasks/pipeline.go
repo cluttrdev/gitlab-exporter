@@ -6,7 +6,6 @@ import (
 
 	"github.com/cluttrdev/gitlab-exporter/internal/exporter"
 	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
-	"github.com/cluttrdev/gitlab-exporter/internal/models"
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
@@ -58,7 +57,7 @@ func ExportPipelineHierarchy(ctx context.Context, glc *gitlab.Client, exp *expor
 	return nil
 }
 
-func exportPipelineHierarchyTestReports(ctx context.Context, glab *gitlab.Client, exp *exporter.Exporter, ph *models.PipelineHierarchy) error {
+func exportPipelineHierarchyTestReports(ctx context.Context, glab *gitlab.Client, exp *exporter.Exporter, ph *gitlab.PipelineHierarchy) error {
 	var (
 		projectID  = ph.Pipeline.ProjectId
 		pipelineID = ph.Pipeline.Id

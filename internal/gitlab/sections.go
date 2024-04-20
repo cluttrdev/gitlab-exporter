@@ -9,9 +9,8 @@ import (
 	"sort"
 	"strconv"
 
-	_gitlab "github.com/xanzy/go-gitlab"
+	gitlab "github.com/xanzy/go-gitlab"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/models"
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
@@ -27,7 +26,7 @@ func (c *Client) ListJobSections(ctx context.Context, projectID int64, jobID int
 		defer close(ch)
 
 		c.RLock()
-		job, _, err := c.client.Jobs.GetJob(int(projectID), int(jobID), _gitlab.WithContext(ctx))
+		job, _, err := c.client.Jobs.GetJob(int(projectID), int(jobID), gitlab.WithContext(ctx))
 		c.RUnlock()
 		if err != nil {
 			ch <- ListJobSectionsResult{
@@ -37,7 +36,7 @@ func (c *Client) ListJobSections(ctx context.Context, projectID int64, jobID int
 		}
 
 		c.RLock()
-		trace, _, err := c.client.Jobs.GetTraceFile(int(projectID), int(jobID), _gitlab.WithContext(ctx))
+		trace, _, err := c.client.Jobs.GetTraceFile(int(projectID), int(jobID), gitlab.WithContext(ctx))
 		c.RUnlock()
 		if err != nil {
 			ch <- ListJobSectionsResult{
@@ -57,9 +56,9 @@ func (c *Client) ListJobSections(ctx context.Context, projectID int64, jobID int
 		for secnum, secdat := range data {
 			section := &typespb.Section{
 				Name:       secdat.Name,
-				StartedAt:  models.ConvertUnixSeconds(secdat.Start),
-				FinishedAt: models.ConvertUnixSeconds(secdat.End),
-				Duration:   models.ConvertDuration(float64(secdat.End - secdat.Start)),
+				StartedAt:  convertUnixSeconds(secdat.Start),
+				FinishedAt: convertUnixSeconds(secdat.End),
+				Duration:   convertDuration(float64(secdat.End - secdat.Start)),
 			}
 
 			section.Id = int64(job.ID*1000 + secnum)

@@ -1,4 +1,4 @@
-package models
+package gitlab
 
 import (
 	"time"
@@ -7,21 +7,21 @@ import (
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func ConvertTime(t *time.Time) *timestamppb.Timestamp {
+func convertTime(t *time.Time) *timestamppb.Timestamp {
 	if t == nil {
 		return nil
 	}
 	return timestamppb.New(*t)
 }
 
-func ConvertUnixSeconds(ts int64) *timestamppb.Timestamp {
+func convertUnixSeconds(ts int64) *timestamppb.Timestamp {
 	return &timestamppb.Timestamp{
 		Seconds: ts,
 		Nanos:   0,
 	}
 }
 
-func ConvertUnixMilli(ts int64) *timestamppb.Timestamp {
+func convertUnixMilli(ts int64) *timestamppb.Timestamp {
 	const msPerSecond int64 = 1_000
 	const nsPerMilli int64 = 1_000
 	return &timestamppb.Timestamp{
@@ -30,7 +30,7 @@ func ConvertUnixMilli(ts int64) *timestamppb.Timestamp {
 	}
 }
 
-func ConvertUnixNano(ts int64) *timestamppb.Timestamp {
+func convertUnixNano(ts int64) *timestamppb.Timestamp {
 	const nsPerSecond int64 = 1_000_000_000
 	return &timestamppb.Timestamp{
 		Seconds: ts / nsPerSecond,
@@ -38,6 +38,6 @@ func ConvertUnixNano(ts int64) *timestamppb.Timestamp {
 	}
 }
 
-func ConvertDuration(d float64) *durationpb.Duration {
+func convertDuration(d float64) *durationpb.Duration {
 	return durationpb.New(time.Duration(d * float64(time.Second)))
 }
