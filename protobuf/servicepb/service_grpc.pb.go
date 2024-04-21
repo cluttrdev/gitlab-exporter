@@ -19,6 +19,7 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
+	GitLabExporter_RecordProjects_FullMethodName    = "/gitlabexporter.protobuf.service.GitLabExporter/RecordProjects"
 	GitLabExporter_RecordPipelines_FullMethodName   = "/gitlabexporter.protobuf.service.GitLabExporter/RecordPipelines"
 	GitLabExporter_RecordJobs_FullMethodName        = "/gitlabexporter.protobuf.service.GitLabExporter/RecordJobs"
 	GitLabExporter_RecordSections_FullMethodName    = "/gitlabexporter.protobuf.service.GitLabExporter/RecordSections"
@@ -34,6 +35,7 @@ const (
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GitLabExporterClient interface {
+	RecordProjects(ctx context.Context, in *RecordProjectsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordPipelines(ctx context.Context, in *RecordPipelinesRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordJobs(ctx context.Context, in *RecordJobsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordSections(ctx context.Context, in *RecordSectionsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
@@ -51,6 +53,15 @@ type gitLabExporterClient struct {
 
 func NewGitLabExporterClient(cc grpc.ClientConnInterface) GitLabExporterClient {
 	return &gitLabExporterClient{cc}
+}
+
+func (c *gitLabExporterClient) RecordProjects(ctx context.Context, in *RecordProjectsRequest, opts ...grpc.CallOption) (*RecordSummary, error) {
+	out := new(RecordSummary)
+	err := c.cc.Invoke(ctx, GitLabExporter_RecordProjects_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *gitLabExporterClient) RecordPipelines(ctx context.Context, in *RecordPipelinesRequest, opts ...grpc.CallOption) (*RecordSummary, error) {
@@ -138,6 +149,7 @@ func (c *gitLabExporterClient) RecordTraces(ctx context.Context, in *RecordTrace
 // All implementations must embed UnimplementedGitLabExporterServer
 // for forward compatibility
 type GitLabExporterServer interface {
+	RecordProjects(context.Context, *RecordProjectsRequest) (*RecordSummary, error)
 	RecordPipelines(context.Context, *RecordPipelinesRequest) (*RecordSummary, error)
 	RecordJobs(context.Context, *RecordJobsRequest) (*RecordSummary, error)
 	RecordSections(context.Context, *RecordSectionsRequest) (*RecordSummary, error)
@@ -154,6 +166,9 @@ type GitLabExporterServer interface {
 type UnimplementedGitLabExporterServer struct {
 }
 
+func (UnimplementedGitLabExporterServer) RecordProjects(context.Context, *RecordProjectsRequest) (*RecordSummary, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RecordProjects not implemented")
+}
 func (UnimplementedGitLabExporterServer) RecordPipelines(context.Context, *RecordPipelinesRequest) (*RecordSummary, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecordPipelines not implemented")
 }
@@ -192,6 +207,24 @@ type UnsafeGitLabExporterServer interface {
 
 func RegisterGitLabExporterServer(s grpc.ServiceRegistrar, srv GitLabExporterServer) {
 	s.RegisterService(&GitLabExporter_ServiceDesc, srv)
+}
+
+func _GitLabExporter_RecordProjects_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RecordProjectsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GitLabExporterServer).RecordProjects(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GitLabExporter_RecordProjects_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GitLabExporterServer).RecordProjects(ctx, req.(*RecordProjectsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _GitLabExporter_RecordPipelines_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -363,6 +396,10 @@ var GitLabExporter_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "gitlabexporter.protobuf.service.GitLabExporter",
 	HandlerType: (*GitLabExporterServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "RecordProjects",
+			Handler:    _GitLabExporter_RecordProjects_Handler,
+		},
 		{
 			MethodName: "RecordPipelines",
 			Handler:    _GitLabExporter_RecordPipelines_Handler,

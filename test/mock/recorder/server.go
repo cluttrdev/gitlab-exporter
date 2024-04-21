@@ -44,6 +44,12 @@ func (r *Recorder) Stop() {
 	r.server.Stop()
 }
 
+func (r *Recorder) RecordProjects(ctx context.Context, req *servicepb.RecordProjectsRequest) (*servicepb.RecordSummary, error) {
+	r.datastore.projects = append(r.datastore.projects, req.Data...)
+	var count int32 = int32(len(req.Data))
+	return &servicepb.RecordSummary{RecordedCount: count}, nil
+}
+
 func (r *Recorder) RecordPipelines(ctx context.Context, req *servicepb.RecordPipelinesRequest) (*servicepb.RecordSummary, error) {
 	r.datastore.pipelines = append(r.datastore.pipelines, req.Data...)
 	var count int32 = int32(len(req.Data))

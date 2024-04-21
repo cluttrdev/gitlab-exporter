@@ -5,6 +5,9 @@ import (
 )
 
 type Datastore interface {
+	ListProjects() []*typespb.Project
+	GetProject(id int64) *typespb.Project
+
 	ListProjectPipelines(projectID int64) []*typespb.Pipeline
 	GetPipeline(id int64) *typespb.Pipeline
 
@@ -14,6 +17,8 @@ type Datastore interface {
 }
 
 type datastore struct {
+	projects []*typespb.Project
+
 	pipelines []*typespb.Pipeline
 	jobs      []*typespb.Job
 	sections  []*typespb.Section
@@ -25,6 +30,19 @@ type datastore struct {
 
 	traces  []*typespb.Trace
 	metrics []*typespb.Metric
+}
+
+func (d *datastore) ListProjects() []*typespb.Project {
+	return d.projects
+}
+
+func (d *datastore) GetProject(id int64) *typespb.Project {
+	for _, p := range d.projects {
+		if p.Id == id {
+			return p
+		}
+	}
+	return nil
 }
 
 func (d *datastore) ListProjectPipelines(projectID int64) []*typespb.Pipeline {

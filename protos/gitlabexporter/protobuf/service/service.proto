@@ -4,6 +4,7 @@ option go_package = "github.com/cluttrdev/gitlab-exporter/protobuf/servicepb";
 
 package gitlabexporter.protobuf.service;
 
+import "gitlabexporter/protobuf/project.proto";
 import "gitlabexporter/protobuf/pipeline.proto";
 import "gitlabexporter/protobuf/job.proto";
 import "gitlabexporter/protobuf/section.proto";
@@ -12,6 +13,8 @@ import "gitlabexporter/protobuf/metric.proto";
 import "gitlabexporter/protobuf/trace.proto";
 
 service GitLabExporter {
+
+    rpc RecordProjects(RecordProjectsRequest) returns (RecordSummary) {}
 
     rpc RecordPipelines(RecordPipelinesRequest) returns (RecordSummary) {}
     
@@ -34,6 +37,10 @@ service GitLabExporter {
 
 message RecordSummary {
     int32 recorded_count = 1;
+}
+
+message RecordProjectsRequest {
+    repeated gitlabexporter.protobuf.Project data = 1;
 }
 
 message RecordPipelinesRequest {

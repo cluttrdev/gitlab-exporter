@@ -59,6 +59,10 @@ func export[T any](exporter *Exporter, ctx context.Context, data []*T, record re
 	return errs
 }
 
+func (e *Exporter) ExportProjects(ctx context.Context, data []*typespb.Project) error {
+	return export[typespb.Project](e, ctx, data, grpc_client.RecordProjects)
+}
+
 func (e *Exporter) ExportPipelines(ctx context.Context, data []*typespb.Pipeline) error {
 	return export[typespb.Pipeline](e, ctx, data, grpc_client.RecordPipelines)
 }

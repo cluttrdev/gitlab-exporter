@@ -7,6 +7,10 @@ import (
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
+func ptr[T any](v T) *T {
+	return &v
+}
+
 func convertTime(t *time.Time) *timestamppb.Timestamp {
 	if t == nil {
 		return nil

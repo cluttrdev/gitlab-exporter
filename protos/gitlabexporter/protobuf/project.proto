@@ -1,0 +1,53 @@
+syntax = "proto3";
+
+option go_package = "github.com/cluttrdev/gitlab-exporter/protobuf/typespb";
+
+package gitlabexporter.protobuf;
+
+import "google/protobuf/timestamp.proto";
+
+message Project {
+    int64 id = 1;
+    string name = 2;
+    string name_with_namespace = 3;
+    string path = 4;
+    string path_with_namespace = 5;
+    string description = 6;
+
+    google.protobuf.Timestamp created_at = 7;
+    google.protobuf.Timestamp last_activity_at = 8;
+
+    ProjectNamespace namespace = 9;
+    ProjectStatistics statistics = 10;
+
+    string default_branch = 11;
+    string web_url = 12;
+}
+
+message ProjectNamespace {
+    int64 id = 1;
+    string name = 2;
+    string kind = 3;
+    string path = 4;
+    string full_path = 5;
+    int64  parent_id = 6;
+
+    string avatar_url = 7;
+    string web_url = 8;
+}
+
+message ProjectStatistics {
+    int64 forks_count = 1;
+    int64 stars_count = 2;
+
+    int64 commit_count = 3;
+    int64 storage_size = 4;
+    int64 repository_size = 5;
+    int64 wiki_size = 6;
+    int64 lfs_objects_size = 7;
+    int64 job_artifacts_size = 8;
+    int64 pipeline_artifacts_size = 9;
+    int64 packages_size = 10;
+    int64 snippets_size = 11;
+    int64 uploads_size = 12;
+}

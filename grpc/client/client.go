@@ -49,6 +49,18 @@ func (c *Client) MetricsCollector() prometheus.Collector {
 	return c.metrics
 }
 
+func RecordProjects(c *Client, ctx context.Context, data []*typespb.Project) error {
+	req := &servicepb.RecordProjectsRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordProjects(ctx, req /* opts ...grpc.CallOption */)
+	if err != nil {
+		return fmt.Errorf("error recording projects: %w", err)
+	}
+
+	return nil
+}
+
 func RecordPipelines(c *Client, ctx context.Context, data []*typespb.Pipeline) error {
 	req := &servicepb.RecordPipelinesRequest{
 		Data: data,
