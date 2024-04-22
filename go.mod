@@ -12,7 +12,6 @@ require (
 	github.com/stretchr/testify v1.8.4
 	github.com/xanzy/go-gitlab v0.102.0
 	go.opentelemetry.io/proto/otlp v1.2.0
-	golang.org/x/exp v0.0.0-20240409090435-93d18d7e34b8
 	golang.org/x/time v0.5.0
 	google.golang.org/grpc v1.63.2
 	google.golang.org/protobuf v1.33.0

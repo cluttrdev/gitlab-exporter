@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"slices"
 
 	gitlab "github.com/xanzy/go-gitlab"
-	"golang.org/x/exp/slices"
 
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )

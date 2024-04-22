@@ -10,12 +10,11 @@ import (
 	"net/http"
 	"net/http/pprof"
 	"os/signal"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
 	"syscall"
-
-	"golang.org/x/exp/slices"
 
 	"github.com/oklog/run"
 	"github.com/prometheus/client_golang/prometheus"

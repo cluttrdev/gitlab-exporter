@@ -2,11 +2,11 @@ package gitlab
 
 import (
 	"fmt"
+	"slices"
 
 	commonpb "go.opentelemetry.io/proto/otlp/common/v1"
 	resourcepb "go.opentelemetry.io/proto/otlp/resource/v1"
 	tracepb "go.opentelemetry.io/proto/otlp/trace/v1"
-	"golang.org/x/exp/slices"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
