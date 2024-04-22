@@ -14,6 +14,8 @@ type Config struct {
 	ProjectDefaults ProjectSettings `default:"{}" yaml:"project_defaults"`
 	// List of project to export
 	Projects []Project `default:"[]" yaml:"projects"`
+	// List of namespaces of which to export projects
+	Namespaces []Namespace `default:"[]" yaml:"namespaces"`
 	// HTTP server settings
 	HTTP HTTP `default:"{}" yaml:"http"`
 	// Log configuration settings
@@ -75,6 +77,17 @@ type ProjectCatchUp struct {
 	Enabled       bool   `default:"false" yaml:"enabled"`
 	UpdatedAfter  string `default:"" yaml:"updated_after"`
 	UpdatedBefore string `default:"" yaml:"updated_before"`
+}
+
+type Namespace struct {
+	ProjectSettings `default:"{}" yaml:",inline"`
+
+	Id   string `yaml:"id"`
+	Kind string `default:"" yaml:"kind"`
+
+	Visibility       string `default:"" yaml:"visibility"`
+	WithShared       bool   `default:"false" yaml:"with_shared"`
+	IncludeSubgroups bool   `default:"false" yaml:"include_subgroups"`
 }
 
 type HTTP struct {

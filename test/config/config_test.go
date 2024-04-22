@@ -26,6 +26,7 @@ func defaultConfig() config.Config {
 	cfg.ProjectDefaults.CatchUp.UpdatedBefore = ""
 
 	cfg.Projects = []config.Project{}
+	cfg.Namespaces = []config.Namespace{}
 
 	cfg.HTTP.Enabled = true
 	cfg.HTTP.Host = "127.0.0.1"
@@ -269,6 +270,9 @@ func TestLoad_DataWithProjectDefaults(t *testing.T) {
     projects:
       - id: 314
       - id: 1337
+        export:
+          metrics:
+            enabled: true
         catchup: {}
       - id: 42
         export:
@@ -322,7 +326,7 @@ func TestLoad_DataWithProjectDefaults(t *testing.T) {
 					Sections:    config.ProjectExportSections{Enabled: true},
 					TestReports: config.ProjectExportTestReports{Enabled: true},
 					Traces:      config.ProjectExportTraces{Enabled: false},
-					Metrics:     config.ProjectExportMetrics{Enabled: false},
+					Metrics:     config.ProjectExportMetrics{Enabled: true},
 				},
 				CatchUp: config.ProjectCatchUp{
 					Enabled:       true,
@@ -391,6 +395,56 @@ func TestLoad_DataWithEndpoints(t *testing.T) {
 	cfg := config.Default()
 	if err := config.Load(data, &cfg); err != nil {
 		t.Errorf("Expected no error, got %v", err)
+	}
+
+	checkConfig(t, expected, cfg)
+}
+
+func TestLoad_WithNamespaces(t *testing.T) {
+	data := []byte(`
+    project_defaults:
+      export:
+        sections:
+          enabled: false
+        metrics:
+          enabled: false
+    namespaces:
+      - id: cluttrdev
+        kind: user
+        visibility: public
+      - id: gitlab-exporter
+        kind: group
+        include_subgroups: true
+        export:
+          metrics:
+            enabled: true
+    `)
+
+	expected := defaultConfig()
+	expected.ProjectDefaults.Export.Sections.Enabled = false
+	expected.ProjectDefaults.Export.Metrics.Enabled = false
+	expected.Namespaces = []config.Namespace{
+		{
+			Id:              "cluttrdev",
+			Kind:            "user",
+			Visibility:      "public",
+			ProjectSettings: defaultProjectSettings(),
+		},
+		{
+			Id:               "gitlab-exporter",
+			Kind:             "group",
+			IncludeSubgroups: true,
+			ProjectSettings:  defaultProjectSettings(),
+		},
+	}
+	expected.Namespaces[0].ProjectSettings.Export.Sections.Enabled = false
+	expected.Namespaces[0].ProjectSettings.Export.Metrics.Enabled = false
+	expected.Namespaces[1].ProjectSettings.Export.Sections.Enabled = false
+	expected.Namespaces[1].ProjectSettings.Export.Metrics.Enabled = true
+
+	cfg := config.Default()
+	if err := config.Load(data, &cfg); err != nil {
+		t.Fatal(err)
 	}
 
 	checkConfig(t, expected, cfg)

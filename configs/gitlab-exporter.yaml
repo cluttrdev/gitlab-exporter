@@ -61,6 +61,30 @@ projects: []
   #   export: {}
   #   catch_up: {}
 
+# List of namespaces of which to export projects
+namespaces: []
+  # - # The namespace id or url-encoded path
+  #   id: gitlab-exporter
+  #
+  #   # The namespace kind (user or group).
+  #   # Optional, will be determined if not specified.
+  #   kind: group
+  #
+  #   # Limit by visibility (public, internal or private)
+  #   visibility: ""
+  #
+  #   # Include projects shared to this group.
+  #   # (Only applicable for group namespaces)
+  #   with_shared: false
+  #
+  #   # Whether to include projects in subgroups of this namespace.
+  #   # (Only applicable for group namespaces)
+  #   include_subgroups: false
+  #
+  #   # See `project_defaults` for settings that can be overwritten here.
+  #   export: {}
+  #   catch_up: {}
+
 # HTTP server settings
 http:
   # Whether to enable serving http endpoint (metrics, debug info)

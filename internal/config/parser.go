@@ -16,6 +16,7 @@ func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 		Endpoints       []Endpoint      `yaml:"endpoints"`
 		ProjectDefaults ProjectSettings `yaml:"project_defaults"`
 		Projects        []yaml.Node     `yaml:"projects"`
+		Namespaces      []yaml.Node     `yaml:"namespaces"`
 		HTTP            HTTP            `yaml:"http"`
 		Log             Log             `yaml:"log"`
 	}
@@ -43,10 +44,22 @@ func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 		}
 
 		if err := n.Decode(&p); err != nil {
-			return nil
+			return err
 		}
 
 		c.Projects = append(c.Projects, p)
+	}
+
+	for _, node := range _cfg.Namespaces {
+		n := Namespace{
+			ProjectSettings: c.ProjectDefaults,
+		}
+
+		if err := node.Decode(&n); err != nil {
+			return err
+		}
+
+		c.Namespaces = append(c.Namespaces, n)
 	}
 
 	return nil

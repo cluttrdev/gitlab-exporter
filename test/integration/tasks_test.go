@@ -43,7 +43,7 @@ func Test_ExportProject(t *testing.T) {
 
 	assert.Equal(t, projectID, p.Id)
 	assert.Equal(t, "cluttrdev/gitlab-exporter", p.PathWithNamespace)
-    assert.Greater(t, p.Statistics.CommitCount, int64(0))
+	assert.Greater(t, p.Statistics.CommitCount, int64(0))
 }
 
 func Test_ExportPipelineHierarchy(t *testing.T) {

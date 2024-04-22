@@ -110,20 +110,6 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 		cfg.Log.Level = "debug"
 	}
 
-	// add projects passed to run command
-	for _, pid := range c.projects {
-		exists := slices.ContainsFunc(cfg.Projects, func(p config.Project) bool {
-			return p.Id == pid
-		})
-
-		if !exists {
-			cfg.Projects = append(cfg.Projects, config.Project{
-				ProjectSettings: config.DefaultProjectSettings(),
-				Id:              pid,
-			})
-		}
-	}
-
 	if cfg.Log.Level == "debug" {
 		writeConfig(c.out, cfg)
 	}
@@ -147,6 +133,26 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 		return err
 	}
 
+	// gather projects from config
+	projects, err := resolveProjects(ctx, cfg, gitlabclient)
+	if err != nil {
+		return fmt.Errorf("error resolving projects: %w", err)
+	}
+
+	// add projects passed as arguments
+	for _, pid := range c.projects {
+		exists := slices.ContainsFunc(cfg.Projects, func(p config.Project) bool {
+			return p.Id == pid
+		})
+
+		if !exists {
+			projects = append(cfg.Projects, config.Project{
+				ProjectSettings: config.DefaultProjectSettings(),
+				Id:              pid,
+			})
+		}
+	}
+
 	g := &run.Group{}
 
 	pool := worker.NewWorkerPool(42)
@@ -166,12 +172,12 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 		})
 	}
 
-	if len(cfg.Projects) > 0 { // jobs
+	if len(projects) > 0 { // jobs
 		ctx, cancel := context.WithCancel(context.Background())
 
 		g.Add(func() error { // execute
 			var wg sync.WaitGroup
-			for _, p := range cfg.Projects {
+			for _, p := range projects {
 				if c.catchup && p.CatchUp.Enabled {
 					job := jobs.ProjectCatchUpJob{
 						Config:   p,
@@ -287,4 +293,40 @@ func serveHTTP(cfg config.HTTP, reg *prometheus.Registry) (func() error, func(er
 	}
 
 	return execute, interrupt
+}
+
+func resolveProjects(ctx context.Context, cfg config.Config, glab *gitlab.Client) ([]config.Project, error) {
+	pm := make(map[int64]config.Project)
+
+	opt := gitlab.ListNamespaceProjectsOptions{}
+	for _, namespace := range cfg.Namespaces {
+		opt.Kind = namespace.Kind
+		opt.Visibility = (*gitlab.VisibilityValue)(&namespace.Visibility)
+		opt.WithShared = namespace.WithShared
+		opt.IncludeSubgroups = namespace.IncludeSubgroups
+
+		ps, err := glab.ListNamespaceProjects(ctx, namespace.Id, opt)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, p := range ps {
+			pm[p.Id] = config.Project{
+				ProjectSettings: namespace.ProjectSettings,
+				Id:              p.Id,
+			}
+		}
+	}
+
+	// overwrite with explicitly configured projects
+	for _, p := range cfg.Projects {
+		pm[p.Id] = p
+	}
+
+	projects := make([]config.Project, 0, len(pm))
+	for _, p := range pm {
+		projects = append(projects, p)
+	}
+
+	return projects, nil
 }
