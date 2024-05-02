@@ -7,7 +7,10 @@ package gitlabexporter.protobuf;
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 
+import "gitlabexporter/protobuf/commit.proto";
 import "gitlabexporter/protobuf/pipeline.proto";
+import "gitlabexporter/protobuf/project.proto";
+import "gitlabexporter/protobuf/user.proto";
 
 message Job {
     PipelineReference pipeline = 1;
@@ -32,6 +35,35 @@ message Job {
     string failure_reason = 23;
     string web_url = 24;
     repeated string tag_list = 25;
+
+    Commit commit = 30;
+    Project project = 31;
+    User user = 32;
+    JobRunner runner = 33;
+    
+    repeated JobArtifacts artifacts = 34;
+    JobArtifactsFile artifacts_file = 35;
+    google.protobuf.Timestamp artifacts_expire_at = 36;
+}
+
+message JobRunner {
+    int64 id = 1;
+    string name = 2;
+    string description = 3;
+    bool active = 4;
+    bool is_shared = 5;
+}
+
+message JobArtifacts {
+    string filename = 1;
+    string file_type = 2;
+    string file_format = 3;
+    int64 size = 4;
+}
+
+message JobArtifactsFile {
+    string filename = 1;
+    int64 size = 2;
 }
 
 message JobReference {
@@ -64,4 +96,7 @@ message Bridge {
     bool allow_failure = 22;
     string failure_reason = 23;
     string web_url = 24;
+
+    Commit commit = 30;
+    User user = 31;
 }

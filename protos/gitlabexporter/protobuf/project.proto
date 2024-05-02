@@ -6,22 +6,37 @@ package gitlabexporter.protobuf;
 
 import "google/protobuf/timestamp.proto";
 
+import "gitlabexporter/protobuf/user.proto";
+
 message Project {
     int64 id = 1;
     string name = 2;
     string name_with_namespace = 3;
     string path = 4;
     string path_with_namespace = 5;
-    string description = 6;
 
     google.protobuf.Timestamp created_at = 7;
     google.protobuf.Timestamp last_activity_at = 8;
 
     ProjectNamespace namespace = 9;
-    ProjectStatistics statistics = 10;
+    User owner = 10;
+    int64 creator_id = 11;
 
-    string default_branch = 11;
-    string web_url = 12;
+    repeated string topics = 12;
+    int64 forks_count = 13;
+    int64 stars_count = 14;
+    ProjectStatistics statistics = 15;
+    int64 open_issues_count = 16;
+
+    string description = 17;
+
+    bool empty_repo = 18;
+    bool archived = 19;
+
+    string default_branch = 20;
+    string visibility = 21;
+
+    string web_url = 22;
 }
 
 message ProjectNamespace {
@@ -37,17 +52,14 @@ message ProjectNamespace {
 }
 
 message ProjectStatistics {
-    int64 forks_count = 1;
-    int64 stars_count = 2;
-
-    int64 commit_count = 3;
-    int64 storage_size = 4;
-    int64 repository_size = 5;
-    int64 wiki_size = 6;
-    int64 lfs_objects_size = 7;
-    int64 job_artifacts_size = 8;
-    int64 pipeline_artifacts_size = 9;
-    int64 packages_size = 10;
-    int64 snippets_size = 11;
-    int64 uploads_size = 12;
+    int64 commit_count = 1;
+    int64 storage_size = 2;
+    int64 repository_size = 3;
+    int64 wiki_size = 4;
+    int64 lfs_objects_size = 5;
+    int64 job_artifacts_size = 6;
+    int64 pipeline_artifacts_size = 7;
+    int64 packages_size = 8;
+    int64 snippets_size = 9;
+    int64 uploads_size = 10;
 }

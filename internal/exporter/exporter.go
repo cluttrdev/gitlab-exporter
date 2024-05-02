@@ -59,32 +59,36 @@ func export[T any](exporter *Exporter, ctx context.Context, data []*T, record re
 	return errs
 }
 
-func (e *Exporter) ExportProjects(ctx context.Context, data []*typespb.Project) error {
-	return export[typespb.Project](e, ctx, data, grpc_client.RecordProjects)
-}
-
-func (e *Exporter) ExportPipelines(ctx context.Context, data []*typespb.Pipeline) error {
-	return export[typespb.Pipeline](e, ctx, data, grpc_client.RecordPipelines)
-}
-
-func (e *Exporter) ExportJobs(ctx context.Context, data []*typespb.Job) error {
-	return export[typespb.Job](e, ctx, data, grpc_client.RecordJobs)
-}
-
-func (e *Exporter) ExportSections(ctx context.Context, data []*typespb.Section) error {
-	return export[typespb.Section](e, ctx, data, grpc_client.RecordSections)
+func (e *Exporter) ExportCommits(ctx context.Context, data []*typespb.Commit) error {
+	return export[typespb.Commit](e, ctx, data, grpc_client.RecordCommits)
 }
 
 func (e *Exporter) ExportBridges(ctx context.Context, data []*typespb.Bridge) error {
 	return export[typespb.Bridge](e, ctx, data, grpc_client.RecordBridges)
 }
 
-func (e *Exporter) ExportTestReports(ctx context.Context, data []*typespb.TestReport) error {
-	return export[typespb.TestReport](e, ctx, data, grpc_client.RecordTestReports)
+func (e *Exporter) ExportJobs(ctx context.Context, data []*typespb.Job) error {
+	return export[typespb.Job](e, ctx, data, grpc_client.RecordJobs)
 }
 
-func (e *Exporter) ExportTestSuites(ctx context.Context, data []*typespb.TestSuite) error {
-	return export[typespb.TestSuite](e, ctx, data, grpc_client.RecordTestSuites)
+func (e *Exporter) ExportMergeRequests(ctx context.Context, data []*typespb.MergeRequest) error {
+	return export[typespb.MergeRequest](e, ctx, data, grpc_client.RecordMergeRequests)
+}
+
+func (e *Exporter) ExportMetrics(ctx context.Context, data []*typespb.Metric) error {
+	return export[typespb.Metric](e, ctx, data, grpc_client.RecordMetrics)
+}
+
+func (e *Exporter) ExportPipelines(ctx context.Context, data []*typespb.Pipeline) error {
+	return export[typespb.Pipeline](e, ctx, data, grpc_client.RecordPipelines)
+}
+
+func (e *Exporter) ExportProjects(ctx context.Context, data []*typespb.Project) error {
+	return export[typespb.Project](e, ctx, data, grpc_client.RecordProjects)
+}
+
+func (e *Exporter) ExportSections(ctx context.Context, data []*typespb.Section) error {
+	return export[typespb.Section](e, ctx, data, grpc_client.RecordSections)
 }
 
 func (e *Exporter) ExportTestCases(ctx context.Context, data []*typespb.TestCase) error {
@@ -103,12 +107,20 @@ func (e *Exporter) ExportTestCases(ctx context.Context, data []*typespb.TestCase
 	return nil
 }
 
-func (e *Exporter) ExportMetrics(ctx context.Context, data []*typespb.Metric) error {
-	return export[typespb.Metric](e, ctx, data, grpc_client.RecordMetrics)
+func (e *Exporter) ExportTestReports(ctx context.Context, data []*typespb.TestReport) error {
+	return export[typespb.TestReport](e, ctx, data, grpc_client.RecordTestReports)
+}
+
+func (e *Exporter) ExportTestSuites(ctx context.Context, data []*typespb.TestSuite) error {
+	return export[typespb.TestSuite](e, ctx, data, grpc_client.RecordTestSuites)
 }
 
 func (e *Exporter) ExportTraces(ctx context.Context, data []*typespb.Trace) error {
 	return export[typespb.Trace](e, ctx, data, grpc_client.RecordTraces)
+}
+
+func (e *Exporter) ExportUsers(ctx context.Context, data []*typespb.User) error {
+	return export[typespb.User](e, ctx, data, grpc_client.RecordUsers)
 }
 
 func (e *Exporter) ExportPipelineHierarchy(ctx context.Context, ph *gitlab.PipelineHierarchy) error {

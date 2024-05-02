@@ -49,25 +49,25 @@ func (c *Client) MetricsCollector() prometheus.Collector {
 	return c.metrics
 }
 
-func RecordProjects(c *Client, ctx context.Context, data []*typespb.Project) error {
-	req := &servicepb.RecordProjectsRequest{
+func RecordCommits(c *Client, ctx context.Context, data []*typespb.Commit) error {
+	req := &servicepb.RecordCommitsRequest{
 		Data: data,
 	}
-	_, err := c.stub.RecordProjects(ctx, req /* opts ...grpc.CallOption */)
+	_, err := c.stub.RecordCommits(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return fmt.Errorf("error recording projects: %w", err)
+		return fmt.Errorf("error recording commits: %w", err)
 	}
 
 	return nil
 }
 
-func RecordPipelines(c *Client, ctx context.Context, data []*typespb.Pipeline) error {
-	req := &servicepb.RecordPipelinesRequest{
+func RecordBridges(c *Client, ctx context.Context, data []*typespb.Bridge) error {
+	req := &servicepb.RecordBridgesRequest{
 		Data: data,
 	}
-	_, err := c.stub.RecordPipelines(ctx, req /* opts ...grpc.CallOption */)
+	_, err := c.stub.RecordBridges(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return fmt.Errorf("error recording pipelines: %w", err)
+		return fmt.Errorf("error recording bridges: %w", err)
 	}
 
 	return nil
@@ -85,6 +85,54 @@ func RecordJobs(c *Client, ctx context.Context, data []*typespb.Job) error {
 	return nil
 }
 
+func RecordMergeRequests(c *Client, ctx context.Context, data []*typespb.MergeRequest) error {
+	req := &servicepb.RecordMergeRequestsRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordMergeRequests(ctx, req /* opts ...grpc.CallOption */)
+	if err != nil {
+		return fmt.Errorf("error recording mergerequests: %w", err)
+	}
+
+	return nil
+}
+
+func RecordMetrics(c *Client, ctx context.Context, data []*typespb.Metric) error {
+	req := &servicepb.RecordMetricsRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordMetrics(ctx, req /* opts ...grpc.CallOption */)
+	if err != nil {
+		return fmt.Errorf("error recording metrics: %w", err)
+	}
+
+	return nil
+}
+
+func RecordPipelines(c *Client, ctx context.Context, data []*typespb.Pipeline) error {
+	req := &servicepb.RecordPipelinesRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordPipelines(ctx, req /* opts ...grpc.CallOption */)
+	if err != nil {
+		return fmt.Errorf("error recording pipelines: %w", err)
+	}
+
+	return nil
+}
+
+func RecordProjects(c *Client, ctx context.Context, data []*typespb.Project) error {
+	req := &servicepb.RecordProjectsRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordProjects(ctx, req /* opts ...grpc.CallOption */)
+	if err != nil {
+		return fmt.Errorf("error recording projects: %w", err)
+	}
+
+	return nil
+}
+
 func RecordSections(c *Client, ctx context.Context, data []*typespb.Section) error {
 	req := &servicepb.RecordSectionsRequest{
 		Data: data,
@@ -97,13 +145,13 @@ func RecordSections(c *Client, ctx context.Context, data []*typespb.Section) err
 	return nil
 }
 
-func RecordBridges(c *Client, ctx context.Context, data []*typespb.Bridge) error {
-	req := &servicepb.RecordBridgesRequest{
+func RecordTestCases(c *Client, ctx context.Context, data []*typespb.TestCase) error {
+	req := &servicepb.RecordTestCasesRequest{
 		Data: data,
 	}
-	_, err := c.stub.RecordBridges(ctx, req /* opts ...grpc.CallOption */)
+	_, err := c.stub.RecordTestCases(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return fmt.Errorf("error recording brodges: %w", err)
+		return fmt.Errorf("error recording testcases: %w", err)
 	}
 
 	return nil
@@ -133,30 +181,6 @@ func RecordTestSuites(c *Client, ctx context.Context, data []*typespb.TestSuite)
 	return nil
 }
 
-func RecordTestCases(c *Client, ctx context.Context, data []*typespb.TestCase) error {
-	req := &servicepb.RecordTestCasesRequest{
-		Data: data,
-	}
-	_, err := c.stub.RecordTestCases(ctx, req /* opts ...grpc.CallOption */)
-	if err != nil {
-		return fmt.Errorf("error recording testcases: %w", err)
-	}
-
-	return nil
-}
-
-func RecordMetrics(c *Client, ctx context.Context, data []*typespb.Metric) error {
-	req := &servicepb.RecordMetricsRequest{
-		Data: data,
-	}
-	_, err := c.stub.RecordMetrics(ctx, req /* opts ...grpc.CallOption */)
-	if err != nil {
-		return fmt.Errorf("error recording metrics: %w", err)
-	}
-
-	return nil
-}
-
 func RecordTraces(c *Client, ctx context.Context, data []*typespb.Trace) error {
 	req := &servicepb.RecordTracesRequest{
 		Data: data,
@@ -164,6 +188,18 @@ func RecordTraces(c *Client, ctx context.Context, data []*typespb.Trace) error {
 	_, err := c.stub.RecordTraces(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
 		return fmt.Errorf("error recording traces: %w", err)
+	}
+
+	return nil
+}
+
+func RecordUsers(c *Client, ctx context.Context, data []*typespb.User) error {
+	req := &servicepb.RecordUsersRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordUsers(ctx, req /* opts ...grpc.CallOption */)
+	if err != nil {
+		return fmt.Errorf("error recording users: %w", err)
 	}
 
 	return nil

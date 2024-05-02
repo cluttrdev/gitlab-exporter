@@ -62,6 +62,9 @@ func (c *Client) GetPipeline(ctx context.Context, projectID int64, pipelineID in
 }
 
 func convertPipelineInfo(pipeline *gitlab.PipelineInfo) *typespb.PipelineInfo {
+	if pipeline == nil {
+		return nil
+	}
 	return &typespb.PipelineInfo{
 		Id:        int64(pipeline.ID),
 		Iid:       int64(pipeline.IID),
@@ -78,17 +81,16 @@ func convertPipelineInfo(pipeline *gitlab.PipelineInfo) *typespb.PipelineInfo {
 
 func convertPipeline(pipeline *gitlab.Pipeline) *typespb.Pipeline {
 	return &typespb.Pipeline{
-		Id:         int64(pipeline.ID),
-		Iid:        int64(pipeline.IID),
-		ProjectId:  int64(pipeline.ProjectID),
-		Status:     pipeline.Status,
-		Source:     pipeline.Source,
-		Ref:        pipeline.Ref,
-		Sha:        pipeline.SHA,
-		BeforeSha:  pipeline.BeforeSHA,
-		Tag:        pipeline.Tag,
-		YamlErrors: pipeline.YamlErrors,
-		// User: ConvertUser(pipeline.User),
+		Id:             int64(pipeline.ID),
+		Iid:            int64(pipeline.IID),
+		ProjectId:      int64(pipeline.ProjectID),
+		Status:         pipeline.Status,
+		Source:         pipeline.Source,
+		Ref:            pipeline.Ref,
+		Sha:            pipeline.SHA,
+		BeforeSha:      pipeline.BeforeSHA,
+		Tag:            pipeline.Tag,
+		YamlErrors:     pipeline.YamlErrors,
 		CreatedAt:      convertTime(pipeline.CreatedAt),
 		UpdatedAt:      convertTime(pipeline.UpdatedAt),
 		StartedAt:      convertTime(pipeline.StartedAt),
@@ -98,7 +100,7 @@ func convertPipeline(pipeline *gitlab.Pipeline) *typespb.Pipeline {
 		QueuedDuration: convertDuration(float64(pipeline.QueuedDuration)),
 		Coverage:       convertCoverage(pipeline.Coverage),
 		WebUrl:         pipeline.WebURL,
-		// DetailedStatus: ConvertDetailedStatus(pipeline.DetailedStatus),
+		User:           convertBasicUser(pipeline.User),
 	}
 }
 

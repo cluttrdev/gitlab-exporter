@@ -38,7 +38,7 @@ func (c *Client) ListProjects(ctx context.Context, opt ListProjectsOptions) ([]*
 
 func (c *Client) GetProject(ctx context.Context, id int64) (*typespb.Project, error) {
 	opt := gitlab.GetProjectOptions{
-		Statistics: ptr(true),
+		Statistics: Ptr(true),
 	}
 
 	p, _, err := c.client.Projects.GetProject(int(id), &opt, gitlab.WithContext(ctx))
@@ -130,20 +130,35 @@ func convertProject(p *gitlab.Project) *typespb.Project {
 		NameWithNamespace: p.NameWithNamespace,
 		Path:              p.Path,
 		PathWithNamespace: p.PathWithNamespace,
-		Description:       p.Description,
 
 		CreatedAt:      convertTime(p.CreatedAt),
 		LastActivityAt: convertTime(p.LastActivityAt),
 
-		DefaultBranch: p.DefaultBranch,
-		WebUrl:        p.WebURL,
+		Namespace: convertProjectNamespace(p.Namespace),
+		Owner:     convertUser(p.Owner),
+		CreatorId: int64(p.CreatorID),
 
-		Namespace:  convertProjectNamespace(p.Namespace),
-		Statistics: convertProjectStatistics(p),
+		Topics:          p.Topics,
+		ForksCount:      int64(p.ForksCount),
+		StarsCount:      int64(p.StarCount),
+		Statistics:      convertProjectStatistics(p.Statistics),
+		OpenIssuesCount: int64(p.OpenIssuesCount),
+
+		Description: p.Description,
+
+		EmptyRepo: p.EmptyRepo,
+		Archived:  p.Archived,
+
+		DefaultBranch: p.DefaultBranch,
+		Visibility:    string(p.Visibility),
+		WebUrl:        p.WebURL,
 	}
 }
 
 func convertProjectNamespace(n *gitlab.ProjectNamespace) *typespb.ProjectNamespace {
+	if n == nil {
+		return nil
+	}
 	return &typespb.ProjectNamespace{
 		Id:       int64(n.ID),
 		Name:     n.Name,
@@ -157,21 +172,19 @@ func convertProjectNamespace(n *gitlab.ProjectNamespace) *typespb.ProjectNamespa
 	}
 }
 
-func convertProjectStatistics(p *gitlab.Project) *typespb.ProjectStatistics {
-	s := &typespb.ProjectStatistics{
-		ForksCount: int64(p.ForksCount),
-		StarsCount: int64(p.StarCount),
+func convertProjectStatistics(stats *gitlab.Statistics) *typespb.ProjectStatistics {
+	if stats == nil {
+		return nil
 	}
-	if p.Statistics != nil {
-		s.CommitCount = p.Statistics.CommitCount
-		s.StorageSize = p.Statistics.StorageSize
-		s.RepositorySize = p.Statistics.RepositorySize
-		s.WikiSize = p.Statistics.WikiSize
-		s.LfsObjectsSize = p.Statistics.LFSObjectsSize
-		s.JobArtifactsSize = p.Statistics.JobArtifactsSize
-		s.PackagesSize = p.Statistics.PackagesSize
-		s.SnippetsSize = p.Statistics.SnippetsSize
-		s.UploadsSize = p.Statistics.UploadsSize
+	return &typespb.ProjectStatistics{
+		CommitCount:      stats.CommitCount,
+		StorageSize:      stats.StorageSize,
+		RepositorySize:   stats.RepositorySize,
+		WikiSize:         stats.WikiSize,
+		LfsObjectsSize:   stats.LFSObjectsSize,
+		JobArtifactsSize: stats.JobArtifactsSize,
+		PackagesSize:     stats.PackagesSize,
+		SnippetsSize:     stats.SnippetsSize,
+		UploadsSize:      stats.UploadsSize,
 	}
-	return s
 }

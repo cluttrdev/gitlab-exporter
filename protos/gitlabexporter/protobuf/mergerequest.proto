@@ -1,0 +1,117 @@
+syntax = "proto3";
+
+option go_package = "github.com/cluttrdev/gitlab-exporter/protobuf/typespb";
+
+package gitlabexporter.protobuf;
+
+import "google/protobuf/timestamp.proto";
+
+import "gitlabexporter/protobuf/pipeline.proto";
+import "gitlabexporter/protobuf/user.proto";
+
+message MergeRequest {
+    // ID of the merge request.
+    int64 id = 1;
+    // Internal ID of the merge request.
+    int64 iid = 2;
+    // ID of the merge request project.
+    int64 project_id = 3;
+
+    // Timestamp of when the merge request was created.
+    google.protobuf.Timestamp created_at = 4;
+    // Timestamp of when the merge request was updated.
+    google.protobuf.Timestamp updated_at = 5;
+    // Timestamp of when the merge request merged.
+    google.protobuf.Timestamp merged_at = 6;
+    // Timestamp of when the merge request was closed.
+    google.protobuf.Timestamp closed_at = 7;
+
+    // ID of the merge request source project.
+    int64 source_project_id = 8;
+    // ID of the merge request target project.
+    int64 target_project_id = 9;
+    // Source branch of the merge request.
+    string source_branch = 10;
+    // Target branch of the merge request.
+    string target_branch = 11;
+
+    // Title of the merge request.
+    string title = 12;
+    // State of the merge request. Can be opened, closed, merged or locked.
+    string state = 13;
+    // Detailed merge status of the merge request.
+    string detailed_merge_status = 14;
+    // Indicates if the merge request is a draft.
+    bool draft = 15;
+    // Indicates if merge request has conflicts and cannot merge.
+    bool has_conflicts = 16;
+    // Error message shown when a merge has failed.
+    string merge_error = 17;
+
+    // References of the base SHA, the head SHA, and the start SHA for this merge request.
+    MergeRequestDiffRefs diff_refs = 18;
+
+    // User who created this merge request.
+    User author = 19;
+    // First assignee of the merge request.
+    User assignee = 20;
+    // Assignees of the merge request.
+    repeated User assignees = 21;
+    // Reviewers of the merge request.
+    repeated User reviewers = 22;
+    // The user who merged this merge request, the user who set it to auto-merge, or null.
+    User merge_user = 23;
+    // User who closed this merge request.
+    User close_user = 24;
+    // Labels of the merge request.
+    repeated string labels = 25;
+    
+    // Diff head SHA of the merge request.
+    string sha = 26;
+    // SHA of the merge request commit. Empty until merged.
+    string merge_commit_sha = 27;
+    // SHA of the squash commit. Empty until merged.
+    string squash_commit_sha = 28;
+
+    // Number of changes made on the merge request.
+    string changes_count = 29;
+    // User notes count of the merge request.
+    int64 user_notes_count = 30;
+    // Number of upvotes for the merge request.
+    int64 upvotes = 31;
+    // Number of downvotes for the merge request.
+    int64 downvotes = 32;
+
+    // Pipeline running on the branch HEAD of the merge request.
+    PipelineInfo pipeline = 33;
+
+    // Milestone of the merge request.
+    Milestone milestone = 34;
+
+    // Web URL of the merge request.
+    string web_url = 35;
+}
+
+message MergeRequestDiffRefs {
+    string base_sha = 1;
+    string head_sha = 2;
+    string start_sha = 3;
+}
+
+message Milestone {
+    int64 id = 1;
+    int64 iid = 2;
+    int64 project_id = 3;
+    int64 group_id = 4;
+    
+    google.protobuf.Timestamp created_at = 5;
+    google.protobuf.Timestamp updated_at = 6;
+    google.protobuf.Timestamp start_date = 7;
+    google.protobuf.Timestamp due_date = 8;
+
+    string title = 9;
+    string state = 10;
+    bool expired = 11;
+    
+    string web_url = 12;
+}

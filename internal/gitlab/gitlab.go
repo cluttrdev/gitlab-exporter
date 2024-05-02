@@ -9,7 +9,7 @@ import (
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 )
 
-func ptr[T any](v T) *T {
+func Ptr[T any](v T) *T {
 	return &v
 }
 

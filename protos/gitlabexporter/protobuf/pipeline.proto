@@ -7,6 +7,8 @@ package gitlabexporter.protobuf;
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 
+import "gitlabexporter/protobuf/user.proto";
+
 message Pipeline {
     int64 id = 1;
     int64 iid = 2;
@@ -27,6 +29,8 @@ message Pipeline {
     google.protobuf.Duration queued_duration = 17;
     double coverage = 18;
     string web_url = 19;
+
+    User user = 20;
 }
 
 message PipelineInfo {

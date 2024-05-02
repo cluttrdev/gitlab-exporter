@@ -103,8 +103,17 @@ func (c *Client) ListPipelineBridges(ctx context.Context, projectID int64, pipel
 }
 
 func convertJob(job *gitlab.Job) *typespb.Job {
+	artifacts := make([]*typespb.JobArtifacts, 0, len(job.Artifacts))
+	for _, a := range job.Artifacts {
+		artifacts = append(artifacts, &typespb.JobArtifacts{
+			Filename:   a.Filename,
+			FileType:   a.FileType,
+			FileFormat: a.FileFormat,
+			Size:       int64(a.Size),
+		})
+	}
+
 	return &typespb.Job{
-		// Commit: ConvertCommit(job.Commit),
 		Id:   int64(job.ID),
 		Name: job.Name,
 		Pipeline: &typespb.PipelineReference{
@@ -122,18 +131,69 @@ func convertJob(job *gitlab.Job) *typespb.Job {
 		Duration:       convertDuration(job.Duration),
 		QueuedDuration: convertDuration(job.QueuedDuration),
 		Coverage:       job.Coverage,
-		// Artifacts: ?,
-		// ArtifactsFile: ?,
-		// Runner: ConvertRunner(job.Runner),
-		Stage:         job.Stage,
-		Status:        job.Status,
-		AllowFailure:  job.AllowFailure,
-		FailureReason: job.FailureReason,
-		Tag:           job.Tag,
-		WebUrl:        job.WebURL,
-		TagList:       job.TagList,
-		// Project: ConvertProject(job.Project),
-		// User: ConvertUser(job.User),
+		Stage:          job.Stage,
+		Status:         job.Status,
+		AllowFailure:   job.AllowFailure,
+		FailureReason:  job.FailureReason,
+		Tag:            job.Tag,
+		WebUrl:         job.WebURL,
+		TagList:        job.TagList,
+
+		Commit:  convertCommit(job.Commit),
+		Project: convertProject(job.Project),
+		User:    convertUser(job.User),
+
+		Runner: &typespb.JobRunner{
+			Id:          int64(job.Runner.ID),
+			Name:        job.Runner.Name,
+			Description: job.Runner.Description,
+			Active:      job.Runner.Active,
+			IsShared:    job.Runner.IsShared,
+		},
+
+		Artifacts: artifacts,
+		ArtifactsFile: &typespb.JobArtifactsFile{
+			Filename: job.ArtifactsFile.Filename,
+			Size:     int64(job.ArtifactsFile.Size),
+		},
+		ArtifactsExpireAt: convertTime(job.ArtifactsExpireAt),
+	}
+}
+
+func convertCommit(commit *gitlab.Commit) *typespb.Commit {
+	var status string
+	if commit.Status != nil {
+		status = string(*commit.Status)
+	}
+	return &typespb.Commit{
+		Id:             commit.ID,
+		ShortId:        commit.ShortID,
+		ParentIds:      commit.ParentIDs,
+		ProjectId:      int64(commit.ProjectID),
+		AuthorName:     commit.AuthorName,
+		AuthorEmail:    commit.AuthorEmail,
+		AuthoredDate:   convertTime(commit.AuthoredDate),
+		CommitterName:  commit.CommitterName,
+		CommitterEmail: commit.CommitterEmail,
+		CommittedDate:  convertTime(commit.CommittedDate),
+		CreatedAt:      convertTime(commit.CreatedAt),
+		Title:          commit.Title,
+		Message:        commit.Message,
+		Trailers:       commit.Trailers,
+		Stats:          convertCommitStats(commit.Stats),
+		Status:         status,
+		WebUrl:         commit.WebURL,
+	}
+}
+
+func convertCommitStats(stats *gitlab.CommitStats) *typespb.CommitStats {
+	if stats == nil {
+		return nil
+	}
+	return &typespb.CommitStats{
+		Additions: int64(stats.Additions),
+		Deletions: int64(stats.Deletions),
+		Total:     int64(stats.Total),
 	}
 }
 
