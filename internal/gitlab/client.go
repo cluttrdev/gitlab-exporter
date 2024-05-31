@@ -35,6 +35,10 @@ func NewGitLabClient(cfg ClientConfig) (*Client, error) {
 	return &client, nil
 }
 
+func (c *Client) Client() *gitlab.Client {
+	return c.client
+}
+
 func (c *Client) Configure(cfg ClientConfig) error {
 	opts := []gitlab.ClientOptionFunc{
 		gitlab.WithBaseURL(cfg.URL),
