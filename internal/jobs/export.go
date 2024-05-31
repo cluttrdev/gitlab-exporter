@@ -48,7 +48,7 @@ func (j *ProjectExportJob) Run(ctx context.Context) {
 			wg.Add(1)
 			j.WorkerPool.Submit(func(ctx context.Context) {
 				defer wg.Done()
-				j.exportProject(ctx)
+				j.exportProject(ctx, iteration == 1)
 			})
 
 			wg.Add(1)
@@ -69,14 +69,14 @@ func (j *ProjectExportJob) Run(ctx context.Context) {
 	}
 }
 
-func (j *ProjectExportJob) exportProject(ctx context.Context) {
+func (j *ProjectExportJob) exportProject(ctx context.Context, first bool) {
 	projectID := j.Config.Id
 
 	project, err := j.GitLab.GetProject(ctx, projectID)
 	if err != nil {
 		slog.Error("error fetching project", "project", projectID, "error", err)
 		return
-	} else if !project.LastActivityAt.AsTime().After(j.lastUpdate) {
+	} else if !project.LastActivityAt.AsTime().After(j.lastUpdate) && !first {
 		return
 	}
 
