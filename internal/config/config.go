@@ -88,6 +88,8 @@ type Namespace struct {
 	Visibility       string `default:"" yaml:"visibility"`
 	WithShared       bool   `default:"false" yaml:"with_shared"`
 	IncludeSubgroups bool   `default:"false" yaml:"include_subgroups"`
+
+	ExcludeProjects []string `default:"[]" yaml:"exclude_projects"`
 }
 
 type HTTP struct {

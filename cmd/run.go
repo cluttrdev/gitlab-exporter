@@ -20,6 +20,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	_gitlab "github.com/xanzy/go-gitlab"
 
 	"github.com/cluttrdev/cli"
 
@@ -314,6 +315,14 @@ func resolveProjects(ctx context.Context, cfg config.Config, glab *gitlab.Client
 				ProjectSettings: namespace.ProjectSettings,
 				Id:              p.Id,
 			}
+		}
+
+		for _, pid := range namespace.ExcludeProjects {
+			p, _, err := glab.Client().Projects.GetProject(pid, nil, _gitlab.WithContext(ctx))
+			if err != nil {
+				return nil, fmt.Errorf("error getting project %q: %w", pid, err)
+			}
+			delete(pm, int64(p.ID))
 		}
 	}
 
