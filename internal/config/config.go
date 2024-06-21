@@ -51,10 +51,11 @@ type ProjectSettings struct {
 }
 
 type ProjectExport struct {
-	Sections    ProjectExportSections    `default:"{}" yaml:"sections"`
-	TestReports ProjectExportTestReports `default:"{}" yaml:"testreports"`
-	Traces      ProjectExportTraces      `default:"{}" yaml:"traces"`
-	Metrics     ProjectExportMetrics     `default:"{}" yaml:"metrics"`
+	Sections      ProjectExportSections      `default:"{}" yaml:"sections"`
+	TestReports   ProjectExportTestReports   `default:"{}" yaml:"testreports"`
+	Traces        ProjectExportTraces        `default:"{}" yaml:"traces"`
+	Metrics       ProjectExportMetrics       `default:"{}" yaml:"metrics"`
+	MergeRequests ProjectExportMergeRequests `default:"{}" yaml:"mergerequests"`
 }
 
 type ProjectExportSections struct {
@@ -70,6 +71,10 @@ type ProjectExportTraces struct {
 }
 
 type ProjectExportMetrics struct {
+	Enabled bool `default:"true" yaml:"enabled"`
+}
+
+type ProjectExportMergeRequests struct {
 	Enabled bool `default:"true" yaml:"enabled"`
 }
 

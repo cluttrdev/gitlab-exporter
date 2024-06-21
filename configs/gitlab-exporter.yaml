@@ -37,6 +37,10 @@ project_defaults:
       # If enabled, this may significantly increase the export time since it
       # requires fetching entire job logs to parse for embedded metrics.
       enabled: true
+
+    mergerequests:
+      # Whether or not to export merge request data
+      enabled: true
   
   catch_up:
     # Whether to export data from past pipelines at startup.
