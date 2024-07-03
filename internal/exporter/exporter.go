@@ -3,8 +3,10 @@ package exporter
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/proto"
 
 	grpc_client "github.com/cluttrdev/gitlab-exporter/grpc/client"
 	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
@@ -44,83 +46,99 @@ func (e *Exporter) MetricsCollectorFor(endpoint string) prometheus.Collector {
 	return c.MetricsCollector()
 }
 
-type recordFunc[T any] func(client *grpc_client.Client, ctx context.Context, data []*T) error
+type recordFunc[T proto.Message] func(client *grpc_client.Client, ctx context.Context, data []T) error
 
-func export[T any](exporter *Exporter, ctx context.Context, data []*T, record recordFunc[T]) error {
+func export[T proto.Message](exporter *Exporter, ctx context.Context, data []T, record recordFunc[T]) error {
 	if len(data) == 0 {
 		return nil
 	}
+
+	const maxChunkSize int = 2 * 1024 * 1024 // 2 MiB
 	var errs error
-	for _, client := range exporter.clients {
-		if err := record(client, ctx, data); err != nil {
-			errs = errors.Join(errs, err)
+	var i, j int
+	for i < len(data) {
+		j = rangeEndForSize(data, maxChunkSize, i)
+		if !(i < j) {
+			errs = errors.Join(errs, fmt.Errorf("empty range"))
+			break
 		}
+
+		for _, client := range exporter.clients {
+			if err := record(client, ctx, data[i:j]); err != nil {
+				errs = errors.Join(errs, err)
+			}
+		}
+
+		i = j
 	}
 	return errs
 }
 
+func rangeEndForSize[T proto.Message](data []T, size int, start int) int {
+	if start < 0 {
+		return 0
+	}
+
+	var end int = start
+	var s int = 0
+	for end < len(data) && s < size {
+		s += proto.Size(data[end])
+		end++
+	}
+
+	return end
+}
+
 func (e *Exporter) ExportCommits(ctx context.Context, data []*typespb.Commit) error {
-	return export[typespb.Commit](e, ctx, data, grpc_client.RecordCommits)
+	return export[*typespb.Commit](e, ctx, data, grpc_client.RecordCommits)
 }
 
 func (e *Exporter) ExportBridges(ctx context.Context, data []*typespb.Bridge) error {
-	return export[typespb.Bridge](e, ctx, data, grpc_client.RecordBridges)
+	return export[*typespb.Bridge](e, ctx, data, grpc_client.RecordBridges)
 }
 
 func (e *Exporter) ExportJobs(ctx context.Context, data []*typespb.Job) error {
-	return export[typespb.Job](e, ctx, data, grpc_client.RecordJobs)
+	return export[*typespb.Job](e, ctx, data, grpc_client.RecordJobs)
 }
 
 func (e *Exporter) ExportMergeRequests(ctx context.Context, data []*typespb.MergeRequest) error {
-	return export[typespb.MergeRequest](e, ctx, data, grpc_client.RecordMergeRequests)
+	return export[*typespb.MergeRequest](e, ctx, data, grpc_client.RecordMergeRequests)
 }
 
 func (e *Exporter) ExportMetrics(ctx context.Context, data []*typespb.Metric) error {
-	return export[typespb.Metric](e, ctx, data, grpc_client.RecordMetrics)
+	return export[*typespb.Metric](e, ctx, data, grpc_client.RecordMetrics)
 }
 
 func (e *Exporter) ExportPipelines(ctx context.Context, data []*typespb.Pipeline) error {
-	return export[typespb.Pipeline](e, ctx, data, grpc_client.RecordPipelines)
+	return export[*typespb.Pipeline](e, ctx, data, grpc_client.RecordPipelines)
 }
 
 func (e *Exporter) ExportProjects(ctx context.Context, data []*typespb.Project) error {
-	return export[typespb.Project](e, ctx, data, grpc_client.RecordProjects)
+	return export[*typespb.Project](e, ctx, data, grpc_client.RecordProjects)
 }
 
 func (e *Exporter) ExportSections(ctx context.Context, data []*typespb.Section) error {
-	return export[typespb.Section](e, ctx, data, grpc_client.RecordSections)
+	return export[*typespb.Section](e, ctx, data, grpc_client.RecordSections)
 }
 
 func (e *Exporter) ExportTestCases(ctx context.Context, data []*typespb.TestCase) error {
-	// testcases can easily go into millions
-	// to avoid message getting too large we export testcases in chunks
-	const chunkSize int = 1000
-	for begin := 0; begin < len(data); begin += chunkSize {
-		end := begin + chunkSize
-		if end > len(data) {
-			end = len(data)
-		}
-		if err := export[typespb.TestCase](e, ctx, data[begin:end], grpc_client.RecordTestCases); err != nil {
-			return err
-		}
-	}
-	return nil
+	return export[*typespb.TestCase](e, ctx, data, grpc_client.RecordTestCases)
 }
 
 func (e *Exporter) ExportTestReports(ctx context.Context, data []*typespb.TestReport) error {
-	return export[typespb.TestReport](e, ctx, data, grpc_client.RecordTestReports)
+	return export[*typespb.TestReport](e, ctx, data, grpc_client.RecordTestReports)
 }
 
 func (e *Exporter) ExportTestSuites(ctx context.Context, data []*typespb.TestSuite) error {
-	return export[typespb.TestSuite](e, ctx, data, grpc_client.RecordTestSuites)
+	return export[*typespb.TestSuite](e, ctx, data, grpc_client.RecordTestSuites)
 }
 
 func (e *Exporter) ExportTraces(ctx context.Context, data []*typespb.Trace) error {
-	return export[typespb.Trace](e, ctx, data, grpc_client.RecordTraces)
+	return export[*typespb.Trace](e, ctx, data, grpc_client.RecordTraces)
 }
 
 func (e *Exporter) ExportUsers(ctx context.Context, data []*typespb.User) error {
-	return export[typespb.User](e, ctx, data, grpc_client.RecordUsers)
+	return export[*typespb.User](e, ctx, data, grpc_client.RecordUsers)
 }
 
 func (e *Exporter) ExportPipelineHierarchy(ctx context.Context, ph *gitlab.PipelineHierarchy) error {
