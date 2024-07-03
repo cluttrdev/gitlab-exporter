@@ -17,13 +17,7 @@ func defaultConfig() config.Config {
 
 	cfg.Endpoints = []config.Endpoint{}
 
-	cfg.ProjectDefaults.Export.Sections.Enabled = true
-	cfg.ProjectDefaults.Export.TestReports.Enabled = true
-	cfg.ProjectDefaults.Export.Traces.Enabled = true
-	cfg.ProjectDefaults.Export.Metrics.Enabled = true
-	cfg.ProjectDefaults.CatchUp.Enabled = false
-	cfg.ProjectDefaults.CatchUp.UpdatedAfter = ""
-	cfg.ProjectDefaults.CatchUp.UpdatedBefore = ""
+	cfg.ProjectDefaults = defaultProjectSettings()
 
 	cfg.Projects = []config.Project{}
 	cfg.Namespaces = []config.Namespace{}
@@ -42,10 +36,11 @@ func defaultConfig() config.Config {
 func defaultProjectSettings() config.ProjectSettings {
 	var cfg config.ProjectSettings
 
+	cfg.Export.MergeRequests.Enabled = true
+	cfg.Export.Metrics.Enabled = true
 	cfg.Export.Sections.Enabled = true
 	cfg.Export.TestReports.Enabled = true
 	cfg.Export.Traces.Enabled = true
-	cfg.Export.Metrics.Enabled = true
 
 	cfg.CatchUp.Enabled = false
 	cfg.CatchUp.UpdatedAfter = ""
@@ -211,6 +206,9 @@ func TestLoad_DataWithProjects(t *testing.T) {
 					Traces: config.ProjectExportTraces{
 						Enabled: true,
 					},
+					MergeRequests: config.ProjectExportMergeRequests{
+						Enabled: true,
+					},
 					Metrics: config.ProjectExportMetrics{
 						Enabled: true,
 					},
@@ -234,6 +232,9 @@ func TestLoad_DataWithProjects(t *testing.T) {
 					},
 					Traces: config.ProjectExportTraces{
 						Enabled: false,
+					},
+					MergeRequests: config.ProjectExportMergeRequests{
+						Enabled: true,
 					},
 					Metrics: config.ProjectExportMetrics{
 						Enabled: true,
@@ -292,10 +293,11 @@ func TestLoad_DataWithProjectDefaults(t *testing.T) {
 	expected := defaultConfig()
 	expected.ProjectDefaults = config.ProjectSettings{
 		Export: config.ProjectExport{
-			Sections:    config.ProjectExportSections{Enabled: true},
-			TestReports: config.ProjectExportTestReports{Enabled: true},
-			Traces:      config.ProjectExportTraces{Enabled: false},
-			Metrics:     config.ProjectExportMetrics{Enabled: false},
+			Sections:      config.ProjectExportSections{Enabled: true},
+			TestReports:   config.ProjectExportTestReports{Enabled: true},
+			Traces:        config.ProjectExportTraces{Enabled: false},
+			MergeRequests: config.ProjectExportMergeRequests{Enabled: true},
+			Metrics:       config.ProjectExportMetrics{Enabled: false},
 		},
 		CatchUp: config.ProjectCatchUp{
 			Enabled:       true,
@@ -307,10 +309,11 @@ func TestLoad_DataWithProjectDefaults(t *testing.T) {
 		config.Project{
 			ProjectSettings: config.ProjectSettings{
 				Export: config.ProjectExport{
-					Sections:    config.ProjectExportSections{Enabled: true},
-					TestReports: config.ProjectExportTestReports{Enabled: true},
-					Traces:      config.ProjectExportTraces{Enabled: false},
-					Metrics:     config.ProjectExportMetrics{Enabled: false},
+					Sections:      config.ProjectExportSections{Enabled: true},
+					TestReports:   config.ProjectExportTestReports{Enabled: true},
+					Traces:        config.ProjectExportTraces{Enabled: false},
+					MergeRequests: config.ProjectExportMergeRequests{Enabled: true},
+					Metrics:       config.ProjectExportMetrics{Enabled: false},
 				},
 				CatchUp: config.ProjectCatchUp{
 					Enabled:       true,
@@ -323,10 +326,11 @@ func TestLoad_DataWithProjectDefaults(t *testing.T) {
 		config.Project{
 			ProjectSettings: config.ProjectSettings{
 				Export: config.ProjectExport{
-					Sections:    config.ProjectExportSections{Enabled: true},
-					TestReports: config.ProjectExportTestReports{Enabled: true},
-					Traces:      config.ProjectExportTraces{Enabled: false},
-					Metrics:     config.ProjectExportMetrics{Enabled: true},
+					Sections:      config.ProjectExportSections{Enabled: true},
+					TestReports:   config.ProjectExportTestReports{Enabled: true},
+					Traces:        config.ProjectExportTraces{Enabled: false},
+					MergeRequests: config.ProjectExportMergeRequests{Enabled: true},
+					Metrics:       config.ProjectExportMetrics{Enabled: true},
 				},
 				CatchUp: config.ProjectCatchUp{
 					Enabled:       true,
@@ -339,10 +343,11 @@ func TestLoad_DataWithProjectDefaults(t *testing.T) {
 		config.Project{
 			ProjectSettings: config.ProjectSettings{
 				Export: config.ProjectExport{
-					Sections:    config.ProjectExportSections{Enabled: false},
-					TestReports: config.ProjectExportTestReports{Enabled: true},
-					Traces:      config.ProjectExportTraces{Enabled: true},
-					Metrics:     config.ProjectExportMetrics{Enabled: false},
+					Sections:      config.ProjectExportSections{Enabled: false},
+					TestReports:   config.ProjectExportTestReports{Enabled: true},
+					Traces:        config.ProjectExportTraces{Enabled: true},
+					MergeRequests: config.ProjectExportMergeRequests{Enabled: true},
+					Metrics:       config.ProjectExportMetrics{Enabled: false},
 				},
 				CatchUp: config.ProjectCatchUp{
 					Enabled:       true,
