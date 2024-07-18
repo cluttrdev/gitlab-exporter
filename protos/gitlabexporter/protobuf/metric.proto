@@ -7,22 +7,19 @@ package gitlabexporter.protobuf;
 import "google/protobuf/timestamp.proto";
 
 message Metric {
-    string name = 1;
+    bytes id = 1;
+    int64 iid = 2;
+    int64 job_id = 3;
+
+    string name = 10;
 
     message Label {
         string name = 1;
         string value = 2;
     }
-    repeated Label labels = 2;
+    repeated Label labels = 11;
 
-    double value = 3;
+    double value = 12;
 
-    google.protobuf.Timestamp timestamp = 4;
-
-    message JobReference {
-        int64 id = 1;
-        string name = 2;
-    }
-
-    JobReference job = 5;
+    google.protobuf.Timestamp timestamp = 13;
 }

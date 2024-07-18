@@ -166,18 +166,18 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 				}
 
 				if opt.FetchJobMetrics {
+					var metricIID int = 0
 					for _, m := range data.Metrics {
+						metricIID++
 						metric := &typespb.Metric{
+							Id:        []byte(fmt.Sprintf("%d-%d", job.Id, metricIID)),
+							Iid:       int64(metricIID),
+							JobId:     job.Id,
 							Name:      m.Name,
 							Labels:    convertLabels(m.Labels),
 							Value:     m.Value,
 							Timestamp: convertUnixMilli(m.Timestamp),
-							Job: &typespb.Metric_JobReference{
-								Id:   job.Id,
-								Name: job.Name,
-							},
 						}
-
 						metrics = append(metrics, metric)
 					}
 				}
