@@ -10,6 +10,7 @@ import (
 
 	gitlab "github.com/xanzy/go-gitlab"
 
+	"github.com/cluttrdev/gitlab-exporter/internal/types"
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
@@ -156,9 +157,9 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 							},
 							Pipeline:   job.Pipeline,
 							Name:       secdat.Name,
-							StartedAt:  convertUnixSeconds(secdat.Start),
-							FinishedAt: convertUnixSeconds(secdat.End),
-							Duration:   convertDuration(float64(secdat.End - secdat.Start)),
+							StartedAt:  types.ConvertUnixSeconds(secdat.Start),
+							FinishedAt: types.ConvertUnixSeconds(secdat.End),
+							Duration:   types.ConvertDuration(float64(secdat.End - secdat.Start)),
 						}
 
 						sections = append(sections, section)
@@ -176,7 +177,7 @@ func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipe
 							Name:      m.Name,
 							Labels:    convertLabels(m.Labels),
 							Value:     m.Value,
-							Timestamp: convertUnixMilli(m.Timestamp),
+							Timestamp: types.ConvertUnixMilli(m.Timestamp),
 						}
 						metrics = append(metrics, metric)
 					}

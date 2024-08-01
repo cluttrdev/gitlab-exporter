@@ -3,6 +3,7 @@ package jobs
 import (
 	"context"
 	"errors"
+	"fmt"
 	"log/slog"
 	"sync"
 	"time"
@@ -13,6 +14,7 @@ import (
 	"github.com/cluttrdev/gitlab-exporter/internal/exporter"
 	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
 	"github.com/cluttrdev/gitlab-exporter/internal/tasks"
+	"github.com/cluttrdev/gitlab-exporter/internal/types"
 	"github.com/cluttrdev/gitlab-exporter/pkg/worker"
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
@@ -129,7 +131,8 @@ func (j *ProjectExportJob) exportProjectPipelines(ctx context.Context, wg *sync.
 }
 
 func (j *ProjectExportJob) exportProjectMergeRequests(ctx context.Context) {
-	projectID := j.Config.Id
+	projectID := int(j.Config.Id)
+	glab := j.GitLab.Client()
 
 	opt := _gitlab.ListProjectMergeRequestsOptions{
 		ListOptions: _gitlab.ListOptions{
@@ -149,7 +152,8 @@ func (j *ProjectExportJob) exportProjectMergeRequests(ctx context.Context) {
 
 	var wg sync.WaitGroup
 	for {
-		mrs, resp, err := j.GitLab.Client().MergeRequests.ListProjectMergeRequests(int(projectID), &opt, options...)
+		// get iids of updated merge requests
+		mrs, resp, err := glab.MergeRequests.ListProjectMergeRequests(projectID, &opt, options...)
 		if err != nil {
 			slog.Error("error fetching project merge requests", "project", projectID, "error", err)
 			break
@@ -167,24 +171,22 @@ func (j *ProjectExportJob) exportProjectMergeRequests(ctx context.Context) {
 
 			opt := _gitlab.GetMergeRequestsOptions{}
 			for _, iid := range iids {
-				mr, _, err := j.GitLab.Client().MergeRequests.GetMergeRequest(int(projectID), iid, &opt, _gitlab.WithContext(ctx))
+				mr, _, err := glab.MergeRequests.GetMergeRequest(projectID, iid, &opt, _gitlab.WithContext(ctx))
 				if err != nil {
 					if errors.Is(err, context.Canceled) {
 						break
 					}
-					slog.Error(err.Error())
+					slog.Error("error fetching merge request", "project_id", projectID, "iid", iid)
 					continue
 				}
 
-				mergerequests = append(mergerequests, gitlab.ConvertMergeRequest(mr))
+				mergerequests = append(mergerequests, types.ConvertMergeRequest(mr))
 			}
 
-			if len(mergerequests) == 0 {
-				return
-			}
-
-			if err := j.Exporter.ExportMergeRequests(ctx, mergerequests); err != nil {
-				slog.Error(err.Error())
+			if len(mergerequests) > 0 {
+				if err := j.Exporter.ExportMergeRequests(ctx, mergerequests); err != nil {
+					slog.Error(fmt.Sprintf("error exporting merge requests: %v", err))
+				}
 			}
 		})
 
@@ -197,5 +199,7 @@ func (j *ProjectExportJob) exportProjectMergeRequests(ctx context.Context) {
 			_gitlab.WithKeysetPaginationParameters(resp.NextLink),
 		}
 	}
+
+	// wait for all paginated exports to finish
 	wg.Wait()
 }

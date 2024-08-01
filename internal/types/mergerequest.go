@@ -1,59 +1,13 @@
-package gitlab
+package types
 
 import (
-	"context"
+	"strings"
 	"time"
 
-	gitlab "github.com/xanzy/go-gitlab"
+	"github.com/xanzy/go-gitlab"
 
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
-
-type ListProjectMergeRequestsOptions struct {
-	gitlab.ListProjectMergeRequestsOptions
-
-	Paginate bool
-}
-
-func (c *Client) ListProjectMergeRequests(ctx context.Context, id int64, opt ListProjectMergeRequestsOptions) ([]*typespb.MergeRequest, error) {
-	var mergerequests []*typespb.MergeRequest
-
-	options := []gitlab.RequestOptionFunc{
-		gitlab.WithContext(ctx),
-	}
-
-	for {
-		mrs, resp, err := c.client.MergeRequests.ListProjectMergeRequests(int(id), &opt.ListProjectMergeRequestsOptions, options...)
-		if err != nil {
-			return mergerequests, err
-		}
-
-		for _, mr := range mrs {
-			mergerequests = append(mergerequests, ConvertMergeRequest(mr))
-		}
-
-		if !opt.Paginate {
-			break
-		}
-
-		if opt.ListOptions.Pagination == "keyset" {
-			if resp.NextLink == "" {
-				break
-			}
-			options = []gitlab.RequestOptionFunc{
-				gitlab.WithContext(ctx),
-				gitlab.WithKeysetPaginationParameters(resp.NextLink),
-			}
-		} else {
-			if resp.NextPage == 0 {
-				break
-			}
-			opt.Page = resp.NextPage
-		}
-	}
-
-	return mergerequests, nil
-}
 
 func ConvertMergeRequest(mr *gitlab.MergeRequest) *typespb.MergeRequest {
 	return &typespb.MergeRequest{
@@ -61,10 +15,10 @@ func ConvertMergeRequest(mr *gitlab.MergeRequest) *typespb.MergeRequest {
 		Iid:       int64(mr.IID),
 		ProjectId: int64(mr.ProjectID),
 
-		CreatedAt: convertTime(mr.CreatedAt),
-		UpdatedAt: convertTime(mr.UpdatedAt),
-		MergedAt:  convertTime(mr.MergedAt),
-		ClosedAt:  convertTime(mr.ClosedAt),
+		CreatedAt: ConvertTime(mr.CreatedAt),
+		UpdatedAt: ConvertTime(mr.UpdatedAt),
+		MergedAt:  ConvertTime(mr.MergedAt),
+		ClosedAt:  ConvertTime(mr.ClosedAt),
 
 		SourceProjectId: int64(mr.SourceProjectID),
 		TargetProjectId: int64(mr.TargetProjectID),
@@ -102,7 +56,7 @@ func ConvertMergeRequest(mr *gitlab.MergeRequest) *typespb.MergeRequest {
 		Upvotes:        int64(mr.Upvotes),
 		Downvotes:      int64(mr.Downvotes),
 
-		Pipeline: convertPipelineInfo(mr.Pipeline),
+		Pipeline: ConvertPipelineInfo(mr.Pipeline),
 
 		Milestone: convertMilestone(mr.Milestone),
 
@@ -119,7 +73,7 @@ func convertBasicUser(u *gitlab.BasicUser) *typespb.User {
 		Username:  u.Username,
 		Name:      u.Name,
 		State:     u.State,
-		CreatedAt: convertTime(u.CreatedAt),
+		CreatedAt: ConvertTime(u.CreatedAt),
 	}
 }
 
@@ -132,7 +86,7 @@ func convertUser(u *gitlab.User) *typespb.User {
 		Username:  u.Username,
 		Name:      u.Name,
 		State:     u.State,
-		CreatedAt: convertTime(u.CreatedAt),
+		CreatedAt: ConvertTime(u.CreatedAt),
 	}
 }
 
@@ -153,9 +107,9 @@ func convertMilestone(m *gitlab.Milestone) *typespb.Milestone {
 		Iid:       int64(m.IID),
 		ProjectId: int64(m.ProjectID),
 		GroupId:   int64(m.GroupID),
-		CreatedAt: convertTime(m.CreatedAt),
-		UpdatedAt: convertTime(m.UpdatedAt),
-		StartDate: convertTime((*time.Time)(m.StartDate)),
-		DueDate:   convertTime((*time.Time)(m.DueDate)),
+		CreatedAt: ConvertTime(m.CreatedAt),
+		UpdatedAt: ConvertTime(m.UpdatedAt),
+		StartDate: ConvertTime((*time.Time)(m.StartDate)),
+		DueDate:   ConvertTime((*time.Time)(m.DueDate)),
 	}
 }

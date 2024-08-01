@@ -13,6 +13,7 @@ import (
 	"github.com/cluttrdev/gitlab-exporter/internal/exporter"
 	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
 	"github.com/cluttrdev/gitlab-exporter/internal/tasks"
+	"github.com/cluttrdev/gitlab-exporter/internal/types"
 	"github.com/cluttrdev/gitlab-exporter/pkg/worker"
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
@@ -165,7 +166,7 @@ func (j *ProjectCatchUpJob) exportProjectMergeRequests(ctx context.Context) {
 					continue
 				}
 
-				mergerequests = append(mergerequests, gitlab.ConvertMergeRequest(mr))
+				mergerequests = append(mergerequests, types.ConvertMergeRequest(mr))
 			}
 
 			if len(mergerequests) == 0 {
