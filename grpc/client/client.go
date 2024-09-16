@@ -97,6 +97,18 @@ func RecordMergeRequests(c *Client, ctx context.Context, data []*typespb.MergeRe
 	return nil
 }
 
+func RecordMergeRequestNoteEvents(c *Client, ctx context.Context, data []*typespb.MergeRequestNoteEvent) error {
+	req := &servicepb.RecordMergeRequestNoteEventsRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordMergeRequestNoteEvents(ctx, req /* opts ...grpc.CallOption */)
+	if err != nil {
+		return fmt.Errorf("error recording merge request note events: %w", err)
+	}
+
+	return nil
+}
+
 func RecordMetrics(c *Client, ctx context.Context, data []*typespb.Metric) error {
 	req := &servicepb.RecordMetricsRequest{
 		Data: data,

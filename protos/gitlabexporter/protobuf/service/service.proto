@@ -21,6 +21,7 @@ service GitLabExporter {
     rpc RecordCommits(RecordCommitsRequest) returns (RecordSummary) {}
     rpc RecordJobs(RecordJobsRequest) returns (RecordSummary) {}
     rpc RecordMergeRequests(RecordMergeRequestsRequest) returns (RecordSummary) {}
+    rpc RecordMergeRequestNoteEvents(RecordMergeRequestNoteEventsRequest) returns (RecordSummary) {}
     rpc RecordMetrics(RecordMetricsRequest) returns (RecordSummary) {}
     rpc RecordPipelines(RecordPipelinesRequest) returns (RecordSummary) {}
     rpc RecordProjects(RecordProjectsRequest) returns (RecordSummary) {}
@@ -50,6 +51,10 @@ message RecordJobsRequest {
 
 message RecordMergeRequestsRequest {
     repeated gitlabexporter.protobuf.MergeRequest data = 1;
+}
+
+message RecordMergeRequestNoteEventsRequest {
+    repeated gitlabexporter.protobuf.MergeRequestNoteEvent data = 1;
 }
 
 message RecordMetricsRequest {

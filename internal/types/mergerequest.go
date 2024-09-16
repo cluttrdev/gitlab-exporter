@@ -64,6 +64,75 @@ func ConvertMergeRequest(mr *gitlab.MergeRequest) *typespb.MergeRequest {
 	}
 }
 
+func ConvertToMergeRequestNoteEvent(note *gitlab.Note) *typespb.MergeRequestNoteEvent {
+	if note.NoteableType != "MergeRequest" {
+		return nil
+	}
+
+	evType := getNoteEventType(note)
+	if evType == "" {
+		return nil
+	}
+
+	return &typespb.MergeRequestNoteEvent{
+		Id:              int64(note.ID),
+		MergerequestId:  int64(note.NoteableID),
+		MergerequestIid: int64(note.NoteableIID),
+		ProjectId:       int64(note.ProjectID),
+		CreatedAt:       ConvertTime(note.CreatedAt),
+		UpdatedAt:       ConvertTime(note.UpdatedAt),
+		Type:            evType,
+		System:          note.System,
+		AuthorId:        int64(note.Author.ID),
+		Resolveable:     note.Resolvable,
+		Resolved:        note.Resolved,
+		ResolverId:      int64(note.ResolvedBy.ID),
+		Confidential:    note.Confidential,
+		Internal:        note.Internal,
+	}
+}
+
+func getNoteEventType(note *gitlab.Note) string {
+	if t := string(note.Type); t != "" {
+		switch t {
+		case "DiffNote", "DiscussionNote":
+			return t
+		}
+	}
+
+	if note.System {
+		switch {
+		case note.Body == "resolved all threads":
+			return "AllThreadsResolved"
+
+		case note.Body == "approved this merge request":
+			return "Approved"
+		case note.Body == "unapproved this merge request":
+			return "Unapproved"
+
+		case note.Body == "changed the description":
+			return "DescriptionChanged"
+
+		case note.Body == "marked this merge request as **draft**":
+			return "MarkedDraft"
+		case note.Body == "marked this merge request as **ready**":
+			return "MarkedReady"
+
+		case strings.HasPrefix(note.Body, "assigned to"):
+			return "Assigned"
+		case strings.HasPrefix(note.Body, "unassigned"):
+			return "Unassigned"
+
+		case strings.HasPrefix(note.Body, "requested review"):
+			return "ReviewRequested"
+		case strings.HasPrefix(note.Body, "removed review requested"):
+			return "ReviewRequestRemoved"
+		}
+	}
+
+	return ""
+}
+
 func convertBasicUser(u *gitlab.BasicUser) *typespb.User {
 	if u == nil {
 		return nil

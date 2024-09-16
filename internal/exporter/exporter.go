@@ -105,6 +105,10 @@ func (e *Exporter) ExportMergeRequests(ctx context.Context, data []*typespb.Merg
 	return export[*typespb.MergeRequest](e, ctx, data, grpc_client.RecordMergeRequests)
 }
 
+func (e *Exporter) ExportMergeRequestNoteEvents(ctx context.Context, data []*typespb.MergeRequestNoteEvent) error {
+	return export[*typespb.MergeRequestNoteEvent](e, ctx, data, grpc_client.RecordMergeRequestNoteEvents)
+}
+
 func (e *Exporter) ExportMetrics(ctx context.Context, data []*typespb.Metric) error {
 	return export[*typespb.Metric](e, ctx, data, grpc_client.RecordMetrics)
 }

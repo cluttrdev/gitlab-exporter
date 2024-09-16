@@ -98,6 +98,28 @@ message MergeRequestDiffRefs {
     string start_sha = 3;
 }
 
+message MergeRequestNoteEvent {
+    int64 id = 1;
+    int64 mergerequest_id = 2;
+    int64 mergerequest_iid = 3;
+    int64 project_id = 4;
+
+    google.protobuf.Timestamp created_at = 5;
+    google.protobuf.Timestamp updated_at = 6;
+
+    string type = 7;
+    bool system = 8;
+
+    int64 author_id = 9;
+
+    bool resolveable = 10;
+    bool resolved = 11;
+    int64 resolver_id = 12;
+
+    bool confidential = 13;
+    bool internal = 14;
+}
+
 message Milestone {
     int64 id = 1;
     int64 iid = 2;

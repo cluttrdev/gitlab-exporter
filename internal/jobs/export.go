@@ -168,6 +168,7 @@ func (j *ProjectExportJob) exportProjectMergeRequests(ctx context.Context) {
 		j.WorkerPool.Submit(func(ctx context.Context) {
 			defer wg.Done()
 			mergerequests := make([]*typespb.MergeRequest, 0, len(iids))
+			mrNoteEvents := make([]*typespb.MergeRequestNoteEvent, 0, len(iids))
 
 			opt := _gitlab.GetMergeRequestsOptions{}
 			for _, iid := range iids {
@@ -181,11 +182,34 @@ func (j *ProjectExportJob) exportProjectMergeRequests(ctx context.Context) {
 				}
 
 				mergerequests = append(mergerequests, types.ConvertMergeRequest(mr))
+
+				if j.Config.Export.MergeRequests.NoteEvents {
+					notes, err := tasks.FetchMergeRequestNotes(ctx, glab, projectID, iid)
+					if err != nil {
+						if errors.Is(err, context.Canceled) {
+							break
+						}
+						slog.Error("error fetching merge request note events", "project_id", projectID, "iid", iid)
+						continue
+					}
+
+					for _, note := range notes {
+						if ev := types.ConvertToMergeRequestNoteEvent(note); ev != nil {
+							mrNoteEvents = append(mrNoteEvents, ev)
+						}
+					}
+				}
 			}
 
 			if len(mergerequests) > 0 {
 				if err := j.Exporter.ExportMergeRequests(ctx, mergerequests); err != nil {
 					slog.Error(fmt.Sprintf("error exporting merge requests: %v", err))
+				}
+			}
+
+			if len(mrNoteEvents) > 0 {
+				if err := j.Exporter.ExportMergeRequestNoteEvents(ctx, mrNoteEvents); err != nil {
+					slog.Error(fmt.Sprintf("error exporting merge request note events: %v", err))
 				}
 			}
 		})

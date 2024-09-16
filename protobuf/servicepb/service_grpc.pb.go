@@ -19,19 +19,20 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	GitLabExporter_RecordBridges_FullMethodName       = "/gitlabexporter.protobuf.service.GitLabExporter/RecordBridges"
-	GitLabExporter_RecordCommits_FullMethodName       = "/gitlabexporter.protobuf.service.GitLabExporter/RecordCommits"
-	GitLabExporter_RecordJobs_FullMethodName          = "/gitlabexporter.protobuf.service.GitLabExporter/RecordJobs"
-	GitLabExporter_RecordMergeRequests_FullMethodName = "/gitlabexporter.protobuf.service.GitLabExporter/RecordMergeRequests"
-	GitLabExporter_RecordMetrics_FullMethodName       = "/gitlabexporter.protobuf.service.GitLabExporter/RecordMetrics"
-	GitLabExporter_RecordPipelines_FullMethodName     = "/gitlabexporter.protobuf.service.GitLabExporter/RecordPipelines"
-	GitLabExporter_RecordProjects_FullMethodName      = "/gitlabexporter.protobuf.service.GitLabExporter/RecordProjects"
-	GitLabExporter_RecordSections_FullMethodName      = "/gitlabexporter.protobuf.service.GitLabExporter/RecordSections"
-	GitLabExporter_RecordTestCases_FullMethodName     = "/gitlabexporter.protobuf.service.GitLabExporter/RecordTestCases"
-	GitLabExporter_RecordTestReports_FullMethodName   = "/gitlabexporter.protobuf.service.GitLabExporter/RecordTestReports"
-	GitLabExporter_RecordTestSuites_FullMethodName    = "/gitlabexporter.protobuf.service.GitLabExporter/RecordTestSuites"
-	GitLabExporter_RecordTraces_FullMethodName        = "/gitlabexporter.protobuf.service.GitLabExporter/RecordTraces"
-	GitLabExporter_RecordUsers_FullMethodName         = "/gitlabexporter.protobuf.service.GitLabExporter/RecordUsers"
+	GitLabExporter_RecordBridges_FullMethodName                = "/gitlabexporter.protobuf.service.GitLabExporter/RecordBridges"
+	GitLabExporter_RecordCommits_FullMethodName                = "/gitlabexporter.protobuf.service.GitLabExporter/RecordCommits"
+	GitLabExporter_RecordJobs_FullMethodName                   = "/gitlabexporter.protobuf.service.GitLabExporter/RecordJobs"
+	GitLabExporter_RecordMergeRequests_FullMethodName          = "/gitlabexporter.protobuf.service.GitLabExporter/RecordMergeRequests"
+	GitLabExporter_RecordMergeRequestNoteEvents_FullMethodName = "/gitlabexporter.protobuf.service.GitLabExporter/RecordMergeRequestNoteEvents"
+	GitLabExporter_RecordMetrics_FullMethodName                = "/gitlabexporter.protobuf.service.GitLabExporter/RecordMetrics"
+	GitLabExporter_RecordPipelines_FullMethodName              = "/gitlabexporter.protobuf.service.GitLabExporter/RecordPipelines"
+	GitLabExporter_RecordProjects_FullMethodName               = "/gitlabexporter.protobuf.service.GitLabExporter/RecordProjects"
+	GitLabExporter_RecordSections_FullMethodName               = "/gitlabexporter.protobuf.service.GitLabExporter/RecordSections"
+	GitLabExporter_RecordTestCases_FullMethodName              = "/gitlabexporter.protobuf.service.GitLabExporter/RecordTestCases"
+	GitLabExporter_RecordTestReports_FullMethodName            = "/gitlabexporter.protobuf.service.GitLabExporter/RecordTestReports"
+	GitLabExporter_RecordTestSuites_FullMethodName             = "/gitlabexporter.protobuf.service.GitLabExporter/RecordTestSuites"
+	GitLabExporter_RecordTraces_FullMethodName                 = "/gitlabexporter.protobuf.service.GitLabExporter/RecordTraces"
+	GitLabExporter_RecordUsers_FullMethodName                  = "/gitlabexporter.protobuf.service.GitLabExporter/RecordUsers"
 )
 
 // GitLabExporterClient is the client API for GitLabExporter service.
@@ -42,6 +43,7 @@ type GitLabExporterClient interface {
 	RecordCommits(ctx context.Context, in *RecordCommitsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordJobs(ctx context.Context, in *RecordJobsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordMergeRequests(ctx context.Context, in *RecordMergeRequestsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
+	RecordMergeRequestNoteEvents(ctx context.Context, in *RecordMergeRequestNoteEventsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordMetrics(ctx context.Context, in *RecordMetricsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordPipelines(ctx context.Context, in *RecordPipelinesRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordProjects(ctx context.Context, in *RecordProjectsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
@@ -91,6 +93,15 @@ func (c *gitLabExporterClient) RecordJobs(ctx context.Context, in *RecordJobsReq
 func (c *gitLabExporterClient) RecordMergeRequests(ctx context.Context, in *RecordMergeRequestsRequest, opts ...grpc.CallOption) (*RecordSummary, error) {
 	out := new(RecordSummary)
 	err := c.cc.Invoke(ctx, GitLabExporter_RecordMergeRequests_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gitLabExporterClient) RecordMergeRequestNoteEvents(ctx context.Context, in *RecordMergeRequestNoteEventsRequest, opts ...grpc.CallOption) (*RecordSummary, error) {
+	out := new(RecordSummary)
+	err := c.cc.Invoke(ctx, GitLabExporter_RecordMergeRequestNoteEvents_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -186,6 +197,7 @@ type GitLabExporterServer interface {
 	RecordCommits(context.Context, *RecordCommitsRequest) (*RecordSummary, error)
 	RecordJobs(context.Context, *RecordJobsRequest) (*RecordSummary, error)
 	RecordMergeRequests(context.Context, *RecordMergeRequestsRequest) (*RecordSummary, error)
+	RecordMergeRequestNoteEvents(context.Context, *RecordMergeRequestNoteEventsRequest) (*RecordSummary, error)
 	RecordMetrics(context.Context, *RecordMetricsRequest) (*RecordSummary, error)
 	RecordPipelines(context.Context, *RecordPipelinesRequest) (*RecordSummary, error)
 	RecordProjects(context.Context, *RecordProjectsRequest) (*RecordSummary, error)
@@ -213,6 +225,9 @@ func (UnimplementedGitLabExporterServer) RecordJobs(context.Context, *RecordJobs
 }
 func (UnimplementedGitLabExporterServer) RecordMergeRequests(context.Context, *RecordMergeRequestsRequest) (*RecordSummary, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecordMergeRequests not implemented")
+}
+func (UnimplementedGitLabExporterServer) RecordMergeRequestNoteEvents(context.Context, *RecordMergeRequestNoteEventsRequest) (*RecordSummary, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RecordMergeRequestNoteEvents not implemented")
 }
 func (UnimplementedGitLabExporterServer) RecordMetrics(context.Context, *RecordMetricsRequest) (*RecordSummary, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecordMetrics not implemented")
@@ -322,6 +337,24 @@ func _GitLabExporter_RecordMergeRequests_Handler(srv interface{}, ctx context.Co
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(GitLabExporterServer).RecordMergeRequests(ctx, req.(*RecordMergeRequestsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GitLabExporter_RecordMergeRequestNoteEvents_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RecordMergeRequestNoteEventsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GitLabExporterServer).RecordMergeRequestNoteEvents(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GitLabExporter_RecordMergeRequestNoteEvents_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GitLabExporterServer).RecordMergeRequestNoteEvents(ctx, req.(*RecordMergeRequestNoteEventsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -510,6 +543,10 @@ var GitLabExporter_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RecordMergeRequests",
 			Handler:    _GitLabExporter_RecordMergeRequests_Handler,
+		},
+		{
+			MethodName: "RecordMergeRequestNoteEvents",
+			Handler:    _GitLabExporter_RecordMergeRequestNoteEvents_Handler,
 		},
 		{
 			MethodName: "RecordMetrics",

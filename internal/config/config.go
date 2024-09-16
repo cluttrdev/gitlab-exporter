@@ -76,6 +76,8 @@ type ProjectExportMetrics struct {
 
 type ProjectExportMergeRequests struct {
 	Enabled bool `default:"true" yaml:"enabled"`
+
+	NoteEvents bool `default:"true" yaml:"note_events"`
 }
 
 type ProjectCatchUp struct {
