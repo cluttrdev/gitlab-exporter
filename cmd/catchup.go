@@ -11,12 +11,12 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/cluttrdev/cli"
+	"github.com/alitto/pond"
 	"github.com/oklog/run"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 
-	"github.com/cluttrdev/gitlab-exporter/pkg/worker"
+	"github.com/cluttrdev/cli"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/internal/exporter"
@@ -104,25 +104,11 @@ func (c *CatchUpConfig) Exec(ctx context.Context, args []string) error {
 
 	g := &run.Group{}
 
-	pool := worker.NewWorkerPool(42)
-	{ // worker pool
-		ctx, cancel := context.WithCancel(context.Background())
-
-		g.Add(func() error { // execute
-			slog.Info("Starting worker pool")
-			pool.Start(ctx)
-			<-ctx.Done()
-			return ctx.Err()
-		}, func(err error) { // interrupt
-			defer cancel()
-			slog.Info("Stopping worker pool...")
-			pool.Stop()
-			slog.Info("Stopping worker pool... done")
-		})
-	}
-
 	if len(cfg.Projects) > 0 { // jobs
-		ctx, cancel := context.WithCancel(context.Background())
+		ctxJobs, cancelJobs := context.WithCancel(context.Background())
+
+		slog.Info("Starting worker pool")
+		pool := pond.New(42, 1024, pond.Context(ctxJobs))
 
 		g.Add(func() error { // execute
 			var wg sync.WaitGroup
@@ -149,8 +135,12 @@ func (c *CatchUpConfig) Exec(ctx context.Context, args []string) error {
 			return nil
 		}, func(err error) { // interrupt
 			slog.Info("Cancelling jobs...")
-			cancel()
-			<-ctx.Done()
+			cancelJobs()
+
+			slog.Info("Stopping worker pool...")
+			pool.StopAndWait()
+			slog.Info("Stopping worker pool... done")
+
 			slog.Info("Cancelling jobs... done")
 		})
 	} else {

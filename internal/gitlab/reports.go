@@ -19,21 +19,19 @@ type PipelineTestReportData struct {
 }
 
 func (c *Client) GetPipelineTestReport(ctx context.Context, projectID int64, pipelineID int64) (*PipelineTestReportData, error) {
-	c.RLock()
-	defer c.RUnlock()
 	report, _, err := c.client.Pipelines.GetPipelineTestReport(int(projectID), int(pipelineID), gitlab.WithContext(ctx))
 	if err != nil {
-		return nil, fmt.Errorf("error getting pipeline test report: %w", err)
+		return nil, fmt.Errorf("get pipeline test report: %w", err)
 	}
 	summary, err := c.GetPipelineTestReportSummary(ctx, projectID, pipelineID)
 	if err != nil {
-		return nil, fmt.Errorf("error getting pipeline test report summary: %w", err)
+		return nil, fmt.Errorf("get pipeline test report summary: %w", err)
 	}
 
 	testreport, testsuites, testcases := types.ConvertTestReport(pipelineID, report)
 
 	if err := overrideIDs(pipelineID, summary, testreport, testsuites, testcases); err != nil {
-		return nil, fmt.Errorf("error setting test report ids: %w", err)
+		return nil, fmt.Errorf("set test report ids: %w", err)
 	}
 
 	return &PipelineTestReportData{

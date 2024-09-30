@@ -99,131 +99,108 @@ type GetPipelineHierarchyOptions struct {
 type GetPipelineHierarchyResult struct {
 	PipelineHierarchy *PipelineHierarchy
 	Metrics           []*typespb.Metric
-	Error             error
 }
 
-func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipelineID int64, opt *GetPipelineHierarchyOptions) <-chan GetPipelineHierarchyResult {
-	ch := make(chan GetPipelineHierarchyResult)
+func (c *Client) GetPipelineHierarchy(ctx context.Context, projectID int64, pipelineID int64, opt *GetPipelineHierarchyOptions) (*GetPipelineHierarchyResult, error) {
+	pipeline, err := c.GetPipeline(ctx, projectID, pipelineID)
+	if err != nil {
+		return nil, err
+	}
 
-	go func() {
-		defer close(ch)
+	jobs := []*typespb.Job{}
+	sections := []*typespb.Section{}
+	metrics := []*typespb.Metric{}
 
-		pipeline, err := c.GetPipeline(ctx, projectID, pipelineID)
+	js, err := c.GetPipelineJobs(ctx, projectID, pipelineID)
+	if err != nil {
+		return nil, fmt.Errorf("get pipeline jobs: %w", err)
+	}
+
+	jobs = append(jobs, js...)
+	if opt.FetchSections || opt.FetchJobMetrics {
+		for _, job := range js {
+			r, err := c.GetJobLog(ctx, projectID, job.Id)
+			if err != nil {
+				return nil, fmt.Errorf("get job log: %w", err)
+			}
+
+			data, err := ParseJobLog(r)
+			if err != nil {
+				return nil, fmt.Errorf("parse job log: %w", err)
+			}
+
+			if opt.FetchSections {
+				for secnum, secdat := range data.Sections {
+					section := &typespb.Section{
+						Id: job.Id*1000 + int64(secnum),
+						Job: &typespb.JobReference{
+							Id:     job.Id,
+							Name:   job.Name,
+							Status: job.Status,
+						},
+						Pipeline:   job.Pipeline,
+						Name:       secdat.Name,
+						StartedAt:  types.ConvertUnixSeconds(secdat.Start),
+						FinishedAt: types.ConvertUnixSeconds(secdat.End),
+						Duration:   types.ConvertDuration(float64(secdat.End - secdat.Start)),
+					}
+
+					sections = append(sections, section)
+				}
+			}
+
+			if opt.FetchJobMetrics {
+				var metricIID int = 0
+				for _, m := range data.Metrics {
+					metricIID++
+					metric := &typespb.Metric{
+						Id:        []byte(fmt.Sprintf("%d-%d", job.Id, metricIID)),
+						Iid:       int64(metricIID),
+						JobId:     job.Id,
+						Name:      m.Name,
+						Labels:    convertLabels(m.Labels),
+						Value:     m.Value,
+						Timestamp: types.ConvertUnixMilli(m.Timestamp),
+					}
+					metrics = append(metrics, metric)
+				}
+			}
+		}
+	}
+
+	bridges := []*typespb.Bridge{}
+	dps := []*PipelineHierarchy{}
+
+	bs, err := c.GetPipelineBridges(ctx, projectID, pipelineID)
+	if err != nil {
+		return nil, fmt.Errorf("get pipeline bridges: %w", err)
+	}
+
+	bridges = append(bridges, bs...)
+	for _, b := range bs {
+		dp := b.DownstreamPipeline
+		if dp == nil || dp.Id == 0 {
+			continue
+		}
+
+		dpr, err := c.GetPipelineHierarchy(ctx, dp.ProjectId, dp.Id, opt)
 		if err != nil {
-			ch <- GetPipelineHierarchyResult{
-				Error: err,
-			}
-			return
+			return nil, fmt.Errorf("get downstream pipeline hierarchy: %w", err)
 		}
+		dps = append(dps, dpr.PipelineHierarchy)
+		metrics = append(metrics, dpr.Metrics...)
+	}
 
-		jobs := []*typespb.Job{}
-		sections := []*typespb.Section{}
-		metrics := []*typespb.Metric{}
-		for jr := range c.ListPipelineJobs(ctx, projectID, pipelineID) {
-			if jr.Error != nil {
-				ch <- GetPipelineHierarchyResult{
-					Error: fmt.Errorf("[ListPipelineJobs] %w", jr.Error),
-				}
-				return
-			}
-			jobs = append(jobs, jr.Job)
-
-			if opt.FetchSections || opt.FetchJobMetrics {
-				job := jr.Job
-				r, err := c.GetJobLog(ctx, projectID, job.Id)
-				if err != nil {
-					ch <- GetPipelineHierarchyResult{
-						Error: fmt.Errorf("get job log: %w", err),
-					}
-					return
-				}
-
-				data, err := ParseJobLog(r)
-				if err != nil {
-					ch <- GetPipelineHierarchyResult{
-						Error: fmt.Errorf("parse job log: %w", err),
-					}
-					return
-				}
-
-				if opt.FetchSections {
-					for secnum, secdat := range data.Sections {
-						section := &typespb.Section{
-							Id: job.Id*1000 + int64(secnum),
-							Job: &typespb.JobReference{
-								Id:     job.Id,
-								Name:   job.Name,
-								Status: job.Status,
-							},
-							Pipeline:   job.Pipeline,
-							Name:       secdat.Name,
-							StartedAt:  types.ConvertUnixSeconds(secdat.Start),
-							FinishedAt: types.ConvertUnixSeconds(secdat.End),
-							Duration:   types.ConvertDuration(float64(secdat.End - secdat.Start)),
-						}
-
-						sections = append(sections, section)
-					}
-				}
-
-				if opt.FetchJobMetrics {
-					var metricIID int = 0
-					for _, m := range data.Metrics {
-						metricIID++
-						metric := &typespb.Metric{
-							Id:        []byte(fmt.Sprintf("%d-%d", job.Id, metricIID)),
-							Iid:       int64(metricIID),
-							JobId:     job.Id,
-							Name:      m.Name,
-							Labels:    convertLabels(m.Labels),
-							Value:     m.Value,
-							Timestamp: types.ConvertUnixMilli(m.Timestamp),
-						}
-						metrics = append(metrics, metric)
-					}
-				}
-			}
-		}
-
-		bridges := []*typespb.Bridge{}
-		dps := []*PipelineHierarchy{}
-		for br := range c.ListPipelineBridges(ctx, projectID, pipelineID) {
-			if br.Error != nil {
-				ch <- GetPipelineHierarchyResult{
-					Error: fmt.Errorf("[ListPipelineBridges] %w", br.Error),
-				}
-				return
-			}
-			bridges = append(bridges, br.Bridge)
-
-			dp := br.Bridge.DownstreamPipeline
-			if dp == nil || dp.Id == 0 {
-				continue
-			}
-
-			dpr := <-c.GetPipelineHierarchy(ctx, dp.ProjectId, dp.Id, opt)
-			if dpr.Error != nil {
-				ch <- GetPipelineHierarchyResult{
-					Error: fmt.Errorf("[GetPipelineHierarchy] %w", dpr.Error),
-				}
-				return
-			}
-			dps = append(dps, dpr.PipelineHierarchy)
-		}
-
-		ch <- GetPipelineHierarchyResult{
-			PipelineHierarchy: &PipelineHierarchy{
-				Pipeline:            pipeline,
-				Jobs:                jobs,
-				Sections:            sections,
-				Bridges:             bridges,
-				DownstreamPipelines: dps,
-			},
-			Metrics: metrics,
-		}
-	}()
-
-	return ch
+	return &GetPipelineHierarchyResult{
+		PipelineHierarchy: &PipelineHierarchy{
+			Pipeline:            pipeline,
+			Jobs:                jobs,
+			Sections:            sections,
+			Bridges:             bridges,
+			DownstreamPipelines: dps,
+		},
+		Metrics: metrics,
+	}, nil
 }
 
 func convertLabels(labels map[string]string) []*typespb.Metric_Label {

@@ -4,56 +4,65 @@ import (
 	"context"
 	"fmt"
 
-	gitlab "github.com/xanzy/go-gitlab"
+	_gitlab "github.com/xanzy/go-gitlab"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/types"
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
-type ListOptions = gitlab.ListOptions
-type ListProjectPipelinesOptions = gitlab.ListProjectPipelinesOptions
+func ListProjectPipelines(ctx context.Context, glab *_gitlab.Client, pid int64, opt _gitlab.ListProjectPipelinesOptions, yield func(p []*_gitlab.PipelineInfo) bool) error {
+	opt.ListOptions.Pagination = "keyset"
+	if opt.ListOptions.OrderBy == "" {
+		opt.ListOptions.OrderBy = "updated_at"
+	}
+	if opt.ListOptions.Sort == "" {
+		opt.ListOptions.Sort = "desc"
+	}
 
-type ListProjectPipelinesResult struct {
-	Pipeline *typespb.PipelineInfo
-	Error    error
+	options := []_gitlab.RequestOptionFunc{
+		_gitlab.WithContext(ctx),
+	}
+
+	for {
+		ps, resp, err := glab.Pipelines.ListProjectPipelines(int(pid), &opt, options...)
+		if err != nil {
+			return err
+		}
+
+		if !yield(ps) {
+			break
+		}
+
+		if resp.NextLink == "" {
+			break
+		}
+
+		options = []_gitlab.RequestOptionFunc{
+			_gitlab.WithContext(ctx),
+			_gitlab.WithKeysetPaginationParameters(resp.NextLink),
+		}
+	}
+
+	return nil
 }
 
-func (c *Client) ListProjectPipelines(ctx context.Context, projectID int64, opt ListProjectPipelinesOptions) <-chan ListProjectPipelinesResult {
-	out := make(chan ListProjectPipelinesResult)
+func FetchProjectPipelines(ctx context.Context, glab *_gitlab.Client, pid int64, opt _gitlab.ListProjectPipelinesOptions) ([]*_gitlab.PipelineInfo, error) {
+	var pipelines []*_gitlab.PipelineInfo
 
-	go func() {
-		defer close(out)
+	err := ListProjectPipelines(ctx, glab, pid, opt, func(ps []*_gitlab.PipelineInfo) bool {
+		pipelines = append(pipelines, ps...)
+		return true
+	})
+	if err != nil {
+		return nil, err
+	}
 
-		for {
-			c.RLock()
-			ps, resp, err := c.client.Pipelines.ListProjectPipelines(int(projectID), &opt, gitlab.WithContext(ctx))
-			c.RUnlock()
-			if err != nil {
-				out <- ListProjectPipelinesResult{
-					Error: err,
-				}
-				return
-			}
-
-			for _, pi := range ps {
-				out <- ListProjectPipelinesResult{
-					Pipeline: types.ConvertPipelineInfo(pi),
-				}
-			}
-
-			if resp.NextPage == 0 {
-				break
-			}
-			opt.Page = resp.NextPage
-		}
-	}()
-
-	return out
+	return pipelines, nil
 }
 
 func (c *Client) GetPipeline(ctx context.Context, projectID int64, pipelineID int64) (*typespb.Pipeline, error) {
 	c.RLock()
-	pipeline, _, err := c.client.Pipelines.GetPipeline(int(projectID), int(pipelineID), gitlab.WithContext(ctx))
+	pipeline, _, err := c.client.Pipelines.GetPipeline(int(projectID), int(pipelineID), _gitlab.WithContext(ctx))
 	c.RUnlock()
 	if err != nil {
 		return nil, fmt.Errorf("error getting pipeline: %w", err)

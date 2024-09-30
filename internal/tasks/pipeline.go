@@ -25,32 +25,32 @@ func ExportPipelineHierarchy(ctx context.Context, glc *gitlab.Client, exp *expor
 		FetchJobMetrics: opts.ExportSections,
 	}
 
-	phr := <-glc.GetPipelineHierarchy(ctx, opts.ProjectID, opts.PipelineID, opt)
-	if err := phr.Error; err != nil {
-		return fmt.Errorf("error getting pipeline hierarchy (project=%d pipeline=%d): %w", opts.ProjectID, opts.PipelineID, err)
+	phr, err := glc.GetPipelineHierarchy(ctx, opts.ProjectID, opts.PipelineID, opt)
+	if err != nil {
+		return fmt.Errorf("get pipeline hierarchy: %w", err)
 	}
 	ph := phr.PipelineHierarchy
 
 	if err := exp.ExportPipelineHierarchy(ctx, ph); err != nil {
-		return fmt.Errorf("error exporting pipeline hierarchy (project=%d pipeline=%d): %w", opts.ProjectID, opts.PipelineID, err)
+		return fmt.Errorf("export pipeline hierarchy: %w", err)
 	}
 
 	if opts.ExportTraces {
 		traces := ph.GetAllTraces()
 		if err := exp.ExportTraces(ctx, traces); err != nil {
-			return fmt.Errorf("error exporting traces (project=%d pipeline=%d): %w", opts.ProjectID, opts.PipelineID, err)
+			return fmt.Errorf("export traces: %w", err)
 		}
 	}
 
 	if opts.ExportMetrics {
 		if err := exp.ExportMetrics(ctx, phr.Metrics); err != nil {
-			return fmt.Errorf("error exporting metrics (project=%d pipeline=%d): %w", opts.ProjectID, opts.PipelineID, err)
+			return fmt.Errorf("export metrics: %w", err)
 		}
 	}
 
 	if opts.ExportTestReports {
 		if err := exportPipelineHierarchyTestReports(ctx, glc, exp, ph); err != nil {
-			return err
+			return fmt.Errorf("export testreports: %w", err)
 		}
 	}
 

@@ -16,6 +16,7 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/alitto/pond"
 	"github.com/oklog/run"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
@@ -23,8 +24,6 @@ import (
 	_gitlab "github.com/xanzy/go-gitlab"
 
 	"github.com/cluttrdev/cli"
-
-	"github.com/cluttrdev/gitlab-exporter/pkg/worker"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/internal/exporter"
@@ -134,6 +133,7 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 	}
 
 	// gather projects from config
+	slog.Info("Resolving projects to export...")
 	projects, err := resolveProjects(ctx, cfg, gitlabclient)
 	if err != nil {
 		return fmt.Errorf("error resolving projects: %w", err)
@@ -155,25 +155,12 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 
 	g := &run.Group{}
 
-	pool := worker.NewWorkerPool(42)
-	{ // worker pool
-		ctx, cancel := context.WithCancel(context.Background())
-
-		g.Add(func() error { // execute
-			slog.Info("Starting worker pool")
-			pool.Start(ctx)
-			<-ctx.Done()
-			return ctx.Err()
-		}, func(err error) { // interrupt
-			defer cancel()
-			slog.Info("Stopping worker pool...")
-			pool.Stop()
-			slog.Info("Stopping worker pool... done")
-		})
-	}
-
 	if len(projects) > 0 { // jobs
-		ctx, cancel := context.WithCancel(context.Background())
+		slog.Info(fmt.Sprintf("Found %d projects to export", len(projects)))
+		ctxJobs, cancelJobs := context.WithCancel(context.Background())
+
+		slog.Info("Starting worker pool")
+		pool := pond.New(42, 1024, pond.Context(ctxJobs))
 
 		g.Add(func() error { // execute
 			var wg sync.WaitGroup
@@ -189,7 +176,7 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 					wg.Add(1)
 					go func() {
 						defer wg.Done()
-						job.Run(ctx)
+						job.Run(ctxJobs)
 					}()
 				}
 
@@ -203,7 +190,7 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 				wg.Add(1)
 				go func() {
 					defer wg.Done()
-					job.Run(ctx)
+					job.Run(ctxJobs)
 				}()
 			}
 
@@ -211,8 +198,7 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 			return nil
 		}, func(err error) { // interrupt
 			slog.Info("Cancelling jobs...")
-			cancel()
-			<-ctx.Done()
+			cancelJobs()
 			slog.Info("Cancelling jobs... done")
 		})
 	} else {
@@ -296,43 +282,47 @@ func serveHTTP(cfg config.HTTP, reg *prometheus.Registry) (func() error, func(er
 }
 
 func resolveProjects(ctx context.Context, cfg config.Config, glab *gitlab.Client) ([]config.Project, error) {
-	pm := make(map[int64]config.Project)
+	projectConfigs := make(map[int64]config.Project)
 
 	opt := gitlab.ListNamespaceProjectsOptions{}
 	for _, namespace := range cfg.Namespaces {
 		opt.Kind = namespace.Kind
-		opt.Visibility = (*gitlab.VisibilityValue)(&namespace.Visibility)
+		opt.Visibility = (*_gitlab.VisibilityValue)(&namespace.Visibility)
 		opt.WithShared = namespace.WithShared
 		opt.IncludeSubgroups = namespace.IncludeSubgroups
 
-		ps, err := glab.ListNamespaceProjects(ctx, namespace.Id, opt)
+		err := glab.ListNamespaceProjects(ctx, namespace.Id, opt, func(projects []*_gitlab.Project) bool {
+			for _, project := range projects {
+				projectID := int64(project.ID)
+				projectConfigs[projectID] = config.Project{
+					ProjectSettings: namespace.ProjectSettings,
+					Id:              projectID,
+				}
+			}
+
+			for _, pid := range namespace.ExcludeProjects {
+				p, _, err := glab.Client().Projects.GetProject(pid, nil, _gitlab.WithContext(ctx))
+				if err != nil {
+					slog.Error("error getting namespace project", "namespace_id", namespace.Id, "project", pid, "error", err)
+					return false
+				}
+				delete(projectConfigs, int64(p.ID))
+			}
+
+			return true
+		})
 		if err != nil {
 			return nil, err
-		}
-
-		for _, p := range ps {
-			pm[p.Id] = config.Project{
-				ProjectSettings: namespace.ProjectSettings,
-				Id:              p.Id,
-			}
-		}
-
-		for _, pid := range namespace.ExcludeProjects {
-			p, _, err := glab.Client().Projects.GetProject(pid, nil, _gitlab.WithContext(ctx))
-			if err != nil {
-				return nil, fmt.Errorf("error getting project %q: %w", pid, err)
-			}
-			delete(pm, int64(p.ID))
 		}
 	}
 
 	// overwrite with explicitly configured projects
 	for _, p := range cfg.Projects {
-		pm[p.Id] = p
+		projectConfigs[p.Id] = p
 	}
 
-	projects := make([]config.Project, 0, len(pm))
-	for _, p := range pm {
+	projects := make([]config.Project, 0, len(projectConfigs))
+	for _, p := range projectConfigs {
 		projects = append(projects, p)
 	}
 

@@ -38,11 +38,11 @@ project_defaults:
       # requires fetching entire job logs to parse for embedded metrics.
       enabled: true
 
-      note_events: true
-
     mergerequests:
       # Whether or not to export merge request data
       enabled: true
+
+      note_events: true
   
   catch_up:
     # Whether to export data from past pipelines at startup.

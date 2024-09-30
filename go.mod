@@ -3,6 +3,7 @@ module github.com/cluttrdev/gitlab-exporter
 go 1.22
 
 require (
+	github.com/alitto/pond v1.9.2
 	github.com/cluttrdev/cli v0.0.0-20240318153739-b60d492ac8ff
 	github.com/creasty/defaults v1.7.0
 	github.com/google/go-cmp v0.6.0

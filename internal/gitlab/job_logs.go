@@ -11,9 +11,7 @@ import (
 )
 
 func (c *Client) GetJobLog(ctx context.Context, projectID int64, jobID int64) (*bytes.Reader, error) {
-	c.RLock()
 	trace, _, err := c.client.Jobs.GetTraceFile(int(projectID), int(jobID), _gitlab.WithContext(ctx))
-	c.RUnlock()
 	return trace, err
 }
 

@@ -89,8 +89,8 @@ func (c *FetchPipelineConfig) Exec(ctx context.Context, args []string) error {
 			FetchSections: c.fetchSections,
 		}
 
-		phr := <-glc.GetPipelineHierarchy(ctx, projectID, pipelineID, opt)
-		if err := phr.Error; err != nil {
+		phr, err := glc.GetPipelineHierarchy(ctx, projectID, pipelineID, opt)
+		if err != nil {
 			return fmt.Errorf("error fetching pipeline hierarchy: %w", err)
 		}
 		ph := phr.PipelineHierarchy

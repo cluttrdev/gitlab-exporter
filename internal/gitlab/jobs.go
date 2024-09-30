@@ -9,95 +9,82 @@ import (
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
-type ListPipelineJobsResult struct {
-	Job   *typespb.Job
-	Error error
+func (c *Client) GetPipelineJobs(ctx context.Context, projectID int64, pipelineID int64) ([]*typespb.Job, error) {
+	var jobs []*typespb.Job
+
+	opt := &gitlab.ListJobsOptions{
+		ListOptions: gitlab.ListOptions{
+			Pagination: "keyset",
+			PerPage:    100,
+			OrderBy:    "updated_at",
+			Sort:       "desc",
+		},
+		IncludeRetried: gitlab.Ptr(false),
+	}
+
+	options := []gitlab.RequestOptionFunc{
+		gitlab.WithContext(ctx),
+	}
+
+	for {
+		js, resp, err := c.client.Jobs.ListPipelineJobs(int(projectID), int(pipelineID), opt, options...)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, j := range js {
+			jobs = append(jobs, types.ConvertJob(j))
+		}
+
+		if resp.NextLink == "" {
+			break
+		}
+
+		options = []gitlab.RequestOptionFunc{
+			gitlab.WithContext(ctx),
+			gitlab.WithKeysetPaginationParameters(resp.NextLink),
+		}
+	}
+
+	return jobs, nil
 }
 
-func (c *Client) ListPipelineJobs(ctx context.Context, projectID int64, pipelineID int64) <-chan ListPipelineJobsResult {
-	ch := make(chan ListPipelineJobsResult)
+func (c *Client) GetPipelineBridges(ctx context.Context, projectID int64, pipelineID int64) ([]*typespb.Bridge, error) {
+	var bridges []*typespb.Bridge
 
-	go func() {
-		defer close(ch)
+	opts := &gitlab.ListJobsOptions{
+		ListOptions: gitlab.ListOptions{
+			Pagination: "keyset",
+			PerPage:    100,
+			OrderBy:    "updated_at",
+			Sort:       "desc",
+		},
+		IncludeRetried: gitlab.Ptr(false),
+	}
 
-		opts := &gitlab.ListJobsOptions{
-			ListOptions: gitlab.ListOptions{
-				PerPage: 100,
-				Page:    1,
-			},
-			IncludeRetried: &[]bool{false}[0],
+	options := []gitlab.RequestOptionFunc{
+		gitlab.WithContext(ctx),
+	}
+
+	for {
+		bs, resp, err := c.client.Jobs.ListPipelineBridges(int(projectID), int(pipelineID), opts, options...)
+		if err != nil {
+			return nil, err
 		}
 
-		for {
-			c.RLock()
-			jobs, res, err := c.client.Jobs.ListPipelineJobs(int(projectID), int(pipelineID), opts, gitlab.WithContext(ctx))
-			c.RUnlock()
-			if err != nil {
-				ch <- ListPipelineJobsResult{
-					Error: err,
-				}
-				return
-			}
-
-			for _, j := range jobs {
-				ch <- ListPipelineJobsResult{
-					Job: types.ConvertJob(j),
-				}
-			}
-
-			if res.NextPage == 0 {
-				break
-			}
-
-			opts.Page = res.NextPage
-		}
-	}()
-
-	return ch
-}
-
-type ListPipelineBridgesResult struct {
-	Bridge *typespb.Bridge
-	Error  error
-}
-
-func (c *Client) ListPipelineBridges(ctx context.Context, projectID int64, pipelineID int64) <-chan ListPipelineBridgesResult {
-	ch := make(chan ListPipelineBridgesResult)
-
-	go func() {
-		defer close(ch)
-
-		opts := &gitlab.ListJobsOptions{
-			ListOptions: gitlab.ListOptions{
-				PerPage: 100,
-				Page:    1,
-			},
+		for _, b := range bs {
+			bridges = append(bridges, types.ConvertBridge(b))
 		}
 
-		for {
-			c.RLock()
-			bridges, res, err := c.client.Jobs.ListPipelineBridges(int(projectID), int(pipelineID), opts, gitlab.WithContext(ctx))
-			c.RUnlock()
-			if err != nil {
-				ch <- ListPipelineBridgesResult{
-					Error: err,
-				}
-				return
-			}
-
-			for _, b := range bridges {
-				ch <- ListPipelineBridgesResult{
-					Bridge: types.ConvertBridge(b),
-				}
-			}
-
-			if res.NextPage == 0 {
-				break
-			}
-
-			opts.Page = res.NextPage
+		if resp.NextLink == "" {
+			break
 		}
-	}()
 
-	return ch
+		options = []gitlab.RequestOptionFunc{
+			gitlab.WithContext(ctx),
+			gitlab.WithKeysetPaginationParameters(resp.NextLink),
+		}
+	}
+
+	return bridges, nil
 }
