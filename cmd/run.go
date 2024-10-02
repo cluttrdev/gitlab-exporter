@@ -152,15 +152,17 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 			})
 		}
 	}
+	slog.Info("Resolving projects to export... done")
 
 	g := &run.Group{}
 
+	var pool *pond.WorkerPool
 	if len(projects) > 0 { // jobs
 		slog.Info(fmt.Sprintf("Found %d projects to export", len(projects)))
 		ctxJobs, cancelJobs := context.WithCancel(context.Background())
 
 		slog.Info("Starting worker pool")
-		pool := pond.New(42, 1024, pond.Context(ctxJobs))
+		pool = pond.New(42, 1024, pond.Context(ctxJobs))
 
 		g.Add(func() error { // execute
 			var wg sync.WaitGroup
@@ -217,6 +219,10 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 		}
 		reg := prometheus.NewRegistry()
 		reg.MustRegister(colls...)
+
+		if pool != nil {
+			registerWorkerPoolMetrics(reg, pool)
+		}
 
 		g.Add(serveHTTP(cfg.HTTP, reg))
 	}
@@ -327,4 +333,66 @@ func resolveProjects(ctx context.Context, cfg config.Config, glab *gitlab.Client
 	}
 
 	return projects, nil
+}
+
+func registerWorkerPoolMetrics(reg *prometheus.Registry, pool *pond.WorkerPool) {
+	// Worker pool metrics
+	reg.MustRegister(prometheus.NewGaugeFunc(
+		prometheus.GaugeOpts{
+			Name: "pool_workers_running",
+			Help: "Number of running worker goroutines",
+		},
+		func() float64 {
+			return float64(pool.RunningWorkers())
+		}))
+	reg.MustRegister(prometheus.NewGaugeFunc(
+		prometheus.GaugeOpts{
+			Name: "pool_workers_idle",
+			Help: "Number of idle worker goroutines",
+		},
+		func() float64 {
+			return float64(pool.IdleWorkers())
+		}))
+
+	// Task metrics
+	reg.MustRegister(prometheus.NewCounterFunc(
+		prometheus.CounterOpts{
+			Name: "pool_tasks_submitted_total",
+			Help: "Number of tasks submitted",
+		},
+		func() float64 {
+			return float64(pool.SubmittedTasks())
+		}))
+	reg.MustRegister(prometheus.NewGaugeFunc(
+		prometheus.GaugeOpts{
+			Name: "pool_tasks_waiting_total",
+			Help: "Number of tasks waiting in the queue",
+		},
+		func() float64 {
+			return float64(pool.WaitingTasks())
+		}))
+	reg.MustRegister(prometheus.NewCounterFunc(
+		prometheus.CounterOpts{
+			Name: "pool_tasks_successful_total",
+			Help: "Number of tasks that completed successfully",
+		},
+		func() float64 {
+			return float64(pool.SuccessfulTasks())
+		}))
+	reg.MustRegister(prometheus.NewCounterFunc(
+		prometheus.CounterOpts{
+			Name: "pool_tasks_failed_total",
+			Help: "Number of tasks that completed with panic",
+		},
+		func() float64 {
+			return float64(pool.FailedTasks())
+		}))
+	reg.MustRegister(prometheus.NewCounterFunc(
+		prometheus.CounterOpts{
+			Name: "pool_tasks_completed_total",
+			Help: "Number of tasks that completed either successfully or with panic",
+		},
+		func() float64 {
+			return float64(pool.CompletedTasks())
+		}))
 }
