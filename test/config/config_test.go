@@ -162,6 +162,42 @@ func TestLoad_DataWithDefaults(t *testing.T) {
 	checkConfig(t, expected, cfg)
 }
 
+func TestLoad_WithProjectsEmptyDefaults(t *testing.T) {
+	data := []byte(`
+    project_defaults: {}
+    projects:
+      - id: 42
+    `)
+
+	expected := defaultConfig()
+	expected.Projects = append(expected.Projects,
+		config.Project{
+			Id: 42,
+			ProjectSettings: config.ProjectSettings{
+				Export: config.ProjectExport{
+					MergeRequests: config.ProjectExportMergeRequests{Enabled: true, NoteEvents: true},
+					Metrics:       config.ProjectExportMetrics{Enabled: true},
+					Sections:      config.ProjectExportSections{Enabled: true},
+					TestReports:   config.ProjectExportTestReports{Enabled: true},
+					Traces:        config.ProjectExportTraces{Enabled: true},
+				},
+				CatchUp: config.ProjectCatchUp{
+					Enabled:       false,
+					UpdatedAfter:  "",
+					UpdatedBefore: "",
+				},
+			},
+		},
+	)
+
+	cfg := defaultConfig()
+	if err := config.Load(data, &cfg); err != nil {
+		t.Errorf("Expected no error, got: %v", err)
+	}
+
+	checkConfig(t, expected, cfg)
+}
+
 func TestLoad_DataWithProjects(t *testing.T) {
 	data := []byte(`
     projects:
