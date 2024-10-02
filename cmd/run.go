@@ -132,39 +132,42 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 		return err
 	}
 
-	// gather projects from config
-	slog.Info("Resolving projects to export...")
-	projects, err := resolveProjects(ctx, cfg, gitlabclient)
-	if err != nil {
-		return fmt.Errorf("error resolving projects: %w", err)
-	}
-
-	// add projects passed as arguments
-	for _, pid := range c.projects {
-		exists := slices.ContainsFunc(cfg.Projects, func(p config.Project) bool {
-			return p.Id == pid
-		})
-
-		if !exists {
-			projects = append(cfg.Projects, config.Project{
-				ProjectSettings: config.DefaultProjectSettings(),
-				Id:              pid,
-			})
-		}
-	}
-	slog.Info("Resolving projects to export... done")
-
 	g := &run.Group{}
 
 	var pool *pond.WorkerPool
-	if len(projects) > 0 { // jobs
-		slog.Info(fmt.Sprintf("Found %d projects to export", len(projects)))
+	{ // jobs
 		ctxJobs, cancelJobs := context.WithCancel(context.Background())
 
 		slog.Info("Starting worker pool")
 		pool = pond.New(42, 1024, pond.Context(ctxJobs))
 
 		g.Add(func() error { // execute
+			// gather projects from config
+			slog.Info("Resolving projects to export...")
+			projects, err := resolveProjects(ctx, cfg, gitlabclient)
+			if err != nil {
+				return fmt.Errorf("error resolving projects: %w", err)
+			}
+
+			// add projects passed as arguments
+			for _, pid := range c.projects {
+				exists := slices.ContainsFunc(cfg.Projects, func(p config.Project) bool {
+					return p.Id == pid
+				})
+
+				if !exists {
+					projects = append(cfg.Projects, config.Project{
+						ProjectSettings: config.DefaultProjectSettings(),
+						Id:              pid,
+					})
+				}
+			}
+			slog.Info("Resolving projects to export... done")
+			if len(projects) == 0 {
+				return errors.New("no projects found to export")
+			}
+			slog.Info(fmt.Sprintf("Found %d projects to export", len(projects)))
+
 			var wg sync.WaitGroup
 			for _, p := range projects {
 				if c.catchup && p.CatchUp.Enabled {
@@ -203,8 +206,6 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 			cancelJobs()
 			slog.Info("Cancelling jobs... done")
 		})
-	} else {
-		slog.Warn("There are no projects configured for export")
 	}
 
 	if cfg.HTTP.Enabled {
