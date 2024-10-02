@@ -25,11 +25,16 @@ func (c *Client) GetProject(ctx context.Context, id int64) (*typespb.Project, er
 }
 
 type ListNamespaceProjectsOptions struct {
-	gitlab.ListProjectsOptions
+	Kind string
 
-	Kind             string
-	WithShared       bool
-	IncludeSubgroups bool
+	// both
+	gitlab.ListOptions
+
+	Visibility *gitlab.VisibilityValue
+
+	// only groups
+	WithShared       *bool
+	IncludeSubgroups *bool
 }
 
 func (c *Client) ListNamespaceProjects(ctx context.Context, id interface{}, opt ListNamespaceProjectsOptions, yield func(projects []*gitlab.Project) bool) error {
@@ -43,13 +48,20 @@ func (c *Client) ListNamespaceProjects(ctx context.Context, id interface{}, opt 
 	}
 
 	if kind == "user" {
-		opts := opt.ListProjectsOptions
+		opts := gitlab.ListProjectsOptions{
+			ListOptions: opt.ListOptions,
+
+			Visibility: opt.Visibility,
+		}
 		return c.ListUserProjects(ctx, id, opts, yield)
 	} else if kind == "group" {
 		opts := gitlab.ListGroupProjectsOptions{
-			ListOptions:      opt.ListOptions,
-			WithShared:       &opt.WithShared,
-			IncludeSubGroups: &opt.IncludeSubgroups,
+			ListOptions: opt.ListOptions,
+
+			Visibility: opt.Visibility,
+
+			WithShared:       opt.WithShared,
+			IncludeSubGroups: opt.IncludeSubgroups,
 		}
 		return c.ListGroupProjects(ctx, id, opts, yield)
 	}
@@ -57,7 +69,7 @@ func (c *Client) ListNamespaceProjects(ctx context.Context, id interface{}, opt 
 }
 
 func (c *Client) ListUserProjects(ctx context.Context, uid interface{}, opt gitlab.ListProjectsOptions, yield func(projects []*gitlab.Project) bool) error {
-	opt.ListOptions.Pagination = "keyset"
+	opt.ListOptions.Pagination = ""
 	if opt.ListOptions.OrderBy == "" {
 		opt.ListOptions.OrderBy = "updated_at"
 	}
@@ -79,13 +91,21 @@ func (c *Client) ListUserProjects(ctx context.Context, uid interface{}, opt gitl
 			break
 		}
 
-		if resp.NextLink == "" {
-			break
-		}
+		if opt.ListOptions.Pagination == "keyset" {
+			if resp.NextLink == "" {
+				break
+			}
 
-		options = []gitlab.RequestOptionFunc{
-			gitlab.WithContext(ctx),
-			gitlab.WithKeysetPaginationParameters(resp.NextLink),
+			options = []gitlab.RequestOptionFunc{
+				gitlab.WithContext(ctx),
+				gitlab.WithKeysetPaginationParameters(resp.NextLink),
+			}
+		} else {
+			if resp.NextPage == 0 {
+				break
+			}
+
+			opt.Page = resp.NextPage
 		}
 	}
 

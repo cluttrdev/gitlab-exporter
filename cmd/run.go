@@ -293,9 +293,12 @@ func resolveProjects(ctx context.Context, cfg config.Config, glab *gitlab.Client
 	opt := gitlab.ListNamespaceProjectsOptions{}
 	for _, namespace := range cfg.Namespaces {
 		opt.Kind = namespace.Kind
-		opt.Visibility = (*_gitlab.VisibilityValue)(&namespace.Visibility)
-		opt.WithShared = namespace.WithShared
-		opt.IncludeSubgroups = namespace.IncludeSubgroups
+		if namespace.Visibility != "" {
+			opt.Visibility = (*_gitlab.VisibilityValue)(&namespace.Visibility)
+		}
+
+		opt.WithShared = _gitlab.Ptr(namespace.WithShared)
+		opt.IncludeSubgroups = _gitlab.Ptr(namespace.IncludeSubgroups)
 
 		err := glab.ListNamespaceProjects(ctx, namespace.Id, opt, func(projects []*_gitlab.Project) bool {
 			for _, project := range projects {
