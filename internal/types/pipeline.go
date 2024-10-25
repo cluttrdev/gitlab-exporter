@@ -1,61 +1,102 @@
 package types
 
 import (
-	"strconv"
-
-	"github.com/xanzy/go-gitlab"
+	"time"
 
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
-func ConvertPipelineInfo(pipeline *gitlab.PipelineInfo) *typespb.PipelineInfo {
-	if pipeline == nil {
-		return nil
-	}
+type PipelineReference struct {
+	Id  int64
+	Iid int64
 
-	return &typespb.PipelineInfo{
-		Id:        int64(pipeline.ID),
-		Iid:       int64(pipeline.IID),
-		ProjectId: int64(pipeline.ProjectID),
-		Status:    pipeline.Status,
-		Source:    pipeline.Source,
-		Ref:       pipeline.Ref,
-		Sha:       pipeline.SHA,
-		WebUrl:    pipeline.WebURL,
-		CreatedAt: ConvertTime(pipeline.CreatedAt),
-		UpdatedAt: ConvertTime(pipeline.UpdatedAt),
+	Project ProjectReference
+}
+
+type Pipeline struct {
+	Id  int64
+	Iid int64
+
+	Project ProjectReference
+
+	Name          string
+	Ref           string
+	Sha           string
+	Source        string
+	Status        string
+	FailureReason string
+
+	CommittedAt *time.Time
+	CreatedAt   *time.Time
+	UpdatedAt   *time.Time
+	StartedAt   *time.Time
+	FinishedAt  *time.Time
+
+	QueuedDuration time.Duration
+	Duration       time.Duration
+	Coverage       float64
+
+	Warnings   bool
+	YamlErrors bool
+
+	Child            bool
+	UpstreamPipeline *PipelineReference
+
+	MergeRequest *MergeRequestReference
+
+	User UserReference
+}
+
+func ConvertPipelineReference(pipeline PipelineReference) *typespb.PipelineReference {
+	return &typespb.PipelineReference{
+		Id:      pipeline.Id,
+		Iid:     pipeline.Iid,
+		Project: ConvertProjectReference(pipeline.Project),
 	}
 }
 
-func ConvertPipeline(pipeline *gitlab.Pipeline) *typespb.Pipeline {
-	return &typespb.Pipeline{
-		Id:             int64(pipeline.ID),
-		Iid:            int64(pipeline.IID),
-		ProjectId:      int64(pipeline.ProjectID),
-		Status:         pipeline.Status,
-		Source:         pipeline.Source,
-		Ref:            pipeline.Ref,
-		Sha:            pipeline.SHA,
-		BeforeSha:      pipeline.BeforeSHA,
-		Tag:            pipeline.Tag,
-		YamlErrors:     pipeline.YamlErrors,
-		CreatedAt:      ConvertTime(pipeline.CreatedAt),
-		UpdatedAt:      ConvertTime(pipeline.UpdatedAt),
-		StartedAt:      ConvertTime(pipeline.StartedAt),
-		FinishedAt:     ConvertTime(pipeline.FinishedAt),
-		CommittedAt:    ConvertTime(pipeline.CommittedAt),
-		Duration:       ConvertDuration(float64(pipeline.Duration)),
+func ConvertPipeline(pipeline Pipeline) *typespb.Pipeline {
+	pbPipeline := &typespb.Pipeline{
+		Id:      pipeline.Id,
+		Iid:     pipeline.Iid,
+		Project: ConvertProjectReference(pipeline.Project),
+
+		Name:   pipeline.Name,
+		Ref:    pipeline.Ref,
+		Sha:    pipeline.Sha,
+		Source: pipeline.Source,
+		Status: pipeline.Status,
+
+		Timestamps: &typespb.PipelineTimestamps{
+			CommittedAt: ConvertTime(pipeline.CommittedAt),
+			CreatedAt:   ConvertTime(pipeline.CreatedAt),
+			UpdatedAt:   ConvertTime(pipeline.UpdatedAt),
+			StartedAt:   ConvertTime(pipeline.StartedAt),
+			FinishedAt:  ConvertTime(pipeline.FinishedAt),
+		},
+
 		QueuedDuration: ConvertDuration(float64(pipeline.QueuedDuration)),
-		Coverage:       convertCoverage(pipeline.Coverage),
-		WebUrl:         pipeline.WebURL,
-		User:           convertBasicUser(pipeline.User),
-	}
-}
+		Duration:       ConvertDuration(float64(pipeline.Duration)),
+		Coverage:       pipeline.Coverage,
 
-func convertCoverage(coverage string) float64 {
-	cov, err := strconv.ParseFloat(coverage, 64)
-	if err != nil {
-		cov = 0.0
+		Warnings:   pipeline.Warnings,
+		YamlErrors: pipeline.YamlErrors,
+
+		Child: pipeline.Child,
+		// UpstreamPipeline: nil,
+
+		// MergeRequest: nil,
+
+		User: convertUserReference(pipeline.User),
 	}
-	return cov
+
+	if pipeline.UpstreamPipeline != nil {
+		pbPipeline.UpstreamPipeline = ConvertPipelineReference(*pipeline.UpstreamPipeline)
+	}
+
+	if pipeline.MergeRequest != nil {
+		pbPipeline.MergeRequest = ConvertMergeRequestReference(*pipeline.MergeRequest)
+	}
+
+	return pbPipeline
 }

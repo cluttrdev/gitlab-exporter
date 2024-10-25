@@ -1,73 +1,109 @@
 package types
 
 import (
-	"github.com/xanzy/go-gitlab"
+	"time"
 
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
-func ConvertProject(p *gitlab.Project) *typespb.Project {
+type NamespaceReference struct {
+	Id       int64
+	FullPath string
+}
+
+type ProjectReference struct {
+	Id       int64
+	FullPath string
+}
+
+type Project struct {
+	Id       int64
+	Namspace NamespaceReference
+
+	Name        string
+	FullName    string
+	Path        string
+	FullPath    string
+	Description string
+
+	CreatedAt      *time.Time
+	UpdatedAt      *time.Time
+	LastActivityAt *time.Time
+
+	Statistics ProjectStatistics
+
+	Archived   bool
+	Visibility string
+}
+
+type ProjectStatistics struct {
+	JobArtifactsSize      int64
+	ContainerRegistrySize int64
+	LfsObjectsSize        int64
+	PackagesSize          int64
+	PipelineArtifactsSize int64
+	RepositorySize        int64
+	SnippetsSize          int64
+	StorageSize           int64
+	UploadsSize           int64
+	WikiSize              int64
+
+	CommitCount int64
+	StarCount   int64
+	ForksCount  int64
+}
+
+func ConvertProjectReference(project ProjectReference) *typespb.ProjectReference {
+	return &typespb.ProjectReference{
+		Id:       project.Id,
+		FullPath: project.FullPath,
+	}
+}
+
+func ConvertProject(p Project) *typespb.Project {
 	return &typespb.Project{
-		Id:                int64(p.ID),
-		Name:              p.Name,
-		NameWithNamespace: p.NameWithNamespace,
-		Path:              p.Path,
-		PathWithNamespace: p.PathWithNamespace,
+		Id: p.Id,
+		Namespace: &typespb.NamespaceReference{
+			Id:       p.Namspace.Id,
+			FullPath: p.Namspace.FullPath,
+		},
 
-		CreatedAt:      ConvertTime(p.CreatedAt),
-		LastActivityAt: ConvertTime(p.LastActivityAt),
+		Name:     p.Name,
+		FullName: p.FullName,
+		Path:     p.Path,
+		FullPath: p.FullPath,
 
-		Namespace: convertProjectNamespace(p.Namespace),
-		Owner:     convertUser(p.Owner),
-		CreatorId: int64(p.CreatorID),
+		Timestamps: &typespb.ProjectTimestamps{
+			CreatedAt:      ConvertTime(p.CreatedAt),
+			UpdatedAt:      ConvertTime(p.UpdatedAt),
+			LastActivityAt: ConvertTime(p.LastActivityAt),
+		},
 
-		Topics:          p.Topics,
-		ForksCount:      int64(p.ForksCount),
-		StarsCount:      int64(p.StarCount),
-		Statistics:      convertProjectStatistics(p.Statistics),
-		OpenIssuesCount: int64(p.OpenIssuesCount),
+		Statistics: convertProjectStatistics(p.Statistics),
 
 		Description: p.Description,
 
-		EmptyRepo: p.EmptyRepo,
-		Archived:  p.Archived,
-
-		DefaultBranch: p.DefaultBranch,
-		Visibility:    string(p.Visibility),
-		WebUrl:        p.WebURL,
+		Archived:   p.Archived,
+		Visibility: string(p.Visibility),
 	}
 }
 
-func convertProjectNamespace(n *gitlab.ProjectNamespace) *typespb.ProjectNamespace {
-	if n == nil {
-		return nil
-	}
-	return &typespb.ProjectNamespace{
-		Id:       int64(n.ID),
-		Name:     n.Name,
-		Kind:     n.Kind,
-		Path:     n.Path,
-		FullPath: n.FullPath,
-		ParentId: int64(n.ParentID),
-
-		AvatarUrl: n.AvatarURL,
-		WebUrl:    n.WebURL,
-	}
-}
-
-func convertProjectStatistics(stats *gitlab.Statistics) *typespb.ProjectStatistics {
-	if stats == nil {
-		return nil
-	}
+func convertProjectStatistics(stats ProjectStatistics) *typespb.ProjectStatistics {
 	return &typespb.ProjectStatistics{
-		CommitCount:      stats.CommitCount,
-		StorageSize:      stats.StorageSize,
-		RepositorySize:   stats.RepositorySize,
-		WikiSize:         stats.WikiSize,
-		LfsObjectsSize:   stats.LFSObjectsSize,
-		JobArtifactsSize: stats.JobArtifactsSize,
-		PackagesSize:     stats.PackagesSize,
-		SnippetsSize:     stats.SnippetsSize,
-		UploadsSize:      stats.UploadsSize,
+		JobArtifactsSize:      stats.JobArtifactsSize,
+		ContainerRegistrySize: stats.ContainerRegistrySize,
+		LfsObjectsSize:        stats.LfsObjectsSize,
+		PackagesSize:          stats.PackagesSize,
+		PipelineArtifactsSize: stats.PipelineArtifactsSize,
+		RepositorySize:        stats.RepositorySize,
+		SnippetsSize:          stats.SnippetsSize,
+		StorageSize:           stats.StorageSize,
+		UploadsSize:           stats.UploadsSize,
+		WikiSize:              stats.WikiSize,
+
+		StarsCount:  stats.StarCount,
+		ForksCount:  stats.ForksCount,
+		CommitCount: stats.CommitCount,
+		// OpenIssuesCount: 0,
 	}
 }

@@ -1,83 +1,96 @@
 package types
 
 import (
-	"fmt"
-
-	"github.com/xanzy/go-gitlab"
+	"time"
 
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
-func ConvertTestReport(pipelineID int64, report *gitlab.PipelineTestReport) (*typespb.TestReport, []*typespb.TestSuite, []*typespb.TestCase) {
-	testreport := &typespb.TestReport{
-		Id:           testReportID(pipelineID),
-		PipelineId:   pipelineID,
-		TotalTime:    report.TotalTime,
-		TotalCount:   int64(report.TotalCount),
-		SuccessCount: int64(report.SuccessCount),
-		FailedCount:  int64(report.FailedCount),
-		SkippedCount: int64(report.SkippedCount),
-		ErrorCount:   int64(report.ErrorCount),
+type TestReport struct {
+	Id       string
+	Pipeline PipelineReference
+
+	TotalTime    time.Duration
+	TotalCount   int64
+	ErrorCount   int64
+	FailedCount  int64
+	SkippedCount int64
+	SuccessCount int64
+}
+
+type TestSuite struct {
+	Id           string
+	TestReportId string
+	Pipeline     PipelineReference
+
+	Name         string
+	TotalTime    time.Duration
+	TotalCount   int64
+	ErrorCount   int64
+	FailedCount  int64
+	SkippedCount int64
+	SuccessCount int64
+}
+
+type TestCase struct {
+	Id           string
+	TestSuiteId  string
+	TestReportId string
+	Pipeline     PipelineReference
+
+	Name          string
+	Classname     string
+	Status        string
+	ExecutionTime time.Duration
+	File          string
+	StackTrace    string
+	SystemOutput  string
+}
+
+func ConvertTestReport(testreport TestReport) *typespb.TestReport {
+	return &typespb.TestReport{
+		Id:         testreport.Id,
+		PipelineId: testreport.Pipeline.Id,
+
+		TotalTime:    testreport.TotalTime.Seconds(),
+		TotalCount:   testreport.TotalCount,
+		ErrorCount:   testreport.ErrorCount,
+		FailedCount:  testreport.FailedCount,
+		SkippedCount: testreport.SkippedCount,
+		SuccessCount: testreport.SuccessCount,
 	}
+}
 
-	testsuites := make([]*typespb.TestSuite, 0, len(report.TestSuites))
-	testcases := []*typespb.TestCase{}
-	for i, testsuite := range report.TestSuites {
-		testsuiteID := testSuiteID(testreport.Id, i)
-		testsuites = append(testsuites, &typespb.TestSuite{
-			Id:           testsuiteID,
-			TestreportId: testreport.Id,
-			PipelineId:   pipelineID,
-			Name:         testsuite.Name,
-			TotalTime:    testsuite.TotalTime,
-			TotalCount:   int64(testsuite.TotalCount),
-			SuccessCount: int64(testsuite.SuccessCount),
-			FailedCount:  int64(testsuite.FailedCount),
-			SkippedCount: int64(testsuite.SkippedCount),
-			ErrorCount:   int64(testsuite.ErrorCount),
-		})
+func ConvertTestSuite(testsuite TestSuite) *typespb.TestSuite {
+	return &typespb.TestSuite{
+		Id:           testsuite.Id,
+		TestreportId: testsuite.TestReportId,
+		PipelineId:   testsuite.Pipeline.Id,
 
-		cases := make([]*typespb.TestCase, 0, len(testsuite.TestCases))
-		for j, testcase := range testsuite.TestCases {
-			cases = append(cases, &typespb.TestCase{
-				Id:             testCaseID(testsuiteID, j),
-				TestsuiteId:    testsuiteID,
-				TestreportId:   testreport.Id,
-				PipelineId:     pipelineID,
-				Status:         testcase.Status,
-				Name:           testcase.Name,
-				Classname:      testcase.Classname,
-				File:           testcase.File,
-				ExecutionTime:  testcase.ExecutionTime,
-				SystemOutput:   fmt.Sprint(testcase.SystemOutput),
-				StackTrace:     testcase.StackTrace,
-				AttachmentUrl:  testcase.AttachmentURL,
-				RecentFailures: convertTestCaseRecentFailures(testcase.RecentFailures),
-			})
-		}
-		testcases = append(testcases, cases...)
+		Name:         testsuite.Name,
+		TotalTime:    testsuite.TotalTime.Seconds(),
+		TotalCount:   testsuite.TotalCount,
+		ErrorCount:   testsuite.ErrorCount,
+		FailedCount:  testsuite.FailedCount,
+		SkippedCount: testsuite.SkippedCount,
+		SuccessCount: testsuite.SuccessCount,
 	}
-
-	return testreport, testsuites, testcases
 }
 
-func convertTestCaseRecentFailures(f *gitlab.RecentFailures) *typespb.TestCase_RecentFailures {
-	var r typespb.TestCase_RecentFailures
-	if f != nil {
-		r.Count = int64(f.Count)
-		r.BaseBranch = f.BaseBranch
+func ConvertTestCase(testcase TestCase) *typespb.TestCase {
+	return &typespb.TestCase{
+		Id:           testcase.Id,
+		TestsuiteId:  testcase.TestSuiteId,
+		TestreportId: testcase.TestReportId,
+		PipelineId:   testcase.Pipeline.Id,
+
+		Name:          testcase.Name,
+		Classname:     testcase.Classname,
+		ExecutionTime: testcase.ExecutionTime.Seconds(),
+		File:          testcase.File,
+		StackTrace:    testcase.StackTrace,
+		SystemOutput:  testcase.SystemOutput,
+
+		RecentFailures: &typespb.TestCase_RecentFailures{},
 	}
-	return &r
-}
-
-func testReportID(pipelineID int64) string {
-	return fmt.Sprint(pipelineID)
-}
-
-func testSuiteID(reportID string, suiteIndex int) string {
-	return fmt.Sprintf("%s-%d", reportID, suiteIndex+1)
-}
-
-func testCaseID(suiteID string, caseIndex int) string {
-	return fmt.Sprintf("%s-%d", suiteID, caseIndex+1)
 }
