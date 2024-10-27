@@ -11,6 +11,8 @@ import (
 func defaultConfig() config.Config {
 	var cfg config.Config
 
+	cfg.GitLab.Url = "https://gitlab.com"
+	cfg.GitLab.Token = ""
 	cfg.GitLab.Api.URL = "https://gitlab.com/api/v4"
 	cfg.GitLab.Api.Token = ""
 	cfg.GitLab.Client.Rate.Limit = 0.0

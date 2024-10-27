@@ -23,7 +23,10 @@ type Config struct {
 }
 
 type GitLab struct {
-	Api struct {
+	Url   string `default:"https://gitlab.com" yaml:"url"`
+	Token string `default:"" yaml:"token"`
+
+	Api struct { // deprecated
 		URL   string `default:"https://gitlab.com/api/v4" yaml:"url"`
 		Token string `default:"" yaml:"token"`
 	} `yaml:"api"`

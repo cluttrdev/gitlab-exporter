@@ -1,13 +1,10 @@
-package gitlab
+package rest
 
 import (
 	"context"
 	"fmt"
 
 	_gitlab "github.com/xanzy/go-gitlab"
-
-	"github.com/cluttrdev/gitlab-exporter/internal/types"
-	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
 func ListProjectPipelines(ctx context.Context, glab *_gitlab.Client, pid int64, opt _gitlab.ListProjectPipelinesOptions, yield func(p []*_gitlab.PipelineInfo) bool) error {
@@ -60,12 +57,10 @@ func FetchProjectPipelines(ctx context.Context, glab *_gitlab.Client, pid int64,
 	return pipelines, nil
 }
 
-func (c *Client) GetPipeline(ctx context.Context, projectID int64, pipelineID int64) (*typespb.Pipeline, error) {
-	c.RLock()
+func (c *Client) GetProjectPipeline(ctx context.Context, projectID int64, pipelineID int64) (*_gitlab.Pipeline, error) {
 	pipeline, _, err := c.client.Pipelines.GetPipeline(int(projectID), int(pipelineID), _gitlab.WithContext(ctx))
-	c.RUnlock()
 	if err != nil {
 		return nil, fmt.Errorf("error getting pipeline: %w", err)
 	}
-	return types.ConvertPipeline(pipeline), nil
+	return pipeline, nil
 }

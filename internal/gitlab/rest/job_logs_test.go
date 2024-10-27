@@ -1,10 +1,12 @@
-package gitlab
+package rest_test
 
 import (
 	"bytes"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
+
+	"github.com/cluttrdev/gitlab-exporter/internal/gitlab/rest"
 )
 
 func TestParseJobLog_OnlySections(t *testing.T) {
@@ -53,13 +55,13 @@ func TestParseJobLog_OnlySections(t *testing.T) {
     [0K[32;1mJob succeeded[0;m
     `)
 
-	data, err := ParseJobLog(bytes.NewReader(trace))
+	data, err := rest.ParseJobLog(bytes.NewReader(trace))
 	if err != nil {
 		t.Errorf("%v", err)
 	}
 
-	expected := &JobLogData{
-		Sections: []SectionData{
+	expected := rest.JobLogData{
+		Sections: []rest.SectionData{
 			{Name: "prepare_executor", Start: 1700819846, End: 1700819865},
 			{Name: "prepare_script", Start: 1700819865, End: 1700819868},
 			{Name: "get_sources", Start: 1700819868, End: 1700819869},
@@ -85,14 +87,14 @@ METRIC_single_label{label_name="label_value"} 42
 METRIC_multi_labels{label_name1="label_value1",label_name2="label_value2"} 1
     `)
 
-	data, err := ParseJobLog(bytes.NewReader(trace))
+	data, err := rest.ParseJobLog(bytes.NewReader(trace))
 	if err != nil {
 		t.Errorf("%v", err)
 	}
 
-	expected := &JobLogData{
+	expected := rest.JobLogData{
 		Sections: nil,
-		Metrics: []*MetricData{
+		Metrics: []rest.MetricData{
 			{
 				Name:      "minimal_metric",
 				Value:     42.1337,

@@ -1,11 +1,10 @@
 # GitLab API client settings
 gitlab:
-  api:
-    # URL for accessing the GitLab API.
-    url: "https://gitlab.com/api/v4"
-    # Token to use for authenticating against the GitLab API.
-    # Only requires `read-api` permissions.
-    token: ""
+  # Base URL of the GitLab instance.
+  url: "https://gitlab.com"
+  # Token to use for authenticating against the GitLab API.
+  # Only requires `read-api` permissions.
+  token: ""
 
   client:
     rate:

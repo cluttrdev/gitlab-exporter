@@ -9,7 +9,6 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	grpc_client "github.com/cluttrdev/gitlab-exporter/grpc/client"
-	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -143,63 +142,4 @@ func (e *Exporter) ExportTraces(ctx context.Context, data []*typespb.Trace) erro
 
 func (e *Exporter) ExportUsers(ctx context.Context, data []*typespb.User) error {
 	return export[*typespb.User](e, ctx, data, grpc_client.RecordUsers)
-}
-
-func (e *Exporter) ExportPipelineHierarchy(ctx context.Context, ph *gitlab.PipelineHierarchy) error {
-	data, err := flattenPipelineHierarchy(ph)
-	if err != nil {
-		return err
-	}
-
-	var errs error
-	for _, client := range e.clients {
-		if err := grpc_client.RecordPipelines(client, ctx, data.Pipelines); err != nil {
-			errs = errors.Join(errs, err)
-			continue
-		}
-		if err := grpc_client.RecordJobs(client, ctx, data.Jobs); err != nil {
-			errs = errors.Join(errs, err)
-			continue
-		}
-		if err := grpc_client.RecordSections(client, ctx, data.Sections); err != nil {
-			errs = errors.Join(errs, err)
-			continue
-		}
-		if err := grpc_client.RecordBridges(client, ctx, data.Bridges); err != nil {
-			errs = errors.Join(errs, err)
-			continue
-		}
-	}
-
-	return errs
-}
-
-type pipelineData struct {
-	Pipelines []*typespb.Pipeline
-	Jobs      []*typespb.Job
-	Sections  []*typespb.Section
-	Bridges   []*typespb.Bridge
-}
-
-func flattenPipelineHierarchy(ph *gitlab.PipelineHierarchy) (pipelineData, error) {
-	var data pipelineData
-
-	data.Pipelines = append(data.Pipelines, ph.Pipeline)
-	data.Jobs = append(data.Jobs, ph.Jobs...)
-	data.Sections = append(data.Sections, ph.Sections...)
-	data.Bridges = append(data.Bridges, ph.Bridges...)
-
-	for _, dph := range ph.DownstreamPipelines {
-		d, err := flattenPipelineHierarchy(dph)
-		if err != nil {
-			return data, err
-		}
-
-		data.Pipelines = append(data.Pipelines, d.Pipelines...)
-		data.Jobs = append(data.Jobs, d.Jobs...)
-		data.Sections = append(data.Sections, d.Sections...)
-		data.Bridges = append(data.Bridges, d.Bridges...)
-	}
-
-	return data, nil
 }
