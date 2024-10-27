@@ -1,0 +1,4 @@
+fragment UserReferenceFields on User {
+    id
+    username
+}

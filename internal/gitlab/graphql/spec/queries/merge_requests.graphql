@@ -1,0 +1,146 @@
+query getProjectsMergeRequests(
+    $projectIds: [ID!]
+    $updatedAfter: Time
+    $updatedBefore: Time
+    $endCursor: String
+    # fragments to include
+    $_core: Boolean = false
+    $_extra: Boolean = false
+    $_participants: Boolean = false
+) {
+    projects(ids: $projectIds, after: $endCursor) {
+        nodes {
+            ...ProjectReferenceFields
+
+            mergeRequests(updatedAfter: $updatedAfter, updatedBefore: $updatedBefore) {
+                nodes {
+                    ...MergeRequestReferenceFields
+
+                    ...MergeRequestFieldsCore @include(if: $_core)
+                    ...MergeRequestFieldsExtra @include(if: $_extra)
+                    ...MergeRequestFieldsParticipants @include(if: $_participants)
+                }
+                pageInfo {
+                    ...pageFields
+                }
+            }
+        }
+        pageInfo {
+            ...pageFields
+        }
+    }
+}
+
+query getProjectMergeRequests(
+    $projectPath: ID!
+    $updatedAfter: Time
+    $updatedBefore: Time
+    $endCursor: String
+    # fragments to include
+    $_core: Boolean = false
+    $_extra: Boolean = false
+    $_participants: Boolean = false
+) {
+    project(fullPath: $projectPath) {
+        ...ProjectReferenceFields
+
+        mergeRequests(updatedAfter: $updatedAfter, updatedBefore: $updatedBefore, after: $endCursor) {
+            nodes {
+                ...MergeRequestReferenceFields
+
+                ...MergeRequestFieldsCore @include(if: $_core)
+                ...MergeRequestFieldsExtra @include(if: $_extra)
+                ...MergeRequestFieldsParticipants @include(if: $_participants)
+            }
+            pageInfo {
+                ...pageFields
+            }
+        }
+    }
+}
+
+query getProjectsMergeRequestNotes(
+    $projectIds: [ID!]
+    $updatedAfter: Time
+    $updatedBefore: Time
+    $endCursor: String
+) {
+    projects(ids: $projectIds, after: $endCursor) {
+        nodes {
+            ...ProjectReferenceFields
+
+            mergeRequests(updatedAfter: $updatedAfter, updatedBefore: $updatedBefore) {
+                nodes {
+                    ...MergeRequestReferenceFields
+
+                    notes(filter: ONLY_ACTIVITY) {
+                        nodes {
+                            ...MergeRequestNotesFieldsCore
+                        }
+                        pageInfo {
+                            ...pageFields
+                        }
+                    }
+                }
+                pageInfo {
+                    ...pageFields
+                }
+            }
+        }
+        pageInfo {
+            ...pageFields
+        }
+    }
+}
+
+query getProjectMergeRequestsNotes(
+    $projectPath: ID!
+    $updatedAfter: Time
+    $updatedBefore: Time
+    $endCursor: String
+) {
+    project(fullPath: $projectPath) {
+        ...ProjectReferenceFields
+
+        mergeRequests(updatedAfter: $updatedAfter, updatedBefore: $updatedBefore, after: $endCursor) {
+            nodes {
+                ...MergeRequestReferenceFields
+
+                notes(filter: ONLY_ACTIVITY) {
+                    nodes {
+                        ...MergeRequestNotesFieldsCore
+                    }
+                    pageInfo {
+                        ...pageFields
+                    }
+                }
+            }
+            pageInfo {
+                ...pageFields
+            }
+        }
+    }
+}
+
+query getProjectMergeRequestNotes(
+    $projectPath: ID!
+    $mergeRequestIid: String!
+    $endCursor: String
+    ) {
+    project(fullPath: $projectPath) {
+        ...ProjectReferenceFields
+
+        mergeRequest(iid: $mergeRequestIid) {
+            ...MergeRequestReferenceFields
+
+            notes(filter: ONLY_ACTIVITY, after: $endCursor) {
+                nodes {
+                    ...MergeRequestNotesFieldsCore
+                }
+                pageInfo {
+                    ...pageFields
+                }
+            }
+        }
+    }
+}

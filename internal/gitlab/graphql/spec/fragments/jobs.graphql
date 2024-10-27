@@ -1,0 +1,48 @@
+fragment JobReferenceFields on CiJob {
+    id
+}
+
+fragment JobFieldsCore on CiJob {
+    name
+    refName
+    status
+    
+    createdAt
+    queuedAt
+    startedAt
+    finishedAt
+    erasedAt
+
+    duration
+    queuedDuration
+    coverage
+
+    allowFailure
+    failureMessage
+}
+
+fragment JobFieldsExtra on CiJob {
+    stage {
+        name
+    }
+
+    tags
+
+    manualJob
+    retryable
+    retried
+
+    kind
+    downstreamPipeline {
+        id
+        iid
+        project {
+            id
+            fullPath
+        }
+    }
+
+    runner {
+        id
+    }
+}

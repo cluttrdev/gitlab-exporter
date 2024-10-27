@@ -1,0 +1,127 @@
+fragment TestReportSummaryFields on TestReportTotal {
+    count
+    error
+    failed
+    skipped
+    success
+    time
+}
+
+fragment TestSuiteSummaryFields on TestSuiteSummary {
+    name
+    buildIds
+    errorCount
+    failedCount
+    skippedCount
+    successCount
+    suiteError
+    totalCount
+    totalTime
+}
+
+# fragment TestSuiteFields on TestSuite {
+#     name
+#     errorCount
+#     failedCount
+#     skippedCount
+#     successCount
+#     suiteError
+#     totalCount
+#     totalTime
+# }
+
+# fragment TestCaseFields on TestCase {
+#     name
+#     classname
+#     status
+#     executionTime
+#     file
+#     stackTrace
+#     systemOutput
+# }
+
+query getProjectsPipelinesTestReportSummary(
+    $ids: [ID!]
+    $updatedAfter: Time
+    $updatedBefore: Time
+    $source: String
+    $endCursor: String
+) {
+    projects(ids: $ids, after: $endCursor) {
+        nodes {
+            ...ProjectReferenceFields
+
+            pipelines(
+                scope: FINISHED
+                source: $source
+                updatedAfter: $updatedAfter
+                updatedBefore: $updatedBefore
+            ) {
+                nodes {
+                    ...PipelineReferenceFields
+
+                    testReportSummary {
+                        total {
+                            ...TestReportSummaryFields
+                        }
+                        testSuites {
+                            nodes {
+                                ...TestSuiteSummaryFields
+                            }
+                            pageInfo {
+                                ...pageFields
+                            }
+                        }
+                    }
+                }
+                pageInfo {
+                    ...pageFields
+                }
+            }
+        }
+        pageInfo {
+            ...pageFields
+        }
+    }
+}
+
+query getProjectPipelinesTestReportSummary(
+    $projectPath: ID!
+    $updatedAfter: Time
+    $updatedBefore: Time
+    $source: String
+    $endCursor: String
+) {
+    project(fullPath: $projectPath) {
+        ...ProjectReferenceFields
+
+        pipelines(
+            scope: FINISHED
+            source: $source
+            updatedAfter: $updatedAfter
+            updatedBefore: $updatedBefore
+            after: $endCursor
+            ) {
+            nodes {
+                ...PipelineReferenceFields
+
+                testReportSummary {
+                    total {
+                        ...TestReportSummaryFields
+                    }
+                    testSuites {
+                        nodes {
+                            ...TestSuiteSummaryFields
+                        }
+                        pageInfo {
+                            ...pageFields
+                        }
+                    }
+                }
+            }
+            pageInfo {
+                ...pageFields
+            }
+        }
+    }
+}

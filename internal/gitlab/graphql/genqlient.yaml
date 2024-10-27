@@ -1,0 +1,27 @@
+# Default genqlient config; for full documentation see:
+# https://github.com/Khan/genqlient/blob/main/docs/genqlient.yaml
+schema: spec/schema.graphql
+
+operations:
+  - spec/fragments/*.graphql
+  - spec/queries/*.graphql
+  - spec/testreports.graphql
+
+generated: generated.go
+
+optional: pointer
+
+bindings:
+  Time:
+    type: time.Time
+  Duration:
+    type: float64
+
+  CiPipelineID:
+    type: string
+  JobID:
+    type: string
+  CiRunnerID:
+    type: string
+  NoteID:
+    type: string

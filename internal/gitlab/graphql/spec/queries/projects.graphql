@@ -1,0 +1,34 @@
+query getProjects(
+    $ids: [ID!]
+    $updatedAfter: Time
+    $updatedBefore: Time
+    $endCursor: String
+) {
+    projects(ids: $ids, after: $endCursor) {
+        nodes {
+            ...ProjectReferenceFields
+            namespace {
+                ...NamespaceReferenceFields
+            }
+
+            ...ProjectFieldsCore
+            
+            pipelines(
+                scope: FINISHED
+                updatedAfter: $updatedAfter
+                updatedBefore: $updatedBefore
+            ) {
+                count
+            }
+            mergeRequests(
+                updatedAfter: $updatedAfter
+                updatedBefore: $updatedBefore
+            ) {
+                count
+            }
+        }
+        pageInfo {
+            ...pageFields
+        }
+    }
+}

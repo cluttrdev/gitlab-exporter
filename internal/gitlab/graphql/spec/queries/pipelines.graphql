@@ -1,0 +1,78 @@
+query getProjectsPipelines(
+    $ids: [ID!]
+    $source: String
+    $updatedAfter: Time
+    $updatedBefore: Time
+    $endCursor: String
+){
+    projects(ids: $ids, after: $endCursor) {
+        nodes {
+            ...ProjectReferenceFields
+
+            pipelines(
+                scope: FINISHED
+                source: $source
+                updatedAfter: $updatedAfter
+                updatedBefore: $updatedBefore
+            ) {
+                nodes {
+                    ...PipelineReferenceFields
+
+                    ...PipelineFieldsCore
+                }
+                pageInfo {
+                    ...pageFields
+                }
+            }
+        }
+        pageInfo {
+            ...pageFields
+        }
+    }
+}
+
+query getProjectPipelines(
+    $projectPath: ID!
+    $source: String
+    $updatedAfter: Time
+    $updatedBefore: Time
+    $endCursor: String
+) {
+    project(fullPath: $projectPath) {
+        ...ProjectReferenceFields
+
+        pipelines(
+            scope: FINISHED
+            source: $source
+            updatedAfter: $updatedAfter
+            updatedBefore: $updatedBefore
+            after: $endCursor
+        ) {
+            nodes {
+                ...PipelineReferenceFields
+
+                ...PipelineFieldsCore
+            }
+            pageInfo {
+                ...pageFields
+            }
+        }
+    }
+}
+
+query getProjectIdPipeline(
+    $projectId: ID!
+    $pipelineId: CiPipelineID!
+) {
+    projects(ids: [$projectId]){
+        nodes {
+            ...ProjectReferenceFields
+
+            pipeline(id: $pipelineId) {
+                ...PipelineReferenceFields
+
+                ...PipelineFieldsCore
+            }
+        }
+    }
+}

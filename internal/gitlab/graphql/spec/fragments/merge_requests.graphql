@@ -1,0 +1,109 @@
+fragment MergeRequestReferenceFields on MergeRequest {
+    id
+    iid
+}
+
+fragment MergeRequestFieldsCore on MergeRequest {
+    createdAt
+    updatedAt
+    mergedAt
+    closedAt
+
+    name
+    title
+    labels {
+        nodes {
+            title
+        }
+    }
+
+    state
+    detailedMergeStatus
+    mergeError
+
+    approved
+    conflicts
+    draft
+    mergeable
+}
+
+fragment MergeRequestFieldsExtra on MergeRequest {
+    sourceProjectId
+    targetProjectId
+    sourceBranch
+    targetBranch
+
+    mergeCommitSha
+    rebaseCommitSha
+
+    diffRefs {
+        baseSha
+        headSha
+        startSha
+    }
+    diffStatsSummary {
+        additions
+        changes
+        deletions
+        fileCount
+    }
+
+    commitCount
+    userNotesCount
+
+    milestone {
+        id
+        iid
+        project {
+            id
+            fullPath
+        }
+    }
+}
+
+fragment MergeRequestFieldsParticipants on MergeRequest {
+    author {
+        ...UserReferenceFields
+    }
+    assignees {
+        nodes {
+            ...UserReferenceFields
+        }
+    }
+    reviewers {
+        nodes {
+            ...UserReferenceFields
+        }
+    }
+    approvedBy {
+        nodes {
+            ...UserReferenceFields
+        }
+    }
+    mergeUser {
+        ...UserReferenceFields
+    }
+}
+
+fragment MergeRequestNotesFieldsCore on Note {
+    id
+
+    createdAt
+    updatedAt
+
+    author {
+        ...UserReferenceFields
+    }
+
+    body
+
+    internal
+    system
+
+    resolvable
+    resolved
+    resolvedAt
+    resolvedBy {
+        ...UserReferenceFields
+    }
+}

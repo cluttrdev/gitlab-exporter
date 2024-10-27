@@ -1,0 +1,45 @@
+fragment PipelineReferenceFields on Pipeline {
+    id
+    iid
+}
+
+fragment PipelineFieldsCore on Pipeline {
+    name
+    ref
+    status
+    source
+    sha(format: LONG)
+
+    committedAt
+    createdAt
+    updatedAt
+    startedAt
+    finishedAt
+
+    queuedDuration
+    duration
+    coverage
+    failureReason
+
+    warnings
+    yamlErrors
+
+    child
+    upstream {
+        ...PipelineReferenceFields
+        project {
+            ...ProjectReferenceFields
+        }
+    }
+
+    mergeRequest {
+        ...MergeRequestReferenceFields
+        project {
+            ...ProjectReferenceFields
+        }
+    }
+
+    user {
+        ...UserReferenceFields
+    }
+}

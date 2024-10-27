@@ -1,0 +1,40 @@
+fragment NamespaceReferenceFields on Namespace {
+    id
+    fullPath
+}
+
+fragment ProjectReferenceFields on Project {
+    id
+    fullPath
+}
+
+fragment ProjectFieldsCore on Project {
+    name
+    nameWithNamespace
+    path
+    description
+
+    createdAt
+    updatedAt
+    lastActivityAt
+
+    statistics {
+        buildArtifactsSize
+        containerRegistrySize
+        lfsObjectsSize
+        packagesSize
+        pipelineArtifactsSize
+        repositorySize
+        snippetsSize
+        storageSize
+        uploadsSize
+        wikiSize
+
+        commitCount
+    }
+    starCount
+    forksCount
+
+    archived
+    visibility
+}

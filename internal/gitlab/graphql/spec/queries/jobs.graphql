@@ -1,0 +1,113 @@
+query getProjectsPipelinesJobs(
+    $ids: [ID!]
+    $source: String
+    $updatedAfter: Time
+    $updatedBefore: Time
+    $endCursor: String
+    # field fragments (choose one)
+    $_core: Boolean!
+    $_extra: Boolean!
+){
+    projects(ids: $ids, after: $endCursor) {
+        nodes {
+            ...ProjectReferenceFields
+
+            pipelines(
+                scope: FINISHED
+                source: $source
+                updatedAfter: $updatedAfter
+                updatedBefore: $updatedBefore
+            ) {
+                nodes {
+                    ...PipelineReferenceFields
+
+                    jobs {
+                        nodes {
+                            ...JobReferenceFields
+                            ...JobFieldsCore @include(if: $_core)
+                            ...JobFieldsExtra @include(if: $_extra)
+                        }
+                        pageInfo {
+                            ...pageFields
+                        }
+                    }
+                }
+                pageInfo {
+                    ...pageFields
+                }
+            }
+        }
+        pageInfo {
+            ...pageFields
+        }
+    }
+}
+
+query getProjectPipelinesJobs(
+    $projectPath: ID!
+    $source: String
+    $updatedAfter: Time
+    $updatedBefore: Time
+    $endCursor: String
+    # field fragments (choose one)
+    $_core: Boolean!
+    $_extra: Boolean!
+){
+    project(fullPath: $projectPath) {
+        ...ProjectReferenceFields
+
+        pipelines(
+            scope: FINISHED
+            source: $source
+            updatedAfter: $updatedAfter
+            updatedBefore: $updatedBefore
+            after: $endCursor
+            ) {
+            nodes {
+                ...PipelineReferenceFields
+
+                jobs {
+                    nodes {
+                        ...JobReferenceFields
+                        ...JobFieldsCore @include(if: $_core)
+                        ...JobFieldsExtra @include(if: $_extra)
+                    }
+                    pageInfo {
+                        ...pageFields
+                    }
+                }
+            }
+            pageInfo {
+                ...pageFields
+            }
+        }
+    }
+}
+
+query getProjectPipelineJobs(
+    $projectPath: ID!
+    $pipelineIid: ID!
+    $endCursor: String
+    # field fragments (choose one)
+    $_core: Boolean!
+    $_extra: Boolean!
+){
+    project(fullPath: $projectPath) {
+        ...ProjectReferenceFields
+
+        pipeline(iid: $pipelineIid) {
+            ...PipelineReferenceFields
+
+            jobs(after: $endCursor) {
+                nodes {
+                    ...JobReferenceFields
+                    ...JobFieldsCore @include(if: $_core)
+                    ...JobFieldsExtra @include(if: $_extra)
+                }
+                pageInfo {
+                    ...pageFields
+                }
+            }
+        }
+    }
+}
