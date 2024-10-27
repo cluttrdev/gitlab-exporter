@@ -13,15 +13,12 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"sync"
 	"syscall"
 
-	"github.com/alitto/pond"
 	"github.com/oklog/run"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	_gitlab "github.com/xanzy/go-gitlab"
 
 	"github.com/cluttrdev/cli"
 
@@ -29,7 +26,7 @@ import (
 	"github.com/cluttrdev/gitlab-exporter/internal/exporter"
 	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
 	"github.com/cluttrdev/gitlab-exporter/internal/healthz"
-	"github.com/cluttrdev/gitlab-exporter/internal/jobs"
+	"github.com/cluttrdev/gitlab-exporter/internal/tasks"
 )
 
 type RunConfig struct {
@@ -114,10 +111,25 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 	}
 	initLogging(c.out, cfg.Log)
 
+	// add projects passed as arguments
+	for _, pid := range c.projects {
+		exists := slices.ContainsFunc(cfg.Projects, func(p config.Project) bool {
+			return p.Id == pid
+		})
+		if exists {
+			continue
+		}
+
+		cfg.Projects = append(cfg.Projects, config.Project{
+			Id:              pid,
+			ProjectSettings: config.DefaultProjectSettings(),
+		})
+	}
+
 	// create gitlab client
-	gitlabclient, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
-		URL:   cfg.GitLab.Api.URL,
-		Token: cfg.GitLab.Api.Token,
+	glab, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
+		URL:   cfg.GitLab.Url,
+		Token: cfg.GitLab.Token,
 
 		RateLimit: cfg.GitLab.Client.Rate.Limit,
 	})
@@ -134,77 +146,40 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 
 	g := &run.Group{}
 
-	var pool *pond.WorkerPool
-	{ // jobs
-		ctxJobs, cancelJobs := context.WithCancel(context.Background())
+	{ // controller
+		ctrl := tasks.NewController(glab, exp, tasks.ControllerConfig{
+			GitLab:     cfg.GitLab,
+			Projects:   cfg.Projects,
+			Namespaces: cfg.Namespaces,
 
-		slog.Info("Starting worker pool")
-		pool = pond.New(42, 1024, pond.Context(ctxJobs))
+			MaxWorkers: 42,
+		})
+
+		ctx, cancel := context.WithCancel(context.Background())
 
 		g.Add(func() error { // execute
-			// gather projects from config
-			slog.Info("Resolving projects to export...")
-			projects, err := resolveProjects(ctx, cfg, gitlabclient)
+			slog.Info("Resolving projects...")
+			count, err := ctrl.ResolveProjects(ctx)
 			if err != nil {
-				return fmt.Errorf("error resolving projects: %w", err)
+				return fmt.Errorf("resolve projecst: %w", err)
+			} else if count == 0 {
+				return fmt.Errorf("No projects found")
 			}
+			slog.Info("Resolving projects... done", "found", count)
 
-			// add projects passed as arguments
-			for _, pid := range c.projects {
-				exists := slices.ContainsFunc(cfg.Projects, func(p config.Project) bool {
-					return p.Id == pid
-				})
-
-				if !exists {
-					projects = append(cfg.Projects, config.Project{
-						ProjectSettings: config.DefaultProjectSettings(),
-						Id:              pid,
-					})
-				}
-			}
-			slog.Info("Resolving projects to export... done")
-			if len(projects) == 0 {
-				return errors.New("no projects found to export")
-			}
-			slog.Info(fmt.Sprintf("Found %d projects to export", len(projects)))
-
-			var wg sync.WaitGroup
-			for _, p := range projects {
-				if c.catchup && p.CatchUp.Enabled {
-					job := jobs.ProjectCatchUpJob{
-						Config:   p,
-						GitLab:   gitlabclient,
-						Exporter: exp,
-
-						WorkerPool: pool,
-					}
-					wg.Add(1)
-					go func() {
-						defer wg.Done()
-						job.Run(ctxJobs)
-					}()
-				}
-
-				job := jobs.ProjectExportJob{
-					Config:   p,
-					GitLab:   gitlabclient,
-					Exporter: exp,
-
-					WorkerPool: pool,
-				}
-				wg.Add(1)
+			if c.catchup {
 				go func() {
-					defer wg.Done()
-					job.Run(ctxJobs)
+					if err := ctrl.CatchUp(ctx); err != nil {
+						slog.Error("error catching up", "error", err)
+					}
 				}()
 			}
 
-			wg.Wait()
-			return nil
+			return ctrl.Run(ctx)
 		}, func(err error) { // interrupt
-			slog.Info("Cancelling jobs...")
-			cancelJobs()
-			slog.Info("Cancelling jobs... done")
+			slog.Info("Stopping controller...")
+			cancel()
+			slog.Info("Stopping controller... done")
 		})
 	}
 
@@ -220,10 +195,6 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 		}
 		reg := prometheus.NewRegistry()
 		reg.MustRegister(colls...)
-
-		if pool != nil {
-			registerWorkerPoolMetrics(reg, pool)
-		}
 
 		g.Add(serveHTTP(cfg.HTTP, reg))
 	}
@@ -286,117 +257,4 @@ func serveHTTP(cfg config.HTTP, reg *prometheus.Registry) (func() error, func(er
 	}
 
 	return execute, interrupt
-}
-
-func resolveProjects(ctx context.Context, cfg config.Config, glab *gitlab.Client) ([]config.Project, error) {
-	projectConfigs := make(map[int64]config.Project)
-
-	opt := gitlab.ListNamespaceProjectsOptions{}
-	for _, namespace := range cfg.Namespaces {
-		opt.Kind = namespace.Kind
-		if namespace.Visibility != "" {
-			opt.Visibility = (*_gitlab.VisibilityValue)(&namespace.Visibility)
-		}
-
-		opt.WithShared = _gitlab.Ptr(namespace.WithShared)
-		opt.IncludeSubgroups = _gitlab.Ptr(namespace.IncludeSubgroups)
-
-		err := glab.ListNamespaceProjects(ctx, namespace.Id, opt, func(projects []*_gitlab.Project) bool {
-			for _, project := range projects {
-				projectID := int64(project.ID)
-				projectConfigs[projectID] = config.Project{
-					ProjectSettings: namespace.ProjectSettings,
-					Id:              projectID,
-				}
-			}
-
-			for _, pid := range namespace.ExcludeProjects {
-				p, _, err := glab.Client().Projects.GetProject(pid, nil, _gitlab.WithContext(ctx))
-				if err != nil {
-					slog.Error("error getting namespace project", "namespace_id", namespace.Id, "project", pid, "error", err)
-					return false
-				}
-				delete(projectConfigs, int64(p.ID))
-			}
-
-			return true
-		})
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// overwrite with explicitly configured projects
-	for _, p := range cfg.Projects {
-		projectConfigs[p.Id] = p
-	}
-
-	projects := make([]config.Project, 0, len(projectConfigs))
-	for _, p := range projectConfigs {
-		projects = append(projects, p)
-	}
-
-	return projects, nil
-}
-
-func registerWorkerPoolMetrics(reg *prometheus.Registry, pool *pond.WorkerPool) {
-	// Worker pool metrics
-	reg.MustRegister(prometheus.NewGaugeFunc(
-		prometheus.GaugeOpts{
-			Name: "pool_workers_running",
-			Help: "Number of running worker goroutines",
-		},
-		func() float64 {
-			return float64(pool.RunningWorkers())
-		}))
-	reg.MustRegister(prometheus.NewGaugeFunc(
-		prometheus.GaugeOpts{
-			Name: "pool_workers_idle",
-			Help: "Number of idle worker goroutines",
-		},
-		func() float64 {
-			return float64(pool.IdleWorkers())
-		}))
-
-	// Task metrics
-	reg.MustRegister(prometheus.NewCounterFunc(
-		prometheus.CounterOpts{
-			Name: "pool_tasks_submitted_total",
-			Help: "Number of tasks submitted",
-		},
-		func() float64 {
-			return float64(pool.SubmittedTasks())
-		}))
-	reg.MustRegister(prometheus.NewGaugeFunc(
-		prometheus.GaugeOpts{
-			Name: "pool_tasks_waiting_total",
-			Help: "Number of tasks waiting in the queue",
-		},
-		func() float64 {
-			return float64(pool.WaitingTasks())
-		}))
-	reg.MustRegister(prometheus.NewCounterFunc(
-		prometheus.CounterOpts{
-			Name: "pool_tasks_successful_total",
-			Help: "Number of tasks that completed successfully",
-		},
-		func() float64 {
-			return float64(pool.SuccessfulTasks())
-		}))
-	reg.MustRegister(prometheus.NewCounterFunc(
-		prometheus.CounterOpts{
-			Name: "pool_tasks_failed_total",
-			Help: "Number of tasks that completed with panic",
-		},
-		func() float64 {
-			return float64(pool.FailedTasks())
-		}))
-	reg.MustRegister(prometheus.NewCounterFunc(
-		prometheus.CounterOpts{
-			Name: "pool_tasks_completed_total",
-			Help: "Number of tasks that completed either successfully or with panic",
-		},
-		func() float64 {
-			return float64(pool.CompletedTasks())
-		}))
 }

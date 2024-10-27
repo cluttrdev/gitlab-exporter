@@ -8,10 +8,8 @@ import (
 	"io"
 	"log/slog"
 	"os/signal"
-	"sync"
 	"syscall"
 
-	"github.com/alitto/pond"
 	"github.com/oklog/run"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
@@ -21,7 +19,7 @@ import (
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/internal/exporter"
 	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
-	"github.com/cluttrdev/gitlab-exporter/internal/jobs"
+	"github.com/cluttrdev/gitlab-exporter/internal/tasks"
 )
 
 type CatchUpConfig struct {
@@ -85,9 +83,9 @@ func (c *CatchUpConfig) Exec(ctx context.Context, args []string) error {
 	initLogging(c.out, cfg.Log)
 
 	// create gitlab client
-	gitlabclient, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
-		URL:   cfg.GitLab.Api.URL,
-		Token: cfg.GitLab.Api.Token,
+	glab, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
+		URL:   cfg.GitLab.Url,
+		Token: cfg.GitLab.Token,
 
 		RateLimit: cfg.GitLab.Client.Rate.Limit,
 	})
@@ -104,47 +102,24 @@ func (c *CatchUpConfig) Exec(ctx context.Context, args []string) error {
 
 	g := &run.Group{}
 
-	if len(cfg.Projects) > 0 { // jobs
-		ctxJobs, cancelJobs := context.WithCancel(context.Background())
+	{ // controller
+		ctrl := tasks.NewController(glab, exp, tasks.ControllerConfig{
+			GitLab:     cfg.GitLab,
+			Projects:   cfg.Projects,
+			Namespaces: cfg.Namespaces,
 
-		slog.Info("Starting worker pool")
-		pool := pond.New(42, 1024, pond.Context(ctxJobs))
+			MaxWorkers: 42,
+		})
+
+		ctx, cancel := context.WithCancel(context.Background())
 
 		g.Add(func() error { // execute
-			var wg sync.WaitGroup
-			for _, p := range cfg.Projects {
-				if !p.CatchUp.Enabled {
-					continue
-				}
-
-				job := jobs.ProjectCatchUpJob{
-					Config:   p,
-					GitLab:   gitlabclient,
-					Exporter: exp,
-
-					WorkerPool: pool,
-				}
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
-					job.Run(ctx)
-				}()
-			}
-
-			wg.Wait()
-			return nil
+			return ctrl.CatchUp(ctx)
 		}, func(err error) { // interrupt
-			slog.Info("Cancelling jobs...")
-			cancelJobs()
-
-			slog.Info("Stopping worker pool...")
-			pool.StopAndWait()
-			slog.Info("Stopping worker pool... done")
-
-			slog.Info("Cancelling jobs... done")
+			slog.Info("Stopping controller...")
+			cancel()
+			slog.Info("Stopping controller... done")
 		})
-	} else {
-		slog.Warn("There are no projects configured for export")
 	}
 
 	if cfg.HTTP.Enabled {

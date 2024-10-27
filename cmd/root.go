@@ -50,6 +50,10 @@ func NewRootCmd(out io.Writer) *cli.Command {
 func (c *RootConfig) RegisterFlags(fs *flag.FlagSet) {
 	defaults := config.Default()
 
+	fs.String("gitlab-url", defaults.GitLab.Url, fmt.Sprintf("The GitLab base URL (default: '%s').", defaults.GitLab.Url))
+	fs.String("gitlab-token", defaults.GitLab.Token, fmt.Sprintf("The GitLab API Token (default: '%s').", defaults.GitLab.Token))
+
+	// deprecated
 	fs.String("gitlab-api-url", defaults.GitLab.Api.URL, fmt.Sprintf("The GitLab API URL (default: '%s').", defaults.GitLab.Api.URL))
 	fs.String("gitlab-api-token", defaults.GitLab.Api.Token, fmt.Sprintf("The GitLab API Token (default: '%s').", defaults.GitLab.Api.Token))
 
@@ -70,6 +74,10 @@ func loadConfig(filename string, flags *flag.FlagSet, cfg *config.Config) error 
 
 	flags.Visit(func(f *flag.Flag) {
 		switch f.Name {
+		case "gitlab-url":
+			cfg.GitLab.Url = f.Value.String()
+		case "gitlab-token":
+			cfg.GitLab.Token = f.Value.String()
 		case "gitlab-api-url":
 			cfg.GitLab.Api.URL = f.Value.String()
 		case "gitlab-api-token":

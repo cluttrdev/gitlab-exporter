@@ -68,9 +68,9 @@ func (c *FetchTestReportConfig) Exec(ctx context.Context, args []string) error {
 	}
 
 	// create gitlab client
-	glc, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
-		URL:   cfg.GitLab.Api.URL,
-		Token: cfg.GitLab.Api.Token,
+	glab, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
+		URL:   cfg.GitLab.Url,
+		Token: cfg.GitLab.Token,
 
 		RateLimit: cfg.GitLab.Client.Rate.Limit,
 	})
@@ -80,7 +80,7 @@ func (c *FetchTestReportConfig) Exec(ctx context.Context, args []string) error {
 
 	var b []byte
 	if c.summary {
-		tr, err := glc.GetPipelineTestReportSummary(ctx, projectID, pipelineID)
+		tr, err := glab.Rest.GetPipelineTestReportSummary(ctx, projectID, pipelineID)
 		if err != nil {
 			return fmt.Errorf("error fetching pipeline testreport summary: %w", err)
 		}
@@ -91,7 +91,7 @@ func (c *FetchTestReportConfig) Exec(ctx context.Context, args []string) error {
 		}
 
 	} else {
-		tr, err := glc.GetPipelineTestReport(ctx, projectID, pipelineID)
+		tr, _, err := glab.Rest.GetPipelineTestReport(ctx, projectID, pipelineID)
 		if err != nil {
 			return fmt.Errorf("error fetching pipeline testreport: %w", err)
 		}

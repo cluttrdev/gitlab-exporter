@@ -12,6 +12,7 @@ import (
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
+	"github.com/cluttrdev/gitlab-exporter/internal/gitlab/graphql"
 )
 
 type FetchPipelineConfig struct {
@@ -63,9 +64,9 @@ func (c *FetchPipelineConfig) Exec(ctx context.Context, args []string) error {
 	}
 
 	// create gitlab client
-	glc, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
-		URL:   cfg.GitLab.Api.URL,
-		Token: cfg.GitLab.Api.Token,
+	glab, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
+		URL:   cfg.GitLab.Url,
+		Token: cfg.GitLab.Token,
 
 		RateLimit: cfg.GitLab.Client.Rate.Limit,
 	})
@@ -73,47 +74,55 @@ func (c *FetchPipelineConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("error creating gitlab client: %w", err)
 	}
 
-	projectID, err := strconv.ParseInt(args[0], 10, 64)
+	projectId, err := strconv.ParseInt(args[0], 10, 64)
 	if err != nil {
 		return fmt.Errorf("error parsing `project_id` argument: %w", err)
 	}
 
-	pipelineID, err := strconv.ParseInt(args[1], 10, 64)
+	pipelineId, err := strconv.ParseInt(args[1], 10, 64)
 	if err != nil {
 		return fmt.Errorf("error parsing `pipeline_id` argument: %w", err)
 	}
 
+	projectGid := graphql.GlobalIdProjectPrefix + strconv.FormatInt(projectId, 10)
+	pipelineGid := graphql.GlobalIdPipelinePrefix + strconv.FormatInt(pipelineId, 10)
+
 	var b []byte
 	if c.fetchHierarchy || c.outputTrace {
-		opt := &gitlab.GetPipelineHierarchyOptions{
-			FetchSections: c.fetchSections,
-		}
-
-		phr, err := glc.GetPipelineHierarchy(ctx, projectID, pipelineID, opt)
-		if err != nil {
-			return fmt.Errorf("error fetching pipeline hierarchy: %w", err)
-		}
-		ph := phr.PipelineHierarchy
-
-		if c.outputTrace {
-			ts := ph.GetAllTraces()
-			b, err = json.Marshal(ts)
-			if err != nil {
-				return fmt.Errorf("error marshalling pipeline traces: %w", err)
-			}
-		} else {
-			b, err = json.Marshal(ph)
-			if err != nil {
-				return fmt.Errorf("error marshalling pipeline hierarchy: %w", err)
-			}
-		}
+		// opt := &gitlab.GetPipelineHierarchyOptions{
+		// 	FetchSections: c.fetchSections,
+		// }
+		//
+		// phr, err := glc.GetPipelineHierarchy(ctx, projectID, pipelineID, opt)
+		// if err != nil {
+		// 	return fmt.Errorf("error fetching pipeline hierarchy: %w", err)
+		// }
+		// ph := phr.PipelineHierarchy
+		//
+		// if c.outputTrace {
+		// 	ts := ph.GetAllTraces()
+		// 	b, err = json.Marshal(ts)
+		// 	if err != nil {
+		// 		return fmt.Errorf("error marshalling pipeline traces: %w", err)
+		// 	}
+		// } else {
+		// 	b, err = json.Marshal(ph)
+		// 	if err != nil {
+		// 		return fmt.Errorf("error marshalling pipeline hierarchy: %w", err)
+		// 	}
+		// }
 	} else {
-		p, err := glc.GetPipeline(ctx, projectID, pipelineID)
+		pipelineFields, err := glab.GraphQL.GetProjectPipeline(ctx, projectGid, pipelineGid)
 		if err != nil {
-			return fmt.Errorf("error fetching pipeline: %w", err)
+			return fmt.Errorf("get pipeline fields: %w", err)
 		}
 
-		b, err = json.Marshal(p)
+		pipeline, err := graphql.ConvertPipeline(pipelineFields)
+		if err != nil {
+			return fmt.Errorf("convert pipeline fields: %w", err)
+		}
+
+		b, err = json.Marshal(pipeline)
 		if err != nil {
 			return fmt.Errorf("error marshalling pipeline %w", err)
 		}

@@ -8,6 +8,8 @@ import (
 	"io"
 	"strconv"
 
+	_gitlab "github.com/xanzy/go-gitlab"
+
 	"github.com/cluttrdev/cli"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
@@ -60,9 +62,9 @@ func (c *FetchJobLogConfig) Exec(ctx context.Context, args []string) error {
 	}
 
 	// create gitlab client
-	glc, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
-		URL:   cfg.GitLab.Api.URL,
-		Token: cfg.GitLab.Api.Token,
+	glab, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
+		URL:   cfg.GitLab.Url,
+		Token: cfg.GitLab.Token,
 
 		RateLimit: cfg.GitLab.Client.Rate.Limit,
 	})
@@ -80,15 +82,10 @@ func (c *FetchJobLogConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("error parsing `job_id` argument: %w", err)
 	}
 
-	trace, err := glc.GetJobLog(ctx, projectID, jobID)
-	if err != nil {
-		return fmt.Errorf("error fetching job log: %w", err)
-	}
-
 	if c.printSections || c.printMetrics {
-		data, err := gitlab.ParseJobLog(trace)
+		data, err := glab.Rest.GetJobLogData(ctx, projectID, jobID)
 		if err != nil {
-			return err
+			return fmt.Errorf("error fetching job log data: %w", err)
 		}
 
 		var m []byte
@@ -105,6 +102,11 @@ func (c *FetchJobLogConfig) Exec(ctx context.Context, args []string) error {
 		}
 		fmt.Println(string(m))
 	} else {
+		trace, _, err := glab.Rest.Client().Jobs.GetTraceFile(int(projectID), int(jobID), _gitlab.WithContext(ctx))
+		if err != nil {
+			return err
+		}
+
 		_, err = io.Copy(c.FetchConfig.RootConfig.out, trace)
 		if err != nil {
 			return err

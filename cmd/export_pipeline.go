@@ -12,7 +12,9 @@ import (
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/internal/exporter"
 	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
-	"github.com/cluttrdev/gitlab-exporter/internal/tasks"
+	"github.com/cluttrdev/gitlab-exporter/internal/gitlab/graphql"
+	"github.com/cluttrdev/gitlab-exporter/internal/types"
+	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
 type ExportPipelineConfig struct {
@@ -59,12 +61,12 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("invalid number of positional arguments: %v", args)
 	}
 
-	projectID, err := strconv.ParseInt(args[0], 10, 64)
+	projectId, err := strconv.ParseInt(args[0], 10, 64)
 	if err != nil {
 		return fmt.Errorf("error parsing `project_id` argument: %w", err)
 	}
 
-	pipelineID, err := strconv.ParseInt(args[1], 10, 64)
+	pipelineId, err := strconv.ParseInt(args[1], 10, 64)
 	if err != nil {
 		return fmt.Errorf("error parsing `pipeline_id` argument: %w", err)
 	}
@@ -75,9 +77,9 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 	}
 
 	// create gitlab client
-	gitlabclient, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
-		URL:   cfg.GitLab.Api.URL,
-		Token: cfg.GitLab.Api.Token,
+	glab, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
+		URL:   cfg.GitLab.Url,
+		Token: cfg.GitLab.Token,
 
 		RateLimit: cfg.GitLab.Client.Rate.Limit,
 	})
@@ -92,15 +94,18 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("error creating exporter: %w", err)
 	}
 
-	opts := tasks.ExportPipelineHierarchyOptions{
-		ProjectID:  projectID,
-		PipelineID: pipelineID,
+	projectGid := graphql.GlobalIdProjectPrefix + strconv.FormatInt(projectId, 10)
+	pipelineGid := graphql.GlobalIdPipelinePrefix + strconv.FormatInt(pipelineId, 10)
 
-		ExportSections:    c.exportSections,
-		ExportTestReports: c.exportTestReports,
-		ExportTraces:      c.exportTraces,
-		ExportMetrics:     c.exportMetrics,
+	pipelineFields, err := glab.GraphQL.GetProjectPipeline(ctx, projectGid, pipelineGid)
+	if err != nil {
+		return fmt.Errorf("get pipeline fields: %w", err)
 	}
 
-	return tasks.ExportPipelineHierarchy(ctx, gitlabclient, exp, opts)
+	pipeline, err := graphql.ConvertPipeline(pipelineFields)
+	if err != nil {
+		return fmt.Errorf("convert pipeline fields: %w", err)
+	}
+
+	return exp.ExportPipelines(ctx, []*typespb.Pipeline{types.ConvertPipeline(pipeline)})
 }

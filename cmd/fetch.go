@@ -27,6 +27,8 @@ func NewFetchCmd(out io.Writer) *cli.Command {
 		fetchPipelineCmd   = NewFetchPipelineCmd(out)
 		fetchJobLogCmd     = NewFetchJobLogCmd(out)
 		fetchTestReportCmd = NewFetchTestReportCmd(out)
+
+		fetchProjectUpdatesCmd = NewFetchProjectsCommand(out)
 	)
 
 	return &cli.Command{
@@ -38,6 +40,7 @@ func NewFetchCmd(out io.Writer) *cli.Command {
 			fetchPipelineCmd,
 			fetchJobLogCmd,
 			fetchTestReportCmd,
+			fetchProjectUpdatesCmd,
 		},
 		Exec: cfg.Exec,
 	}
