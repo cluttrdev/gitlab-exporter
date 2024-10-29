@@ -25,7 +25,7 @@ type EndpointConfig struct {
 func New(endpoints []EndpointConfig) (*Exporter, error) {
 	clients := make(map[string]*grpc_client.Client, len(endpoints))
 	for _, cfg := range endpoints {
-		c, err := grpc_client.NewCLient(context.Background(), cfg.Address, cfg.Options...)
+		c, err := grpc_client.NewCLient(cfg.Address, cfg.Options...)
 		if err != nil {
 			return nil, err
 		}
@@ -92,10 +92,6 @@ func (e *Exporter) ExportCommits(ctx context.Context, data []*typespb.Commit) er
 	return export[*typespb.Commit](e, ctx, data, grpc_client.RecordCommits)
 }
 
-func (e *Exporter) ExportBridges(ctx context.Context, data []*typespb.Bridge) error {
-	return export[*typespb.Bridge](e, ctx, data, grpc_client.RecordBridges)
-}
-
 func (e *Exporter) ExportJobs(ctx context.Context, data []*typespb.Job) error {
 	return export[*typespb.Job](e, ctx, data, grpc_client.RecordJobs)
 }
@@ -138,8 +134,4 @@ func (e *Exporter) ExportTestSuites(ctx context.Context, data []*typespb.TestSui
 
 func (e *Exporter) ExportTraces(ctx context.Context, data []*typespb.Trace) error {
 	return export[*typespb.Trace](e, ctx, data, grpc_client.RecordTraces)
-}
-
-func (e *Exporter) ExportUsers(ctx context.Context, data []*typespb.User) error {
-	return export[*typespb.User](e, ctx, data, grpc_client.RecordUsers)
 }

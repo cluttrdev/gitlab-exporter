@@ -19,7 +19,7 @@ type Client struct {
 	metrics *grpcprom.ClientMetrics
 }
 
-func NewCLient(ctx context.Context, target string, opts ...grpc.DialOption) (*Client, error) {
+func NewCLient(target string, opts ...grpc.DialOption) (*Client, error) {
 	metrics := grpcprom.NewClientMetrics( /* opts ...grpcprom.ClientMetricsOption */ )
 
 	opts = append(opts,
@@ -31,7 +31,7 @@ func NewCLient(ctx context.Context, target string, opts ...grpc.DialOption) (*Cl
 		),
 	)
 
-	conn, err := grpc.DialContext(ctx, target, opts...)
+	conn, err := grpc.NewClient(target, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -56,18 +56,6 @@ func RecordCommits(c *Client, ctx context.Context, data []*typespb.Commit) error
 	_, err := c.stub.RecordCommits(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
 		return fmt.Errorf("error recording commits: %w", err)
-	}
-
-	return nil
-}
-
-func RecordBridges(c *Client, ctx context.Context, data []*typespb.Bridge) error {
-	req := &servicepb.RecordBridgesRequest{
-		Data: data,
-	}
-	_, err := c.stub.RecordBridges(ctx, req /* opts ...grpc.CallOption */)
-	if err != nil {
-		return fmt.Errorf("error recording bridges: %w", err)
 	}
 
 	return nil
@@ -200,18 +188,6 @@ func RecordTraces(c *Client, ctx context.Context, data []*typespb.Trace) error {
 	_, err := c.stub.RecordTraces(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
 		return fmt.Errorf("error recording traces: %w", err)
-	}
-
-	return nil
-}
-
-func RecordUsers(c *Client, ctx context.Context, data []*typespb.User) error {
-	req := &servicepb.RecordUsersRequest{
-		Data: data,
-	}
-	_, err := c.stub.RecordUsers(ctx, req /* opts ...grpc.CallOption */)
-	if err != nil {
-		return fmt.Errorf("error recording users: %w", err)
 	}
 
 	return nil

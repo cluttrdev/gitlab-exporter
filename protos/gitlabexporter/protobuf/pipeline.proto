@@ -7,49 +7,40 @@ package gitlabexporter.protobuf;
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 
-import "gitlabexporter/protobuf/user.proto";
+import "gitlabexporter/protobuf/references.proto";
 
 message Pipeline {
     int64 id = 1;
     int64 iid = 2;
-    int64 project_id = 3;
-    string status = 4;
-    string source = 5;
-    string ref = 6;
-    string sha = 7;
-    string before_sha = 8;
-    bool tag = 9;
-    string yaml_errors = 10;
-    google.protobuf.Timestamp created_at = 11;
-    google.protobuf.Timestamp updated_at = 12;
-    google.protobuf.Timestamp started_at = 13;
-    google.protobuf.Timestamp finished_at = 14;
-    google.protobuf.Timestamp committed_at = 15;
-    google.protobuf.Duration duration = 16;
-    google.protobuf.Duration queued_duration = 17;
-    double coverage = 18;
-    string web_url = 19;
+    ProjectReference project = 3;
 
-    User user = 20;
+    string name = 4;
+    string ref = 5;
+    string sha = 6;
+    string source = 7;
+    string status = 8;
+
+    PipelineTimestamps timestamps = 10;
+
+    google.protobuf.Duration queued_duration = 11;
+    google.protobuf.Duration duration = 12;
+    double coverage = 13;
+
+    bool warnings = 14;
+    bool yaml_errors = 15;
+
+    bool child = 16;
+    optional PipelineReference upstream_pipeline = 17;
+
+    optional MergeRequestReference merge_request = 18;
+
+    UserReference user = 19;
 }
 
-message PipelineInfo {
-    int64 id = 1;
-    int64 iid = 2;
-    int64 project_id = 3;
-    string status = 4;
-    string source = 5;
-    string ref = 6;
-    string sha = 7;
-    string web_url = 8;
-    google.protobuf.Timestamp created_at = 9;
-    google.protobuf.Timestamp updated_at = 10;
-}
-
-message PipelineReference {
-    int64 id = 1;
-    int64 project_id = 2;
-    string ref = 3;
-    string sha = 4;
-    string status = 6;
+message PipelineTimestamps {
+    google.protobuf.Timestamp committed_at = 1;
+    google.protobuf.Timestamp created_at = 2;
+    google.protobuf.Timestamp updated_at = 3;
+    google.protobuf.Timestamp started_at = 4;
+    google.protobuf.Timestamp finished_at = 5;
 }

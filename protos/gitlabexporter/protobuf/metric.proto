@@ -6,10 +6,13 @@ package gitlabexporter.protobuf;
 
 import "google/protobuf/timestamp.proto";
 
+import "gitlabexporter/protobuf/references.proto";
+
 message Metric {
     bytes id = 1;
     int64 iid = 2;
-    int64 job_id = 3;
+
+    JobReference job = 3;
 
     string name = 10;
 

@@ -22,7 +22,6 @@ type datastore struct {
 	pipelines []*typespb.Pipeline
 	jobs      []*typespb.Job
 	sections  []*typespb.Section
-	bridges   []*typespb.Bridge
 
 	testreports []*typespb.TestReport
 	testsuites  []*typespb.TestSuite
@@ -48,7 +47,7 @@ func (d *datastore) GetProject(id int64) *typespb.Project {
 func (d *datastore) ListProjectPipelines(projectID int64) []*typespb.Pipeline {
 	var ps []*typespb.Pipeline
 	for _, p := range d.pipelines {
-		if p.ProjectId == projectID {
+		if p.Project.Id == projectID {
 			ps = append(ps, p)
 		}
 	}
@@ -67,7 +66,7 @@ func (d *datastore) GetPipeline(id int64) *typespb.Pipeline {
 func (d *datastore) ListPipelineJobs(projectID int64, pipelineID int64) []*typespb.Job {
 	var js []*typespb.Job
 	for _, j := range d.jobs {
-		if j.Pipeline.ProjectId == projectID && j.Pipeline.Id == pipelineID {
+		if j.Pipeline.Project.Id == projectID && j.Pipeline.Id == pipelineID {
 			js = append(js, j)
 		}
 	}

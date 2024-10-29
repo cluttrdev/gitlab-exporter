@@ -7,15 +7,12 @@ package gitlabexporter.protobuf;
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 
-import "gitlabexporter/protobuf/pipeline.proto";
-import "gitlabexporter/protobuf/job.proto";
+import "gitlabexporter/protobuf/references.proto";
 
 message Section {
-    JobReference job = 1;
-    PipelineReference pipeline = 2;
-    
-    int64 id = 3;
-    string name = 4;
+    int64 id = 1;
+    string name = 2;
+    JobReference job = 3;
     
     google.protobuf.Timestamp started_at = 10;
     google.protobuf.Timestamp finished_at = 11;

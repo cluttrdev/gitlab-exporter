@@ -30,8 +30,7 @@ func newServerAndClient() (*grpc_mock.MockExporterServer, *grpc_client.Client, e
 	}()
 
 	client, err := grpc_client.NewCLient(
-		context.Background(),
-		"bufnet",
+		"passthrough://bufnet",
 		grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 			return listener.Dial()
 		}),

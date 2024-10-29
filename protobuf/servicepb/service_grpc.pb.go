@@ -19,7 +19,6 @@ import (
 const _ = grpc.SupportPackageIsVersion7
 
 const (
-	GitLabExporter_RecordBridges_FullMethodName                = "/gitlabexporter.protobuf.service.GitLabExporter/RecordBridges"
 	GitLabExporter_RecordCommits_FullMethodName                = "/gitlabexporter.protobuf.service.GitLabExporter/RecordCommits"
 	GitLabExporter_RecordJobs_FullMethodName                   = "/gitlabexporter.protobuf.service.GitLabExporter/RecordJobs"
 	GitLabExporter_RecordMergeRequests_FullMethodName          = "/gitlabexporter.protobuf.service.GitLabExporter/RecordMergeRequests"
@@ -32,14 +31,12 @@ const (
 	GitLabExporter_RecordTestReports_FullMethodName            = "/gitlabexporter.protobuf.service.GitLabExporter/RecordTestReports"
 	GitLabExporter_RecordTestSuites_FullMethodName             = "/gitlabexporter.protobuf.service.GitLabExporter/RecordTestSuites"
 	GitLabExporter_RecordTraces_FullMethodName                 = "/gitlabexporter.protobuf.service.GitLabExporter/RecordTraces"
-	GitLabExporter_RecordUsers_FullMethodName                  = "/gitlabexporter.protobuf.service.GitLabExporter/RecordUsers"
 )
 
 // GitLabExporterClient is the client API for GitLabExporter service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type GitLabExporterClient interface {
-	RecordBridges(ctx context.Context, in *RecordBridgesRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordCommits(ctx context.Context, in *RecordCommitsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordJobs(ctx context.Context, in *RecordJobsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordMergeRequests(ctx context.Context, in *RecordMergeRequestsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
@@ -52,7 +49,6 @@ type GitLabExporterClient interface {
 	RecordTestReports(ctx context.Context, in *RecordTestReportsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordTestSuites(ctx context.Context, in *RecordTestSuitesRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordTraces(ctx context.Context, in *RecordTracesRequest, opts ...grpc.CallOption) (*RecordSummary, error)
-	RecordUsers(ctx context.Context, in *RecordUsersRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 }
 
 type gitLabExporterClient struct {
@@ -61,15 +57,6 @@ type gitLabExporterClient struct {
 
 func NewGitLabExporterClient(cc grpc.ClientConnInterface) GitLabExporterClient {
 	return &gitLabExporterClient{cc}
-}
-
-func (c *gitLabExporterClient) RecordBridges(ctx context.Context, in *RecordBridgesRequest, opts ...grpc.CallOption) (*RecordSummary, error) {
-	out := new(RecordSummary)
-	err := c.cc.Invoke(ctx, GitLabExporter_RecordBridges_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
 }
 
 func (c *gitLabExporterClient) RecordCommits(ctx context.Context, in *RecordCommitsRequest, opts ...grpc.CallOption) (*RecordSummary, error) {
@@ -180,20 +167,10 @@ func (c *gitLabExporterClient) RecordTraces(ctx context.Context, in *RecordTrace
 	return out, nil
 }
 
-func (c *gitLabExporterClient) RecordUsers(ctx context.Context, in *RecordUsersRequest, opts ...grpc.CallOption) (*RecordSummary, error) {
-	out := new(RecordSummary)
-	err := c.cc.Invoke(ctx, GitLabExporter_RecordUsers_FullMethodName, in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // GitLabExporterServer is the server API for GitLabExporter service.
 // All implementations must embed UnimplementedGitLabExporterServer
 // for forward compatibility
 type GitLabExporterServer interface {
-	RecordBridges(context.Context, *RecordBridgesRequest) (*RecordSummary, error)
 	RecordCommits(context.Context, *RecordCommitsRequest) (*RecordSummary, error)
 	RecordJobs(context.Context, *RecordJobsRequest) (*RecordSummary, error)
 	RecordMergeRequests(context.Context, *RecordMergeRequestsRequest) (*RecordSummary, error)
@@ -206,7 +183,6 @@ type GitLabExporterServer interface {
 	RecordTestReports(context.Context, *RecordTestReportsRequest) (*RecordSummary, error)
 	RecordTestSuites(context.Context, *RecordTestSuitesRequest) (*RecordSummary, error)
 	RecordTraces(context.Context, *RecordTracesRequest) (*RecordSummary, error)
-	RecordUsers(context.Context, *RecordUsersRequest) (*RecordSummary, error)
 	mustEmbedUnimplementedGitLabExporterServer()
 }
 
@@ -214,9 +190,6 @@ type GitLabExporterServer interface {
 type UnimplementedGitLabExporterServer struct {
 }
 
-func (UnimplementedGitLabExporterServer) RecordBridges(context.Context, *RecordBridgesRequest) (*RecordSummary, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RecordBridges not implemented")
-}
 func (UnimplementedGitLabExporterServer) RecordCommits(context.Context, *RecordCommitsRequest) (*RecordSummary, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecordCommits not implemented")
 }
@@ -253,9 +226,6 @@ func (UnimplementedGitLabExporterServer) RecordTestSuites(context.Context, *Reco
 func (UnimplementedGitLabExporterServer) RecordTraces(context.Context, *RecordTracesRequest) (*RecordSummary, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecordTraces not implemented")
 }
-func (UnimplementedGitLabExporterServer) RecordUsers(context.Context, *RecordUsersRequest) (*RecordSummary, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method RecordUsers not implemented")
-}
 func (UnimplementedGitLabExporterServer) mustEmbedUnimplementedGitLabExporterServer() {}
 
 // UnsafeGitLabExporterServer may be embedded to opt out of forward compatibility for this service.
@@ -267,24 +237,6 @@ type UnsafeGitLabExporterServer interface {
 
 func RegisterGitLabExporterServer(s grpc.ServiceRegistrar, srv GitLabExporterServer) {
 	s.RegisterService(&GitLabExporter_ServiceDesc, srv)
-}
-
-func _GitLabExporter_RecordBridges_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RecordBridgesRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(GitLabExporterServer).RecordBridges(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: GitLabExporter_RecordBridges_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GitLabExporterServer).RecordBridges(ctx, req.(*RecordBridgesRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _GitLabExporter_RecordCommits_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -503,24 +455,6 @@ func _GitLabExporter_RecordTraces_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
-func _GitLabExporter_RecordUsers_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(RecordUsersRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(GitLabExporterServer).RecordUsers(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: GitLabExporter_RecordUsers_FullMethodName,
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(GitLabExporterServer).RecordUsers(ctx, req.(*RecordUsersRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 // GitLabExporter_ServiceDesc is the grpc.ServiceDesc for GitLabExporter service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -528,10 +462,6 @@ var GitLabExporter_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "gitlabexporter.protobuf.service.GitLabExporter",
 	HandlerType: (*GitLabExporterServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "RecordBridges",
-			Handler:    _GitLabExporter_RecordBridges_Handler,
-		},
 		{
 			MethodName: "RecordCommits",
 			Handler:    _GitLabExporter_RecordCommits_Handler,
@@ -579,10 +509,6 @@ var GitLabExporter_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RecordTraces",
 			Handler:    _GitLabExporter_RecordTraces_Handler,
-		},
-		{
-			MethodName: "RecordUsers",
-			Handler:    _GitLabExporter_RecordUsers_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

@@ -68,12 +68,6 @@ func (r *Recorder) RecordSections(ctx context.Context, req *servicepb.RecordSect
 	return &servicepb.RecordSummary{RecordedCount: count}, nil
 }
 
-func (r *Recorder) RecordBridges(ctx context.Context, req *servicepb.RecordBridgesRequest) (*servicepb.RecordSummary, error) {
-	r.datastore.bridges = append(r.datastore.bridges, req.Data...)
-	var count int32 = int32(len(req.Data))
-	return &servicepb.RecordSummary{RecordedCount: count}, nil
-}
-
 func (r *Recorder) RecordTraces(ctx context.Context, req *servicepb.RecordTracesRequest) (*servicepb.RecordSummary, error) {
 	r.datastore.traces = append(r.datastore.traces, req.Data...)
 	var count int32 = int32(len(req.Data))

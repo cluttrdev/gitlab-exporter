@@ -7,96 +7,47 @@ package gitlabexporter.protobuf;
 import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
 
-import "gitlabexporter/protobuf/commit.proto";
-import "gitlabexporter/protobuf/pipeline.proto";
-import "gitlabexporter/protobuf/project.proto";
-import "gitlabexporter/protobuf/user.proto";
+import "gitlabexporter/protobuf/references.proto";
+
+enum JobKind {
+    JOBKIND_UNSPECIFIED = 0;
+    JOBKIND_BUILD = 1;
+    JOBKIND_BRIDGE = 2;
+}
 
 message Job {
-    PipelineReference pipeline = 1;
+    int64 id = 1;
+    PipelineReference pipeline = 2;
 
-    int64 id = 2;
     string name = 3;
     string ref = 4;
-    string stage = 5;
-    string status = 6;
+    string status = 5;
+    string failure_reason = 6;
     
-    google.protobuf.Timestamp created_at = 10;
-    google.protobuf.Timestamp started_at = 11;
-    google.protobuf.Timestamp finished_at = 12;
-    google.protobuf.Timestamp erased_at = 13;
-    google.protobuf.Duration duration = 14;
-    google.protobuf.Duration queued_duration = 15;
+    JobTimestamps timestamps = 7;
 
-    double coverage = 20;
+    google.protobuf.Duration queued_duration = 8;
+    google.protobuf.Duration duration = 9;
+    double coverage = 10;
 
-    bool tag = 21;
-    bool allow_failure = 22;
-    string failure_reason = 23;
-    string web_url = 24;
-    repeated string tag_list = 25;
+    string stage = 11;
+    repeated string tags = 12;
 
-    Commit commit = 30;
-    Project project = 31;
-    User user = 32;
-    JobRunner runner = 33;
-    
-    repeated JobArtifacts artifacts = 34;
-    JobArtifactsFile artifacts_file = 35;
-    google.protobuf.Timestamp artifacts_expire_at = 36;
+    bool allow_failure = 13;
+    bool manual = 14;
+    bool retried = 15;
+    bool retryable = 16;
+
+    JobKind kind = 17;
+    optional PipelineReference downstream_pipeline = 18;
+
+    RunnerReference runner = 19;
 }
 
-message JobRunner {
-    int64 id = 1;
-    string name = 2;
-    string description = 3;
-    bool active = 4;
-    bool is_shared = 5;
-}
-
-message JobArtifacts {
-    string filename = 1;
-    string file_type = 2;
-    string file_format = 3;
-    int64 size = 4;
-}
-
-message JobArtifactsFile {
-    string filename = 1;
-    int64 size = 2;
-}
-
-message JobReference {
-    int64 id = 1;
-    string name = 2;
-    string status = 3;
-}
-
-message Bridge {
-    PipelineInfo pipeline = 1;
-
-    int64 id = 2;
-    string name = 3;
-    string ref = 4;
-    string stage = 5;
-    string status = 6;
-
-    PipelineInfo downstream_pipeline = 7;
-    
-    google.protobuf.Timestamp created_at = 10;
-    google.protobuf.Timestamp started_at = 11;
-    google.protobuf.Timestamp finished_at = 12;
-    google.protobuf.Timestamp erased_at = 13;
-    google.protobuf.Duration duration = 14;
-    google.protobuf.Duration queued_duration = 15;
-
-    double coverage = 20;
-
-    bool tag = 21;
-    bool allow_failure = 22;
-    string failure_reason = 23;
-    string web_url = 24;
-
-    Commit commit = 30;
-    User user = 31;
+message JobTimestamps {
+    google.protobuf.Timestamp created_at = 1;
+    google.protobuf.Timestamp queued_at = 2;
+    google.protobuf.Timestamp started_at = 3;
+    google.protobuf.Timestamp finished_at = 4;
+    google.protobuf.Timestamp erased_at = 5;
 }

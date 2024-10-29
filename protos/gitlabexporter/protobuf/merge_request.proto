@@ -1,0 +1,132 @@
+syntax = "proto3";
+
+option go_package = "github.com/cluttrdev/gitlab-exporter/protobuf/typespb";
+
+package gitlabexporter.protobuf;
+
+import "google/protobuf/timestamp.proto";
+
+import "gitlabexporter/protobuf/references.proto";
+
+message MergeRequest {
+    // ID of the merge request.
+    int64 id = 1;
+    // Internal ID of the merge request.
+    int64 iid = 2;
+
+    ProjectReference project = 3;
+
+    MergeRequestTimestamps timestamps = 4;
+
+    string name = 5;
+    // Title of the merge request.
+    string title = 6;
+    repeated string labels = 7;
+
+    // State of the merge request. Can be opened, closed, merged or locked.
+    string state = 8;
+    // Detailed merge status of the merge request.
+    string merge_status = 9;
+    // Error message shown when a merge has failed.
+    string merge_error = 10;
+
+    // ID of the merge request source project.
+    int64 source_project_id = 11;
+    // Source branch of the merge request.
+    string source_branch = 12;
+    // ID of the merge request target project.
+    int64 target_project_id = 13;
+    // Target branch of the merge request.
+    string target_branch = 14;
+
+    MergeRequestDiffStats diff_stats = 15;
+
+    MergeRequestDiffRefs diff_refs = 16;
+
+    MergeRequestParticipants participants = 17;
+
+    MergeRequestFlags flags = 18;
+
+    // Milestone of the merge request.
+    MilestoneReference milestone = 19;
+}
+
+message MergeRequestTimestamps {
+    // Timestamp of when the merge request was created.
+    google.protobuf.Timestamp created_at = 1;
+    // Timestamp of when the merge request was updated.
+    google.protobuf.Timestamp updated_at = 2;
+    // Timestamp of when the merge request merged.
+    google.protobuf.Timestamp merged_at = 3;
+    // Timestamp of when the merge request was closed.
+    google.protobuf.Timestamp closed_at = 4;
+}
+
+message MergeRequestDiffStats {
+    int64 additions = 1;
+    int64 changes = 2;
+    int64 deletions = 3;
+    int64 file_count = 4;
+    int64 commit_count = 5;
+}
+
+message MergeRequestDiffRefs {
+    string base_sha = 1;
+    string head_sha = 2;
+    string start_sha = 3;
+
+    string merge_commit_sha = 4;
+    string rebase_commit_sha = 5;
+}
+
+message MergeRequestParticipants {
+    UserReference author = 1;
+    repeated UserReference assignees = 2;
+    repeated UserReference reviewers = 3;
+    repeated UserReference approvers = 4;
+    UserReference merge_user = 5;
+}
+
+message MergeRequestFlags {
+    bool approved = 1;
+    bool conflicts = 2;
+    bool draft = 3;
+    bool mergeable = 4;
+}
+
+message MergeRequestNoteEvent {
+    int64 id = 1;
+    MergeRequestReference merge_request = 2;
+
+    google.protobuf.Timestamp created_at = 5;
+    google.protobuf.Timestamp updated_at = 6;
+    google.protobuf.Timestamp resolved_at = 7;
+
+    string type = 8;
+    bool system = 9;
+    bool internal = 10;
+
+    int64 author_id = 11;
+
+    bool resolveable = 12;
+    bool resolved = 13;
+    int64 resolver_id = 14;
+}
+
+message Milestone {
+    int64 id = 1;
+    int64 iid = 2;
+    int64 project_id = 3;
+    int64 group_id = 4;
+    
+    google.protobuf.Timestamp created_at = 5;
+    google.protobuf.Timestamp updated_at = 6;
+    google.protobuf.Timestamp start_date = 7;
+    google.protobuf.Timestamp due_date = 8;
+
+    string title = 9;
+    string state = 10;
+    bool expired = 11;
+    
+    string web_url = 12;
+}

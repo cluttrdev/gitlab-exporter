@@ -6,18 +6,15 @@ package gitlabexporter.protobuf.service;
 
 import "gitlabexporter/protobuf/commit.proto";
 import "gitlabexporter/protobuf/job.proto";
-import "gitlabexporter/protobuf/mergerequest.proto";
+import "gitlabexporter/protobuf/merge_request.proto";
 import "gitlabexporter/protobuf/metric.proto";
 import "gitlabexporter/protobuf/pipeline.proto";
 import "gitlabexporter/protobuf/project.proto";
 import "gitlabexporter/protobuf/section.proto";
-import "gitlabexporter/protobuf/testreport.proto";
+import "gitlabexporter/protobuf/test_report.proto";
 import "gitlabexporter/protobuf/trace.proto";
-import "gitlabexporter/protobuf/user.proto";
 
 service GitLabExporter {
-
-    rpc RecordBridges(RecordBridgesRequest) returns (RecordSummary) {}
     rpc RecordCommits(RecordCommitsRequest) returns (RecordSummary) {}
     rpc RecordJobs(RecordJobsRequest) returns (RecordSummary) {}
     rpc RecordMergeRequests(RecordMergeRequestsRequest) returns (RecordSummary) {}
@@ -30,7 +27,6 @@ service GitLabExporter {
     rpc RecordTestReports(RecordTestReportsRequest) returns (RecordSummary) {}
     rpc RecordTestSuites(RecordTestSuitesRequest) returns (RecordSummary) {}
     rpc RecordTraces(RecordTracesRequest) returns (RecordSummary) {}
-    rpc RecordUsers(RecordUsersRequest) returns (RecordSummary) {}
 }
 
 message RecordSummary {
@@ -39,10 +35,6 @@ message RecordSummary {
 
 message RecordCommitsRequest {
     repeated gitlabexporter.protobuf.Commit data = 1;
-}
-
-message RecordBridgesRequest {
-    repeated gitlabexporter.protobuf.Bridge data = 1;
 }
 
 message RecordJobsRequest {
@@ -87,8 +79,4 @@ message RecordTestSuitesRequest {
 
 message RecordTracesRequest {
     repeated gitlabexporter.protobuf.Trace data = 1;
-}
-
-message RecordUsersRequest {
-    repeated gitlabexporter.protobuf.User data = 1;
 }
