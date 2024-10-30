@@ -57,7 +57,8 @@ clean:
 
 ###############################################################################
 
-proto-gen:
+# generate protobuf code
+generate-protobuf:
     #!/bin/sh
     protoc \
         -I protos/ \
@@ -65,6 +66,11 @@ proto-gen:
         --go_out=. --go_opt=module=github.com/cluttrdev/gitlab-exporter \
         --go-grpc_out=. --go-grpc_opt=module=github.com/cluttrdev/gitlab-exporter \
         protos/gitlabexporter/protobuf/*.proto protos/gitlabexporter/protobuf/service/*.proto
+
+# generate graphql client code
+generate-graphql:
+    #!/bin/sh
+    genqlient internal/gitlab/graphql/genqlient.yaml
 
 docker-build:
     #!/bin/sh
