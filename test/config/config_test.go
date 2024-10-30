@@ -13,8 +13,6 @@ func defaultConfig() config.Config {
 
 	cfg.GitLab.Url = "https://gitlab.com"
 	cfg.GitLab.Token = ""
-	cfg.GitLab.Api.URL = "https://gitlab.com/api/v4"
-	cfg.GitLab.Api.Token = ""
 	cfg.GitLab.Client.Rate.Limit = 0.0
 
 	cfg.Endpoints = []config.Endpoint{}
@@ -90,12 +88,11 @@ func TestLoad_EmptyData(t *testing.T) {
 func TestLoad_PartialData(t *testing.T) {
 	data := []byte(`
     gitlab:
-      api:
-        url: https://git.example.com/api/v4
+      url: https://git.example.com
     `)
 
 	var expected config.Config
-	expected.GitLab.Api.URL = "https://git.example.com/api/v4"
+	expected.GitLab.Url = "https://git.example.com"
 
 	var cfg config.Config
 	if err := config.Load(data, &cfg); err != nil {
@@ -141,8 +138,7 @@ func TestLoad_InvalidData(t *testing.T) {
 func TestLoad_DataWithDefaults(t *testing.T) {
 	data := []byte(`
     gitlab:
-      api:
-        token: glpat-xxxxxxxxxxxxxxxxxxxx
+      token: glpat-xxxxxxxxxxxxxxxxxxxx
       client:
         rate:
           limit: 20
@@ -152,7 +148,7 @@ func TestLoad_DataWithDefaults(t *testing.T) {
     `)
 
 	expected := defaultConfig()
-	expected.GitLab.Api.Token = "glpat-xxxxxxxxxxxxxxxxxxxx"
+	expected.GitLab.Token = "glpat-xxxxxxxxxxxxxxxxxxxx"
 	expected.GitLab.Client.Rate.Limit = 20
 	expected.Log.Format = "json"
 

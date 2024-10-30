@@ -53,10 +53,6 @@ func (c *RootConfig) RegisterFlags(fs *flag.FlagSet) {
 	fs.String("gitlab-url", defaults.GitLab.Url, fmt.Sprintf("The GitLab base URL (default: '%s').", defaults.GitLab.Url))
 	fs.String("gitlab-token", defaults.GitLab.Token, fmt.Sprintf("The GitLab API Token (default: '%s').", defaults.GitLab.Token))
 
-	// deprecated
-	fs.String("gitlab-api-url", defaults.GitLab.Api.URL, fmt.Sprintf("The GitLab API URL (default: '%s').", defaults.GitLab.Api.URL))
-	fs.String("gitlab-api-token", defaults.GitLab.Api.Token, fmt.Sprintf("The GitLab API Token (default: '%s').", defaults.GitLab.Api.Token))
-
 	fs.StringVar(&c.filename, "config", "", "Configuration file to use.")
 	fs.BoolVar(&c.debug, "debug", false, "Enable debug mode.")
 }
@@ -78,10 +74,6 @@ func loadConfig(filename string, flags *flag.FlagSet, cfg *config.Config) error 
 			cfg.GitLab.Url = f.Value.String()
 		case "gitlab-token":
 			cfg.GitLab.Token = f.Value.String()
-		case "gitlab-api-url":
-			cfg.GitLab.Api.URL = f.Value.String()
-		case "gitlab-api-token":
-			cfg.GitLab.Api.Token = f.Value.String()
 		}
 	})
 
@@ -90,12 +82,13 @@ func loadConfig(filename string, flags *flag.FlagSet, cfg *config.Config) error 
 
 func writeConfig(out io.Writer, cfg config.Config) {
 	fmt.Fprintln(out, "----")
-	fmt.Fprintf(out, "GitLab URL: %s\n", cfg.GitLab.Api.URL)
-	fmt.Fprintf(out, "GitLab Token: %x\n", sha256String(cfg.GitLab.Api.Token))
+	fmt.Fprintf(out, "GitLab URL: %s\n", cfg.GitLab.Url)
+	fmt.Fprintf(out, "GitLab Token: %x\n", sha256String(cfg.GitLab.Token))
 	fmt.Fprintln(out, "----")
 
+	fmt.Fprintln(out, "Endpoints:")
 	for _, s := range cfg.Endpoints {
-		fmt.Fprintf(out, "Endpoint: %s\n", s.Address)
+		fmt.Fprintf(out, "\t- %s\n", s.Address)
 	}
 	fmt.Fprintln(out, "----")
 

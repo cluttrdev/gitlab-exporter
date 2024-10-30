@@ -104,14 +104,14 @@ see [configs/gitlab-exporter.yaml](./configs/gitlab-exporter.yaml).
 Some options can also be overriden with command-line flags and/or environment
 variables, where flags take precedence.
 
-| Flag               | Environment Variable   | Default Value                 |
-| ---                | ---                    | ---                           |
-| # global options   |                        |                               |
-| --gitlab-api-url   | `GLE_GITLAB_API_URL`   | `"https://gitlab.com/api/v4"` |
-| --gitlab-api-token | `GLE_GITLAB_API_TOKEN` | **required**                  |
-| # run options      |                        |                               |
-| --log-level        | `GLE_LOG_LEVEL`        | `"info"`                      |
-| --log-format       | `GLE_LOG_FORMAT`       | `"text"`                      |
+| Flag             | Environment Variable | Default Value          |
+| ---              | ---                  | ---                    |
+| # global options |                      |                        |
+| --gitlab-url     | `GLE_GITLAB_URL`     | `"https://gitlab.com"` |
+| --gitlab-token   | `GLE_GITLAB_TOKEN`   | **required**           |
+| # run options    |                      |                        |
+| --log-level      | `GLE_LOG_LEVEL`      | `"info"`               |
+| --log-format     | `GLE_LOG_FORMAT`     | `"text"`               |
 
 ## Acknowledgements
 

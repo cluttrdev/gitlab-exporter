@@ -26,11 +26,6 @@ type GitLab struct {
 	Url   string `default:"https://gitlab.com" yaml:"url"`
 	Token string `default:"" yaml:"token"`
 
-	Api struct { // deprecated
-		URL   string `default:"https://gitlab.com/api/v4" yaml:"url"`
-		Token string `default:"" yaml:"token"`
-	} `yaml:"api"`
-
 	Client struct {
 		Rate struct {
 			Limit float64 `default:"0.0" yaml:"limit"`
