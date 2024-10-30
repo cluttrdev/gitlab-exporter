@@ -8,10 +8,7 @@ import (
 const (
 	GlobalIdPrefix             = "gid://gitlab/"
 	GlobalIdProjectPrefix      = GlobalIdPrefix + "Project/"
-	GlobalIdGroupPrefix        = GlobalIdPrefix + "Group/"
 	GlobalIdPipelinePrefix     = GlobalIdPrefix + "Ci::Pipeline/"
-	GlobalIdJobBuildPrefix     = GlobalIdPrefix + "Ci::Build/"
-	GlobalIdJobBridgePrefix    = GlobalIdPrefix + "Ci::Bridge/"
 	GlobalIdMergeRequestPrefix = GlobalIdPrefix + "MergeRequest/"
 	GlobalIdMilestonePrefix    = GlobalIdPrefix + "Milestone/"
 	GlobalIdNotePrefix         = GlobalIdPrefix + "Note/"
@@ -24,6 +21,45 @@ func FormatId(id int64, prefix string) string {
 
 func ParseId(s string, prefix string) (int64, error) {
 	return strconv.ParseInt(strings.TrimPrefix(s, prefix), 10, 64)
+}
+
+func parseNamespaceId(s string) (int64, error) {
+	var s_ string
+
+	prefixes := []string{
+		GlobalIdPrefix + "Group/",
+		GlobalIdPrefix + "Namespaces::UserNamespace/",
+		GlobalIdPrefix + "Namespaces::ProjectNamespace/",
+	}
+
+	for _, prefix := range prefixes {
+		s_ = strings.TrimPrefix(s, prefix)
+		if len(s_) < len(s) {
+			return strconv.ParseInt(s_, 10, 64)
+		}
+	}
+
+	return strconv.ParseInt(s, 10, 64)
+}
+
+func parseJobId(s string) (int64, error) {
+	var s_ string
+
+	prefixes := []string{
+		GlobalIdPrefix + "Ci::Build/",
+		GlobalIdPrefix + "Ci::Bridge/",
+		GlobalIdPrefix + "GenericCommitStatus/",
+		GlobalIdPrefix + "CommitStatus/",
+	}
+
+	for _, prefix := range prefixes {
+		s_ = strings.TrimPrefix(s, prefix)
+		if len(s_) < len(s) {
+			return strconv.ParseInt(s_, 10, 64)
+		}
+	}
+
+	return strconv.ParseInt(s, 10, 64)
 }
 
 func valOrZero[T any](t *T) T {

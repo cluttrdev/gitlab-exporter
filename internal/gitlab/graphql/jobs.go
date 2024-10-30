@@ -3,7 +3,6 @@ package graphql
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"strings"
 	"time"
 
@@ -378,24 +377,4 @@ func (c *Client) getProjectPipelineJobs(ctx context.Context, projectPath string,
 	}
 
 	return jfs, nil
-}
-
-func parseJobId(s string) (int64, error) {
-	var s_ string
-
-	prefixes := []string{
-		GlobalIdJobBuildPrefix,
-		GlobalIdJobBridgePrefix,
-		GlobalIdPrefix + "GenericCommitStatus/",
-		GlobalIdPrefix + "CommitStatus/",
-	}
-
-	for _, prefix := range prefixes {
-		s_ = strings.TrimPrefix(s, prefix)
-		if len(s_) < len(s) {
-			return strconv.ParseInt(s_, 10, 64)
-		}
-	}
-
-	return strconv.ParseInt(s, 10, 64)
 }

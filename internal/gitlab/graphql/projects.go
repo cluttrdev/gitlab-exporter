@@ -30,7 +30,7 @@ func ConvertProject(pf ProjectFields) (types.Project, error) {
 	if id, err = ParseId(pf.Id, GlobalIdProjectPrefix); err != nil {
 		return types.Project{}, fmt.Errorf("parse project id: %w", err)
 	}
-	if namespaceId, err = ParseId(pf.Namespace.Id, GlobalIdGroupPrefix); err != nil {
+	if namespaceId, err = parseNamespaceId(pf.Namespace.Id); err != nil {
 		return types.Project{}, fmt.Errorf("parse namespace id: %w", err)
 	}
 
