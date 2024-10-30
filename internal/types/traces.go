@@ -27,12 +27,17 @@ func PipelineSpan(pipeline Pipeline) *tracepb.Span {
 		})
 	}
 
+	name := pipeline.Name
+	if name == "" {
+		name = pipeline.Ref
+	}
+
 	return newSpan(
 		spanData{
 			TraceId:   traceId,
 			SpanId:    spanId,
 			ParentId:  parentId,
-			Name:      pipeline.Ref,
+			Name:      name,
 			StartTime: pipeline.StartedAt,
 			EndTime:   pipeline.FinishedAt,
 			Attributes: map[string]string{
