@@ -413,9 +413,15 @@ func (c *Controller) fetchProjectsCiData(ctx context.Context, projectIds []int64
 		return projectsCiData{}, err
 	}
 
-	traces, err := c.convertTraceSpans(pipelines, jobs, sections)
+	traceData, err := c.convertTraceData(pipelines, jobs, sections)
 	if err := handleError(err, "convert trace spans"); err != nil {
 		return projectsCiData{}, err
+	}
+	var traces []*typespb.Trace
+	if len(traceData.ResourceSpans) > 0 {
+		traces = append(traces, &typespb.Trace{
+			Data: traceData,
+		})
 	}
 
 	return projectsCiData{
@@ -423,7 +429,7 @@ func (c *Controller) fetchProjectsCiData(ctx context.Context, projectIds []int64
 		Jobs:        jobs,
 		Sections:    sections,
 		Metrics:     metrics,
-		Traces:      []*typespb.Trace{traces},
+		Traces:      traces,
 		TestReports: testReports,
 		TestSuites:  testSuites,
 		TestCases:   testCases,
@@ -528,7 +534,7 @@ func (c *Controller) exportProjectsCiData(ctx context.Context, data projectsCiDa
 	return errs
 }
 
-func (c *Controller) convertTraceSpans(pipelines []types.Pipeline, jobs []types.Job, sections []types.Section) (*typespb.Trace, error) {
+func (c *Controller) convertTraceData(pipelines []types.Pipeline, jobs []types.Job, sections []types.Section) (*tracepb.TracesData, error) {
 	var (
 		pipelineSpans  []*tracepb.Span
 		buildJobSpans  []*tracepb.Span
@@ -600,11 +606,8 @@ func (c *Controller) convertTraceSpans(pipelines []types.Pipeline, jobs []types.
 		)
 	}
 
-	traceData := &tracepb.TracesData{
+	return &tracepb.TracesData{
 		ResourceSpans: resourceSpans,
-	}
-	return &typespb.Trace{
-		Data: traceData,
 	}, nil
 }
 
