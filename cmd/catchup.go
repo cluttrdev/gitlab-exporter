@@ -114,6 +114,15 @@ func (c *CatchUpConfig) Exec(ctx context.Context, args []string) error {
 		ctx, cancel := context.WithCancel(context.Background())
 
 		g.Add(func() error { // execute
+			slog.Info("Resolving projects...")
+			count, err := ctrl.ResolveProjects(ctx)
+			if err != nil {
+				return fmt.Errorf("resolve projecst: %w", err)
+			} else if count == 0 {
+				return fmt.Errorf("No projects found")
+			}
+			slog.Info("Resolving projects... done", "found", count)
+
 			return ctrl.CatchUp(ctx)
 		}, func(err error) { // interrupt
 			slog.Info("Stopping controller...")
