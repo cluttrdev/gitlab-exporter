@@ -385,10 +385,7 @@ func (c *Controller) fetchProjectsCiData(ctx context.Context, projectIds []int64
 
 	var logDataProjectJobs []types.Job
 	for _, job := range jobs {
-		if job.Kind != types.JobKindBuild { // only builds can have logs (bridges don't)
-			continue
-		}
-		if job.RunnerId == "" { // no runner, no log
+		if job.Kind == types.JobKindBridge { // bridges don't have logs
 			continue
 		}
 		if !c.projectsSettings.ExportLogData(job.Pipeline.Project.Id) { // duh
