@@ -8,7 +8,6 @@ import (
 	commonpb "go.opentelemetry.io/proto/otlp/common/v1"
 	resourcepb "go.opentelemetry.io/proto/otlp/resource/v1"
 	tracepb "go.opentelemetry.io/proto/otlp/trace/v1"
-	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func PipelineSpan(pipeline Pipeline) *tracepb.Span {
@@ -201,12 +200,4 @@ func convertStatus(status string) *tracepb.Status {
 		Message: status,
 		Code:    code,
 	}
-}
-
-func timestampUnixNano(ts *timestamppb.Timestamp) uint64 {
-	if ts == nil {
-		return 0
-	}
-	const nsPerSecond uint64 = 1_000_000_000
-	return uint64(ts.Seconds)*nsPerSecond + uint64(ts.Nanos)
 }

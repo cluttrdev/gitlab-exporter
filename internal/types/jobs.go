@@ -3,6 +3,9 @@ package types
 import (
 	"time"
 
+	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
@@ -73,11 +76,11 @@ func ConvertJob(job Job) *typespb.Job {
 		FailureReason: job.FailureReason,
 
 		Timestamps: &typespb.JobTimestamps{
-			CreatedAt:  ConvertTime(job.CreatedAt),
-			QueuedAt:   ConvertTime(job.QueuedAt),
-			StartedAt:  ConvertTime(job.StartedAt),
-			FinishedAt: ConvertTime(job.FinishedAt),
-			ErasedAt:   ConvertTime(job.ErasedAt),
+			CreatedAt:  timestamppb.New(valOrZero(job.CreatedAt)),
+			QueuedAt:   timestamppb.New(valOrZero(job.QueuedAt)),
+			StartedAt:  timestamppb.New(valOrZero(job.StartedAt)),
+			FinishedAt: timestamppb.New(valOrZero(job.FinishedAt)),
+			ErasedAt:   timestamppb.New(valOrZero(job.ErasedAt)),
 		},
 
 		QueuedDuration: durationpb.New(job.QueuedDuration),

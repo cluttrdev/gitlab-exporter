@@ -3,6 +3,9 @@ package types
 import (
 	"time"
 
+	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
@@ -22,8 +25,8 @@ func ConvertSection(section Section) *typespb.Section {
 		Job: ConvertJobReference(section.Job),
 
 		Name:       section.Name,
-		StartedAt:  ConvertTime(section.StartedAt),
-		FinishedAt: ConvertTime(section.FinishedAt),
-		Duration:   ConvertDuration(section.Duration.Seconds()),
+		StartedAt:  timestamppb.New(valOrZero(section.StartedAt)),
+		FinishedAt: timestamppb.New(valOrZero(section.FinishedAt)),
+		Duration:   durationpb.New(section.Duration),
 	}
 }

@@ -3,6 +3,8 @@ package types
 import (
 	"time"
 
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
@@ -74,9 +76,9 @@ func ConvertProject(p Project) *typespb.Project {
 		FullPath: p.FullPath,
 
 		Timestamps: &typespb.ProjectTimestamps{
-			CreatedAt:      ConvertTime(p.CreatedAt),
-			UpdatedAt:      ConvertTime(p.UpdatedAt),
-			LastActivityAt: ConvertTime(p.LastActivityAt),
+			CreatedAt:      timestamppb.New(valOrZero(p.CreatedAt)),
+			UpdatedAt:      timestamppb.New(valOrZero(p.UpdatedAt)),
+			LastActivityAt: timestamppb.New(valOrZero(p.LastActivityAt)),
 		},
 
 		Statistics: convertProjectStatistics(p.Statistics),

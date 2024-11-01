@@ -3,6 +3,8 @@ package types
 import (
 	"time"
 
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
@@ -96,10 +98,10 @@ func ConvertMergeRequest(mr MergeRequest) *typespb.MergeRequest {
 		Project: ConvertProjectReference(mr.Project),
 
 		Timestamps: &typespb.MergeRequestTimestamps{
-			CreatedAt: ConvertTime(mr.CreatedAt),
-			UpdatedAt: ConvertTime(mr.UpdatedAt),
-			MergedAt:  ConvertTime(mr.MergedAt),
-			ClosedAt:  ConvertTime(mr.ClosedAt),
+			CreatedAt: timestamppb.New(valOrZero(mr.CreatedAt)),
+			UpdatedAt: timestamppb.New(valOrZero(mr.UpdatedAt)),
+			MergedAt:  timestamppb.New(valOrZero(mr.MergedAt)),
+			ClosedAt:  timestamppb.New(valOrZero(mr.ClosedAt)),
 		},
 
 		Name:   mr.Name,
@@ -206,9 +208,9 @@ func ConvertMergeRequestNoteEvent(event MergeRequestNoteEvent) *typespb.MergeReq
 		Id:           int64(event.Id),
 		MergeRequest: ConvertMergeRequestReference(event.MergeRequest),
 
-		CreatedAt:  ConvertTime(event.CreatedAt),
-		UpdatedAt:  ConvertTime(event.UpdatedAt),
-		ResolvedAt: ConvertTime(event.ResolvedAt),
+		CreatedAt:  timestamppb.New(valOrZero(event.CreatedAt)),
+		UpdatedAt:  timestamppb.New(valOrZero(event.UpdatedAt)),
+		ResolvedAt: timestamppb.New(valOrZero(event.ResolvedAt)),
 
 		Type:     event.Type,
 		System:   event.System,

@@ -1,6 +1,12 @@
 package types
 
-import "github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
+import (
+	"time"
+
+	"google.golang.org/protobuf/types/known/timestamppb"
+
+	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
+)
 
 type Metric struct {
 	Id  string
@@ -30,6 +36,6 @@ func ConvertMetric(metric Metric) *typespb.Metric {
 		Name:      metric.Name,
 		Labels:    labels,
 		Value:     metric.Value,
-		Timestamp: ConvertUnixMilli(metric.Timestamp),
+		Timestamp: timestamppb.New(time.UnixMilli(metric.Timestamp)),
 	}
 }

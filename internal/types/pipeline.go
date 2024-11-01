@@ -3,6 +3,9 @@ package types
 import (
 	"time"
 
+	"google.golang.org/protobuf/types/known/durationpb"
+	"google.golang.org/protobuf/types/known/timestamppb"
+
 	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 )
 
@@ -68,15 +71,15 @@ func ConvertPipeline(pipeline Pipeline) *typespb.Pipeline {
 		Status: pipeline.Status,
 
 		Timestamps: &typespb.PipelineTimestamps{
-			CommittedAt: ConvertTime(pipeline.CommittedAt),
-			CreatedAt:   ConvertTime(pipeline.CreatedAt),
-			UpdatedAt:   ConvertTime(pipeline.UpdatedAt),
-			StartedAt:   ConvertTime(pipeline.StartedAt),
-			FinishedAt:  ConvertTime(pipeline.FinishedAt),
+			CommittedAt: timestamppb.New(valOrZero(pipeline.CommittedAt)),
+			CreatedAt:   timestamppb.New(valOrZero(pipeline.CreatedAt)),
+			UpdatedAt:   timestamppb.New(valOrZero(pipeline.UpdatedAt)),
+			StartedAt:   timestamppb.New(valOrZero(pipeline.StartedAt)),
+			FinishedAt:  timestamppb.New(valOrZero(pipeline.FinishedAt)),
 		},
 
-		QueuedDuration: ConvertDuration(float64(pipeline.QueuedDuration)),
-		Duration:       ConvertDuration(float64(pipeline.Duration)),
+		QueuedDuration: durationpb.New(pipeline.QueuedDuration),
+		Duration:       durationpb.New(pipeline.Duration),
 		Coverage:       pipeline.Coverage,
 
 		Warnings:   pipeline.Warnings,
