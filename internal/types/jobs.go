@@ -80,8 +80,8 @@ func ConvertJob(job Job) *typespb.Job {
 			ErasedAt:   ConvertTime(job.ErasedAt),
 		},
 
-		QueuedDuration: ConvertDuration(job.Duration.Seconds()),
-		Duration:       ConvertDuration(job.Duration.Seconds()),
+		QueuedDuration: durationpb.New(job.QueuedDuration),
+		Duration:       durationpb.New(job.Duration),
 		Coverage:       job.Coverage,
 
 		Stage: job.Stage,
