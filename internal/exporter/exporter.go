@@ -4,7 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 
+	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 
@@ -47,28 +49,66 @@ func (e *Exporter) MetricsCollectorFor(endpoint string) prometheus.Collector {
 
 type recordFunc[T proto.Message] func(client *grpc_client.Client, ctx context.Context, data []T) error
 
-func export[T proto.Message](exporter *Exporter, ctx context.Context, data []T, record recordFunc[T]) error {
+func export[T proto.Message](exp *Exporter, ctx context.Context, data []T, record recordFunc[T]) error {
 	if len(data) == 0 {
 		return nil
 	}
 
+	// split data into batches to keep max message size
 	const maxChunkSize int = 2 * 1024 * 1024 // 2 MiB
-	var errs error
+	var batches [][]T
 	var i, j int
 	for i < len(data) {
 		j = rangeEndForSize(data, maxChunkSize, i)
 		if !(i < j) {
-			errs = errors.Join(errs, fmt.Errorf("empty range"))
-			break
+			return fmt.Errorf("empty range")
 		}
 
-		for _, client := range exporter.clients {
-			if err := record(client, ctx, data[i:j]); err != nil {
-				errs = errors.Join(errs, err)
-			}
-		}
-
+		batches = append(batches, data[i:j])
 		i = j
+	}
+
+	// for each client, export batches concurrently in an error group
+	var wg sync.WaitGroup
+	errChan := make(chan error)
+	for _, client := range exp.clients {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			// set up context aware error group and limit number of
+			// active goroutines to send too much data at once
+			eg, ctx := errgroup.WithContext(ctx)
+			eg.SetLimit(100) // max 200 MiB is sent at once
+
+			for _, batch := range batches {
+				eg.Go(func() error {
+					return record(client, ctx, batch)
+				})
+			}
+			if err := eg.Wait(); err != nil {
+				errChan <- err
+			}
+		}()
+	}
+
+	// wait for all client goroutines to finish
+	done := make(chan struct{})
+	go func() {
+		wg.Wait()
+		close(done)
+	}()
+
+	// collect errors from client goroutines
+	var errs error
+loop:
+	for {
+		select {
+		case <-done:
+			break loop
+		case err := <-errChan:
+			errs = errors.Join(errs, err)
+		}
 	}
 	return errs
 }
