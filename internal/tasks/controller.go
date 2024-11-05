@@ -25,34 +25,114 @@ const (
 	maxRecordsPerPage int = 100
 )
 
-type ProjectsSettings map[int64]ProjectSettings
+type ProjectsSettings struct {
+	settings map[int64]ProjectSettings
+	mu       sync.RWMutex
+}
 
-func (c ProjectsSettings) ExportTestReports(id int64) bool {
-	cfg, ok := c[id]
+func (ps *ProjectsSettings) Len() int {
+	return len(ps.settings)
+}
+
+func (ps *ProjectsSettings) Set(m map[int64]ProjectSettings) {
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
+	ps.settings = m
+}
+
+func (ps *ProjectsSettings) Add(id int64, settings ProjectSettings) bool {
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
+
+	if ps.settings == nil {
+		ps.settings = make(map[int64]ProjectSettings)
+	}
+
+	if _, ok := ps.settings[id]; ok { // already exists
+		return false
+	}
+	ps.settings[id] = settings
+	return true
+}
+
+func (ps *ProjectsSettings) Delete(id int64) bool {
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
+
+	if ps.settings == nil {
+		return false
+	}
+
+	if _, ok := ps.settings[id]; !ok {
+		return false
+	}
+
+	delete(ps.settings, id)
+	return true
+}
+
+func (ps *ProjectsSettings) GetBatches(size int, filter func(ProjectSettings) bool) [][]ProjectSettings {
+	ps.mu.RLock()
+	defer ps.mu.RUnlock()
+
+	settings := make([]ProjectSettings, 0, len(ps.settings))
+	for _, v := range ps.settings {
+		if filter != nil && !filter(v) {
+			continue
+		}
+		settings = append(settings, v)
+	}
+
+	var batches [][]ProjectSettings
+	for i := 0; i < len(settings); i += size {
+		j := i + size
+		if j > len(settings) {
+			j = len(settings)
+		}
+		batches = append(batches, settings[i:j])
+	}
+
+	return batches
+}
+
+func (ps *ProjectsSettings) ExportTestReports(id int64) bool {
+	ps.mu.RLock()
+	defer ps.mu.RUnlock()
+
+	cfg, ok := ps.settings[id]
 	if !ok {
 		return false
 	}
 	return cfg.Export.TestReports.Enabled
 }
 
-func (c ProjectsSettings) ExportLogData(id int64) bool {
-	cfg, ok := c[id]
+func (ps *ProjectsSettings) ExportLogData(id int64) bool {
+	ps.mu.RLock()
+	defer ps.mu.RUnlock()
+
+	cfg, ok := ps.settings[id]
 	if !ok {
 		return false
 	}
 	return cfg.Export.Sections.Enabled || cfg.Export.Metrics.Enabled
 }
 
-func (c ProjectsSettings) ExportTraces(id int64) bool {
-	cfg, ok := c[id]
+func (ps *ProjectsSettings) ExportTraces(id int64) bool {
+	ps.mu.RLock()
+	defer ps.mu.RUnlock()
+
+	cfg, ok := ps.settings[id]
 	if !ok {
 		return false
 	}
 	return cfg.Export.Traces.Enabled
 }
 
-func (c ProjectsSettings) ExportMergeRequests(id int64) bool {
-	cfg, ok := c[id]
+func (ps *ProjectsSettings) ExportMergeRequests(id int64) bool {
+	ps.mu.RLock()
+	defer ps.mu.RUnlock()
+
+	cfg, ok := ps.settings[id]
 	if !ok {
 		return false
 	}
@@ -86,8 +166,8 @@ type Controller struct {
 
 	config ControllerConfig
 
-	projectsSettings ProjectsSettings
-	mu               sync.RWMutex
+	projectsSettings      ProjectsSettings
+	projectsSettingsMutex sync.RWMutex
 
 	sem *semaphore.Weighted
 }
@@ -97,35 +177,13 @@ func NewController(glab *gitlab.Client, exp *exporter.Exporter, cfg ControllerCo
 		GitLab:   glab,
 		Exporter: exp,
 
-		config:           cfg,
-		projectsSettings: make(map[int64]ProjectSettings),
+		config: cfg,
+		projectsSettings: ProjectsSettings{
+			settings: make(map[int64]ProjectSettings),
+		},
 
 		sem: semaphore.NewWeighted(cfg.MaxWorkers),
 	}
-}
-
-func (c *Controller) batchProjectSettings(size int, filter func(ProjectSettings) bool) [][]ProjectSettings {
-	c.mu.RLock()
-	defer c.mu.RUnlock()
-
-	settings := make([]ProjectSettings, 0, len(c.projectsSettings))
-	for _, v := range c.projectsSettings {
-		if filter != nil && !filter(v) {
-			continue
-		}
-		settings = append(settings, v)
-	}
-
-	var batches [][]ProjectSettings
-	for i := 0; i < len(settings); i += size {
-		j := i + size
-		if j > len(settings) {
-			j = len(settings)
-		}
-		batches = append(batches, settings[i:j])
-	}
-
-	return batches
 }
 
 func (c *Controller) Run(ctx context.Context) error {
@@ -150,7 +208,7 @@ func (c *Controller) Run(ctx context.Context) error {
 			before = now
 		}
 
-		projectBatches := c.batchProjectSettings(maxRecordsPerPage, nil)
+		projectBatches := c.projectsSettings.GetBatches(maxRecordsPerPage, nil)
 
 		var wg sync.WaitGroup
 		for i, batch := range projectBatches {
@@ -190,7 +248,7 @@ func (c *Controller) CatchUp(ctx context.Context) error {
 			after = before.Add(-interval)
 		}
 
-		projectBatches := c.batchProjectSettings(maxRecordsPerPage, func(ps ProjectSettings) bool {
+		projectBatches := c.projectsSettings.GetBatches(maxRecordsPerPage, func(ps ProjectSettings) bool {
 			if !ps.CatchUp.Enabled {
 				return false
 			}
@@ -668,8 +726,8 @@ func (c *Controller) exportProjectsMrData(ctx context.Context, data projectsMrDa
 }
 
 func (c *Controller) ResolveProjects(ctx context.Context) (int, error) {
-	c.mu.Lock()
-	defer c.mu.Unlock()
+	c.projectsSettingsMutex.Lock()
+	defer c.projectsSettingsMutex.Unlock()
 
 	projectsSettings := make(map[int64]ProjectSettings)
 
@@ -775,9 +833,8 @@ func (c *Controller) ResolveProjects(ctx context.Context) (int, error) {
 		projectsSettings[int64(project.ID)] = ps
 	}
 
-	c.projectsSettings = projectsSettings
-
-	return len(c.projectsSettings), nil
+	c.projectsSettings.Set(projectsSettings)
+	return c.projectsSettings.Len(), nil
 }
 
 func isUpdated(p types.Project, after *time.Time, before *time.Time) bool {
