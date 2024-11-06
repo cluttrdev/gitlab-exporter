@@ -8,8 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"golang.org/x/sync/semaphore"
-
 	tracepb "go.opentelemetry.io/proto/otlp/trace/v1"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
@@ -157,7 +155,9 @@ type ControllerConfig struct {
 	Projects   []config.Project
 	Namespaces []config.Namespace
 
-	MaxWorkers int64
+	ResolveInterval time.Duration
+	ExportInterval  time.Duration
+	CatchUpInterval time.Duration
 }
 
 type Controller struct {
@@ -168,11 +168,19 @@ type Controller struct {
 
 	projectsSettings      ProjectsSettings
 	projectsSettingsMutex sync.RWMutex
-
-	sem *semaphore.Weighted
 }
 
 func NewController(glab *gitlab.Client, exp *exporter.Exporter, cfg ControllerConfig) *Controller {
+	if cfg.ResolveInterval == 0 {
+		cfg.ResolveInterval = 30 * time.Minute
+	}
+	if cfg.ExportInterval == 0 {
+		cfg.ExportInterval = 5 * time.Minute
+	}
+	if cfg.CatchUpInterval == 0 {
+		cfg.CatchUpInterval = 24 * time.Hour
+	}
+
 	return &Controller{
 		GitLab:   glab,
 		Exporter: exp,
@@ -181,15 +189,13 @@ func NewController(glab *gitlab.Client, exp *exporter.Exporter, cfg ControllerCo
 		projectsSettings: ProjectsSettings{
 			settings: make(map[int64]ProjectSettings),
 		},
-
-		sem: semaphore.NewWeighted(cfg.MaxWorkers),
 	}
 }
 
 func (c *Controller) Run(ctx context.Context) error {
 	var (
-		period time.Duration = 5 * time.Minute
-		ticker *time.Ticker  = time.NewTicker(period)
+		resolveTicker *time.Ticker = time.NewTicker(c.config.ResolveInterval)
+		exportTicker  *time.Ticker = time.NewTicker(c.config.ExportInterval)
 
 		after  time.Time
 		before time.Time = time.Now().UTC()
@@ -197,34 +203,45 @@ func (c *Controller) Run(ctx context.Context) error {
 
 	var iteration int
 	for {
-		iteration++
-		firstIteration := (iteration == 1)
-
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case now := <-ticker.C:
+		case <-resolveTicker.C:
+			slog.Debug("[RUN] Resolving projects...")
+			n, err := c.ResolveProjects(ctx)
+			if err != nil {
+				slog.Error("[RUN] error resolving projects", "error", err)
+				continue
+			}
+			slog.Debug("[RUN] Resolving projects... done", "found", n)
+		case now := <-exportTicker.C:
+			iteration++
+			firstIteration := (iteration == 1)
+
 			after = before
 			before = now
+
+			slog.Debug("[RUN] Processing projects...", "iteration", iteration, "after", after.Format(time.RFC3339), "before", before.Format(time.RFC3339))
+
+			var wg sync.WaitGroup
+			projectBatches := c.projectsSettings.GetBatches(maxRecordsPerPage, nil)
+			for i, batch := range projectBatches {
+				wg.Add(1)
+				go func() {
+					defer wg.Done()
+
+					if err := c.process(ctx, batch, &after, &before, firstIteration); err != nil {
+						slog.Error("[RUN] error processing projects", "error", err,
+							"iteration", iteration, "after", after.Format(time.RFC3339), "before", before.Format(time.RFC3339),
+							"batchIndex", i, "batchCount", len(projectBatches),
+						)
+					}
+				}()
+			}
+			wg.Wait()
+
+			slog.Debug("[RUN] Processing projects... done", "iteration", iteration)
 		}
-
-		projectBatches := c.projectsSettings.GetBatches(maxRecordsPerPage, nil)
-
-		var wg sync.WaitGroup
-		for i, batch := range projectBatches {
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
-
-				if err := c.process(ctx, batch, &after, &before, firstIteration); err != nil {
-					slog.Error("[RUN] error processing projects", "error", err,
-						"iteration", iteration, "after", after.Format(time.RFC3339), "before", before.Format(time.RFC3339),
-						"batchIndex", i, "batchCount", len(projectBatches),
-					)
-				}
-			}()
-		}
-		wg.Wait()
 	}
 }
 
@@ -264,6 +281,8 @@ func (c *Controller) CatchUp(ctx context.Context) error {
 			break
 		}
 
+		slog.Debug("[CATCHUP] Processing projects...", "iteration", iteration, "after", after.Format(time.RFC3339), "before", before.Format(time.RFC3339))
+
 		var wg sync.WaitGroup
 		for i, batch := range projectBatches {
 			wg.Add(1)
@@ -279,6 +298,8 @@ func (c *Controller) CatchUp(ctx context.Context) error {
 			}()
 		}
 		wg.Wait()
+
+		slog.Debug("[CATCHUP] Processing projects... done", "iteration", iteration)
 	}
 
 	return nil

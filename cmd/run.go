@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	"github.com/oklog/run"
 	"github.com/prometheus/client_golang/prometheus"
@@ -152,7 +153,8 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 			Projects:   cfg.Projects,
 			Namespaces: cfg.Namespaces,
 
-			MaxWorkers: 42,
+			ExportInterval:  5 * time.Minute,
+			CatchUpInterval: 24 * time.Hour,
 		})
 
 		ctx, cancel := context.WithCancel(context.Background())

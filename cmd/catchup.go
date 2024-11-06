@@ -9,6 +9,7 @@ import (
 	"log/slog"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/oklog/run"
 	"github.com/prometheus/client_golang/prometheus"
@@ -108,7 +109,7 @@ func (c *CatchUpConfig) Exec(ctx context.Context, args []string) error {
 			Projects:   cfg.Projects,
 			Namespaces: cfg.Namespaces,
 
-			MaxWorkers: 42,
+			CatchUpInterval: 24 * time.Hour,
 		})
 
 		ctx, cancel := context.WithCancel(context.Background())
