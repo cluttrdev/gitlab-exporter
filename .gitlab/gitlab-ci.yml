@@ -14,6 +14,32 @@ default:
   image: golang:${GOVERSION}
   tags: [ $GITLAB_CI_DEFAULT_TAGS ]
 
+ci-image:
+  stage: .pre
+  rules:
+    - when: manual
+  allow_failure: true
+  image: docker:latest
+  services:
+    - name: docker:dind
+      alias: docker
+  variables:
+    GOVERSION: 1.22
+  before_script:
+    - echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY --username $CI_REGISTRY_USER --password-stdin
+  script:
+    - | # Set up image name and tag
+      export IMAGE=${CI_REGISTRY_IMAGE}/golang-ci
+      export TAG=$(TZ=UTC git show --no-patch --format='%cd' --date='format-local:%Y%m%d%H%M%S' $CI_COMMIT_SHA)-${CI_COMMIT_SHA::12}
+    - | # Build image
+      docker build \
+        --file .gitlab/images/golang-ci/Dockerfile \
+        --build-arg GOVERSION \
+        --tag "${IMAGE}:${TAG}" \
+        .gitlab/images/golang-ci/
+    - | # Push image
+      docker push ${IMAGE}:${TAG}
+
 download:
   stage: .pre
   script:

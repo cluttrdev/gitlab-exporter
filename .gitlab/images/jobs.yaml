@@ -1,0 +1,20 @@
+
+ci-image:
+  manual: true
+  stage: .pre
+  image: docker:stable
+  services:
+    - name: docker:stable-dind
+      alias: docker
+  variables:
+    GOVERSION: 1.22
+
+  script:
+    - |
+      TAG=${CI_COMMIT_TIMESTAMP//[^0-9]/}-${CI_COMMIT_SHA::12} \
+      docker build \
+        --file .gitlab/images/golang-ci/Dockerfile \
+        --build-arg GOVERSION \
+        --tag "golang-ci:${TAG} \
+        .gitlab/images/golang-ci/
+
