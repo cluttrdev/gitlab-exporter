@@ -2,6 +2,7 @@ stages:
   - lint
   - build
   - test
+  - release
 
 variables:
   CACHE_DIR: ${CI_PROJECT_DIR}/.cache
@@ -24,7 +25,7 @@ download:
       duration=$(printf %.6f "$(( end-start ))e-9")
       timestamp=$(( end/1000000 ))
       module=$(head -n 1 go.mod | cut -d ' ' -f 2)
-      echo "METRIC_go_mod_download_time{module=\"${module}\"} ${duration} ${timestamp}"
+      echo "METRIC_go_mod_download_time{module=\"${module}\", commit_ref=\"${CI_COMMIT_REF_NAME}\"} ${duration} ${timestamp}"
   cache: &cache-defaults
     key: ${CI_COMMIT_REF_SLUG}
     paths:
@@ -34,13 +35,20 @@ download:
 
 lint:
   stage: lint
-  image: docker.io/golangci/golangci-lint:latest
   cache:
     - <<: *cache-defaults
   variables:
+    GOLANGCI_LINT_VERSION: v1.62.0
     GOLANGCI_LINT_CACHE: ${CACHE_DIR}/golangci-lint
+  before_script:
+    - | # Download golangci-lint binary
+      echo -e "\e[0Ksection_start:$(date +%s):script_step_before\r\e[0KRunning script_step_before"
+      curl -sSfL https://github.com/golangci/golangci-lint/releases/download/${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION#v}-linux-amd64.tar.gz -o /tmp/golangci-lint.tar.gz
+      mkdir -p ${GOPATH}/bin
+      tar -C ${GOPATH}/bin/ -zxof /tmp/golangci-lint.tar.gz --strip-components=1 golangci-lint-${GOLANGCI_LINT_VERSION#v}-linux-amd64/golangci-lint
+      echo -e "\e[0Ksection_end:$(date +%s):script_step_before\r\e[0K"
   script:
-    - golangci-lint run --verbose ./...
+    - ${GOPATH}/bin/golangci-lint run --verbose ./...
   allow_failure: true
 
 build:
@@ -50,7 +58,7 @@ build:
   script:
     - |
       start=$(date +%s%N)
-      go build .
+      make build
       end=$(date +%s%N)
       duration=$(printf %.6f "$(( end-start ))e-9")
       timestamp=$(( end/1000000 ))
@@ -60,31 +68,77 @@ test:
   stage: test
   cache:
     - <<: *cache-defaults
+  variables:
+    GOTESTSUM_VERSION: v1.12.0
+  before_script:
+    - | # Download gotestsum binary
+      echo -e "\e[0Ksection_start:$(date +%s):script_step_before\r\e[0KRunning script_step_before"
+      curl -sSfL https://github.com/gotestyourself/gotestsum/releases/download/${GOTESTSUM_VERSION}/gotestsum_${GOTESTSUM_VERSION#v}_linux_amd64.tar.gz -o /tmp/gotestsum.tar.gz
+      mkdir -p ${GOPATH}/bin
+      tar -C ${GOPATH}/bin/ -zxof /tmp/gotestsum.tar.gz gotestsum
+      echo -e "\e[0Ksection_end:$(date +%s):script_step_before\r\e[0K"
   script:
     - |
-      # Start script_step_before section
-      echo -e "\e[0Ksection_start:$(date +%s):script_step_before\r\e[0KRunning script_step_before"
-    - go install gotest.tools/gotestsum@latest
-    - |
-      # End script_step_before section
-      echo -e "\e[0Ksection_end:$(date +%s):script_step_before\r\e[0K"
-
-    - |
-      # Start script_step_run section
+      # Run tests
       echo -e "\e[0Ksection_start:$(date +%s):script_step_run\r\e[0KRunning script_step_run"
-    - ${GOPATH}/bin/gotestsum --junitfile report.xml --format testname ./test/...
-    - |
-      # End script_step_run section
+      ${GOPATH}/bin/gotestsum \
+        --junitfile report.xml --format testname \
+        -- \
+        -coverprofile coverage.txt -covermode=atomic \
+        ./...
       echo -e "\e[0Ksection_end:$(date +%s):script_step_run\r\e[0K"
 
     - |
-      # Start script_step_after section
+      # Embed metrics on test results in job log
       echo -e "\e[0Ksection_start:$(date +%s):script_step_after\r\e[0KRunning script_step_after"
-    - go run ./tools/junitmetrics ./report.xml
-    - |
-      # End script_step_after section
+      go run ./tools/junitmetrics ./report.xml
       echo -e "\e[0Ksection_end:$(date +%s):script_step_after\r\e[0K"
   artifacts:
     when: always
+    paths:
+      - report.xml
     reports:
       junit: report.xml
+
+release:
+  stage: release
+  rules:
+    - if: $CI_COMMIT_TAG != null
+  cache:
+    - <<: *cache-defaults
+  variables:
+    ARCHIVER_VERSION: v3.5.0
+  before_script:
+    - | # Download archiver binary (for windows .zip support)
+      curl -sSL --fail-with-body https://github.com/mholt/archiver/releases/download/${ARCHIVER_VERSION}/arc_${ARCHIVER_VERSION#v}_linux_amd64 -o /tmp/arc
+      mkdir -p ${GOPATH}/bin
+      install -t ${GOPATH}/bin /tmp/arc
+  script:
+    - .gitlab/release.sh
+
+release-image:
+  stage: release
+  rules:
+    - if: $CI_COMMIT_TAG != null
+  needs:
+    - release
+  image: docker:27.3.1
+  services:
+    - name: docker:27.3.1-dind
+      alias: docker
+  variables:
+    DOCKER_IMAGE: gitlab-exporter
+    DOCKER_TAG: $CI_COMMIT_TAG
+  before_script:
+    - | # Authenticate with gitlab project container registry
+      echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY --username $CI_REGISTRY_USER --password-stdin
+  script:
+    - | # Build image
+      docker build \
+        --file ${CI_PROJECT_DIR}/Dockerfile \
+        --build-arg GOVERSION \
+        --build-arg VERSION="${CI_COMMIT_TAG}" \
+        --tag "${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE}:${DOCKER_TAG}" \
+        ${CI_PROJECT_DIR}
+    - | # Push image
+      docker push ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE}:${DOCKER_TAG}
