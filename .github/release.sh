@@ -1,44 +1,72 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-owner=cluttrdev
-repo=gitlab-clickhouse-exporter
-
-tag=${RELEASE_TAG}
-assets=${RELEASE_ASSETS}
-
-echo "creating release for ${tag}"
-response=$(curl -L -s \
-    -H "Accept: application/vnd.github+json" \
-    -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-    -H "X-GitHub-Api-Version 2022-11-28" \
-    -d "{\"tag_name\": \"${tag}\", \"name\": \"${tag}\", \"body\": \"\"}" \
-    https://api.github.com/repos/${owner}/${repo}/releases \
-    2>/dev/null
+echo "Fetching GitLab release"
+project_id=50817395 # cluttrdev/gitlab-exporter
+response=$(
+    curl -sSL --fail-with-body \
+        "https://gitlab.com/api/v4/projects/${project_id}/releases/${TAG_NAME}"
 )
+if [ $? -ne 0 ]; then
+    echo "${response}"
+    exit 1
+fi
 
-error=$(jq -r '.errors[0].code // empty' <<< $response)
-[ -n "$error" ] && {
-    echo $error
+# extract release notes
+release_notes=$(jq -r '.description' <<< "${response}" | sed 's/$/\\n/' | tr -d '\n')
+
+# adjust commit link url
+release_notes=$(sed 's#gitlab.com/cluttrdev/gitlab-exporter/-/commit/#github.com/cluttrdev/gitlab-exporter-mirror/commit/#g' <<< "${release_notes}")
+
+release_assets=$(jq -r '.assets.links[]|[.name, .url] | @tsv' <<< "${response}")
+
+echo "Creating GitHub release"
+response=$(
+    curl "https://api.github.com/repos/cluttrdev/gitlab-exporter-mirror/releases" \
+        -sSL --fail-with-body \
+        --header "Accept: application/vnd.github+json" \
+        --header "Authorization: Bearer ${GITHUB_TOKEN}" \
+        --header "X-GitHub-Api-Version 2022-11-28" \
+        --data "{\"tag_name\":\"${TAG_NAME}\", \"body\":\"${release_notes}\"}"
+)
+if [ $? -ne 0 ]; then
+    echo "${response}"
+    exit 1
+fi
+
+upload_url=$(jq -r '.upload_url // empty' <<<"${response}")
+[ -n "${upload_url}" ] || {
+    echo "Missing upload url"
+    echo "${response}"
     exit 1
 }
+upload_url="${upload_url%\{*}"
 
-release_id=$(jq -r '.id // empty' <<< $response)
-[ -n "$release_id" ] || {
-    echo "No release with tag: ${tag}"
-    exit 2
-}
+echo "Synching release assets"
+echo "${release_assets}" | \
+    while IFS=$'\t' read -r name url; do
+        printf "\t%s" "${name}"
 
-upload_url=https://uploads.github.com/repos/${owner}/${repo}/releases/${release_id}/assets
-for asset in ${assets}; do
-    name=$(basename ${asset})
-    echo "uploading asset: ${name}"
-    response=$(curl -L -s \
-        -H "Accept: application/vnd.github+json" \
-        -H "Authorization: Bearer ${GITHUB_TOKEN}" \
-        -H "X-GitHub-Api-Version 2022-11-28" \
-        -H "Content-Type: application/octet-stream" \
-        ${upload_url}?name=${name} \
-        --data-binary "@${asset}"
-    )
-done
+        printf " donwload..."
+        resp=$(curl -sSL --fail-with-body "${url}" -o "${name}")
+        if [ $? -ne 0 ]; then
+            echo "${resp}"
+            exit 1
+        fi
+
+        printf " upload..."
+        resp=$(
+            curl "${upload_url}?name=${name}" \
+                -sSL --fail-with-body \
+                --header "Accept: application/vnd.github+json" \
+                --header "Authorization: Bearer ${GITHUB_TOKEN}" \
+                --header "X-GitHub-Api-Version 2022-11-28" \
+                --header "Content-Type: application/octet-stream" \
+                --data-binary "@${name}"
+        )
+        if [ $? -ne 0 ]; then
+            echo "${resp}"
+            exit 1
+        fi
+        printf " done\n"
+    done
