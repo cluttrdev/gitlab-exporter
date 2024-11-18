@@ -52,11 +52,29 @@ test: ## Run tests
 
 .PHONY: changes
 changes: ## Get commits since last release
-	from=$$(git describe --tags --abbrev=0 2>/dev/null); \
-	if [ -n "${from}" ]; then from="${from}"; fi; \
 	to=HEAD; \
 	if [ -n "${to}" ]; then to="${to}"; fi; \
-	git log --oneline --no-decorate $${from}..$${to}
+	from=$$(git describe --tags --abbrev=0 "$${to}^" 2>/dev/null); \
+	if [ -n "${from}" ]; then from="${from}"; fi; \
+	if [ -n "$${from}" ]; then \
+		git log --oneline --no-decorate $${from}..$${to}; \
+	else \
+		git log --oneline --no-decorate $${to}; \
+	fi
+
+.PHONY: changelog
+changelog:
+	printf "# Changelog\n\n"; \
+	for tag in $$(git tag --list | sort --version-sort --reverse); do \
+		previous=$$(git describe --tags --abbrev=0 "$${tag}^" 2>/dev/null); \
+		changes=$$(make --no-print-directory changes to=$${tag} | awk '{ print "- " $$0 }'); \
+		if [ -n "$${previous}" ]; then \
+			url="https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/$${previous}..$${tag}"; \
+		else \
+			url="https://gitlab.com/cluttrdev/gitlab-exporter/-/commits/$${tag}"; \
+		fi; \
+		printf "## [%s](%s)\n\n%s\n\n" "$${tag#v}" "$${url}" "$${changes}"; \
+	done
 
 .PHONY: version
 version: ## Generate version from git tag and commit information
