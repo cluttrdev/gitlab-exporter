@@ -147,16 +147,23 @@ release-image:
   variables:
     DOCKER_IMAGE: gitlab-exporter
     DOCKER_TAG: $CI_COMMIT_TAG
-  before_script:
-    - | # Authenticate with gitlab project container registry
-      echo "$CI_REGISTRY_PASSWORD" | docker login $CI_REGISTRY --username $CI_REGISTRY_USER --password-stdin
   script:
     - | # Build image
       docker build \
         --file ${CI_PROJECT_DIR}/Dockerfile \
         --build-arg GOVERSION \
         --build-arg VERSION="${CI_COMMIT_TAG}" \
-        --tag "${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE}:${DOCKER_TAG}" \
+        --tag "${DOCKER_IMAGE}:${DOCKER_TAG}" \
         ${CI_PROJECT_DIR}
-    - | # Push image
-      docker push ${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE}:${DOCKER_TAG}
+    - | # Push to GitLab container registry
+      docker tag "${DOCKER_IMAGE}:${DOCKER_TAG}" "${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE}:${DOCKER_TAG}"
+      docker tag "${DOCKER_IMAGE}:${DOCKER_TAG}" "${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE}:latest"
+      echo "$CI_REGISTRY_PASSWORD" | docker login "$CI_REGISTRY" --username "$CI_REGISTRY_USER" --password-stdin
+      docker push "${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE}:${DOCKER_TAG}"
+      docker push "${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE}:latest"
+    - | # Push to GitHub container registry
+      docker tag "${DOCKER_IMAGE}:${DOCKER_TAG}" "ghcr.io/${DOCKER_IMAGE}:${DOCKER_TAG}"
+      docker tag "${DOCKER_IMAGE}:${DOCKER_TAG}" "ghcr.io/${DOCKER_IMAGE}:latest"
+      echo "$GITHUB_TOKEN" | docker login ghcr.io --username cluttrdev --password-stdin
+      docker push "ghcr.io/${DOCKER_IMAGE}:${DOCKER_TAG}"
+      docker push "ghcr.io/${DOCKER_IMAGE}:latest"

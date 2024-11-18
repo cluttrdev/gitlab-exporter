@@ -40,33 +40,26 @@ upload_url=$(jq -r '.upload_url // empty' <<<"${response}")
     echo "${response}"
     exit 1
 }
-upload_url="${upload_url%\{*}"
+upload_url="${upload_url%\{*\}}"
 
 echo "Synching release assets"
-echo "${release_assets}" | \
-    while IFS=$'\t' read -r name url; do
-        printf "\t%s" "${name}"
+echo "${release_assets}" | while IFS=$'\t' read -r name url; do
+    printf "\t%s" "${name}"
 
-        printf " donwload..."
-        resp=$(curl -sSL --fail-with-body "${url}" -o "${name}")
-        if [ $? -ne 0 ]; then
-            echo "${resp}"
-            exit 1
-        fi
+    printf " donwload..."
+    curl \
+        -sSL --fail-with-body \
+        --output "${name}" \
+        "${url}"
 
-        printf " upload..."
-        resp=$(
-            curl "${upload_url}?name=${name}" \
-                -sSL --fail-with-body \
-                --header "Accept: application/vnd.github+json" \
-                --header "Authorization: Bearer ${GITHUB_TOKEN}" \
-                --header "X-GitHub-Api-Version 2022-11-28" \
-                --header "Content-Type: application/octet-stream" \
-                --data-binary "@${name}"
-        )
-        if [ $? -ne 0 ]; then
-            echo "${resp}"
-            exit 1
-        fi
-        printf " done\n"
-    done
+    printf " upload..."
+    curl "${upload_url}?name=${name}" \
+        -sSL --fail-with-body \
+        --header "Accept: application/vnd.github+json" \
+        --header "Authorization: Bearer ${GITHUB_TOKEN}" \
+        --header "X-GitHub-Api-Version 2022-11-28" \
+        --header "Content-Type: application/octet-stream" \
+        --data-binary "@${name}"
+
+    printf " done\n"
+done
