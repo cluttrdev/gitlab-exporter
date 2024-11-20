@@ -16,13 +16,13 @@ fi
 release_notes=$(jq -r '.description' <<< "${response}" | sed 's/$/\\n/' | tr -d '\n')
 
 # adjust commit link url
-release_notes=$(sed 's#gitlab.com/cluttrdev/gitlab-exporter/-/commit/#github.com/cluttrdev/gitlab-exporter-mirror/commit/#g' <<< "${release_notes}")
+release_notes=$(sed 's#gitlab.com/cluttrdev/gitlab-exporter/-/commit/#github.com/cluttrdev/gitlab-exporter/commit/#g' <<< "${release_notes}")
 
 release_assets=$(jq -r '.assets.links[]|[.name, .url] | @tsv' <<< "${response}")
 
 echo "Creating GitHub release"
 response=$(
-    curl "https://api.github.com/repos/cluttrdev/gitlab-exporter-mirror/releases" \
+    curl "https://api.github.com/repos/cluttrdev/gitlab-exporter/releases" \
         -sSL --fail-with-body \
         --header "Accept: application/vnd.github+json" \
         --header "Authorization: Bearer ${GITHUB_TOKEN}" \

@@ -162,8 +162,8 @@ release-image:
       docker push "${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE}:${DOCKER_TAG}"
       docker push "${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE}:latest"
     - | # Push to GitHub container registry
-      docker tag "${DOCKER_IMAGE}:${DOCKER_TAG}" "ghcr.io/${DOCKER_IMAGE}:${DOCKER_TAG}"
-      docker tag "${DOCKER_IMAGE}:${DOCKER_TAG}" "ghcr.io/${DOCKER_IMAGE}:latest"
+      docker tag "${DOCKER_IMAGE}:${DOCKER_TAG}" "ghcr.io/cluttrdev/${DOCKER_IMAGE}:${DOCKER_TAG}"
+      docker tag "${DOCKER_IMAGE}:${DOCKER_TAG}" "ghcr.io/cluttrdev/${DOCKER_IMAGE}:latest"
       echo "$GITHUB_TOKEN" | docker login ghcr.io --username cluttrdev --password-stdin
-      docker push "ghcr.io/${DOCKER_IMAGE}:${DOCKER_TAG}"
-      docker push "ghcr.io/${DOCKER_IMAGE}:latest"
+      docker push "ghcr.io/cluttrdev/${DOCKER_IMAGE}:${DOCKER_TAG}"
+      docker push "ghcr.io/cluttrdev/${DOCKER_IMAGE}:latest"
