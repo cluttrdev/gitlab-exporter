@@ -80,17 +80,14 @@ func (c *Client) GetPipelineTestReportSummary(ctx context.Context, projectID int
 }
 
 func ConvertTestReport(report *gitlab.PipelineTestReport, summary *PipelineTestReportSummary, pipeline types.Pipeline) (types.TestReport, []types.TestSuite, []types.TestCase, error) {
-	pipelineRefs := types.PipelineReference{
-		Id:      pipeline.Id,
-		Iid:     pipeline.Iid,
-		Project: pipeline.Project,
-	}
-
 	testReportId := fmt.Sprint(pipeline.Id)
-
 	testReport := types.TestReport{
-		Id:       testReportId,
-		Pipeline: pipelineRefs,
+		Id: testReportId,
+		Pipeline: types.PipelineReference{
+			Id:      pipeline.Id,
+			Iid:     pipeline.Iid,
+			Project: pipeline.Project,
+		},
 
 		TotalTime:    time.Duration(report.TotalTime * float64(time.Second)),
 		TotalCount:   int64(report.TotalCount),
@@ -102,49 +99,57 @@ func ConvertTestReport(report *gitlab.PipelineTestReport, summary *PipelineTestR
 
 	testSuites := make([]types.TestSuite, 0, len(report.TestSuites))
 	testCases := []types.TestCase{}
-	for _, testSuite := range report.TestSuites {
+	for _, ts := range report.TestSuites {
 		index := slices.IndexFunc(summary.TestSuites, func(sts *PipelineTestReportSummaryTestSuite) bool {
-			return testSuite.Name == sts.Name
+			return ts.Name == sts.Name
 		})
 		if index < 0 {
-			return types.TestReport{}, nil, nil, fmt.Errorf("cannot find test suite in summary: %s", testSuite.Name)
+			return types.TestReport{}, nil, nil, fmt.Errorf("cannot find test suite in summary: %s", ts.Name)
 		}
 		testSuiteSummary := summary.TestSuites[index]
 		if len(testSuiteSummary.BuildIDs) == 0 {
 			return types.TestReport{}, nil, nil, fmt.Errorf("test suite has no build id: %s", testSuiteSummary.Name)
 		}
+
 		testSuiteId := fmt.Sprint(testSuiteSummary.BuildIDs[0])
+		testSuite := types.TestSuite{
+			Id: testSuiteId,
+			TestReport: types.TestReportReference{
+				Id:       testReport.Id,
+				Pipeline: testReport.Pipeline,
+			},
 
-		testSuites = append(testSuites, types.TestSuite{
-			Id:           testSuiteId,
-			TestReportId: testReport.Id,
-			Pipeline:     pipelineRefs,
+			Name:         ts.Name,
+			TotalTime:    time.Duration(ts.TotalTime * float64(time.Second)),
+			TotalCount:   int64(ts.TotalCount),
+			ErrorCount:   int64(ts.ErrorCount),
+			FailedCount:  int64(ts.FailedCount),
+			SkippedCount: int64(ts.SkippedCount),
+			SuccessCount: int64(ts.SuccessCount),
+		}
 
-			Name:         testSuite.Name,
-			TotalTime:    time.Duration(testSuite.TotalTime * float64(time.Second)),
-			TotalCount:   int64(testSuite.TotalCount),
-			ErrorCount:   int64(testSuite.ErrorCount),
-			FailedCount:  int64(testSuite.FailedCount),
-			SkippedCount: int64(testSuite.SkippedCount),
-			SuccessCount: int64(testSuite.SuccessCount),
-		})
-
-		testSuiteCases := make([]types.TestCase, 0, len(testSuite.TestCases))
-		for j, testcase := range testSuite.TestCases {
+		testSuiteCases := make([]types.TestCase, 0, len(ts.TestCases))
+		for j, tc := range ts.TestCases {
+			testCaseId := fmt.Sprintf("%s-%d", testSuite.Id, j+1)
 			testSuiteCases = append(testSuiteCases, types.TestCase{
-				Id:            fmt.Sprintf("%s-%d", testSuiteId, j+1),
-				TestSuiteId:   testSuiteId,
-				TestReportId:  testReportId,
-				Pipeline:      pipelineRefs,
-				Status:        testcase.Status,
-				Name:          testcase.Name,
-				Classname:     testcase.Classname,
-				File:          testcase.File,
-				ExecutionTime: time.Duration(testcase.ExecutionTime * float64(time.Second)),
-				StackTrace:    testcase.StackTrace,
-				SystemOutput:  fmt.Sprint(testcase.SystemOutput),
+				Id: testCaseId,
+				TestSuite: types.TestSuiteReference{
+					Id:         testSuite.Id,
+					TestReport: testSuite.TestReport,
+				},
+
+				Status:        tc.Status,
+				Name:          tc.Name,
+				Classname:     tc.Classname,
+				File:          tc.File,
+				ExecutionTime: time.Duration(tc.ExecutionTime * float64(time.Second)),
+				StackTrace:    tc.StackTrace,
+				SystemOutput:  fmt.Sprint(tc.SystemOutput),
+				AttachmentUrl: tc.AttachmentURL,
 			})
 		}
+
+		testSuites = append(testSuites, testSuite)
 		testCases = append(testCases, testSuiteCases...)
 	}
 

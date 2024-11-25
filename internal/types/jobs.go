@@ -26,9 +26,9 @@ type JobReference struct {
 
 type Job struct {
 	Id       int64
+	Name     string
 	Pipeline PipelineReference
 
-	Name          string
 	Ref           string
 	Status        string
 	FailureReason string
@@ -39,12 +39,12 @@ type Job struct {
 	FinishedAt *time.Time
 	ErasedAt   *time.Time
 
-	Stage string
-	Tags  []string
-
 	QueuedDuration time.Duration
 	Duration       time.Duration
 	Coverage       float64
+
+	Stage string
+	Tags  []string
 
 	AllowFailure bool
 	Manual       bool
@@ -68,9 +68,9 @@ func ConvertJobReference(job JobReference) *typespb.JobReference {
 func ConvertJob(job Job) *typespb.Job {
 	j := &typespb.Job{
 		Id:       job.Id,
+		Name:     job.Name,
 		Pipeline: ConvertPipelineReference(job.Pipeline),
 
-		Name:          job.Name,
 		Ref:           job.Ref,
 		Status:        job.Status,
 		FailureReason: job.FailureReason,
