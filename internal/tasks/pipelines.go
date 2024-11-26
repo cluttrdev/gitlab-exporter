@@ -140,7 +140,11 @@ func FetchProjectJobLogData(ctx context.Context, glab *gitlab.Client, job types.
 	}
 
 	for secnum, secdat := range logData.Sections {
-		sections = append(sections, types.Section{
+		if secdat.Start > 0 && secdat.End == 0 { // section started but not finished
+			secdat.End = max(secdat.Start, job.FinishedAt.Unix())
+		}
+
+		section := types.Section{
 			Id: job.Id*1000 + int64(secnum),
 			Job: types.JobReference{
 				Id:       job.Id,
@@ -152,7 +156,9 @@ func FetchProjectJobLogData(ctx context.Context, glab *gitlab.Client, job types.
 			StartedAt:  gitlab.Ptr(time.Unix(secdat.Start, 0)),
 			FinishedAt: gitlab.Ptr(time.Unix(secdat.End, 0)),
 			Duration:   time.Duration((secdat.End - secdat.Start) * int64(time.Second)),
-		})
+		}
+
+		sections = append(sections, section)
 	}
 
 	for iid, m := range logData.Metrics {

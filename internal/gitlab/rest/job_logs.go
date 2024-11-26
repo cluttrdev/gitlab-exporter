@@ -74,15 +74,20 @@ func (c *Client) GetJobLogData(ctx context.Context, projectId int64, jobId int64
 
 func ParseJobLog(trace *bytes.Reader) (JobLogData, error) {
 	var (
-		data   JobLogData
-		stack  sectionStack
-		parser expfmt.TextParser
+		data     JobLogData
+		sections sectionStack
+		parser   expfmt.TextParser
+	)
+
+	const (
+		METRIC_MARKER  = `METRIC_`
+		SECTION_MARKER = `section_`
 	)
 
 	scanner := bufio.NewScanner(trace)
 	for scanner.Scan() {
 		line := scanner.Bytes()
-		if bytes.HasPrefix(line, []byte(`METRIC_`)) {
+		if bytes.HasPrefix(line, []byte(METRIC_MARKER)) {
 			metric, err := parser.LineToMetric(line[7:])
 			if err != nil {
 				// TODO: what?
@@ -97,7 +102,7 @@ func ParseJobLog(trace *bytes.Reader) (JobLogData, error) {
 		}
 
 		var i, j int
-		sep := []byte(`section_`)
+		sep := []byte(SECTION_MARKER)
 		for {
 			j = bytes.Index(line[i:], sep)
 			if j < 0 {
@@ -108,13 +113,19 @@ func ParseJobLog(trace *bytes.Reader) (JobLogData, error) {
 			if err != nil {
 				// TODO: what?
 			} else if marker == string(sectionMarkerStart) {
-				stack.Start(ts, name)
+				sections.Start(ts, name)
 			} else if marker == string(sectionMarkerEnd) {
-				data.Sections = append(data.Sections, stack.End(ts, name)...)
+				data.Sections = append(data.Sections, sections.End(ts, name)...)
 			}
 
 			i = i + j + 1
 		}
+	}
+
+	// add all unfinished sections (e.g. due to job interruption) open-ended
+	// to give caller a chance to set end timestamp
+	for sections.Size() > 0 {
+		data.Sections = append(data.Sections, sections.Pop())
 	}
 
 	return data, nil

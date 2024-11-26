@@ -16,7 +16,7 @@ type sectionStack struct {
 	Sections []SectionData
 }
 
-func (s *sectionStack) Len() int {
+func (s *sectionStack) Size() int {
 	return len(s.Sections)
 }
 
