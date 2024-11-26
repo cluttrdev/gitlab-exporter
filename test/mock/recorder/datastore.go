@@ -75,7 +75,7 @@ func (d *datastore) ListPipelineJobs(projectID int64, pipelineID int64) []*types
 
 func (d *datastore) GetPipelineTestReport(pipelineID int64) *typespb.TestReport {
 	for _, tr := range d.testreports {
-		if tr.PipelineId == pipelineID {
+		if tr.Pipeline.Id == pipelineID {
 			return tr
 		}
 	}

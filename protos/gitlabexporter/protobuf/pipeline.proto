@@ -19,6 +19,7 @@ message Pipeline {
     string sha = 6;
     string source = 7;
     string status = 8;
+    string failure_reason = 9;
 
     PipelineTimestamps timestamps = 10;
 

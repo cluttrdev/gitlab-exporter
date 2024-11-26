@@ -30,6 +30,18 @@ message JobReference {
     PipelineReference pipeline = 3;
 }
 
+message TestReportReference {
+    string id = 1;
+
+    PipelineReference pipeline = 3;
+}
+
+message TestSuiteReference {
+    string id = 1;
+
+    TestReportReference test_report = 3;
+}
+
 message RunnerReference {
     string id = 1;
 }

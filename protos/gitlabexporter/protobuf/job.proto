@@ -17,15 +17,14 @@ enum JobKind {
 
 message Job {
     int64 id = 1;
-    PipelineReference pipeline = 2;
+    string name = 2;
+    PipelineReference pipeline = 3;
 
-    string name = 3;
     string ref = 4;
     string status = 5;
     string failure_reason = 6;
     
     JobTimestamps timestamps = 7;
-
     google.protobuf.Duration queued_duration = 8;
     google.protobuf.Duration duration = 9;
     double coverage = 10;
