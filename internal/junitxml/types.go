@@ -1,0 +1,266 @@
+package junitxml
+
+import (
+	"encoding/xml"
+	"fmt"
+	"strings"
+	"time"
+
+	"github.com/cluttrdev/gitlab-exporter/internal/types"
+)
+
+type TestReport struct {
+	XMLName    xml.Name    `xml:"testsuites"`
+	Tests      int64       `xml:"tests,attr"`
+	Failures   int64       `xml:"failures,attr"`
+	Errors     int64       `xml:"errors,attr"`
+	Skipped    int64       `xml:"skipped,attr"`
+	Time       float64     `xml:"time,attr"`
+	Timestamp  string      `xml:"timestamp,attr"`
+	TestSuites []TestSuite `xml:"testsuite"`
+}
+
+type TestSuite struct {
+	// XMLName    xml.Name   `xml:"testsuite"`
+	Name       string     `xml:"name,attr"`
+	Tests      int64      `xml:"tests,attr"`
+	Failures   int64      `xml:"failures,attr"`
+	Errors     int64      `xml:"errors,attr"`
+	Skipped    int64      `xml:"skipped,attr"`
+	Time       float64    `xml:"time,attr"`
+	Timestamp  string     `xml:"timestamp,attr"`
+	File       string     `xml:"file,attr"`
+	Properties []Property `xml:"properties>property"`
+	SystemOut  SystemOut  `xml:"system-out"`
+	SystemErr  SystemErr  `xml:"system-err"`
+	TestCases  []TestCase `xml:"testcase"`
+}
+
+type TestCase struct {
+	// XMLName   xml.Name  `xml:"testcase"`
+	Name       string     `xml:"name,attr"`
+	Classname  string     `xml:"classname,attr"`
+	Tests      int64      `xml:"tests,attr"`
+	Time       float64    `xml:"time,attr"`
+	File       string     `xml:"file,attr"`
+	Line       int64      `xml:"line,attr"`
+	Failure    *Failure   `xml:"failure"`
+	Error      *Error     `xml:"error"`
+	Skipped    *Skipped   `xml:"skipped"`
+	Properties []Property `xml:"properties>property"`
+	SystemOut  *SystemOut `xml:"system-out"`
+	SystemErr  *SystemErr `xml:"system-err"`
+}
+
+type Failure struct {
+	// XMLName xml.Name `xml:"failure"`
+	Message string `xml:"message,attr"`
+	Type    string `xml:"type,attr"`
+	Text    string `xml:",chardata"`
+}
+
+func (f *Failure) Output() string {
+	return formatTestOutput(f.Message, f.Type, f.Text)
+}
+
+type Error struct {
+	// XMLName xml.Name `xml:"error"`
+	Message string `xml:"message,attr"`
+	Type    string `xml:"type,attr"`
+	Text    string `xml:",chardata"`
+}
+
+func (e *Error) Output() string {
+	return formatTestOutput(e.Message, e.Type, e.Text)
+}
+
+type Skipped struct {
+	// XMLName xml.Name `xml:"skipped"`
+	Message string `xml:"message,attr"`
+}
+
+type Property struct {
+	// XMLName xml.Name `xml:"property"`
+	Name  string `xml:"name,attr"`
+	Value string `xml:"value,attr"`
+	Text  string `xml:",chardata"`
+}
+
+type SystemOut struct {
+	// XMLName xml.Name `xml:"system-out"`
+	Text string `xml:",chardata"`
+}
+
+type SystemErr struct {
+	// XMLName xml.Name `xml:"system-err"`
+	Text string `xml:",chardata"`
+}
+
+func ConvertTestReport(xmlReport TestReport, job types.JobReference) (types.TestReport, []types.TestSuite, []types.TestCase) {
+	testReportId := fmt.Sprintf("%d-%d", job.Pipeline.Id, job.Id)
+	testReport := types.TestReport{
+		Id:       testReportId,
+		Pipeline: job.Pipeline,
+
+		// TotalTime:    time.Duration(xmlReport.Time * float64(time.Second)),
+		// TotalCount:   xmlReport.Tests,
+		// FailedCount:  xmlReport.Failures,
+		// ErrorCount:   xmlReport.Errors,
+		// SkippedCount: xmlReport.Skipped,
+		// SuccessCount: xmlReport.Tests - (xmlReport.Failures + xmlReport.Errors + xmlReport.Skipped),
+	}
+
+	testReportRef := types.TestReportReference{
+		Id:       testReport.Id,
+		Pipeline: job.Pipeline,
+	}
+	testSuites, testCases := convertTestSuites(xmlReport.TestSuites, testReportRef)
+
+	// accumulate test suite stats
+	for _, ts := range testSuites {
+		testReport.TotalCount += ts.TotalCount
+		testReport.TotalTime += ts.TotalTime
+		testReport.FailedCount += ts.FailedCount
+		testReport.ErrorCount += ts.ErrorCount
+		testReport.SkippedCount += ts.SkippedCount
+		testReport.SuccessCount += ts.SuccessCount
+	}
+
+	return testReport, testSuites, testCases
+}
+
+func convertTestSuites(xmlSuites []TestSuite, testReportRef types.TestReportReference) ([]types.TestSuite, []types.TestCase) {
+	var (
+		testSuites []types.TestSuite
+		testCases  []types.TestCase
+	)
+
+	for i, ts := range xmlSuites {
+		testSuiteId := fmt.Sprintf("%s-%d", testReportRef.Id, i+1)
+		testSuite := types.TestSuite{
+			Id:         testSuiteId,
+			TestReport: testReportRef,
+
+			Name: ts.Name,
+
+			// TotalTime:    time.Duration(ts.Time * float64(time.Second)),
+			// TotalCount:   ts.Tests,
+			// FailedCount:  ts.Failures,
+			// ErrorCount:   ts.Errors,
+			// SkippedCount: ts.Skipped,
+			// SuccessCount: ts.Tests - (ts.Failures + ts.Errors + ts.Skipped),
+		}
+
+		testSuiteRef := types.TestSuiteReference{
+			Id:         testSuite.Id,
+			TestReport: testSuite.TestReport,
+		}
+		testSuiteCases := convertTestCases(ts.TestCases, testSuiteRef)
+
+		// accumulate test case stats
+		for _, tc := range testSuiteCases {
+			testSuite.TotalCount++
+			testSuite.TotalTime += tc.ExecutionTime
+			switch tc.Status {
+			case types.TestCaseStatusFailed:
+				testSuite.FailedCount++
+			case types.TestCaseStatusError:
+				testSuite.ErrorCount++
+			case types.TestCaseStatusSkipped:
+				testSuite.SkippedCount++
+			case types.TestCaseStatusSuccess:
+				testSuite.SuccessCount++
+			}
+		}
+
+		testSuites = append(testSuites, testSuite)
+		testCases = append(testCases, testSuiteCases...)
+	}
+
+	return testSuites, testCases
+}
+
+func convertTestCases(xmlCases []TestCase, testSuiteRef types.TestSuiteReference) []types.TestCase {
+	testCases := make([]types.TestCase, 0, len(xmlCases))
+
+	for i, tc := range xmlCases {
+		// see: https://gitlab.com/gitlab-org/gitlab/-/blob/master/lib/gitlab/ci/parsers/test/junit.rb#create_test_case
+
+		var (
+			status string
+			output strings.Builder
+		)
+
+		switch {
+		case tc.Failure != nil:
+			status = types.TestCaseStatusFailed
+			output.WriteString(tc.Failure.Output())
+		case tc.Error != nil:
+			status = types.TestCaseStatusError
+			output.WriteString(tc.Error.Output())
+		case tc.Skipped != nil:
+			status = types.TestCaseStatusSkipped
+			output.WriteString(tc.Skipped.Message)
+		default:
+			status = types.TestCaseStatusSuccess
+		}
+
+		if tc.SystemOut != nil {
+			if output.Len() > 0 {
+				output.WriteString("\n\n")
+			}
+			output.WriteString("System Out:\n\n")
+			output.WriteString(tc.SystemOut.Text)
+		}
+		if tc.SystemErr != nil {
+			if output.Len() > 0 {
+				output.WriteString("\n\n")
+			}
+			output.WriteString("System Err:\n\n")
+			output.WriteString(tc.SystemErr.Text)
+		}
+
+		// properties := append(tc.Properties, ParseTextProperties(output.String())...)
+		attachements := ParseTextAttachments(output.String())
+
+		testCaseId := fmt.Sprintf("%s-%d", testSuiteRef.Id, i+1)
+		testCase := types.TestCase{
+			Id:        testCaseId,
+			TestSuite: testSuiteRef,
+
+			Name:          tc.Name,
+			Classname:     tc.Classname,
+			ExecutionTime: time.Duration(tc.Time * float64(time.Second)),
+			File:          tc.File,
+			StackTrace:    "",
+
+			Status:        status,
+			SystemOutput:  output.String(),
+			AttachmentUrl: strings.Join(attachements, "\n"),
+		}
+
+		testCases = append(testCases, testCase)
+	}
+
+	return testCases
+}
+
+func formatTestOutput(message string, typ string, text string) string {
+	var output string
+	if typ != "" {
+		output += typ
+	}
+	if message != "" {
+		if len(output) > 0 {
+			output += ": "
+		}
+		output += message
+	}
+	if text != "" {
+		if len(output) > 0 {
+			output += "\n\n"
+		}
+		output += text
+	}
+	return output
+}

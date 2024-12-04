@@ -55,6 +55,15 @@ type TestCase struct {
 	AttachmentUrl string
 }
 
+type TestCaseStatus string
+
+const (
+	TestCaseStatusFailed  = "failed"
+	TestCaseStatusError   = "error"
+	TestCaseStatusSkipped = "skipped"
+	TestCaseStatusSuccess = "success"
+)
+
 func ConvertTestReportReference(testReport TestReportReference) *typespb.TestReportReference {
 	return &typespb.TestReportReference{
 		Id:       testReport.Id,
