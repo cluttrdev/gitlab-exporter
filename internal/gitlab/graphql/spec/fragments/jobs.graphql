@@ -46,3 +46,9 @@ fragment JobFieldsExtra on CiJob {
         id
     }
 }
+
+fragment JobArtifactFieldsCore on CiJobArtifact {
+    fileType
+    name
+    downloadPath
+}

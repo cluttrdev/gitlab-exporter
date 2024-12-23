@@ -111,3 +111,63 @@ query getProjectPipelineJobs(
         }
     }
 }
+
+query getProjectPipelineJobsArtifacts(
+    $projectPath: ID!
+    $pipelineIid: ID!
+    $endCursor: String
+){
+    project(fullPath: $projectPath) {
+        ...ProjectReferenceFields
+
+        pipeline(iid: $pipelineIid) {
+            ...PipelineReferenceFields
+
+            jobs(after: $endCursor) {
+                nodes {
+                    ...JobReferenceFields
+
+                    artifacts {
+                        nodes {
+                            ...JobArtifactFieldsCore
+                        }
+                        pageInfo {
+                            ...pageFields
+                        }
+                    }
+                }
+                pageInfo {
+                    ...pageFields
+                }
+            }
+        }
+    }
+}
+
+query getProjectPipelineJobArtifacts(
+    $projectPath: ID!
+    $pipelineIid: ID!
+    $jobId: JobID!
+    $endCursor: String
+){
+    project(fullPath: $projectPath) {
+        ...ProjectReferenceFields
+
+        pipeline(iid: $pipelineIid) {
+            ...PipelineReferenceFields
+
+            job(id: $jobId) {
+                ...JobReferenceFields
+
+                artifacts(after: $endCursor) {
+                    nodes {
+                        ...JobArtifactFieldsCore
+                    }
+                    pageInfo {
+                        ...pageFields
+                    }
+                }
+            }
+        }
+    }
+}

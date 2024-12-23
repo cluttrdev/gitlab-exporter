@@ -103,6 +103,94 @@ const (
 	DetailedMergeStatusRequestedChanges DetailedMergeStatus = "REQUESTED_CHANGES"
 )
 
+// JobArtifactFieldsCore includes the GraphQL fields of CiJobArtifact requested by the fragment JobArtifactFieldsCore.
+type JobArtifactFieldsCore struct {
+	// File type of the artifact.
+	FileType *JobArtifactFileType `json:"fileType"`
+	// File name of the artifact.
+	Name *string `json:"name"`
+	// URL for downloading the artifact's file.
+	DownloadPath *string `json:"downloadPath"`
+}
+
+// GetFileType returns JobArtifactFieldsCore.FileType, and is useful for accessing the field via an interface.
+func (v *JobArtifactFieldsCore) GetFileType() *JobArtifactFileType { return v.FileType }
+
+// GetName returns JobArtifactFieldsCore.Name, and is useful for accessing the field via an interface.
+func (v *JobArtifactFieldsCore) GetName() *string { return v.Name }
+
+// GetDownloadPath returns JobArtifactFieldsCore.DownloadPath, and is useful for accessing the field via an interface.
+func (v *JobArtifactFieldsCore) GetDownloadPath() *string { return v.DownloadPath }
+
+type JobArtifactFileType string
+
+const (
+	// ARCHIVE job artifact file type.
+	JobArtifactFileTypeArchive JobArtifactFileType = "ARCHIVE"
+	// METADATA job artifact file type.
+	JobArtifactFileTypeMetadata JobArtifactFileType = "METADATA"
+	// TRACE job artifact file type.
+	JobArtifactFileTypeTrace JobArtifactFileType = "TRACE"
+	// JUNIT job artifact file type.
+	JobArtifactFileTypeJunit JobArtifactFileType = "JUNIT"
+	// METRICS job artifact file type.
+	JobArtifactFileTypeMetrics JobArtifactFileType = "METRICS"
+	// METRICS REFEREE job artifact file type.
+	JobArtifactFileTypeMetricsReferee JobArtifactFileType = "METRICS_REFEREE"
+	// NETWORK REFEREE job artifact file type.
+	JobArtifactFileTypeNetworkReferee JobArtifactFileType = "NETWORK_REFEREE"
+	// DOTENV job artifact file type.
+	JobArtifactFileTypeDotenv JobArtifactFileType = "DOTENV"
+	// COBERTURA job artifact file type.
+	JobArtifactFileTypeCobertura JobArtifactFileType = "COBERTURA"
+	// JACOCO job artifact file type.
+	JobArtifactFileTypeJacoco JobArtifactFileType = "JACOCO"
+	// CLUSTER APPLICATIONS job artifact file type.
+	JobArtifactFileTypeClusterApplications JobArtifactFileType = "CLUSTER_APPLICATIONS"
+	// LSIF job artifact file type.
+	JobArtifactFileTypeLsif JobArtifactFileType = "LSIF"
+	// CYCLONEDX job artifact file type.
+	JobArtifactFileTypeCyclonedx JobArtifactFileType = "CYCLONEDX"
+	// ANNOTATIONS job artifact file type.
+	JobArtifactFileTypeAnnotations JobArtifactFileType = "ANNOTATIONS"
+	// REPOSITORY XRAY job artifact file type.
+	JobArtifactFileTypeRepositoryXray JobArtifactFileType = "REPOSITORY_XRAY"
+	// SAST job artifact file type.
+	JobArtifactFileTypeSast JobArtifactFileType = "SAST"
+	// SECRET DETECTION job artifact file type.
+	JobArtifactFileTypeSecretDetection JobArtifactFileType = "SECRET_DETECTION"
+	// DEPENDENCY SCANNING job artifact file type.
+	JobArtifactFileTypeDependencyScanning JobArtifactFileType = "DEPENDENCY_SCANNING"
+	// CONTAINER SCANNING job artifact file type.
+	JobArtifactFileTypeContainerScanning JobArtifactFileType = "CONTAINER_SCANNING"
+	// CLUSTER IMAGE SCANNING job artifact file type.
+	JobArtifactFileTypeClusterImageScanning JobArtifactFileType = "CLUSTER_IMAGE_SCANNING"
+	// DAST job artifact file type.
+	JobArtifactFileTypeDast JobArtifactFileType = "DAST"
+	// LICENSE SCANNING job artifact file type.
+	JobArtifactFileTypeLicenseScanning JobArtifactFileType = "LICENSE_SCANNING"
+	// ACCESSIBILITY job artifact file type.
+	JobArtifactFileTypeAccessibility JobArtifactFileType = "ACCESSIBILITY"
+	// CODE QUALITY job artifact file type.
+	JobArtifactFileTypeCodequality JobArtifactFileType = "CODEQUALITY"
+	// PERFORMANCE job artifact file type.
+	JobArtifactFileTypePerformance JobArtifactFileType = "PERFORMANCE"
+	// BROWSER PERFORMANCE job artifact file type.
+	JobArtifactFileTypeBrowserPerformance JobArtifactFileType = "BROWSER_PERFORMANCE"
+	// LOAD PERFORMANCE job artifact file type.
+	JobArtifactFileTypeLoadPerformance JobArtifactFileType = "LOAD_PERFORMANCE"
+	// TERRAFORM job artifact file type.
+	JobArtifactFileTypeTerraform JobArtifactFileType = "TERRAFORM"
+	// REQUIREMENTS job artifact file type.
+	JobArtifactFileTypeRequirements JobArtifactFileType = "REQUIREMENTS"
+	// REQUIREMENTS V2 job artifact file type.
+	JobArtifactFileTypeRequirementsV2 JobArtifactFileType = "REQUIREMENTS_V2"
+	// COVERAGE FUZZING job artifact file type.
+	JobArtifactFileTypeCoverageFuzzing JobArtifactFileType = "COVERAGE_FUZZING"
+	// API FUZZING job artifact file type.
+	JobArtifactFileTypeApiFuzzing JobArtifactFileType = "API_FUZZING"
+)
+
 // JobFieldsCore includes the GraphQL fields of CiJob requested by the fragment JobFieldsCore.
 type JobFieldsCore struct {
 	// Name of the job.
@@ -2264,6 +2352,42 @@ func (v *__getProjectMergeRequestsNotesInput) GetUpdatedBefore() *time.Time { re
 // GetEndCursor returns __getProjectMergeRequestsNotesInput.EndCursor, and is useful for accessing the field via an interface.
 func (v *__getProjectMergeRequestsNotesInput) GetEndCursor() *string { return v.EndCursor }
 
+// __getProjectPipelineJobArtifactsInput is used internally by genqlient
+type __getProjectPipelineJobArtifactsInput struct {
+	ProjectPath string  `json:"projectPath"`
+	PipelineIid string  `json:"pipelineIid"`
+	JobId       string  `json:"jobId"`
+	EndCursor   *string `json:"endCursor"`
+}
+
+// GetProjectPath returns __getProjectPipelineJobArtifactsInput.ProjectPath, and is useful for accessing the field via an interface.
+func (v *__getProjectPipelineJobArtifactsInput) GetProjectPath() string { return v.ProjectPath }
+
+// GetPipelineIid returns __getProjectPipelineJobArtifactsInput.PipelineIid, and is useful for accessing the field via an interface.
+func (v *__getProjectPipelineJobArtifactsInput) GetPipelineIid() string { return v.PipelineIid }
+
+// GetJobId returns __getProjectPipelineJobArtifactsInput.JobId, and is useful for accessing the field via an interface.
+func (v *__getProjectPipelineJobArtifactsInput) GetJobId() string { return v.JobId }
+
+// GetEndCursor returns __getProjectPipelineJobArtifactsInput.EndCursor, and is useful for accessing the field via an interface.
+func (v *__getProjectPipelineJobArtifactsInput) GetEndCursor() *string { return v.EndCursor }
+
+// __getProjectPipelineJobsArtifactsInput is used internally by genqlient
+type __getProjectPipelineJobsArtifactsInput struct {
+	ProjectPath string  `json:"projectPath"`
+	PipelineIid string  `json:"pipelineIid"`
+	EndCursor   *string `json:"endCursor"`
+}
+
+// GetProjectPath returns __getProjectPipelineJobsArtifactsInput.ProjectPath, and is useful for accessing the field via an interface.
+func (v *__getProjectPipelineJobsArtifactsInput) GetProjectPath() string { return v.ProjectPath }
+
+// GetPipelineIid returns __getProjectPipelineJobsArtifactsInput.PipelineIid, and is useful for accessing the field via an interface.
+func (v *__getProjectPipelineJobsArtifactsInput) GetPipelineIid() string { return v.PipelineIid }
+
+// GetEndCursor returns __getProjectPipelineJobsArtifactsInput.EndCursor, and is useful for accessing the field via an interface.
+func (v *__getProjectPipelineJobsArtifactsInput) GetEndCursor() *string { return v.EndCursor }
+
 // __getProjectPipelineJobsInput is used internally by genqlient
 type __getProjectPipelineJobsInput struct {
 	ProjectPath string  `json:"projectPath"`
@@ -4169,6 +4293,838 @@ type getProjectMergeRequestsResponse struct {
 
 // GetProject returns getProjectMergeRequestsResponse.Project, and is useful for accessing the field via an interface.
 func (v *getProjectMergeRequestsResponse) GetProject() *getProjectMergeRequestsProject {
+	return v.Project
+}
+
+// getProjectPipelineJobArtifactsProject includes the requested fields of the GraphQL type Project.
+type getProjectPipelineJobArtifactsProject struct {
+	ProjectReferenceFields `json:"-"`
+	// Build pipeline of the project.
+	Pipeline *getProjectPipelineJobArtifactsProjectPipeline `json:"pipeline"`
+}
+
+// GetPipeline returns getProjectPipelineJobArtifactsProject.Pipeline, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobArtifactsProject) GetPipeline() *getProjectPipelineJobArtifactsProjectPipeline {
+	return v.Pipeline
+}
+
+// GetId returns getProjectPipelineJobArtifactsProject.Id, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobArtifactsProject) GetId() string { return v.ProjectReferenceFields.Id }
+
+// GetFullPath returns getProjectPipelineJobArtifactsProject.FullPath, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobArtifactsProject) GetFullPath() string {
+	return v.ProjectReferenceFields.FullPath
+}
+
+func (v *getProjectPipelineJobArtifactsProject) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectPipelineJobArtifactsProject
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectPipelineJobArtifactsProject = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.ProjectReferenceFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectPipelineJobArtifactsProject struct {
+	Pipeline *getProjectPipelineJobArtifactsProjectPipeline `json:"pipeline"`
+
+	Id string `json:"id"`
+
+	FullPath string `json:"fullPath"`
+}
+
+func (v *getProjectPipelineJobArtifactsProject) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectPipelineJobArtifactsProject) __premarshalJSON() (*__premarshalgetProjectPipelineJobArtifactsProject, error) {
+	var retval __premarshalgetProjectPipelineJobArtifactsProject
+
+	retval.Pipeline = v.Pipeline
+	retval.Id = v.ProjectReferenceFields.Id
+	retval.FullPath = v.ProjectReferenceFields.FullPath
+	return &retval, nil
+}
+
+// getProjectPipelineJobArtifactsProjectPipeline includes the requested fields of the GraphQL type Pipeline.
+type getProjectPipelineJobArtifactsProjectPipeline struct {
+	PipelineReferenceFields `json:"-"`
+	// Specific job in the pipeline, either by name or ID.
+	Job *getProjectPipelineJobArtifactsProjectPipelineJobCiJob `json:"job"`
+}
+
+// GetJob returns getProjectPipelineJobArtifactsProjectPipeline.Job, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobArtifactsProjectPipeline) GetJob() *getProjectPipelineJobArtifactsProjectPipelineJobCiJob {
+	return v.Job
+}
+
+// GetId returns getProjectPipelineJobArtifactsProjectPipeline.Id, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobArtifactsProjectPipeline) GetId() string {
+	return v.PipelineReferenceFields.Id
+}
+
+// GetIid returns getProjectPipelineJobArtifactsProjectPipeline.Iid, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobArtifactsProjectPipeline) GetIid() string {
+	return v.PipelineReferenceFields.Iid
+}
+
+func (v *getProjectPipelineJobArtifactsProjectPipeline) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectPipelineJobArtifactsProjectPipeline
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectPipelineJobArtifactsProjectPipeline = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.PipelineReferenceFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectPipelineJobArtifactsProjectPipeline struct {
+	Job *getProjectPipelineJobArtifactsProjectPipelineJobCiJob `json:"job"`
+
+	Id string `json:"id"`
+
+	Iid string `json:"iid"`
+}
+
+func (v *getProjectPipelineJobArtifactsProjectPipeline) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectPipelineJobArtifactsProjectPipeline) __premarshalJSON() (*__premarshalgetProjectPipelineJobArtifactsProjectPipeline, error) {
+	var retval __premarshalgetProjectPipelineJobArtifactsProjectPipeline
+
+	retval.Job = v.Job
+	retval.Id = v.PipelineReferenceFields.Id
+	retval.Iid = v.PipelineReferenceFields.Iid
+	return &retval, nil
+}
+
+// getProjectPipelineJobArtifactsProjectPipelineJobCiJob includes the requested fields of the GraphQL type CiJob.
+type getProjectPipelineJobArtifactsProjectPipelineJobCiJob struct {
+	JobReferenceFields `json:"-"`
+	// Artifacts generated by the job.
+	Artifacts *getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnection `json:"artifacts"`
+}
+
+// GetArtifacts returns getProjectPipelineJobArtifactsProjectPipelineJobCiJob.Artifacts, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobArtifactsProjectPipelineJobCiJob) GetArtifacts() *getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnection {
+	return v.Artifacts
+}
+
+// GetId returns getProjectPipelineJobArtifactsProjectPipelineJobCiJob.Id, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobArtifactsProjectPipelineJobCiJob) GetId() *string {
+	return v.JobReferenceFields.Id
+}
+
+func (v *getProjectPipelineJobArtifactsProjectPipelineJobCiJob) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectPipelineJobArtifactsProjectPipelineJobCiJob
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectPipelineJobArtifactsProjectPipelineJobCiJob = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.JobReferenceFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectPipelineJobArtifactsProjectPipelineJobCiJob struct {
+	Artifacts *getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnection `json:"artifacts"`
+
+	Id *string `json:"id"`
+}
+
+func (v *getProjectPipelineJobArtifactsProjectPipelineJobCiJob) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectPipelineJobArtifactsProjectPipelineJobCiJob) __premarshalJSON() (*__premarshalgetProjectPipelineJobArtifactsProjectPipelineJobCiJob, error) {
+	var retval __premarshalgetProjectPipelineJobArtifactsProjectPipelineJobCiJob
+
+	retval.Artifacts = v.Artifacts
+	retval.Id = v.JobReferenceFields.Id
+	return &retval, nil
+}
+
+// getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnection includes the requested fields of the GraphQL type CiJobArtifactConnection.
+// The GraphQL type's documentation follows.
+//
+// The connection type for CiJobArtifact.
+type getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnection struct {
+	// A list of nodes.
+	Nodes []*getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact `json:"nodes"`
+	// Information to aid in pagination.
+	PageInfo getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionPageInfo `json:"pageInfo"`
+}
+
+// GetNodes returns getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnection.Nodes, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnection) GetNodes() []*getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact {
+	return v.Nodes
+}
+
+// GetPageInfo returns getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnection.PageInfo, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnection) GetPageInfo() getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionPageInfo {
+	return v.PageInfo
+}
+
+// getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact includes the requested fields of the GraphQL type CiJobArtifact.
+type getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact struct {
+	JobArtifactFieldsCore `json:"-"`
+}
+
+// GetFileType returns getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact.FileType, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact) GetFileType() *JobArtifactFileType {
+	return v.JobArtifactFieldsCore.FileType
+}
+
+// GetName returns getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact.Name, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact) GetName() *string {
+	return v.JobArtifactFieldsCore.Name
+}
+
+// GetDownloadPath returns getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact.DownloadPath, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact) GetDownloadPath() *string {
+	return v.JobArtifactFieldsCore.DownloadPath
+}
+
+func (v *getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.JobArtifactFieldsCore)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact struct {
+	FileType *JobArtifactFileType `json:"fileType"`
+
+	Name *string `json:"name"`
+
+	DownloadPath *string `json:"downloadPath"`
+}
+
+func (v *getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact) __premarshalJSON() (*__premarshalgetProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact, error) {
+	var retval __premarshalgetProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact
+
+	retval.FileType = v.JobArtifactFieldsCore.FileType
+	retval.Name = v.JobArtifactFieldsCore.Name
+	retval.DownloadPath = v.JobArtifactFieldsCore.DownloadPath
+	return &retval, nil
+}
+
+// getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionPageInfo includes the requested fields of the GraphQL type PageInfo.
+// The GraphQL type's documentation follows.
+//
+// Information about pagination in a connection.
+type getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionPageInfo struct {
+	pageFields `json:"-"`
+}
+
+// GetHasNextPage returns getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionPageInfo.HasNextPage, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionPageInfo) GetHasNextPage() bool {
+	return v.pageFields.HasNextPage
+}
+
+// GetEndCursor returns getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionPageInfo.EndCursor, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionPageInfo) GetEndCursor() *string {
+	return v.pageFields.EndCursor
+}
+
+func (v *getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionPageInfo) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionPageInfo
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionPageInfo = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.pageFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionPageInfo struct {
+	HasNextPage bool `json:"hasNextPage"`
+
+	EndCursor *string `json:"endCursor"`
+}
+
+func (v *getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionPageInfo) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionPageInfo) __premarshalJSON() (*__premarshalgetProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionPageInfo, error) {
+	var retval __premarshalgetProjectPipelineJobArtifactsProjectPipelineJobCiJobArtifactsCiJobArtifactConnectionPageInfo
+
+	retval.HasNextPage = v.pageFields.HasNextPage
+	retval.EndCursor = v.pageFields.EndCursor
+	return &retval, nil
+}
+
+// getProjectPipelineJobArtifactsResponse is returned by getProjectPipelineJobArtifacts on success.
+type getProjectPipelineJobArtifactsResponse struct {
+	// Find a project.
+	Project *getProjectPipelineJobArtifactsProject `json:"project"`
+}
+
+// GetProject returns getProjectPipelineJobArtifactsResponse.Project, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobArtifactsResponse) GetProject() *getProjectPipelineJobArtifactsProject {
+	return v.Project
+}
+
+// getProjectPipelineJobsArtifactsProject includes the requested fields of the GraphQL type Project.
+type getProjectPipelineJobsArtifactsProject struct {
+	ProjectReferenceFields `json:"-"`
+	// Build pipeline of the project.
+	Pipeline *getProjectPipelineJobsArtifactsProjectPipeline `json:"pipeline"`
+}
+
+// GetPipeline returns getProjectPipelineJobsArtifactsProject.Pipeline, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsArtifactsProject) GetPipeline() *getProjectPipelineJobsArtifactsProjectPipeline {
+	return v.Pipeline
+}
+
+// GetId returns getProjectPipelineJobsArtifactsProject.Id, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsArtifactsProject) GetId() string { return v.ProjectReferenceFields.Id }
+
+// GetFullPath returns getProjectPipelineJobsArtifactsProject.FullPath, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsArtifactsProject) GetFullPath() string {
+	return v.ProjectReferenceFields.FullPath
+}
+
+func (v *getProjectPipelineJobsArtifactsProject) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectPipelineJobsArtifactsProject
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectPipelineJobsArtifactsProject = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.ProjectReferenceFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectPipelineJobsArtifactsProject struct {
+	Pipeline *getProjectPipelineJobsArtifactsProjectPipeline `json:"pipeline"`
+
+	Id string `json:"id"`
+
+	FullPath string `json:"fullPath"`
+}
+
+func (v *getProjectPipelineJobsArtifactsProject) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectPipelineJobsArtifactsProject) __premarshalJSON() (*__premarshalgetProjectPipelineJobsArtifactsProject, error) {
+	var retval __premarshalgetProjectPipelineJobsArtifactsProject
+
+	retval.Pipeline = v.Pipeline
+	retval.Id = v.ProjectReferenceFields.Id
+	retval.FullPath = v.ProjectReferenceFields.FullPath
+	return &retval, nil
+}
+
+// getProjectPipelineJobsArtifactsProjectPipeline includes the requested fields of the GraphQL type Pipeline.
+type getProjectPipelineJobsArtifactsProjectPipeline struct {
+	PipelineReferenceFields `json:"-"`
+	// Jobs belonging to the pipeline.
+	Jobs *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnection `json:"jobs"`
+}
+
+// GetJobs returns getProjectPipelineJobsArtifactsProjectPipeline.Jobs, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsArtifactsProjectPipeline) GetJobs() *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnection {
+	return v.Jobs
+}
+
+// GetId returns getProjectPipelineJobsArtifactsProjectPipeline.Id, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsArtifactsProjectPipeline) GetId() string {
+	return v.PipelineReferenceFields.Id
+}
+
+// GetIid returns getProjectPipelineJobsArtifactsProjectPipeline.Iid, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsArtifactsProjectPipeline) GetIid() string {
+	return v.PipelineReferenceFields.Iid
+}
+
+func (v *getProjectPipelineJobsArtifactsProjectPipeline) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectPipelineJobsArtifactsProjectPipeline
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectPipelineJobsArtifactsProjectPipeline = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.PipelineReferenceFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectPipelineJobsArtifactsProjectPipeline struct {
+	Jobs *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnection `json:"jobs"`
+
+	Id string `json:"id"`
+
+	Iid string `json:"iid"`
+}
+
+func (v *getProjectPipelineJobsArtifactsProjectPipeline) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectPipelineJobsArtifactsProjectPipeline) __premarshalJSON() (*__premarshalgetProjectPipelineJobsArtifactsProjectPipeline, error) {
+	var retval __premarshalgetProjectPipelineJobsArtifactsProjectPipeline
+
+	retval.Jobs = v.Jobs
+	retval.Id = v.PipelineReferenceFields.Id
+	retval.Iid = v.PipelineReferenceFields.Iid
+	return &retval, nil
+}
+
+// getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnection includes the requested fields of the GraphQL type CiJobConnection.
+// The GraphQL type's documentation follows.
+//
+// The connection type for CiJob.
+type getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnection struct {
+	// A list of nodes.
+	Nodes []*getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJob `json:"nodes"`
+	// Information to aid in pagination.
+	PageInfo getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionPageInfo `json:"pageInfo"`
+}
+
+// GetNodes returns getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnection.Nodes, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnection) GetNodes() []*getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJob {
+	return v.Nodes
+}
+
+// GetPageInfo returns getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnection.PageInfo, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnection) GetPageInfo() getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionPageInfo {
+	return v.PageInfo
+}
+
+// getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJob includes the requested fields of the GraphQL type CiJob.
+type getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJob struct {
+	JobReferenceFields `json:"-"`
+	// Artifacts generated by the job.
+	Artifacts *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnection `json:"artifacts"`
+}
+
+// GetArtifacts returns getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJob.Artifacts, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJob) GetArtifacts() *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnection {
+	return v.Artifacts
+}
+
+// GetId returns getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJob.Id, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJob) GetId() *string {
+	return v.JobReferenceFields.Id
+}
+
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJob) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJob
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJob = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.JobReferenceFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJob struct {
+	Artifacts *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnection `json:"artifacts"`
+
+	Id *string `json:"id"`
+}
+
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJob) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJob) __premarshalJSON() (*__premarshalgetProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJob, error) {
+	var retval __premarshalgetProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJob
+
+	retval.Artifacts = v.Artifacts
+	retval.Id = v.JobReferenceFields.Id
+	return &retval, nil
+}
+
+// getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnection includes the requested fields of the GraphQL type CiJobArtifactConnection.
+// The GraphQL type's documentation follows.
+//
+// The connection type for CiJobArtifact.
+type getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnection struct {
+	// A list of nodes.
+	Nodes []*getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact `json:"nodes"`
+	// Information to aid in pagination.
+	PageInfo getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionPageInfo `json:"pageInfo"`
+}
+
+// GetNodes returns getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnection.Nodes, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnection) GetNodes() []*getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact {
+	return v.Nodes
+}
+
+// GetPageInfo returns getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnection.PageInfo, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnection) GetPageInfo() getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionPageInfo {
+	return v.PageInfo
+}
+
+// getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact includes the requested fields of the GraphQL type CiJobArtifact.
+type getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact struct {
+	JobArtifactFieldsCore `json:"-"`
+}
+
+// GetFileType returns getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact.FileType, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact) GetFileType() *JobArtifactFileType {
+	return v.JobArtifactFieldsCore.FileType
+}
+
+// GetName returns getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact.Name, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact) GetName() *string {
+	return v.JobArtifactFieldsCore.Name
+}
+
+// GetDownloadPath returns getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact.DownloadPath, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact) GetDownloadPath() *string {
+	return v.JobArtifactFieldsCore.DownloadPath
+}
+
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.JobArtifactFieldsCore)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact struct {
+	FileType *JobArtifactFileType `json:"fileType"`
+
+	Name *string `json:"name"`
+
+	DownloadPath *string `json:"downloadPath"`
+}
+
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact) __premarshalJSON() (*__premarshalgetProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact, error) {
+	var retval __premarshalgetProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionNodesCiJobArtifact
+
+	retval.FileType = v.JobArtifactFieldsCore.FileType
+	retval.Name = v.JobArtifactFieldsCore.Name
+	retval.DownloadPath = v.JobArtifactFieldsCore.DownloadPath
+	return &retval, nil
+}
+
+// getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionPageInfo includes the requested fields of the GraphQL type PageInfo.
+// The GraphQL type's documentation follows.
+//
+// Information about pagination in a connection.
+type getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionPageInfo struct {
+	pageFields `json:"-"`
+}
+
+// GetHasNextPage returns getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionPageInfo.HasNextPage, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionPageInfo) GetHasNextPage() bool {
+	return v.pageFields.HasNextPage
+}
+
+// GetEndCursor returns getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionPageInfo.EndCursor, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionPageInfo) GetEndCursor() *string {
+	return v.pageFields.EndCursor
+}
+
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionPageInfo) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionPageInfo
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionPageInfo = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.pageFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionPageInfo struct {
+	HasNextPage bool `json:"hasNextPage"`
+
+	EndCursor *string `json:"endCursor"`
+}
+
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionPageInfo) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionPageInfo) __premarshalJSON() (*__premarshalgetProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionPageInfo, error) {
+	var retval __premarshalgetProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionNodesCiJobArtifactsCiJobArtifactConnectionPageInfo
+
+	retval.HasNextPage = v.pageFields.HasNextPage
+	retval.EndCursor = v.pageFields.EndCursor
+	return &retval, nil
+}
+
+// getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionPageInfo includes the requested fields of the GraphQL type PageInfo.
+// The GraphQL type's documentation follows.
+//
+// Information about pagination in a connection.
+type getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionPageInfo struct {
+	pageFields `json:"-"`
+}
+
+// GetHasNextPage returns getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionPageInfo.HasNextPage, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionPageInfo) GetHasNextPage() bool {
+	return v.pageFields.HasNextPage
+}
+
+// GetEndCursor returns getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionPageInfo.EndCursor, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionPageInfo) GetEndCursor() *string {
+	return v.pageFields.EndCursor
+}
+
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionPageInfo) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionPageInfo
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionPageInfo = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.pageFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionPageInfo struct {
+	HasNextPage bool `json:"hasNextPage"`
+
+	EndCursor *string `json:"endCursor"`
+}
+
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionPageInfo) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionPageInfo) __premarshalJSON() (*__premarshalgetProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionPageInfo, error) {
+	var retval __premarshalgetProjectPipelineJobsArtifactsProjectPipelineJobsCiJobConnectionPageInfo
+
+	retval.HasNextPage = v.pageFields.HasNextPage
+	retval.EndCursor = v.pageFields.EndCursor
+	return &retval, nil
+}
+
+// getProjectPipelineJobsArtifactsResponse is returned by getProjectPipelineJobsArtifacts on success.
+type getProjectPipelineJobsArtifactsResponse struct {
+	// Find a project.
+	Project *getProjectPipelineJobsArtifactsProject `json:"project"`
+}
+
+// GetProject returns getProjectPipelineJobsArtifactsResponse.Project, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsArtifactsResponse) GetProject() *getProjectPipelineJobsArtifactsProject {
 	return v.Project
 }
 
@@ -9869,6 +10825,81 @@ func getProjectMergeRequestsNotes(
 	return &data_, err_
 }
 
+// The query or mutation executed by getProjectPipelineJobArtifacts.
+const getProjectPipelineJobArtifacts_Operation = `
+query getProjectPipelineJobArtifacts ($projectPath: ID!, $pipelineIid: ID!, $jobId: JobID!, $endCursor: String) {
+	project(fullPath: $projectPath) {
+		... ProjectReferenceFields
+		pipeline(iid: $pipelineIid) {
+			... PipelineReferenceFields
+			job(id: $jobId) {
+				... JobReferenceFields
+				artifacts(after: $endCursor) {
+					nodes {
+						... JobArtifactFieldsCore
+					}
+					pageInfo {
+						... pageFields
+					}
+				}
+			}
+		}
+	}
+}
+fragment ProjectReferenceFields on Project {
+	id
+	fullPath
+}
+fragment PipelineReferenceFields on Pipeline {
+	id
+	iid
+}
+fragment JobReferenceFields on CiJob {
+	id
+}
+fragment JobArtifactFieldsCore on CiJobArtifact {
+	fileType
+	name
+	downloadPath
+}
+fragment pageFields on PageInfo {
+	hasNextPage
+	endCursor
+}
+`
+
+func getProjectPipelineJobArtifacts(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	projectPath string,
+	pipelineIid string,
+	jobId string,
+	endCursor *string,
+) (*getProjectPipelineJobArtifactsResponse, error) {
+	req_ := &graphql.Request{
+		OpName: "getProjectPipelineJobArtifacts",
+		Query:  getProjectPipelineJobArtifacts_Operation,
+		Variables: &__getProjectPipelineJobArtifactsInput{
+			ProjectPath: projectPath,
+			PipelineIid: pipelineIid,
+			JobId:       jobId,
+			EndCursor:   endCursor,
+		},
+	}
+	var err_ error
+
+	var data_ getProjectPipelineJobArtifactsResponse
+	resp_ := &graphql.Response{Data: &data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return &data_, err_
+}
+
 // The query or mutation executed by getProjectPipelineJobs.
 const getProjectPipelineJobs_Operation = `
 query getProjectPipelineJobs ($projectPath: ID!, $pipelineIid: ID!, $endCursor: String, $_core: Boolean!, $_extra: Boolean!) {
@@ -9965,6 +10996,84 @@ func getProjectPipelineJobs(
 	var err_ error
 
 	var data_ getProjectPipelineJobsResponse
+	resp_ := &graphql.Response{Data: &data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return &data_, err_
+}
+
+// The query or mutation executed by getProjectPipelineJobsArtifacts.
+const getProjectPipelineJobsArtifacts_Operation = `
+query getProjectPipelineJobsArtifacts ($projectPath: ID!, $pipelineIid: ID!, $endCursor: String) {
+	project(fullPath: $projectPath) {
+		... ProjectReferenceFields
+		pipeline(iid: $pipelineIid) {
+			... PipelineReferenceFields
+			jobs(after: $endCursor) {
+				nodes {
+					... JobReferenceFields
+					artifacts {
+						nodes {
+							... JobArtifactFieldsCore
+						}
+						pageInfo {
+							... pageFields
+						}
+					}
+				}
+				pageInfo {
+					... pageFields
+				}
+			}
+		}
+	}
+}
+fragment ProjectReferenceFields on Project {
+	id
+	fullPath
+}
+fragment PipelineReferenceFields on Pipeline {
+	id
+	iid
+}
+fragment JobReferenceFields on CiJob {
+	id
+}
+fragment JobArtifactFieldsCore on CiJobArtifact {
+	fileType
+	name
+	downloadPath
+}
+fragment pageFields on PageInfo {
+	hasNextPage
+	endCursor
+}
+`
+
+func getProjectPipelineJobsArtifacts(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	projectPath string,
+	pipelineIid string,
+	endCursor *string,
+) (*getProjectPipelineJobsArtifactsResponse, error) {
+	req_ := &graphql.Request{
+		OpName: "getProjectPipelineJobsArtifacts",
+		Query:  getProjectPipelineJobsArtifacts_Operation,
+		Variables: &__getProjectPipelineJobsArtifactsInput{
+			ProjectPath: projectPath,
+			PipelineIid: pipelineIid,
+			EndCursor:   endCursor,
+		},
+	}
+	var err_ error
+
+	var data_ getProjectPipelineJobsArtifactsResponse
 	resp_ := &graphql.Response{Data: &data_}
 
 	err_ = client_.MakeRequest(

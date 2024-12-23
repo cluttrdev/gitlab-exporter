@@ -18,6 +18,37 @@ type JobFields struct {
 	JobFieldsExtra
 }
 
+func ConvertJobReference(job JobReferenceFields, pipeline PipelineReferenceFields, project ProjectReferenceFields) (types.JobReference, error) {
+	var (
+		id, pipelineId, pipelineIid, projectId int64
+		err                                    error
+	)
+	if id, err = parseJobId(valOrZero(job.Id)); err != nil {
+		return types.JobReference{}, fmt.Errorf("parse job id: %w", err)
+	}
+	if pipelineId, err = ParseId(pipeline.Id, GlobalIdPipelinePrefix); err != nil {
+		return types.JobReference{}, fmt.Errorf("parse pipeline id: %w", err)
+	}
+	if pipelineIid, err = ParseId(pipeline.Iid, ""); err != nil {
+		return types.JobReference{}, fmt.Errorf("parse pipeline iid: %w", err)
+	}
+	if projectId, err = ParseId(project.Id, GlobalIdProjectPrefix); err != nil {
+		return types.JobReference{}, fmt.Errorf("parse project id: %w", err)
+	}
+
+	return types.JobReference{
+		Id: id,
+		Pipeline: types.PipelineReference{
+			Id:  pipelineId,
+			Iid: pipelineIid,
+			Project: types.ProjectReference{
+				Id:       projectId,
+				FullPath: project.FullPath,
+			},
+		},
+	}, nil
+}
+
 func ConvertJob(jf JobFields) (types.Job, error) {
 	var (
 		id, pipelineId, pipelineIid, projectId int64
@@ -33,7 +64,7 @@ func ConvertJob(jf JobFields) (types.Job, error) {
 		return types.Job{}, fmt.Errorf("parse pipeline iid: %w", err)
 	}
 	if projectId, err = ParseId(jf.Project.Id, GlobalIdProjectPrefix); err != nil {
-		return types.Job{}, fmt.Errorf("parse job id: %w", err)
+		return types.Job{}, fmt.Errorf("parse project id: %w", err)
 	}
 
 	var stage string
