@@ -11,9 +11,11 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/hashicorp/go-retryablehttp v0.7.7
 	github.com/oklog/run v1.1.0
+	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/prometheus/client_golang v1.20.5
 	github.com/xanzy/go-gitlab v0.112.0
 	go.opentelemetry.io/proto/otlp v1.3.1
+	golang.org/x/oauth2 v0.23.0
 	golang.org/x/sync v0.8.0
 	golang.org/x/time v0.7.0
 	google.golang.org/grpc v1.67.1
@@ -34,7 +36,6 @@ require (
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/vektah/gqlparser/v2 v2.5.18 // indirect
 	golang.org/x/net v0.30.0 // indirect
-	golang.org/x/oauth2 v0.23.0 // indirect
 	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20241021214115-324edc3d5d38 // indirect
