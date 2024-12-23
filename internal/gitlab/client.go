@@ -8,13 +8,17 @@ import (
 	gitlab "github.com/xanzy/go-gitlab"
 	"golang.org/x/sync/semaphore"
 
+	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/internal/gitlab/graphql"
 	"github.com/cluttrdev/gitlab-exporter/internal/gitlab/rest"
 )
 
 type Client struct {
+	URL string
+
 	Rest    *rest.Client
 	GraphQL *graphql.Client
+	HTTP    *HTTPClient
 
 	sem *semaphore.Weighted
 }
@@ -23,9 +27,18 @@ type ClientConfig struct {
 	URL   string
 	Token string
 
+	OAuth *OAuthConfig
+
 	RateLimit float64
 
 	MaxWorkers int
+}
+
+type OAuthConfig struct {
+	config.GitLabOAuthSecrets
+
+	FlowType string
+	Scopes   []string
 }
 
 func NewGitLabClient(cfg ClientConfig) (*Client, error) {
@@ -36,14 +49,22 @@ func NewGitLabClient(cfg ClientConfig) (*Client, error) {
 
 	graphqlClient := graphql.NewClient(cfg.URL, cfg.Token)
 
+	httpClient, err := NewHTTPClient(cfg.URL, cfg.OAuth)
+	if err != nil {
+		return nil, err
+	}
+
 	var n int64 = 42
 	if cfg.MaxWorkers > 0 {
 		n = int64(cfg.MaxWorkers)
 	}
 
 	return &Client{
+		URL: cfg.URL,
+
 		Rest:    restClient,
 		GraphQL: graphqlClient,
+		HTTP:    httpClient,
 
 		sem: semaphore.NewWeighted(n),
 	}, nil
