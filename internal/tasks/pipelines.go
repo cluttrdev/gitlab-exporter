@@ -200,13 +200,13 @@ func FetchProjectsPipelinesTestReports(ctx context.Context, glab *gitlab.Client,
 		wg      sync.WaitGroup
 		results = make(chan result, len(pipelines))
 	)
-	for _, pipeline := range pipelines {
+	for _, p := range pipelines {
 		if err := glab.Acquire(ctx, 1); err != nil {
 			slog.Error("failed to acquire gitlab client", "error", err)
 			break
 		}
 		wg.Add(1)
-		go func() {
+		go func(pipeline types.Pipeline) {
 			defer glab.Release(1)
 			defer wg.Done()
 
@@ -227,7 +227,7 @@ func FetchProjectsPipelinesTestReports(ctx context.Context, glab *gitlab.Client,
 				r.err = fmt.Errorf("convert project pipeline test report: %w", err)
 			}
 			results <- r
-		}()
+		}(p)
 	}
 
 	done := make(chan struct{})

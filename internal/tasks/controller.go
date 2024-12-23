@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
+	"strconv"
 	"sync"
 	"time"
 
@@ -135,6 +136,18 @@ func (ps *ProjectsSettings) ExportMergeRequests(id int64) bool {
 		return false
 	}
 	return cfg.Export.MergeRequests.Enabled
+}
+
+func (ps *ProjectsSettings) ExportJunitReports(id int64) bool {
+	ps.mu.RLock()
+	defer ps.mu.RUnlock()
+
+	cfg, ok := ps.settings[id]
+	if !ok {
+		return false
+	}
+
+	return cfg.Export.Reports.Junit.Enabled
 }
 
 type ProjectSettings struct {
@@ -478,14 +491,23 @@ func (c *Controller) fetchProjectsCiData(ctx context.Context, projectIds []int64
 		return projectsCiData{}, err
 	}
 
-	var testReportProjectPipelines []types.Pipeline
+	testReportProjectPipelines := []types.Pipeline{}
+	junitReportProjectPipelines := make(map[string][]string)
 	for _, p := range pipelines {
-		if c.projectsSettings.ExportTestReports(p.Project.Id) {
+		if c.projectsSettings.ExportJunitReports(p.Project.Id) {
+			projectPath := p.Project.FullPath
+			pipelineIid := strconv.FormatInt(p.Iid, 10)
+			junitReportProjectPipelines[projectPath] = append(junitReportProjectPipelines[projectPath], pipelineIid)
+		} else if c.projectsSettings.ExportTestReports(p.Project.Id) {
 			testReportProjectPipelines = append(testReportProjectPipelines, p)
 		}
 	}
 	testReports, testSuites, testCases, err := FetchProjectsPipelinesTestReports(ctx, c.GitLab, testReportProjectPipelines)
 	if err := handleError(err, "fetch test reports"); err != nil {
+		return projectsCiData{}, err
+	}
+	junitReports, junitSuites, junitCases, err := FetchProjectsPipelinesJunitReports(ctx, c.GitLab, junitReportProjectPipelines)
+	if err := handleError(err, "fetch junit reports"); err != nil {
 		return projectsCiData{}, err
 	}
 
@@ -506,9 +528,9 @@ func (c *Controller) fetchProjectsCiData(ctx context.Context, projectIds []int64
 		Sections:    sections,
 		Metrics:     metrics,
 		Traces:      traces,
-		TestReports: testReports,
-		TestSuites:  testSuites,
-		TestCases:   testCases,
+		TestReports: append(testReports, junitReports...),
+		TestSuites:  append(testSuites, junitSuites...),
+		TestCases:   append(testCases, junitCases...),
 	}, nil
 }
 
