@@ -6,6 +6,24 @@ gitlab:
   # Only requires `read-api` permissions.
   token: ""
 
+  # GitLab OAuth2 flow options
+  oauth:
+    # The authorization code flow application's id.
+    client_id: ""
+    # The authorization code flow application's secret.
+    client_secret: ""
+
+    # The password credentials flow username.
+    username: ""
+    # The password credentials flow password.
+    password: ""
+
+    # The file to read the secrets from if not read from config file.
+    secrets_file: ""
+
+    # The flow type to use for authentication.
+    flow_type: ""
+
   client:
     rate:
       limit: 0.0
@@ -26,6 +44,14 @@ project_defaults:
     testreports:
       # Whether or not to export pipeline testreports.
       enabled: true
+
+    reports:
+      # Whether to export data from report artifacts.
+      enabled: false
+
+      junit:
+        # Whether to export unit test report data.
+        enabled: false
     
     traces:
       # Whether or not to export pipeline hierarchies as traces.
@@ -38,7 +64,7 @@ project_defaults:
       enabled: true
 
     mergerequests:
-      # Whether or not to export merge request data
+      # Whether or not to export merge request data.
       enabled: true
 
       note_events: true
