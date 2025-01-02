@@ -2,6 +2,8 @@
 PKG ?= .
 APP := gitlab-exporter
 
+.DEFAULT_GOAL := help
+
 .PHONY: fmt
 fmt: ## Format source code
 	go fmt ${PKG}/...
