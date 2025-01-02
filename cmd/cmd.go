@@ -30,6 +30,7 @@ func Execute() error {
 		fetchCmd,
 		exportCmd,
 		catchupCmd,
+		NewOAuthCmd(out),
 	}
 
 	opts := []cli.ParseOption{

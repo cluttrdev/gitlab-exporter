@@ -53,6 +53,13 @@ func (c *RootConfig) RegisterFlags(fs *flag.FlagSet) {
 	fs.String("gitlab-url", defaults.GitLab.Url, fmt.Sprintf("The GitLab base URL (default: '%s').", defaults.GitLab.Url))
 	fs.String("gitlab-token", defaults.GitLab.Token, fmt.Sprintf("The GitLab API Token (default: '%s').", defaults.GitLab.Token))
 
+	fs.String("gitlab-oauth-flow-type", defaults.GitLab.OAuth.FlowType, "The authentication flow to use.")
+	fs.String("gitlab-oauth-client-id", defaults.GitLab.OAuth.ClientId, "The auth code flow client id.")
+	fs.String("gitlab-oauth-client-secret", defaults.GitLab.OAuth.ClientSecret, "The auth code flow client secret.")
+	fs.String("gitlab-oauth-username", defaults.GitLab.OAuth.Username, "The password credentials flow username.")
+	fs.String("gitlab-oauth-password", defaults.GitLab.OAuth.Password, "The password credentials flow password.")
+	fs.String("gitlab-oauth-secrets-file", defaults.GitLab.OAuth.SecretsFile, "The file to read auth secrets from.")
+
 	fs.StringVar(&c.filename, "config", "", "Configuration file to use.")
 	fs.BoolVar(&c.debug, "debug", false, "Enable debug mode.")
 }
@@ -74,6 +81,18 @@ func loadConfig(filename string, flags *flag.FlagSet, cfg *config.Config) error 
 			cfg.GitLab.Url = f.Value.String()
 		case "gitlab-token":
 			cfg.GitLab.Token = f.Value.String()
+		case "gitlab-oauth-flow-type":
+			cfg.GitLab.OAuth.FlowType = f.Value.String()
+		case "gitlab-oauth-client-id":
+			cfg.GitLab.OAuth.ClientId = f.Value.String()
+		case "gitlab-oauth-client-secret":
+			cfg.GitLab.OAuth.ClientSecret = f.Value.String()
+		case "gitlab-oauth-username":
+			cfg.GitLab.OAuth.Username = f.Value.String()
+		case "gitlab-oauth-password":
+			cfg.GitLab.OAuth.Password = f.Value.String()
+		case "gitlab-oauth-secrets-file":
+			cfg.GitLab.OAuth.SecretsFile = f.Value.String()
 		}
 	})
 
