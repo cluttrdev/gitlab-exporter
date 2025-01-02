@@ -85,6 +85,8 @@ func (c *RunConfig) RegisterFlags(fs *flag.FlagSet) {
 }
 
 func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
+	var err error
+
 	// load configuration
 	cfg := config.Default()
 	if err := loadConfig(c.RootConfig.filename, c.flags, &cfg); err != nil {
@@ -128,14 +130,9 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 	}
 
 	// create gitlab client
-	glab, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
-		URL:   cfg.GitLab.Url,
-		Token: cfg.GitLab.Token,
-
-		RateLimit: cfg.GitLab.Client.Rate.Limit,
-	})
+	glab, err := createGitLabClient(cfg)
 	if err != nil {
-		return fmt.Errorf("error creating gitlab client: %w", err)
+		return fmt.Errorf("create gitlab client: %w", err)
 	}
 
 	// create exporter
@@ -259,4 +256,54 @@ func serveHTTP(cfg config.HTTP, reg *prometheus.Registry) (func() error, func(er
 	}
 
 	return execute, interrupt
+}
+
+func createGitLabClient(cfg config.Config) (*gitlab.Client, error) {
+	var (
+		oauthConfig *gitlab.OAuthConfig
+		err         error
+	)
+
+	oauthConfig, err = configureOAuth(cfg.GitLab.OAuth)
+	if err != nil {
+		return nil, fmt.Errorf("oauth config: %w", err)
+	}
+
+	glab, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
+		URL:   cfg.GitLab.Url,
+		Token: cfg.GitLab.Token,
+
+		OAuth: oauthConfig,
+
+		RateLimit: cfg.GitLab.Client.Rate.Limit,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if config.IsOAuthRequired(cfg) {
+		if err := glab.HTTP.ChechAuth(); err != nil {
+			return nil, err
+		}
+	}
+
+	return glab, err
+}
+
+func configureOAuth(cfg config.GitLabOAuth) (*gitlab.OAuthConfig, error) {
+	var err error
+
+	secrets := cfg.GitLabOAuthSecrets
+	if cfg.SecretsFile != "" {
+		secrets, err = config.LoadOAuthSecretsFile(cfg.SecretsFile)
+		if err != nil {
+			return nil, fmt.Errorf("load oauth secrets: %w", err)
+		}
+	}
+
+	return &gitlab.OAuthConfig{
+		GitLabOAuthSecrets: secrets,
+		FlowType:           cfg.FlowType,
+		Scopes:             []string{"openid"},
+	}, nil
 }
