@@ -142,13 +142,14 @@ func convertTestSuites(xmlSuites []TestSuite, testReportRef types.TestReportRefe
 			TestReport: testReportRef,
 
 			Name: ts.Name,
-
 			// TotalTime:    time.Duration(ts.Time * float64(time.Second)),
 			// TotalCount:   ts.Tests,
 			// FailedCount:  ts.Failures,
 			// ErrorCount:   ts.Errors,
 			// SkippedCount: ts.Skipped,
 			// SuccessCount: ts.Tests - (ts.Failures + ts.Errors + ts.Skipped),
+
+			Properties: convertTestProperties(ts.Properties),
 		}
 
 		testSuiteRef := types.TestSuiteReference{
@@ -220,8 +221,8 @@ func convertTestCases(xmlCases []TestCase, testSuiteRef types.TestSuiteReference
 			output.WriteString(tc.SystemErr.Text)
 		}
 
-		// properties := append(tc.Properties, ParseTextProperties(output.String())...)
 		attachements := ParseTextAttachments(output.String())
+		properties := convertTestProperties(append(tc.Properties, ParseTextProperties(output.String())...))
 
 		testCaseId := fmt.Sprintf("%s-%d", testSuiteRef.Id, i+1)
 		testCase := types.TestCase{
@@ -237,12 +238,31 @@ func convertTestCases(xmlCases []TestCase, testSuiteRef types.TestSuiteReference
 			Status:        status,
 			SystemOutput:  output.String(),
 			AttachmentUrl: strings.Join(attachements, "\n"),
+
+			Properties: properties,
 		}
 
 		testCases = append(testCases, testCase)
 	}
 
 	return testCases
+}
+
+func convertTestProperties(xmlProps []Property) []types.TestProperty {
+	if len(xmlProps) == 0 {
+		return nil
+	}
+
+	properties := make([]types.TestProperty, 0, len(xmlProps))
+	for _, p := range xmlProps {
+		value := p.Value
+		if value == "" {
+			value = p.Text
+		}
+		properties = append(properties, types.TestProperty{Name: p.Name, Value: value})
+	}
+
+	return properties
 }
 
 func formatTestOutput(message string, typ string, text string) string {

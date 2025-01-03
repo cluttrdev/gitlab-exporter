@@ -120,6 +120,14 @@ func TestConvertTestReport(t *testing.T) {
 			ErrorCount:   1,
 			SkippedCount: 1,
 			SuccessCount: 5,
+
+			Properties: []types.TestProperty{
+				{Name: "version", Value: "1.774"},
+				{Name: "commit", Value: "ef7bebf"},
+				{Name: "browser", Value: "Google Chrome"},
+				{Name: "ci", Value: "https://github.com/actions/runs/1234"},
+				{Name: "config", Value: "Config line #1"},
+			},
 		},
 	}
 	if diff := cmp.Diff(wantTestSuites, testSuites); diff != "" {
@@ -220,6 +228,15 @@ func TestConvertTestReport(t *testing.T) {
 			ExecutionTime: time.Duration(1.625275 * float64(time.Second)),
 			File:          "tests/registration.code",
 			Status:        "success",
+
+			Properties: []types.TestProperty{
+				{Name: "priority", Value: "high"},
+				{Name: "language", Value: "english"},
+				{Name: "author", Value: "Adrian"},
+				{Name: "attachment", Value: "screenshots/dashboard.png"},
+				{Name: "attachment", Value: "screenshots/users.png"},
+				{Name: "description", Value: "This text describes the purpose of this test case and provides an overview of what the test does and how it works."},
+			},
 		},
 	}
 	if diff := cmp.Diff(wantTestCases, testCases); diff != "" {
