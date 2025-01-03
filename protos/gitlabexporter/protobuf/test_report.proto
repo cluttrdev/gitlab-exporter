@@ -29,6 +29,8 @@ message TestSuite {
     int64 skipped_count = 7;
     int64 failed_count = 8;
     int64 success_count = 9;
+
+    repeated TestProperty properties = 10;
 }
 
 message TestCase {
@@ -43,4 +45,11 @@ message TestCase {
     string system_output = 9;
     string stack_trace = 10;
     string attachment_url = 11;
+
+    repeated TestProperty properties = 12;
+}
+
+message TestProperty {
+    string name = 1;
+    string value = 2;
 }

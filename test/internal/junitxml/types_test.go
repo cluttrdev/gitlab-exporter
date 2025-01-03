@@ -220,6 +220,15 @@ func TestConvertTestReport(t *testing.T) {
 			ExecutionTime: time.Duration(1.625275 * float64(time.Second)),
 			File:          "tests/registration.code",
 			Status:        "success",
+
+			Properties: []types.TestProperty{
+				{Name: "priority", Value: "high"},
+				{Name: "language", Value: "english"},
+				{Name: "author", Value: "Adrian"},
+				{Name: "attachment", Value: "screenshots/dashboard.png"},
+				{Name: "attachment", Value: "screenshots/users.png"},
+				{Name: "description", Value: "This text describes the purpose of this test case and provides an overview of what the test does and how it works."},
+			},
 		},
 	}
 	if diff := cmp.Diff(wantTestCases, testCases); diff != "" {

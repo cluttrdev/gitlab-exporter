@@ -220,8 +220,19 @@ func convertTestCases(xmlCases []TestCase, testSuiteRef types.TestSuiteReference
 			output.WriteString(tc.SystemErr.Text)
 		}
 
-		// properties := append(tc.Properties, ParseTextProperties(output.String())...)
 		attachements := ParseTextAttachments(output.String())
+
+		var properties []types.TestProperty
+		if ps := append(tc.Properties, ParseTextProperties(output.String())...); len(ps) > 0 {
+			properties = make([]types.TestProperty, 0, len(ps))
+			for _, p := range ps {
+				value := p.Value
+				if value == "" {
+					value = p.Text
+				}
+				properties = append(properties, types.TestProperty{Name: p.Name, Value: value})
+			}
+		}
 
 		testCaseId := fmt.Sprintf("%s-%d", testSuiteRef.Id, i+1)
 		testCase := types.TestCase{
@@ -237,6 +248,8 @@ func convertTestCases(xmlCases []TestCase, testSuiteRef types.TestSuiteReference
 			Status:        status,
 			SystemOutput:  output.String(),
 			AttachmentUrl: strings.Join(attachements, "\n"),
+
+			Properties: properties,
 		}
 
 		testCases = append(testCases, testCase)

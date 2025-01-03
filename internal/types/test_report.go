@@ -39,6 +39,8 @@ type TestSuite struct {
 	FailedCount  int64
 	SkippedCount int64
 	SuccessCount int64
+
+	Properties []TestProperty
 }
 
 type TestCase struct {
@@ -53,6 +55,8 @@ type TestCase struct {
 	StackTrace    string
 	SystemOutput  string
 	AttachmentUrl string
+
+	Properties []TestProperty
 }
 
 type TestCaseStatus string
@@ -63,6 +67,11 @@ const (
 	TestCaseStatusSkipped = "skipped"
 	TestCaseStatusSuccess = "success"
 )
+
+type TestProperty struct {
+	Name  string
+	Value string
+}
 
 func ConvertTestReportReference(testReport TestReportReference) *typespb.TestReportReference {
 	return &typespb.TestReportReference{
@@ -93,7 +102,7 @@ func ConvertTestSuiteReference(testSuite TestSuiteReference) *typespb.TestSuiteR
 }
 
 func ConvertTestSuite(testSuite TestSuite) *typespb.TestSuite {
-	return &typespb.TestSuite{
+	ts := &typespb.TestSuite{
 		Id:         testSuite.Id,
 		TestReport: ConvertTestReportReference(testSuite.TestReport),
 
@@ -105,10 +114,19 @@ func ConvertTestSuite(testSuite TestSuite) *typespb.TestSuite {
 		SkippedCount: testSuite.SkippedCount,
 		SuccessCount: testSuite.SuccessCount,
 	}
+
+	for _, p := range testSuite.Properties {
+		ts.Properties = append(ts.Properties, &typespb.TestProperty{
+			Name:  p.Name,
+			Value: p.Value,
+		})
+	}
+
+	return ts
 }
 
 func ConvertTestCase(testCase TestCase) *typespb.TestCase {
-	return &typespb.TestCase{
+	tc := &typespb.TestCase{
 		Id:        testCase.Id,
 		TestSuite: ConvertTestSuiteReference(testCase.TestSuite),
 
@@ -120,4 +138,13 @@ func ConvertTestCase(testCase TestCase) *typespb.TestCase {
 		SystemOutput:  testCase.SystemOutput,
 		AttachmentUrl: testCase.AttachmentUrl,
 	}
+
+	for _, p := range testCase.Properties {
+		tc.Properties = append(tc.Properties, &typespb.TestProperty{
+			Name:  p.Name,
+			Value: p.Value,
+		})
+	}
+
+	return tc
 }
