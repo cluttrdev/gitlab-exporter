@@ -67,9 +67,15 @@ changes: ## Get commits since last release
 .PHONY: changelog
 changelog:
 	printf "# Changelog\n\n"; \
+	latest=$$(git describe --tags --abbrev=0); \
+	changes=$$(make --no-print-directory changes from="$${latest}" | awk '{ print "- " $$0 }'); \
+	if [ -n "$${changes}" ]; then \
+		url="https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/$${latest}..HEAD"; \
+		printf "## [Unreleased](%s)\n\n%s\n\n" "$${url}" "$${changes}"; \
+	fi; \
 	for tag in $$(git tag --list | sort --version-sort --reverse); do \
 		previous=$$(git describe --tags --abbrev=0 "$${tag}^" 2>/dev/null); \
-		changes=$$(make --no-print-directory changes to=$${tag} | awk '{ print "- " $$0 }'); \
+		changes=$$(make --no-print-directory changes to=$${tag}^ | awk '{ print "- " $$0 }'); \
 		if [ -n "$${previous}" ]; then \
 			url="https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/$${previous}..$${tag}"; \
 		else \
