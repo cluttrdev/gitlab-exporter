@@ -118,9 +118,6 @@ variables, where flags take precedence.
 This project was inspired by Maxime Visonneau's
 [gitlab-ci-pipeline-exporter][github-gcpe].
 
-The project logo is based on the original [artwork][gopher-artwork] created by
-Ashley McNamara.
-
 ## License
 
 This project is licensed under the [MIT License](./LICENSE).
