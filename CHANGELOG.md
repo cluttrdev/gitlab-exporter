@@ -1,8 +1,28 @@
 # Changelog
 
+## [0.12.0](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.11.0..v0.12.0)
+
+- c352c3a docs: Update readme
+- 9011a2a docs: Add unreleased changes when generating changelog
+- 70fc6ef feat: Export properties in junit test reports
+- 17353b9 build: Set default make goal
+- 275c4b9 chore: Update example config
+- 92f1b8f feat(cmd): Add fetch artifacts command
+- 8a58245 feat(cmd): Add oauth request and refresh commands
+- 79bac33 feat: Fetch projects pipelines junit reports
+- 044abf2 feat: Fetch graphql job artifacts download paths
+- bf03891 feat: Add oauthed gitlab http client
+- 44dd4a3 feat: Add gitlab oauth2 package
+- 50b64a3 refactor: Add internal http client
+- 1887445 feat: Add junitxml test report types
+- 536201a refactor!: Adjust protobuf messages to internal types
+- 88299f0 fix: Add interrupted job sections
+- 9515877 refactor: Adjust test report types
+- d45bb8a ci(github): Fix docker image tags and repo urls
+
 ## [0.11.0](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.10.3..v0.11.0)
 
-- feb745e build: Add make target to generate changelog
+- 8e76142 build: Add make target to generate changelog
 - 4120a9f build: Replace justfile and scripts with Makefile
 - 97f9eec ci: Push release image to both GitLab and GitHub registries
 - f8d1a64 ci(github): Add release sync workflow
@@ -17,7 +37,6 @@
 
 ## [0.10.3](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.10.2..v0.10.3)
 
-- ebdc3ca chore(release): v0.10.3
 - 6e9045d refactor: Remove custom protobuf time conversion functions
 - 6519dd8 fix: Try fetching job log data if runner id is empty
 - c00e7fd fix: Job protobuf queued duration value
@@ -25,12 +44,10 @@
 
 ## [0.10.2](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.10.1..v0.10.2)
 
-- 97c6bcc chore(release): v0.10.2
 - dd8cc4c fix: Regenerate protobuf code
 
 ## [0.10.1](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.10.0..v0.10.1)
 
-- 6841b39 chore(release): v0.10.1
 - a01cb80 refactor: Use pipeline name for trace span name if available
 - 58b5a9e fix: Do not export empty trace data
 - 1bcaa05 fix: Parsing namespace gids
@@ -39,7 +56,6 @@
 
 ## [0.10.0](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.9.1..v0.10.0)
 
-- d02d72b chore(release): v0.10.0
 - b326797 refactor!: Adjust protobuf and grpc stuff
 - bf91a56 chore: Update dependencies
 - 3f0123d chore: Adjust commands
@@ -50,7 +66,6 @@
 
 ## [0.9.1](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.9.0..v0.9.1)
 
-- a663eae chore(release): v0.9.1
 - dcecdb2 fix(cmd): Move namespace project resolution into jobs run group
 - 366e18a fix: Listing (user) namespace projects and options
 - 0b43bed test: Add config test for export defaults
@@ -58,7 +73,6 @@
 
 ## [0.9.0](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.8.1..v0.9.0)
 
-- 1b09bd7 chore(release): v0.9.0
 - 819e027 feat: Remove custom worker pool package
 - 3880953 feat: Serve worker pool prometheus metrics
 - a6239ea patch: Improve listing GitLab API resources
@@ -67,12 +81,10 @@
 
 ## [0.8.1](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.8.0..v0.8.1)
 
-- b977639 chore(release): v0.8.1
 - f9c9fc2 patch: Add ids to metric proto message and remove job reference message
 
 ## [0.8.0](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.7.1..v0.8.0)
 
-- 44bf374 chore(release): v0.8.0
 - d50f297 patch: Ensure data is exported in chunks with max size
 - bf7c7b2 test: Fix config tests
 - 1302c71 patch: Add merge requests block to project export config
@@ -101,7 +113,6 @@
 
 ## [0.7.1](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.7.0..v0.7.1)
 
-- 6d6364e Release v0.7.1
 - eaf813a Fix helm selector labels helper
 - 5cc58ea Fix podmonitor helm template
 - a694cc2 Add metadata to pipeline hierarchy export errors
@@ -112,7 +123,6 @@
 
 ## [0.7.0](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.6.3..v0.7.0)
 
-- e5e8943 Release v0.7.0
 - 687536e Fix execution when no projects are configured
 - 2c04805 Add http healthchecks again
 - 246d0b2 Add log output for signal handler
@@ -126,25 +136,21 @@
 
 ## [0.6.3](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.6.2..v0.6.3)
 
-- 4f6df05 Release v0.6.3
 - 7d00d04 Fix testreport exports
 - f853c10 Fix list project pipelines error handling
 
 ## [0.6.2](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.6.1..v0.6.2)
 
-- 33bf746 Release v0.6.2
 - c18c9a4 Fix command flags env var prefix
 
 ## [0.6.1](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.6.0..v0.6.1)
 
-- 14dc288 Release v0.6.1
 - 878d557 Fix command config flags propagation
 - 4edf8c0 chore: Support helm chart podLabels value
 - 070bcac Fix .dockerignore
 
 ## [0.6.0](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.5.1..v0.6.0)
 
-- 725ecc3 Release v0.6.0
 - a23dc7a Update dependencies
 - 418de01 Add helm template to run catchup job
 - 9ae88fb Update CHANGELOG.md and example config
@@ -163,7 +169,6 @@
 
 ## [0.5.1](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.5.0..v0.5.1)
 
-- 4c1550d Release v0.5.1
 - 9edd1b5 Remove unused projects model
 - cf7b06a go mod tidy
 - f864a08 Use test summary build ids to set test suite and case ids
@@ -172,7 +177,6 @@
 
 ## [0.5.0](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.4.1..v0.5.0)
 
-- 7c8e421 Release v0.5.0
 - 7c655b2 Fix version info subcommand
 - 69cc1f0 Fix go version used in .gitlab-ci.yml
 - 5e0c3f2 Fix testreport cases pb conversion
@@ -255,12 +259,10 @@
 
 ## [0.4.1](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.4.0..v0.4.1)
 
-- 86e8e26 Release v0.4.1
 - db2a5c6 Remove retry loop in catch-up worker and check for closed channel when producing
 
 ## [0.4.0](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.3.1..v0.4.0)
 
-- c0a9843 Release v0.4.0
 - f840fd5 Add option to force data export during catch-up
 - 18c2b1b Add worker management to controller and some smaller improvements
 - 725af26 Separate worker from controller and detach some controller methods
@@ -286,7 +288,6 @@
 
 ## [0.3.1](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.3.0..v0.3.1)
 
-- 8dcff37 Release v0.3.1
 - 0dd72e1 Add docker run just recipe
 - 1df7df8 Fix adding binary version info to docker build
 - dadde55 Update dev environment, adding clickhouse config files
@@ -296,7 +297,6 @@
 
 ## [0.3.0](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.2.0..v0.3.0)
 
-- c33b90b Release v0.3.0
 - 5f81568 Add CHANGELOG.md
 - beebab4 Fix some usage function stuff
 - ce4ff40 Fix printing flag.ErrHelp after usage func
@@ -310,7 +310,6 @@
 
 ## [0.2.0](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.1.0..v0.2.0)
 
-- c2a02f4 Add version command
 - e1d3512 Init controller only in commands that use it
 - d64b763 Implement adjusted default usage func
 - 00c2c5a Add internal util package
@@ -320,7 +319,6 @@
 
 ## [0.1.0](https://gitlab.com/cluttrdev/gitlab-exporter/-/commits/v0.1.0)
 
-- 546cfbb Add justfile
 - 5cc1a21 Update README and tidy up
 - bf44b5f Format code
 - 69b46ab Change clickhouse port config option type to string
