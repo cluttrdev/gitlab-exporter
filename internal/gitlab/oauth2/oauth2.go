@@ -65,7 +65,7 @@ func StartAuthorizationCodeFlow(ctx context.Context, cfg *Config) (*Token, error
 
 	authURL := cfg.AuthCodeURL(state, oauth2.S256ChallengeOption(verifier))
 
-	tokenCh := handleAuthRedirect(cfg.Config, "0.0.0.0", state, verifier)
+	tokenCh := handleAuthRedirect(cfg.Config, "0.0.0.0:7171", state, verifier)
 	defer close(tokenCh)
 
 	if err := browser.OpenURL(authURL); err != nil {
@@ -79,12 +79,10 @@ func StartAuthorizationCodeFlow(ctx context.Context, cfg *Config) (*Token, error
 	return &Token{Token: token}, nil
 }
 
-func handleAuthRedirect(config *oauth2.Config, listenHostname, originalState, codeVerifier string) chan *oauth2.Token {
+func handleAuthRedirect(config *oauth2.Config, listenAddress, originalState, codeVerifier string) chan *oauth2.Token {
 	tokenCh := make(chan *oauth2.Token)
 
-	server := &http.Server{Addr: listenHostname + ":7171"}
-
-	http.HandleFunc(redirectURLPath, func(w http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(fmt.Sprintf("/%s", redirectURLPath), func(w http.ResponseWriter, r *http.Request) {
 		code := r.FormValue("code")
 		state := r.FormValue("state")
 
@@ -103,11 +101,10 @@ func handleAuthRedirect(config *oauth2.Config, listenHostname, originalState, co
 
 		_, _ = w.Write([]byte("You have authenticated successfully. You can now close this browser window."))
 		tokenCh <- token
-		_ = server.Shutdown(context.Background())
 	})
 
 	go func() {
-		err := http.ListenAndServe(listenHostname+":7171", nil)
+		err := http.ListenAndServe(listenAddress, nil)
 		if err != nil {
 			slog.Error("Error setting up server", "err", err)
 			tokenCh <- nil
