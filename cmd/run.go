@@ -259,31 +259,37 @@ func serveHTTP(cfg config.HTTP, reg *prometheus.Registry) (func() error, func(er
 }
 
 func createGitLabClient(cfg config.Config) (*gitlab.Client, error) {
-	var (
-		oauthConfig *gitlab.OAuthConfig
-		err         error
-	)
-
-	oauthConfig, err = configureOAuth(cfg.GitLab.OAuth)
-	if err != nil {
-		return nil, fmt.Errorf("oauth config: %w", err)
-	}
-
-	glab, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
+	clientConfig := gitlab.ClientConfig{
 		URL:   cfg.GitLab.Url,
 		Token: cfg.GitLab.Token,
 
-		OAuth: oauthConfig,
-
 		RateLimit: cfg.GitLab.Client.Rate.Limit,
-	})
+	}
+
+	if cfg.GitLab.Username != "" && cfg.GitLab.Password != "" {
+		clientConfig.Auth = gitlab.AuthConfig{
+			AuthType: gitlab.SessionAuth,
+			Basic: gitlab.BasicAuthConfig{
+				Username: cfg.GitLab.Username,
+				Password: cfg.GitLab.Password,
+			},
+		}
+	}
+
+	// oauthConfig, err := configureOAuth(cfg.GitLab.OAuth)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("oauth config: %w", err)
+	// }
+	// clientConfig.Auth.OAuth = *oauthConfig
+
+	glab, err := gitlab.NewGitLabClient(clientConfig)
 	if err != nil {
 		return nil, err
 	}
 
-	if config.IsOAuthRequired(cfg) {
-		if err := glab.HTTP.ChechAuth(); err != nil {
-			return nil, err
+	if config.IsAuthedHTTPRequired(cfg) {
+		if err := glab.HTTP.CheckAuthed(); err != nil {
+			return nil, fmt.Errorf("check http auth: %w", err)
 		}
 	}
 

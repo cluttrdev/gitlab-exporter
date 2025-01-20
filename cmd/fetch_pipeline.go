@@ -11,7 +11,6 @@ import (
 	"github.com/cluttrdev/cli"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
-	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
 	"github.com/cluttrdev/gitlab-exporter/internal/gitlab/graphql"
 )
 
@@ -64,14 +63,9 @@ func (c *FetchPipelineConfig) Exec(ctx context.Context, args []string) error {
 	}
 
 	// create gitlab client
-	glab, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
-		URL:   cfg.GitLab.Url,
-		Token: cfg.GitLab.Token,
-
-		RateLimit: cfg.GitLab.Client.Rate.Limit,
-	})
+	glab, err := createGitLabClient(cfg)
 	if err != nil {
-		return fmt.Errorf("error creating gitlab client: %w", err)
+		return fmt.Errorf("create gitlab client: %w", err)
 	}
 
 	projectId, err := strconv.ParseInt(args[0], 10, 64)

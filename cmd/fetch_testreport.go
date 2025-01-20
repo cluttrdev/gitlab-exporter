@@ -11,7 +11,6 @@ import (
 	"github.com/cluttrdev/cli"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
-	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
 )
 
 type FetchTestReportConfig struct {
@@ -67,15 +66,9 @@ func (c *FetchTestReportConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("error loading configuration: %w", err)
 	}
 
-	// create gitlab client
-	glab, err := gitlab.NewGitLabClient(gitlab.ClientConfig{
-		URL:   cfg.GitLab.Url,
-		Token: cfg.GitLab.Token,
-
-		RateLimit: cfg.GitLab.Client.Rate.Limit,
-	})
+	glab, err := createGitLabClient(cfg)
 	if err != nil {
-		return fmt.Errorf("error creating gitlab client: %w", err)
+		return fmt.Errorf("create gitlab client: %w", err)
 	}
 
 	var b []byte
