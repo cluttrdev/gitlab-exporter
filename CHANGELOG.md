@@ -1,10 +1,16 @@
 # Changelog
 
+## [0.13.0](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.12.0..v0.13.0)
+
+- 002f430 refactor(cmd): Consolidate gitlab client creation
+- 5d6be44 feat: Add session authed gitlab http client (experimental)
+- 4b17dfe fix: OAuth redirect handler path
+
 ## [0.12.0](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.11.0..v0.12.0)
 
-- c352c3a docs: Update readme
-- 9011a2a docs: Add unreleased changes when generating changelog
-- 70fc6ef feat: Export properties in junit test reports
+- 116e486 docs: Update readme
+- ef359ee docs: Add unreleased changes when generating changelog
+- 6f6ff42 feat: Export properties in junit test reports
 - 17353b9 build: Set default make goal
 - 275c4b9 chore: Update example config
 - 92f1b8f feat(cmd): Add fetch artifacts command
