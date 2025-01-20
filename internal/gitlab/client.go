@@ -27,11 +27,30 @@ type ClientConfig struct {
 	URL   string
 	Token string
 
-	OAuth *OAuthConfig
+	Auth AuthConfig
 
 	RateLimit float64
 
 	MaxWorkers int
+}
+
+type AuthType int
+
+const (
+	_ AuthType = iota
+	SessionAuth
+	OAuth
+)
+
+type AuthConfig struct {
+	AuthType AuthType
+	Basic    BasicAuthConfig
+	OAuth    OAuthConfig
+}
+
+type BasicAuthConfig struct {
+	Username string
+	Password string
 }
 
 type OAuthConfig struct {
@@ -49,7 +68,7 @@ func NewGitLabClient(cfg ClientConfig) (*Client, error) {
 
 	graphqlClient := graphql.NewClient(cfg.URL, cfg.Token)
 
-	httpClient, err := NewHTTPClient(cfg.URL, cfg.OAuth)
+	httpClient, err := NewHTTPClient(cfg.URL, cfg.Auth)
 	if err != nil {
 		return nil, err
 	}

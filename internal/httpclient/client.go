@@ -20,10 +20,10 @@ type Client struct {
 func New() *Client {
 	return &Client{
 		Client: &retryablehttp.Client{
+			HTTPClient:   cleanhttp.DefaultPooledClient(),
 			Backoff:      retryHTTPBackoff,
 			CheckRetry:   retryHTTPCheck,
 			ErrorHandler: retryablehttp.PassthroughErrorHandler,
-			HTTPClient:   cleanhttp.DefaultPooledClient(),
 			RetryWaitMin: 100 * time.Millisecond,
 			RetryWaitMax: 400 * time.Millisecond,
 			RetryMax:     5,

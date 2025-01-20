@@ -78,6 +78,10 @@ func (c *Client) getProjectPipelineJobsArtifacts(ctx context.Context, projectPat
 		}
 
 		for _, job_ := range pipeline_.Jobs.Nodes {
+			if job_.Artifacts == nil {
+				continue
+			}
+
 			for _, artifact_ := range job_.Artifacts.Nodes {
 				jobArtifact := JobArtifactFields{
 					Job:      job_.JobReferenceFields,
@@ -137,6 +141,10 @@ func (c *Client) getProjectPipelineJobArtifacts(ctx context.Context, projectPath
 		job_ := pipeline_.Job
 		if job_ == nil {
 			return nil, fmt.Errorf("project pipeline job not found: %v [%v] (%v)", jobId, pipelineIid, projectPath)
+		}
+
+		if job_.Artifacts == nil {
+			break
 		}
 
 		for _, artifact_ := range job_.Artifacts.Nodes {

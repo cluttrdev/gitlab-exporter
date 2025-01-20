@@ -29,6 +29,9 @@ type GitLab struct {
 	Url   string `default:"https://gitlab.com" yaml:"url"`
 	Token string `default:"" yaml:"token"`
 
+	Username string `default:"" yaml:"username"`
+	Password string `default:"" yaml:"password"`
+
 	OAuth GitLabOAuth `default:"{}" yaml:"oauth"`
 
 	Client struct {
@@ -156,7 +159,7 @@ func DefaultProjectSettings() ProjectSettings {
 	return cfg
 }
 
-func IsOAuthRequired(cfg Config) bool {
+func IsAuthedHTTPRequired(cfg Config) bool {
 	if cfg.ProjectDefaults.Export.Reports.Enabled {
 		return true
 	}

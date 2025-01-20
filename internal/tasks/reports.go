@@ -33,28 +33,33 @@ func FetchProjectsPipelinesJunitReports(ctx context.Context, glab *gitlab.Client
 		wg      sync.WaitGroup
 		results = make(chan result)
 	)
-	for projectPath, pipelineIids := range projectPipelines {
-		for _, pipelineIid := range pipelineIids {
-			if err := glab.Acquire(ctx, 1); err != nil {
-				slog.Error("failed to acquire gitlab client", "error", err)
-				continue
-			}
-			wg.Add(1)
-			go func(projectPath string, pipelineIid string) {
-				defer glab.Release(1)
-				defer wg.Done()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
 
-				tr, ts, tc, err := FetchProjectPipelineJunitReports(ctx, glab, projectPath, pipelineIid)
-
-				results <- result{
-					testReports: tr,
-					testSuites:  ts,
-					testCases:   tc,
-					err:         err,
+		for projectPath, pipelineIids := range projectPipelines {
+			for _, pipelineIid := range pipelineIids {
+				if err := glab.Acquire(ctx, 1); err != nil {
+					slog.Error("failed to acquire gitlab client", "error", err)
+					continue
 				}
-			}(projectPath, pipelineIid)
+				wg.Add(1)
+				go func(projectPath string, pipelineIid string) {
+					defer glab.Release(1)
+					defer wg.Done()
+
+					tr, ts, tc, err := FetchProjectPipelineJunitReports(ctx, glab, projectPath, pipelineIid)
+
+					results <- result{
+						testReports: tr,
+						testSuites:  ts,
+						testCases:   tc,
+						err:         err,
+					}
+				}(projectPath, pipelineIid)
+			}
 		}
-	}
+	}()
 
 	done := make(chan struct{})
 	go func() {
