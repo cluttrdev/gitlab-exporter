@@ -1,10 +1,7 @@
 package config
 
 import (
-	"os"
-
 	"github.com/creasty/defaults"
-	"gopkg.in/yaml.v3"
 )
 
 // Config holds all the parameter settings for the application.
@@ -32,28 +29,11 @@ type GitLab struct {
 	Username string `default:"" yaml:"username"`
 	Password string `default:"" yaml:"password"`
 
-	OAuth GitLabOAuth `default:"{}" yaml:"oauth"`
-
 	Client struct {
 		Rate struct {
 			Limit float64 `default:"0.0" yaml:"limit"`
 		} `yaml:"rate"`
 	} `yaml:"client"`
-}
-
-type GitLabOAuth struct {
-	GitLabOAuthSecrets `default:"{}" yaml:",inline"`
-
-	SecretsFile string `default:"" yaml:"secrets_file"`
-	FlowType    string `default:"" yaml:"flow_type"`
-}
-
-type GitLabOAuthSecrets struct {
-	ClientId     string `default:"" yaml:"client_id"`
-	ClientSecret string `default:"" yaml:"client_secret"`
-
-	Username string `default:"" yaml:"username"`
-	Password string `default:"" yaml:"password"`
 }
 
 type Endpoint struct {
@@ -177,18 +157,4 @@ func IsAuthedHTTPRequired(cfg Config) bool {
 	}
 
 	return false
-}
-
-func LoadOAuthSecretsFile(path string) (GitLabOAuthSecrets, error) {
-	file, err := os.Open(path)
-	if err != nil {
-		return GitLabOAuthSecrets{}, err
-	}
-
-	var secrets GitLabOAuthSecrets
-	if err := yaml.NewDecoder(file).Decode(&secrets); err != nil {
-		return GitLabOAuthSecrets{}, err
-	}
-
-	return secrets, nil
 }

@@ -8,7 +8,6 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"golang.org/x/sync/semaphore"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/internal/gitlab/graphql"
 	"github.com/cluttrdev/gitlab-exporter/internal/gitlab/rest"
 )
@@ -39,25 +38,16 @@ type AuthType int
 const (
 	_ AuthType = iota
 	SessionAuth
-	OAuth
 )
 
 type AuthConfig struct {
 	AuthType AuthType
 	Basic    BasicAuthConfig
-	OAuth    OAuthConfig
 }
 
 type BasicAuthConfig struct {
 	Username string
 	Password string
-}
-
-type OAuthConfig struct {
-	config.GitLabOAuthSecrets
-
-	FlowType string
-	Scopes   []string
 }
 
 func NewGitLabClient(cfg ClientConfig) (*Client, error) {

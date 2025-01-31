@@ -14,7 +14,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/gitlab/oauth2"
 	"github.com/cluttrdev/gitlab-exporter/internal/httpclient"
 	"golang.org/x/net/html"
 )
@@ -32,8 +31,6 @@ func NewHTTPClient(baseUrl string, cfg AuthConfig) (*HTTPClient, error) {
 	switch cfg.AuthType {
 	case SessionAuth:
 		return newSessionAuthedHTTPClient(baseUrl, cfg.Basic)
-	case OAuth:
-		return newOAuthedHTTPClient(baseUrl, cfg.OAuth)
 	default:
 		return &HTTPClient{
 			doer: httpclient.New(),
@@ -116,34 +113,6 @@ func (c *HTTPClient) GetProjectJobArtifactsFile(ctx context.Context, projectPath
 	_, err = io.Copy(buf, resp.Body)
 
 	return bytes.NewReader(buf.Bytes()), err
-}
-
-func newOAuthedHTTPClient(baseUrl string, cfg OAuthConfig) (*HTTPClient, error) {
-	var (
-		token *oauth2.Token
-		err   error
-	)
-
-	config := oauth2.Configure(baseUrl, cfg.ClientId, cfg.ClientSecret, cfg.Scopes)
-	client := httpclient.New().StandardClient()
-	ctx := context.WithValue(context.Background(), oauth2.HTTPClient, client)
-
-	switch flowType := cfg.FlowType; flowType {
-	case "authorization_code":
-		token, err = oauth2.StartAuthorizationCodeFlow(ctx, config)
-	case "password":
-		token, err = oauth2.StartPasswordFlow(ctx, config, cfg.Username, cfg.Password)
-	default:
-		err = fmt.Errorf("unsupported flow: %q", flowType)
-	}
-	if err != nil {
-		return nil, err
-	}
-
-	return &HTTPClient{
-		doer: config.Client(ctx, token.Token),
-		url:  baseUrl,
-	}, nil
 }
 
 func newSessionAuthedHTTPClient(baseUrl string, cfg BasicAuthConfig) (*HTTPClient, error) {

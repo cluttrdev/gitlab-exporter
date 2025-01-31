@@ -276,12 +276,6 @@ func createGitLabClient(cfg config.Config) (*gitlab.Client, error) {
 		}
 	}
 
-	// oauthConfig, err := configureOAuth(cfg.GitLab.OAuth)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("oauth config: %w", err)
-	// }
-	// clientConfig.Auth.OAuth = *oauthConfig
-
 	glab, err := gitlab.NewGitLabClient(clientConfig)
 	if err != nil {
 		return nil, err
@@ -294,22 +288,4 @@ func createGitLabClient(cfg config.Config) (*gitlab.Client, error) {
 	}
 
 	return glab, err
-}
-
-func configureOAuth(cfg config.GitLabOAuth) (*gitlab.OAuthConfig, error) {
-	var err error
-
-	secrets := cfg.GitLabOAuthSecrets
-	if cfg.SecretsFile != "" {
-		secrets, err = config.LoadOAuthSecretsFile(cfg.SecretsFile)
-		if err != nil {
-			return nil, fmt.Errorf("load oauth secrets: %w", err)
-		}
-	}
-
-	return &gitlab.OAuthConfig{
-		GitLabOAuthSecrets: secrets,
-		FlowType:           cfg.FlowType,
-		Scopes:             []string{"openid"},
-	}, nil
 }
