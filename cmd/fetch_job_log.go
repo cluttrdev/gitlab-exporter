@@ -8,7 +8,7 @@ import (
 	"io"
 	"strconv"
 
-	_gitlab "github.com/xanzy/go-gitlab"
+	_gitlab "gitlab.com/gitlab-org/api/client-go"
 
 	"github.com/cluttrdev/cli"
 

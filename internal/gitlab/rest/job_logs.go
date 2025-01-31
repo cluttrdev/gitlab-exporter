@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	_gitlab "github.com/xanzy/go-gitlab"
+	_gitlab "gitlab.com/gitlab-org/api/client-go"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/expfmt"
 )

@@ -3,7 +3,7 @@ package rest
 import (
 	"context"
 
-	_gitlab "github.com/xanzy/go-gitlab"
+	_gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 func ListProjectMergeRequests(ctx context.Context, glab *_gitlab.Client, pid int64, opt _gitlab.ListProjectMergeRequestsOptions, yield func(p []*_gitlab.MergeRequest) bool) error {

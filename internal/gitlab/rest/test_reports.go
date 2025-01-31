@@ -7,7 +7,7 @@ import (
 	"slices"
 	"time"
 
-	gitlab "github.com/xanzy/go-gitlab"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 
 	"github.com/cluttrdev/gitlab-exporter/internal/types"
 )

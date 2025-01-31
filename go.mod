@@ -13,7 +13,7 @@ require (
 	github.com/oklog/run v1.1.0
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c
 	github.com/prometheus/client_golang v1.20.5
-	github.com/xanzy/go-gitlab v0.115.0
+	gitlab.com/gitlab-org/api/client-go v0.120.0
 	go.opentelemetry.io/proto/otlp v1.5.0
 	golang.org/x/net v0.34.0
 	golang.org/x/oauth2 v0.25.0

@@ -245,15 +245,6 @@ func (s *sessionAuthedClient) signIn() error {
 	}
 
 	// 1. Get CSRF token from login page
-	req, err := http.NewRequest(
-		http.MethodGet,
-		signInURL,
-		nil,
-	)
-	if err != nil {
-		return err
-	}
-
 	resp, err := client.Get(signInURL)
 	if err != nil {
 		return err
@@ -269,7 +260,7 @@ func (s *sessionAuthedClient) signIn() error {
 		csrfParam:        {csrfToken},
 	}
 
-	req, err = http.NewRequest(
+	req, err := http.NewRequest(
 		http.MethodPost,
 		signInURL,
 		strings.NewReader(data.Encode()),

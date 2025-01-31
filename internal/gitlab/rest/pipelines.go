@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	_gitlab "github.com/xanzy/go-gitlab"
+	_gitlab "gitlab.com/gitlab-org/api/client-go"
 )
 
 func ListProjectPipelines(ctx context.Context, glab *_gitlab.Client, pid int64, opt _gitlab.ListProjectPipelinesOptions, yield func(p []*_gitlab.PipelineInfo) bool) error {

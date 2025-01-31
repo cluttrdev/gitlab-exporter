@@ -5,7 +5,7 @@ import (
 
 	"golang.org/x/time/rate"
 
-	"github.com/xanzy/go-gitlab"
+	"gitlab.com/gitlab-org/api/client-go"
 )
 
 const apiPath string = "api/v4/"
