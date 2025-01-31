@@ -150,7 +150,7 @@ func newSessionAuthedHTTPClient(baseUrl string, cfg BasicAuthConfig) (*HTTPClien
 	session := newSessionAuthedClient(baseUrl, cfg.Username, cfg.Password)
 
 	// https://gitlab.com/gitlab-org/gitlab/-/issues/395038
-	if err := session.SignIn(); err != nil {
+	if err := session.signIn(); err != nil {
 		return nil, fmt.Errorf("create session authed http client: %w", err)
 	}
 
@@ -189,25 +189,52 @@ func newSessionAuthedClient(baseURL string, username string, password string) *s
 }
 
 func (s *sessionAuthedClient) Do(req *http.Request) (*http.Response, error) {
-	s.mx.RLock()
-	defer s.mx.RUnlock()
-
-	if time.Now().UTC().Sub(s.signedInAt) > 1*time.Hour {
-		if err := s.SignOut(); err != nil {
-			return nil, fmt.Errorf("sign out: %w", err)
-		}
-		if err := s.SignIn(); err != nil {
-			return nil, fmt.Errorf("sign in: %w", err)
-		}
+	if err := s.ensureSession(); err != nil {
+		return nil, fmt.Errorf("ensure session: %w", err)
 	}
-
 	return s.Client.Do(req)
 }
 
-func (s *sessionAuthedClient) SignIn() error {
+func (s *sessionAuthedClient) CheckAuthed() error {
+	url := s.url + "users/" + s.username + "/exists"
+	resp, err := s.Get(url)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode == http.StatusUnauthorized {
+		return errors.New("unauthorized")
+	} else if code := resp.StatusCode; code != http.StatusOK {
+		return fmt.Errorf("unexpected status code: %d - %s", code, http.StatusText(code))
+	}
+
+	return nil
+}
+
+func (s *sessionAuthedClient) ensureSession() error {
 	s.mx.Lock()
 	defer s.mx.Unlock()
 
+	if time.Now().UTC().Sub(s.signedInAt) > 1*time.Hour {
+		return nil
+	}
+
+	if !s.signedInAt.IsZero() {
+		if err := s.signOut(); err != nil {
+			return fmt.Errorf("sign out: %w", err)
+		}
+		s.signedInAt = time.Time{}
+	}
+
+	if err := s.signIn(); err != nil {
+		return fmt.Errorf("sign in: %w", err)
+	}
+	s.signedInAt = time.Now().UTC()
+
+	return nil
+}
+
+func (s *sessionAuthedClient) signIn() error {
 	signInURL := s.url + "users/sign_in?auto_sign_in=false"
 
 	client := &http.Client{
@@ -263,11 +290,10 @@ func (s *sessionAuthedClient) SignIn() error {
 		return fmt.Errorf("unexpected sign in response: %d - %s", code, http.StatusText(code))
 	}
 
-	s.signedInAt = time.Now().UTC()
 	return nil
 }
 
-func (s *sessionAuthedClient) SignOut() error {
+func (s *sessionAuthedClient) signOut() error {
 	signOutURL := s.url + "users/sign_out"
 
 	req, err := http.NewRequest(http.MethodPost, signOutURL, nil)
@@ -278,26 +304,6 @@ func (s *sessionAuthedClient) SignOut() error {
 	_, err = s.Do(req)
 	if err != nil {
 		return err
-	}
-
-	s.signedInAt = time.Time{}
-	return nil
-}
-
-func (s *sessionAuthedClient) CheckAuthed() error {
-	s.mx.RLock()
-	defer s.mx.RUnlock()
-
-	url := s.url + "users/" + s.username + "/exists"
-	resp, err := s.Get(url)
-	if err != nil {
-		return err
-	}
-
-	if resp.StatusCode == http.StatusUnauthorized {
-		return errors.New("unauthorized")
-	} else if code := resp.StatusCode; code != http.StatusOK {
-		return fmt.Errorf("unexpected status code: %d - %s", code, http.StatusText(code))
 	}
 
 	return nil
