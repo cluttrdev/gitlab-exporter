@@ -87,21 +87,25 @@ func FetchProjectsJobsLogData(ctx context.Context, glab *gitlab.Client, jobs []t
 		wg      sync.WaitGroup
 		results = make(chan result, len(jobs))
 	)
-	for _, job := range jobs {
-		if err := glab.Acquire(ctx, 1); err != nil {
-			slog.Error("failed to acquire gitlab client", "error", err)
-			break
-		}
-		wg.Add(1)
-		go func() {
-			defer glab.Release(1)
-			defer wg.Done()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, job := range jobs {
+			if err := glab.Acquire(ctx, 1); err != nil {
+				slog.Error("failed to acquire gitlab client", "error", err)
+				break
+			}
+			wg.Add(1)
+			go func() {
+				defer glab.Release(1)
+				defer wg.Done()
 
-			var r result
-			r.sections, r.metrics, r.err = FetchProjectJobLogData(ctx, glab, job)
-			results <- r
-		}()
-	}
+				var r result
+				r.sections, r.metrics, r.err = FetchProjectJobLogData(ctx, glab, job)
+				results <- r
+			}()
+		}
+	}()
 
 	done := make(chan struct{})
 	go func() {
@@ -200,35 +204,39 @@ func FetchProjectsPipelinesTestReports(ctx context.Context, glab *gitlab.Client,
 		wg      sync.WaitGroup
 		results = make(chan result, len(pipelines))
 	)
-	for _, p := range pipelines {
-		if err := glab.Acquire(ctx, 1); err != nil {
-			slog.Error("failed to acquire gitlab client", "error", err)
-			break
-		}
-		wg.Add(1)
-		go func(pipeline types.Pipeline) {
-			defer glab.Release(1)
-			defer wg.Done()
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for _, p := range pipelines {
+			if err := glab.Acquire(ctx, 1); err != nil {
+				slog.Error("failed to acquire gitlab client", "error", err)
+				break
+			}
+			wg.Add(1)
+			go func(pipeline types.Pipeline) {
+				defer glab.Release(1)
+				defer wg.Done()
 
-			var (
-				r   result
-				err error
-			)
+				var (
+					r   result
+					err error
+				)
 
-			report, summary, err := glab.Rest.GetPipelineTestReport(ctx, pipeline.Project.Id, pipeline.Id)
-			if err != nil {
-				r.err = fmt.Errorf("get project pipeline test report: %w", err)
+				report, summary, err := glab.Rest.GetPipelineTestReport(ctx, pipeline.Project.Id, pipeline.Id)
+				if err != nil {
+					r.err = fmt.Errorf("get project pipeline test report: %w", err)
+					results <- r
+					return
+				}
+
+				r.testReport, r.testSuites, r.testCases, err = rest.ConvertTestReport(report, summary, pipeline)
+				if err != nil {
+					r.err = fmt.Errorf("convert project pipeline test report: %w", err)
+				}
 				results <- r
-				return
-			}
-
-			r.testReport, r.testSuites, r.testCases, err = rest.ConvertTestReport(report, summary, pipeline)
-			if err != nil {
-				r.err = fmt.Errorf("convert project pipeline test report: %w", err)
-			}
-			results <- r
-		}(p)
-	}
+			}(p)
+		}
+	}()
 
 	done := make(chan struct{})
 	go func() {
