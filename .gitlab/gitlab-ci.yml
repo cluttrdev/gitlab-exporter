@@ -87,12 +87,6 @@ test:
         -coverprofile coverage.txt -covermode=atomic \
         ./...
       echo -e "\e[0Ksection_end:$(date +%s):script_step_run\r\e[0K"
-
-    - |
-      # Embed metrics on test results in job log
-      echo -e "\e[0Ksection_start:$(date +%s):script_step_after\r\e[0KRunning script_step_after"
-      go run ./tools/junitmetrics ./report.xml
-      echo -e "\e[0Ksection_end:$(date +%s):script_step_after\r\e[0K"
   artifacts:
     when: always
     paths:
