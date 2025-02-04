@@ -1,6 +1,6 @@
 # Changelog
 
-## [Unreleased](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.13.0..HEAD)
+## [0.13.1](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.13.0..v0.13.1)
 
 - 81fc2ff chore: Remove unused rest api functions
 - 1910756 chore: Remove junitmetrics tool
