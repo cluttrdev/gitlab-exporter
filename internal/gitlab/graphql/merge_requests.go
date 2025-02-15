@@ -425,27 +425,27 @@ func ConvertMergeRequestNoteEvent(nf MergeRequestNoteFields) (types.MergeRequest
 		System:   nf.System,
 		Internal: valOrZero(nf.Internal),
 
-		// AuthorId: 0,
+		// Author: {},
 
 		Resolvable: nf.Resolvable,
 		Resolved:   nf.Resolved,
 		ResolvedAt: nf.ResolvedAt,
-		// ResolverId: 0,
+		// Resolver: {},
 	}
 
 	if nf.Author != nil {
-		authorId, err := ParseId(nf.Author.Id, GlobalIdUserPrefix)
+		author, err := convertUserReference(nf.Author)
 		if err != nil {
-			return types.MergeRequestNoteEvent{}, fmt.Errorf("parse user id: %w", err)
+			return types.MergeRequestNoteEvent{}, fmt.Errorf("convert author reference: %w", err)
 		}
-		ne.AuthorId = authorId
+		ne.Author = author
 	}
 	if nf.ResolvedBy != nil {
-		resolverId, err := ParseId(nf.ResolvedBy.Id, GlobalIdUserPrefix)
+		resolver, err := convertUserReference(nf.ResolvedBy)
 		if err != nil {
-			return types.MergeRequestNoteEvent{}, fmt.Errorf("parse user id: %w", err)
+			return types.MergeRequestNoteEvent{}, fmt.Errorf("convert resolver reference: %w", err)
 		}
-		ne.ResolverId = resolverId
+		ne.Resolver = resolver
 	}
 
 	return ne, nil

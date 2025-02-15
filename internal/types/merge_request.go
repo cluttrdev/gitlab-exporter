@@ -195,12 +195,12 @@ type MergeRequestNoteEvent struct {
 	System   bool
 	Internal bool
 
-	AuthorId int64
+	Author UserReference
 
 	Resolvable bool
 	Resolved   bool
 	ResolvedAt *time.Time
-	ResolverId int64
+	Resolver   UserReference
 }
 
 func ConvertMergeRequestNoteEvent(event MergeRequestNoteEvent) *typespb.MergeRequestNoteEvent {

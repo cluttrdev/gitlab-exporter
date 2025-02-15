@@ -106,11 +106,11 @@ message MergeRequestNoteEvent {
     bool system = 9;
     bool internal = 10;
 
-    int64 author_id = 11;
+    UserReference author = 11;
 
     bool resolveable = 12;
     bool resolved = 13;
-    int64 resolver_id = 14;
+    UserReference resolver = 14;
 }
 
 message Milestone {
