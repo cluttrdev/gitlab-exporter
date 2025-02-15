@@ -216,16 +216,18 @@ func ConvertMergeRequestNoteEvent(event MergeRequestNoteEvent) *typespb.MergeReq
 		System:   event.System,
 		Internal: event.Internal,
 
-		AuthorId: event.AuthorId,
+		Author: convertUserReference(event.Author),
 
 		Resolveable: event.Resolvable,
 		Resolved:    event.Resolved,
-		ResolverId:  event.ResolverId,
+		Resolver:    convertUserReference(event.Resolver),
 	}
 }
 
 func convertUserReference(user UserReference) *typespb.UserReference {
 	return &typespb.UserReference{
-		Id: user.Id,
+		Id:       user.Id,
+		Username: user.Username,
+		Name:     user.Name,
 	}
 }

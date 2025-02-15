@@ -62,4 +62,6 @@ message MilestoneReference {
 
 message UserReference {
     int64 id = 1;
+    string username = 2;
+    string name = 3;
 }

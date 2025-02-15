@@ -192,6 +192,7 @@ func convertUserReference(user UserReferenceFields) (types.UserReference, error)
 	return types.UserReference{
 		Id:       id,
 		Username: user.GetUsername(),
+		Name:     user.GetName(),
 	}, nil
 }
 
