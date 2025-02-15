@@ -687,6 +687,11 @@ func (v *MergeRequestFieldsParticipantsApprovedByUserCoreConnectionNodesUserCore
 	return v.UserReferenceFieldsUserCore.Username
 }
 
+// GetName returns MergeRequestFieldsParticipantsApprovedByUserCoreConnectionNodesUserCore.Name, and is useful for accessing the field via an interface.
+func (v *MergeRequestFieldsParticipantsApprovedByUserCoreConnectionNodesUserCore) GetName() string {
+	return v.UserReferenceFieldsUserCore.Name
+}
+
 func (v *MergeRequestFieldsParticipantsApprovedByUserCoreConnectionNodesUserCore) UnmarshalJSON(b []byte) error {
 
 	if string(b) == "null" {
@@ -716,6 +721,8 @@ type __premarshalMergeRequestFieldsParticipantsApprovedByUserCoreConnectionNodes
 	Id string `json:"id"`
 
 	Username string `json:"username"`
+
+	Name string `json:"name"`
 }
 
 func (v *MergeRequestFieldsParticipantsApprovedByUserCoreConnectionNodesUserCore) MarshalJSON() ([]byte, error) {
@@ -731,6 +738,7 @@ func (v *MergeRequestFieldsParticipantsApprovedByUserCoreConnectionNodesUserCore
 
 	retval.Id = v.UserReferenceFieldsUserCore.Id
 	retval.Username = v.UserReferenceFieldsUserCore.Username
+	retval.Name = v.UserReferenceFieldsUserCore.Name
 	return &retval, nil
 }
 
@@ -766,6 +774,11 @@ func (v *MergeRequestFieldsParticipantsAssigneesMergeRequestAssigneeConnectionNo
 	return v.UserReferenceFieldsMergeRequestAssignee.Username
 }
 
+// GetName returns MergeRequestFieldsParticipantsAssigneesMergeRequestAssigneeConnectionNodesMergeRequestAssignee.Name, and is useful for accessing the field via an interface.
+func (v *MergeRequestFieldsParticipantsAssigneesMergeRequestAssigneeConnectionNodesMergeRequestAssignee) GetName() string {
+	return v.UserReferenceFieldsMergeRequestAssignee.Name
+}
+
 func (v *MergeRequestFieldsParticipantsAssigneesMergeRequestAssigneeConnectionNodesMergeRequestAssignee) UnmarshalJSON(b []byte) error {
 
 	if string(b) == "null" {
@@ -795,6 +808,8 @@ type __premarshalMergeRequestFieldsParticipantsAssigneesMergeRequestAssigneeConn
 	Id string `json:"id"`
 
 	Username string `json:"username"`
+
+	Name string `json:"name"`
 }
 
 func (v *MergeRequestFieldsParticipantsAssigneesMergeRequestAssigneeConnectionNodesMergeRequestAssignee) MarshalJSON() ([]byte, error) {
@@ -810,6 +825,7 @@ func (v *MergeRequestFieldsParticipantsAssigneesMergeRequestAssigneeConnectionNo
 
 	retval.Id = v.UserReferenceFieldsMergeRequestAssignee.Id
 	retval.Username = v.UserReferenceFieldsMergeRequestAssignee.Username
+	retval.Name = v.UserReferenceFieldsMergeRequestAssignee.Name
 	return &retval, nil
 }
 
@@ -829,6 +845,11 @@ func (v *MergeRequestFieldsParticipantsAuthorMergeRequestAuthor) GetId() string 
 // GetUsername returns MergeRequestFieldsParticipantsAuthorMergeRequestAuthor.Username, and is useful for accessing the field via an interface.
 func (v *MergeRequestFieldsParticipantsAuthorMergeRequestAuthor) GetUsername() string {
 	return v.UserReferenceFieldsMergeRequestAuthor.Username
+}
+
+// GetName returns MergeRequestFieldsParticipantsAuthorMergeRequestAuthor.Name, and is useful for accessing the field via an interface.
+func (v *MergeRequestFieldsParticipantsAuthorMergeRequestAuthor) GetName() string {
+	return v.UserReferenceFieldsMergeRequestAuthor.Name
 }
 
 func (v *MergeRequestFieldsParticipantsAuthorMergeRequestAuthor) UnmarshalJSON(b []byte) error {
@@ -860,6 +881,8 @@ type __premarshalMergeRequestFieldsParticipantsAuthorMergeRequestAuthor struct {
 	Id string `json:"id"`
 
 	Username string `json:"username"`
+
+	Name string `json:"name"`
 }
 
 func (v *MergeRequestFieldsParticipantsAuthorMergeRequestAuthor) MarshalJSON() ([]byte, error) {
@@ -875,6 +898,7 @@ func (v *MergeRequestFieldsParticipantsAuthorMergeRequestAuthor) __premarshalJSO
 
 	retval.Id = v.UserReferenceFieldsMergeRequestAuthor.Id
 	retval.Username = v.UserReferenceFieldsMergeRequestAuthor.Username
+	retval.Name = v.UserReferenceFieldsMergeRequestAuthor.Name
 	return &retval, nil
 }
 
@@ -894,6 +918,11 @@ func (v *MergeRequestFieldsParticipantsMergeUserUserCore) GetId() string {
 // GetUsername returns MergeRequestFieldsParticipantsMergeUserUserCore.Username, and is useful for accessing the field via an interface.
 func (v *MergeRequestFieldsParticipantsMergeUserUserCore) GetUsername() string {
 	return v.UserReferenceFieldsUserCore.Username
+}
+
+// GetName returns MergeRequestFieldsParticipantsMergeUserUserCore.Name, and is useful for accessing the field via an interface.
+func (v *MergeRequestFieldsParticipantsMergeUserUserCore) GetName() string {
+	return v.UserReferenceFieldsUserCore.Name
 }
 
 func (v *MergeRequestFieldsParticipantsMergeUserUserCore) UnmarshalJSON(b []byte) error {
@@ -925,6 +954,8 @@ type __premarshalMergeRequestFieldsParticipantsMergeUserUserCore struct {
 	Id string `json:"id"`
 
 	Username string `json:"username"`
+
+	Name string `json:"name"`
 }
 
 func (v *MergeRequestFieldsParticipantsMergeUserUserCore) MarshalJSON() ([]byte, error) {
@@ -940,6 +971,7 @@ func (v *MergeRequestFieldsParticipantsMergeUserUserCore) __premarshalJSON() (*_
 
 	retval.Id = v.UserReferenceFieldsUserCore.Id
 	retval.Username = v.UserReferenceFieldsUserCore.Username
+	retval.Name = v.UserReferenceFieldsUserCore.Name
 	return &retval, nil
 }
 
@@ -975,6 +1007,11 @@ func (v *MergeRequestFieldsParticipantsReviewersMergeRequestReviewerConnectionNo
 	return v.UserReferenceFieldsMergeRequestReviewer.Username
 }
 
+// GetName returns MergeRequestFieldsParticipantsReviewersMergeRequestReviewerConnectionNodesMergeRequestReviewer.Name, and is useful for accessing the field via an interface.
+func (v *MergeRequestFieldsParticipantsReviewersMergeRequestReviewerConnectionNodesMergeRequestReviewer) GetName() string {
+	return v.UserReferenceFieldsMergeRequestReviewer.Name
+}
+
 func (v *MergeRequestFieldsParticipantsReviewersMergeRequestReviewerConnectionNodesMergeRequestReviewer) UnmarshalJSON(b []byte) error {
 
 	if string(b) == "null" {
@@ -1004,6 +1041,8 @@ type __premarshalMergeRequestFieldsParticipantsReviewersMergeRequestReviewerConn
 	Id string `json:"id"`
 
 	Username string `json:"username"`
+
+	Name string `json:"name"`
 }
 
 func (v *MergeRequestFieldsParticipantsReviewersMergeRequestReviewerConnectionNodesMergeRequestReviewer) MarshalJSON() ([]byte, error) {
@@ -1019,6 +1058,7 @@ func (v *MergeRequestFieldsParticipantsReviewersMergeRequestReviewerConnectionNo
 
 	retval.Id = v.UserReferenceFieldsMergeRequestReviewer.Id
 	retval.Username = v.UserReferenceFieldsMergeRequestReviewer.Username
+	retval.Name = v.UserReferenceFieldsMergeRequestReviewer.Name
 	return &retval, nil
 }
 
@@ -1103,6 +1143,11 @@ func (v *MergeRequestNotesFieldsCoreAuthorUserCore) GetUsername() string {
 	return v.UserReferenceFieldsUserCore.Username
 }
 
+// GetName returns MergeRequestNotesFieldsCoreAuthorUserCore.Name, and is useful for accessing the field via an interface.
+func (v *MergeRequestNotesFieldsCoreAuthorUserCore) GetName() string {
+	return v.UserReferenceFieldsUserCore.Name
+}
+
 func (v *MergeRequestNotesFieldsCoreAuthorUserCore) UnmarshalJSON(b []byte) error {
 
 	if string(b) == "null" {
@@ -1132,6 +1177,8 @@ type __premarshalMergeRequestNotesFieldsCoreAuthorUserCore struct {
 	Id string `json:"id"`
 
 	Username string `json:"username"`
+
+	Name string `json:"name"`
 }
 
 func (v *MergeRequestNotesFieldsCoreAuthorUserCore) MarshalJSON() ([]byte, error) {
@@ -1147,6 +1194,7 @@ func (v *MergeRequestNotesFieldsCoreAuthorUserCore) __premarshalJSON() (*__prema
 
 	retval.Id = v.UserReferenceFieldsUserCore.Id
 	retval.Username = v.UserReferenceFieldsUserCore.Username
+	retval.Name = v.UserReferenceFieldsUserCore.Name
 	return &retval, nil
 }
 
@@ -1166,6 +1214,11 @@ func (v *MergeRequestNotesFieldsCoreResolvedByUserCore) GetId() string {
 // GetUsername returns MergeRequestNotesFieldsCoreResolvedByUserCore.Username, and is useful for accessing the field via an interface.
 func (v *MergeRequestNotesFieldsCoreResolvedByUserCore) GetUsername() string {
 	return v.UserReferenceFieldsUserCore.Username
+}
+
+// GetName returns MergeRequestNotesFieldsCoreResolvedByUserCore.Name, and is useful for accessing the field via an interface.
+func (v *MergeRequestNotesFieldsCoreResolvedByUserCore) GetName() string {
+	return v.UserReferenceFieldsUserCore.Name
 }
 
 func (v *MergeRequestNotesFieldsCoreResolvedByUserCore) UnmarshalJSON(b []byte) error {
@@ -1197,6 +1250,8 @@ type __premarshalMergeRequestNotesFieldsCoreResolvedByUserCore struct {
 	Id string `json:"id"`
 
 	Username string `json:"username"`
+
+	Name string `json:"name"`
 }
 
 func (v *MergeRequestNotesFieldsCoreResolvedByUserCore) MarshalJSON() ([]byte, error) {
@@ -1212,6 +1267,7 @@ func (v *MergeRequestNotesFieldsCoreResolvedByUserCore) __premarshalJSON() (*__p
 
 	retval.Id = v.UserReferenceFieldsUserCore.Id
 	retval.Username = v.UserReferenceFieldsUserCore.Username
+	retval.Name = v.UserReferenceFieldsUserCore.Name
 	return &retval, nil
 }
 
@@ -1639,6 +1695,9 @@ func (v *PipelineFieldsCoreUserUserCore) GetUsername() string {
 	return v.UserReferenceFieldsUserCore.Username
 }
 
+// GetName returns PipelineFieldsCoreUserUserCore.Name, and is useful for accessing the field via an interface.
+func (v *PipelineFieldsCoreUserUserCore) GetName() string { return v.UserReferenceFieldsUserCore.Name }
+
 func (v *PipelineFieldsCoreUserUserCore) UnmarshalJSON(b []byte) error {
 
 	if string(b) == "null" {
@@ -1668,6 +1727,8 @@ type __premarshalPipelineFieldsCoreUserUserCore struct {
 	Id string `json:"id"`
 
 	Username string `json:"username"`
+
+	Name string `json:"name"`
 }
 
 func (v *PipelineFieldsCoreUserUserCore) MarshalJSON() ([]byte, error) {
@@ -1683,6 +1744,7 @@ func (v *PipelineFieldsCoreUserUserCore) __premarshalJSON() (*__premarshalPipeli
 
 	retval.Id = v.UserReferenceFieldsUserCore.Id
 	retval.Username = v.UserReferenceFieldsUserCore.Username
+	retval.Name = v.UserReferenceFieldsUserCore.Name
 	return &retval, nil
 }
 
@@ -2001,6 +2063,12 @@ type UserReferenceFields interface {
 	//
 	// Username of the user. Unique within this instance of GitLab.
 	GetUsername() string
+	// GetName returns the interface-field "name" from its implementation.
+	// The GraphQL interface field's documentation follows.
+	//
+	// Human-readable name of the user. Returns `****` if the user is a project bot
+	// and the requester does not have permission to view the project.
+	GetName() string
 }
 
 func (v *UserReferenceFieldsAddOnUser) implementsGraphQLInterfaceUserReferenceFields()            {}
@@ -2145,6 +2213,9 @@ type UserReferenceFieldsAddOnUser struct {
 	Id string `json:"id"`
 	// Username of the user. Unique within this instance of GitLab.
 	Username string `json:"username"`
+	// Human-readable name of the user. Returns `****` if the user is a project bot
+	// and the requester does not have permission to view the project.
+	Name string `json:"name"`
 }
 
 // GetId returns UserReferenceFieldsAddOnUser.Id, and is useful for accessing the field via an interface.
@@ -2152,6 +2223,9 @@ func (v *UserReferenceFieldsAddOnUser) GetId() string { return v.Id }
 
 // GetUsername returns UserReferenceFieldsAddOnUser.Username, and is useful for accessing the field via an interface.
 func (v *UserReferenceFieldsAddOnUser) GetUsername() string { return v.Username }
+
+// GetName returns UserReferenceFieldsAddOnUser.Name, and is useful for accessing the field via an interface.
+func (v *UserReferenceFieldsAddOnUser) GetName() string { return v.Name }
 
 // UserReferenceFields includes the GraphQL fields of AutocompletedUser requested by the fragment UserReferenceFields.
 // The GraphQL type's documentation follows.
@@ -2162,6 +2236,9 @@ type UserReferenceFieldsAutocompletedUser struct {
 	Id string `json:"id"`
 	// Username of the user. Unique within this instance of GitLab.
 	Username string `json:"username"`
+	// Human-readable name of the user. Returns `****` if the user is a project bot
+	// and the requester does not have permission to view the project.
+	Name string `json:"name"`
 }
 
 // GetId returns UserReferenceFieldsAutocompletedUser.Id, and is useful for accessing the field via an interface.
@@ -2169,6 +2246,9 @@ func (v *UserReferenceFieldsAutocompletedUser) GetId() string { return v.Id }
 
 // GetUsername returns UserReferenceFieldsAutocompletedUser.Username, and is useful for accessing the field via an interface.
 func (v *UserReferenceFieldsAutocompletedUser) GetUsername() string { return v.Username }
+
+// GetName returns UserReferenceFieldsAutocompletedUser.Name, and is useful for accessing the field via an interface.
+func (v *UserReferenceFieldsAutocompletedUser) GetName() string { return v.Name }
 
 // UserReferenceFields includes the GraphQL fields of CurrentUser requested by the fragment UserReferenceFields.
 // The GraphQL type's documentation follows.
@@ -2179,6 +2259,9 @@ type UserReferenceFieldsCurrentUser struct {
 	Id string `json:"id"`
 	// Username of the user. Unique within this instance of GitLab.
 	Username string `json:"username"`
+	// Human-readable name of the user. Returns `****` if the user is a project bot
+	// and the requester does not have permission to view the project.
+	Name string `json:"name"`
 }
 
 // GetId returns UserReferenceFieldsCurrentUser.Id, and is useful for accessing the field via an interface.
@@ -2186,6 +2269,9 @@ func (v *UserReferenceFieldsCurrentUser) GetId() string { return v.Id }
 
 // GetUsername returns UserReferenceFieldsCurrentUser.Username, and is useful for accessing the field via an interface.
 func (v *UserReferenceFieldsCurrentUser) GetUsername() string { return v.Username }
+
+// GetName returns UserReferenceFieldsCurrentUser.Name, and is useful for accessing the field via an interface.
+func (v *UserReferenceFieldsCurrentUser) GetName() string { return v.Name }
 
 // UserReferenceFields includes the GraphQL fields of MergeRequestAssignee requested by the fragment UserReferenceFields.
 // The GraphQL type's documentation follows.
@@ -2196,6 +2282,9 @@ type UserReferenceFieldsMergeRequestAssignee struct {
 	Id string `json:"id"`
 	// Username of the user. Unique within this instance of GitLab.
 	Username string `json:"username"`
+	// Human-readable name of the user. Returns `****` if the user is a project bot
+	// and the requester does not have permission to view the project.
+	Name string `json:"name"`
 }
 
 // GetId returns UserReferenceFieldsMergeRequestAssignee.Id, and is useful for accessing the field via an interface.
@@ -2203,6 +2292,9 @@ func (v *UserReferenceFieldsMergeRequestAssignee) GetId() string { return v.Id }
 
 // GetUsername returns UserReferenceFieldsMergeRequestAssignee.Username, and is useful for accessing the field via an interface.
 func (v *UserReferenceFieldsMergeRequestAssignee) GetUsername() string { return v.Username }
+
+// GetName returns UserReferenceFieldsMergeRequestAssignee.Name, and is useful for accessing the field via an interface.
+func (v *UserReferenceFieldsMergeRequestAssignee) GetName() string { return v.Name }
 
 // UserReferenceFields includes the GraphQL fields of MergeRequestAuthor requested by the fragment UserReferenceFields.
 // The GraphQL type's documentation follows.
@@ -2213,6 +2305,9 @@ type UserReferenceFieldsMergeRequestAuthor struct {
 	Id string `json:"id"`
 	// Username of the user. Unique within this instance of GitLab.
 	Username string `json:"username"`
+	// Human-readable name of the user. Returns `****` if the user is a project bot
+	// and the requester does not have permission to view the project.
+	Name string `json:"name"`
 }
 
 // GetId returns UserReferenceFieldsMergeRequestAuthor.Id, and is useful for accessing the field via an interface.
@@ -2220,6 +2315,9 @@ func (v *UserReferenceFieldsMergeRequestAuthor) GetId() string { return v.Id }
 
 // GetUsername returns UserReferenceFieldsMergeRequestAuthor.Username, and is useful for accessing the field via an interface.
 func (v *UserReferenceFieldsMergeRequestAuthor) GetUsername() string { return v.Username }
+
+// GetName returns UserReferenceFieldsMergeRequestAuthor.Name, and is useful for accessing the field via an interface.
+func (v *UserReferenceFieldsMergeRequestAuthor) GetName() string { return v.Name }
 
 // UserReferenceFields includes the GraphQL fields of MergeRequestParticipant requested by the fragment UserReferenceFields.
 // The GraphQL type's documentation follows.
@@ -2230,6 +2328,9 @@ type UserReferenceFieldsMergeRequestParticipant struct {
 	Id string `json:"id"`
 	// Username of the user. Unique within this instance of GitLab.
 	Username string `json:"username"`
+	// Human-readable name of the user. Returns `****` if the user is a project bot
+	// and the requester does not have permission to view the project.
+	Name string `json:"name"`
 }
 
 // GetId returns UserReferenceFieldsMergeRequestParticipant.Id, and is useful for accessing the field via an interface.
@@ -2237,6 +2338,9 @@ func (v *UserReferenceFieldsMergeRequestParticipant) GetId() string { return v.I
 
 // GetUsername returns UserReferenceFieldsMergeRequestParticipant.Username, and is useful for accessing the field via an interface.
 func (v *UserReferenceFieldsMergeRequestParticipant) GetUsername() string { return v.Username }
+
+// GetName returns UserReferenceFieldsMergeRequestParticipant.Name, and is useful for accessing the field via an interface.
+func (v *UserReferenceFieldsMergeRequestParticipant) GetName() string { return v.Name }
 
 // UserReferenceFields includes the GraphQL fields of MergeRequestReviewer requested by the fragment UserReferenceFields.
 // The GraphQL type's documentation follows.
@@ -2247,6 +2351,9 @@ type UserReferenceFieldsMergeRequestReviewer struct {
 	Id string `json:"id"`
 	// Username of the user. Unique within this instance of GitLab.
 	Username string `json:"username"`
+	// Human-readable name of the user. Returns `****` if the user is a project bot
+	// and the requester does not have permission to view the project.
+	Name string `json:"name"`
 }
 
 // GetId returns UserReferenceFieldsMergeRequestReviewer.Id, and is useful for accessing the field via an interface.
@@ -2254,6 +2361,9 @@ func (v *UserReferenceFieldsMergeRequestReviewer) GetId() string { return v.Id }
 
 // GetUsername returns UserReferenceFieldsMergeRequestReviewer.Username, and is useful for accessing the field via an interface.
 func (v *UserReferenceFieldsMergeRequestReviewer) GetUsername() string { return v.Username }
+
+// GetName returns UserReferenceFieldsMergeRequestReviewer.Name, and is useful for accessing the field via an interface.
+func (v *UserReferenceFieldsMergeRequestReviewer) GetName() string { return v.Name }
 
 // UserReferenceFields includes the GraphQL fields of UserCore requested by the fragment UserReferenceFields.
 // The GraphQL type's documentation follows.
@@ -2264,6 +2374,9 @@ type UserReferenceFieldsUserCore struct {
 	Id string `json:"id"`
 	// Username of the user. Unique within this instance of GitLab.
 	Username string `json:"username"`
+	// Human-readable name of the user. Returns `****` if the user is a project bot
+	// and the requester does not have permission to view the project.
+	Name string `json:"name"`
 }
 
 // GetId returns UserReferenceFieldsUserCore.Id, and is useful for accessing the field via an interface.
@@ -2271,6 +2384,9 @@ func (v *UserReferenceFieldsUserCore) GetId() string { return v.Id }
 
 // GetUsername returns UserReferenceFieldsUserCore.Username, and is useful for accessing the field via an interface.
 func (v *UserReferenceFieldsUserCore) GetUsername() string { return v.Username }
+
+// GetName returns UserReferenceFieldsUserCore.Name, and is useful for accessing the field via an interface.
+func (v *UserReferenceFieldsUserCore) GetName() string { return v.Name }
 
 // __getProjectIdPipelineInput is used internally by genqlient
 type __getProjectIdPipelineInput struct {
@@ -10475,6 +10591,7 @@ fragment MergeRequestReferenceFields on MergeRequest {
 fragment UserReferenceFields on User {
 	id
 	username
+	name
 }
 `
 
@@ -10556,6 +10673,7 @@ fragment pageFields on PageInfo {
 fragment UserReferenceFields on User {
 	id
 	username
+	name
 }
 `
 
@@ -10694,6 +10812,7 @@ fragment pageFields on PageInfo {
 fragment UserReferenceFields on User {
 	id
 	username
+	name
 }
 `
 
@@ -10790,6 +10909,7 @@ fragment pageFields on PageInfo {
 fragment UserReferenceFields on User {
 	id
 	username
+	name
 }
 `
 
@@ -11154,6 +11274,7 @@ fragment MergeRequestReferenceFields on MergeRequest {
 fragment UserReferenceFields on User {
 	id
 	username
+	name
 }
 `
 
@@ -11556,6 +11677,7 @@ fragment pageFields on PageInfo {
 fragment UserReferenceFields on User {
 	id
 	username
+	name
 }
 `
 
@@ -11701,6 +11823,7 @@ fragment pageFields on PageInfo {
 fragment UserReferenceFields on User {
 	id
 	username
+	name
 }
 `
 
@@ -11816,6 +11939,7 @@ fragment MergeRequestReferenceFields on MergeRequest {
 fragment UserReferenceFields on User {
 	id
 	username
+	name
 }
 `
 
