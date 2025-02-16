@@ -1,7 +1,14 @@
 # Changelog
 
+## [0.13.2](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.13.1..v0.13.2)
+
+- b66e1b4 refactor!: Use user references in merge request note events
+- b890609 patch: Add username and name to user references
+- 311d75e docs: Fix changelog
+
 ## [0.13.1](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.13.0..v0.13.1)
 
+- 690f199 chore(release): v0.13.1
 - 81fc2ff chore: Remove unused rest api functions
 - 1910756 chore: Remove junitmetrics tool
 - e01a804 fix: Remove oauth2 support
