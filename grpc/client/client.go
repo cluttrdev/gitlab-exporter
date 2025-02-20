@@ -61,6 +61,18 @@ func RecordCommits(c *Client, ctx context.Context, data []*typespb.Commit) error
 	return nil
 }
 
+func RecordDeployments(c *Client, ctx context.Context, data []*typespb.Deployment) error {
+	req := &servicepb.RecordDeploymentsRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordDeployments(ctx, req /* opts ...grpc.CallOption */)
+	if err != nil {
+		return fmt.Errorf("error recording deployments: %w", err)
+	}
+
+	return nil
+}
+
 func RecordJobs(c *Client, ctx context.Context, data []*typespb.Job) error {
 	req := &servicepb.RecordJobsRequest{
 		Data: data,

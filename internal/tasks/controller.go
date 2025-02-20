@@ -354,6 +354,15 @@ func (c *Controller) process(ctx context.Context, projectSettings []ProjectSetti
 		}
 	}()
 
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		if err := c.processProjectsDeployments(ctx, result.ProjectsWithUpdatedPipelines, updatedAfter, updatedBefore); err != nil {
+			errChan <- fmt.Errorf("process deployments: %w", err)
+		}
+	}()
+
 	done := make(chan struct{})
 	go func() {
 		wg.Wait()
@@ -434,6 +443,24 @@ type projectsCiData struct {
 	TestReports []types.TestReport
 	TestSuites  []types.TestSuite
 	TestCases   []types.TestCase
+}
+
+func (c *Controller) processProjectsDeployments(ctx context.Context, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) error {
+	deployments, err := FetchProjectsDeployments(ctx, c.GitLab, projectIds, updatedAfter, updatedBefore)
+	if err != nil {
+		return fmt.Errorf("fetch deployments: %w", err)
+	}
+
+	pbDeployments := make([]*typespb.Deployment, 0, len(deployments))
+	for _, deployment := range deployments {
+		pbDeployments = append(pbDeployments, types.ConvertDeployment(deployment))
+	}
+
+	if err := c.Exporter.ExportDeployments(ctx, pbDeployments); err != nil {
+		return fmt.Errorf("export deployments: %w", err)
+	}
+
+	return nil
 }
 
 func (c *Controller) processProjectsCiData(ctx context.Context, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) error {

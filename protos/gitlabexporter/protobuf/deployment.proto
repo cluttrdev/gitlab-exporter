@@ -1,0 +1,41 @@
+syntax = "proto3";
+
+option go_package = "github.com/cluttrdev/gitlab-exporter/protobuf/typespb";
+
+package gitlabexporter.protobuf;
+
+import "google/protobuf/timestamp.proto";
+
+import "gitlabexporter/protobuf/references.proto";
+
+enum DeploymentStatus {
+    DEPLOYMENT_STATUS_UNSPECIFIED = 0;
+    DEPLOYMENT_STATUS_CREATED = 1;
+    DEPLOYMENT_STATUS_RUNNING = 2;
+    DEPLOYMENT_STATUS_SUCCESS = 3;
+    DEPLOYMENT_STATUS_FAILED = 4;
+    DEPLOYMENT_STATUS_CANCELED = 5;
+    DEPLOYMENT_STATUS_SKIPPED = 6;
+    DEPLOYMENT_STATUS_BLOCKED = 7;
+}
+
+message Deployment {
+    int64 id = 1;
+    int64 iid = 2;
+
+    JobReference job = 3;
+    UserReference triggerer = 4;
+    EnvironmentReference environment = 5;
+
+    DeploymentTimestamps timestamps = 6;
+
+    DeploymentStatus status = 7;
+    string ref = 8;
+    string sha = 9;
+}
+
+message DeploymentTimestamps {
+    google.protobuf.Timestamp created_at = 1;
+    google.protobuf.Timestamp finished_at = 2;
+    google.protobuf.Timestamp updated_at = 3;
+}

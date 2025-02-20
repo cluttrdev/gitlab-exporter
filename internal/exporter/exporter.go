@@ -132,6 +132,10 @@ func (e *Exporter) ExportCommits(ctx context.Context, data []*typespb.Commit) er
 	return export[*typespb.Commit](e, ctx, data, grpc_client.RecordCommits)
 }
 
+func (e *Exporter) ExportDeployments(ctx context.Context, data []*typespb.Deployment) error {
+	return export[*typespb.Deployment](e, ctx, data, grpc_client.RecordDeployments)
+}
+
 func (e *Exporter) ExportJobs(ctx context.Context, data []*typespb.Job) error {
 	return export[*typespb.Job](e, ctx, data, grpc_client.RecordJobs)
 }
