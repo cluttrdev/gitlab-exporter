@@ -20,6 +20,64 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type DeploymentTier int32
+
+const (
+	DeploymentTier_DEPLOYMENT_TIER_UNSPECIFIED DeploymentTier = 0
+	DeploymentTier_DEPLOYMENT_TIER_PRODUCTION  DeploymentTier = 1
+	DeploymentTier_DEPLOYMENT_TIER_STAGING     DeploymentTier = 2
+	DeploymentTier_DEPLOYMENT_TIER_TESTING     DeploymentTier = 3
+	DeploymentTier_DEPLOYMENT_TIER_DEVELOPMENT DeploymentTier = 4
+	DeploymentTier_DEPLOYMENT_TIER_OTHER       DeploymentTier = 5
+)
+
+// Enum value maps for DeploymentTier.
+var (
+	DeploymentTier_name = map[int32]string{
+		0: "DEPLOYMENT_TIER_UNSPECIFIED",
+		1: "DEPLOYMENT_TIER_PRODUCTION",
+		2: "DEPLOYMENT_TIER_STAGING",
+		3: "DEPLOYMENT_TIER_TESTING",
+		4: "DEPLOYMENT_TIER_DEVELOPMENT",
+		5: "DEPLOYMENT_TIER_OTHER",
+	}
+	DeploymentTier_value = map[string]int32{
+		"DEPLOYMENT_TIER_UNSPECIFIED": 0,
+		"DEPLOYMENT_TIER_PRODUCTION":  1,
+		"DEPLOYMENT_TIER_STAGING":     2,
+		"DEPLOYMENT_TIER_TESTING":     3,
+		"DEPLOYMENT_TIER_DEVELOPMENT": 4,
+		"DEPLOYMENT_TIER_OTHER":       5,
+	}
+)
+
+func (x DeploymentTier) Enum() *DeploymentTier {
+	p := new(DeploymentTier)
+	*p = x
+	return p
+}
+
+func (x DeploymentTier) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (DeploymentTier) Descriptor() protoreflect.EnumDescriptor {
+	return file_gitlabexporter_protobuf_references_proto_enumTypes[0].Descriptor()
+}
+
+func (DeploymentTier) Type() protoreflect.EnumType {
+	return &file_gitlabexporter_protobuf_references_proto_enumTypes[0]
+}
+
+func (x DeploymentTier) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use DeploymentTier.Descriptor instead.
+func (DeploymentTier) EnumDescriptor() ([]byte, []int) {
+	return file_gitlabexporter_protobuf_references_proto_rawDescGZIP(), []int{0}
+}
+
 type NamespaceReference struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -610,6 +668,77 @@ func (x *UserReference) GetName() string {
 	return ""
 }
 
+type EnvironmentReference struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id      int64             `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	Name    string            `protobuf:"bytes,2,opt,name=name,proto3" json:"name,omitempty"`
+	Tier    DeploymentTier    `protobuf:"varint,3,opt,name=tier,proto3,enum=gitlabexporter.protobuf.DeploymentTier" json:"tier,omitempty"`
+	Project *ProjectReference `protobuf:"bytes,4,opt,name=project,proto3" json:"project,omitempty"`
+}
+
+func (x *EnvironmentReference) Reset() {
+	*x = EnvironmentReference{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[10]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *EnvironmentReference) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*EnvironmentReference) ProtoMessage() {}
+
+func (x *EnvironmentReference) ProtoReflect() protoreflect.Message {
+	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[10]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use EnvironmentReference.ProtoReflect.Descriptor instead.
+func (*EnvironmentReference) Descriptor() ([]byte, []int) {
+	return file_gitlabexporter_protobuf_references_proto_rawDescGZIP(), []int{10}
+}
+
+func (x *EnvironmentReference) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *EnvironmentReference) GetName() string {
+	if x != nil {
+		return x.Name
+	}
+	return ""
+}
+
+func (x *EnvironmentReference) GetTier() DeploymentTier {
+	if x != nil {
+		return x.Tier
+	}
+	return DeploymentTier_DEPLOYMENT_TIER_UNSPECIFIED
+}
+
+func (x *EnvironmentReference) GetProject() *ProjectReference {
+	if x != nil {
+		return x.Project
+	}
+	return nil
+}
+
 var File_gitlabexporter_protobuf_references_proto protoreflect.FileDescriptor
 
 var file_gitlabexporter_protobuf_references_proto_rawDesc = []byte{
@@ -683,11 +812,35 @@ var file_gitlabexporter_protobuf_references_proto_rawDesc = []byte{
 	0x12, 0x1a, 0x0a, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01,
 	0x28, 0x09, 0x52, 0x08, 0x75, 0x73, 0x65, 0x72, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x12, 0x0a, 0x04,
 	0x6e, 0x61, 0x6d, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65,
-	0x42, 0x37, 0x5a, 0x35, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63,
-	0x6c, 0x75, 0x74, 0x74, 0x72, 0x64, 0x65, 0x76, 0x2f, 0x67, 0x69, 0x74, 0x6c, 0x61, 0x62, 0x2d,
-	0x65, 0x78, 0x70, 0x6f, 0x72, 0x74, 0x65, 0x72, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75,
-	0x66, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f,
-	0x33,
+	0x22, 0xbc, 0x01, 0x0a, 0x14, 0x45, 0x6e, 0x76, 0x69, 0x72, 0x6f, 0x6e, 0x6d, 0x65, 0x6e, 0x74,
+	0x52, 0x65, 0x66, 0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d,
+	0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x3b, 0x0a,
+	0x04, 0x74, 0x69, 0x65, 0x72, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x27, 0x2e, 0x67, 0x69,
+	0x74, 0x6c, 0x61, 0x62, 0x65, 0x78, 0x70, 0x6f, 0x72, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x44, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74,
+	0x54, 0x69, 0x65, 0x72, 0x52, 0x04, 0x74, 0x69, 0x65, 0x72, 0x12, 0x43, 0x0a, 0x07, 0x70, 0x72,
+	0x6f, 0x6a, 0x65, 0x63, 0x74, 0x18, 0x04, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x29, 0x2e, 0x67, 0x69,
+	0x74, 0x6c, 0x61, 0x62, 0x65, 0x78, 0x70, 0x6f, 0x72, 0x74, 0x65, 0x72, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x50, 0x72, 0x6f, 0x6a, 0x65, 0x63, 0x74, 0x52, 0x65, 0x66,
+	0x65, 0x72, 0x65, 0x6e, 0x63, 0x65, 0x52, 0x07, 0x70, 0x72, 0x6f, 0x6a, 0x65, 0x63, 0x74, 0x2a,
+	0xc7, 0x01, 0x0a, 0x0e, 0x44, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x54, 0x69,
+	0x65, 0x72, 0x12, 0x1f, 0x0a, 0x1b, 0x44, 0x45, 0x50, 0x4c, 0x4f, 0x59, 0x4d, 0x45, 0x4e, 0x54,
+	0x5f, 0x54, 0x49, 0x45, 0x52, 0x5f, 0x55, 0x4e, 0x53, 0x50, 0x45, 0x43, 0x49, 0x46, 0x49, 0x45,
+	0x44, 0x10, 0x00, 0x12, 0x1e, 0x0a, 0x1a, 0x44, 0x45, 0x50, 0x4c, 0x4f, 0x59, 0x4d, 0x45, 0x4e,
+	0x54, 0x5f, 0x54, 0x49, 0x45, 0x52, 0x5f, 0x50, 0x52, 0x4f, 0x44, 0x55, 0x43, 0x54, 0x49, 0x4f,
+	0x4e, 0x10, 0x01, 0x12, 0x1b, 0x0a, 0x17, 0x44, 0x45, 0x50, 0x4c, 0x4f, 0x59, 0x4d, 0x45, 0x4e,
+	0x54, 0x5f, 0x54, 0x49, 0x45, 0x52, 0x5f, 0x53, 0x54, 0x41, 0x47, 0x49, 0x4e, 0x47, 0x10, 0x02,
+	0x12, 0x1b, 0x0a, 0x17, 0x44, 0x45, 0x50, 0x4c, 0x4f, 0x59, 0x4d, 0x45, 0x4e, 0x54, 0x5f, 0x54,
+	0x49, 0x45, 0x52, 0x5f, 0x54, 0x45, 0x53, 0x54, 0x49, 0x4e, 0x47, 0x10, 0x03, 0x12, 0x1f, 0x0a,
+	0x1b, 0x44, 0x45, 0x50, 0x4c, 0x4f, 0x59, 0x4d, 0x45, 0x4e, 0x54, 0x5f, 0x54, 0x49, 0x45, 0x52,
+	0x5f, 0x44, 0x45, 0x56, 0x45, 0x4c, 0x4f, 0x50, 0x4d, 0x45, 0x4e, 0x54, 0x10, 0x04, 0x12, 0x19,
+	0x0a, 0x15, 0x44, 0x45, 0x50, 0x4c, 0x4f, 0x59, 0x4d, 0x45, 0x4e, 0x54, 0x5f, 0x54, 0x49, 0x45,
+	0x52, 0x5f, 0x4f, 0x54, 0x48, 0x45, 0x52, 0x10, 0x05, 0x42, 0x37, 0x5a, 0x35, 0x67, 0x69, 0x74,
+	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x63, 0x6c, 0x75, 0x74, 0x74, 0x72, 0x64, 0x65,
+	0x76, 0x2f, 0x67, 0x69, 0x74, 0x6c, 0x61, 0x62, 0x2d, 0x65, 0x78, 0x70, 0x6f, 0x72, 0x74, 0x65,
+	0x72, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2f, 0x74, 0x79, 0x70, 0x65, 0x73,
+	0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -702,32 +855,37 @@ func file_gitlabexporter_protobuf_references_proto_rawDescGZIP() []byte {
 	return file_gitlabexporter_protobuf_references_proto_rawDescData
 }
 
-var file_gitlabexporter_protobuf_references_proto_msgTypes = make([]protoimpl.MessageInfo, 10)
+var file_gitlabexporter_protobuf_references_proto_enumTypes = make([]protoimpl.EnumInfo, 1)
+var file_gitlabexporter_protobuf_references_proto_msgTypes = make([]protoimpl.MessageInfo, 11)
 var file_gitlabexporter_protobuf_references_proto_goTypes = []interface{}{
-	(*NamespaceReference)(nil),    // 0: gitlabexporter.protobuf.NamespaceReference
-	(*ProjectReference)(nil),      // 1: gitlabexporter.protobuf.ProjectReference
-	(*PipelineReference)(nil),     // 2: gitlabexporter.protobuf.PipelineReference
-	(*JobReference)(nil),          // 3: gitlabexporter.protobuf.JobReference
-	(*TestReportReference)(nil),   // 4: gitlabexporter.protobuf.TestReportReference
-	(*TestSuiteReference)(nil),    // 5: gitlabexporter.protobuf.TestSuiteReference
-	(*RunnerReference)(nil),       // 6: gitlabexporter.protobuf.RunnerReference
-	(*MergeRequestReference)(nil), // 7: gitlabexporter.protobuf.MergeRequestReference
-	(*MilestoneReference)(nil),    // 8: gitlabexporter.protobuf.MilestoneReference
-	(*UserReference)(nil),         // 9: gitlabexporter.protobuf.UserReference
+	(DeploymentTier)(0),           // 0: gitlabexporter.protobuf.DeploymentTier
+	(*NamespaceReference)(nil),    // 1: gitlabexporter.protobuf.NamespaceReference
+	(*ProjectReference)(nil),      // 2: gitlabexporter.protobuf.ProjectReference
+	(*PipelineReference)(nil),     // 3: gitlabexporter.protobuf.PipelineReference
+	(*JobReference)(nil),          // 4: gitlabexporter.protobuf.JobReference
+	(*TestReportReference)(nil),   // 5: gitlabexporter.protobuf.TestReportReference
+	(*TestSuiteReference)(nil),    // 6: gitlabexporter.protobuf.TestSuiteReference
+	(*RunnerReference)(nil),       // 7: gitlabexporter.protobuf.RunnerReference
+	(*MergeRequestReference)(nil), // 8: gitlabexporter.protobuf.MergeRequestReference
+	(*MilestoneReference)(nil),    // 9: gitlabexporter.protobuf.MilestoneReference
+	(*UserReference)(nil),         // 10: gitlabexporter.protobuf.UserReference
+	(*EnvironmentReference)(nil),  // 11: gitlabexporter.protobuf.EnvironmentReference
 }
 var file_gitlabexporter_protobuf_references_proto_depIdxs = []int32{
-	0, // 0: gitlabexporter.protobuf.ProjectReference.namespace:type_name -> gitlabexporter.protobuf.NamespaceReference
-	1, // 1: gitlabexporter.protobuf.PipelineReference.project:type_name -> gitlabexporter.protobuf.ProjectReference
-	2, // 2: gitlabexporter.protobuf.JobReference.pipeline:type_name -> gitlabexporter.protobuf.PipelineReference
-	2, // 3: gitlabexporter.protobuf.TestReportReference.pipeline:type_name -> gitlabexporter.protobuf.PipelineReference
-	4, // 4: gitlabexporter.protobuf.TestSuiteReference.test_report:type_name -> gitlabexporter.protobuf.TestReportReference
-	1, // 5: gitlabexporter.protobuf.MergeRequestReference.project:type_name -> gitlabexporter.protobuf.ProjectReference
-	1, // 6: gitlabexporter.protobuf.MilestoneReference.project:type_name -> gitlabexporter.protobuf.ProjectReference
-	7, // [7:7] is the sub-list for method output_type
-	7, // [7:7] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	1, // 0: gitlabexporter.protobuf.ProjectReference.namespace:type_name -> gitlabexporter.protobuf.NamespaceReference
+	2, // 1: gitlabexporter.protobuf.PipelineReference.project:type_name -> gitlabexporter.protobuf.ProjectReference
+	3, // 2: gitlabexporter.protobuf.JobReference.pipeline:type_name -> gitlabexporter.protobuf.PipelineReference
+	3, // 3: gitlabexporter.protobuf.TestReportReference.pipeline:type_name -> gitlabexporter.protobuf.PipelineReference
+	5, // 4: gitlabexporter.protobuf.TestSuiteReference.test_report:type_name -> gitlabexporter.protobuf.TestReportReference
+	2, // 5: gitlabexporter.protobuf.MergeRequestReference.project:type_name -> gitlabexporter.protobuf.ProjectReference
+	2, // 6: gitlabexporter.protobuf.MilestoneReference.project:type_name -> gitlabexporter.protobuf.ProjectReference
+	0, // 7: gitlabexporter.protobuf.EnvironmentReference.tier:type_name -> gitlabexporter.protobuf.DeploymentTier
+	2, // 8: gitlabexporter.protobuf.EnvironmentReference.project:type_name -> gitlabexporter.protobuf.ProjectReference
+	9, // [9:9] is the sub-list for method output_type
+	9, // [9:9] is the sub-list for method input_type
+	9, // [9:9] is the sub-list for extension type_name
+	9, // [9:9] is the sub-list for extension extendee
+	0, // [0:9] is the sub-list for field type_name
 }
 
 func init() { file_gitlabexporter_protobuf_references_proto_init() }
@@ -856,19 +1014,32 @@ func file_gitlabexporter_protobuf_references_proto_init() {
 				return nil
 			}
 		}
+		file_gitlabexporter_protobuf_references_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*EnvironmentReference); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_gitlabexporter_protobuf_references_proto_rawDesc,
-			NumEnums:      0,
-			NumMessages:   10,
+			NumEnums:      1,
+			NumMessages:   11,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
 		GoTypes:           file_gitlabexporter_protobuf_references_proto_goTypes,
 		DependencyIndexes: file_gitlabexporter_protobuf_references_proto_depIdxs,
+		EnumInfos:         file_gitlabexporter_protobuf_references_proto_enumTypes,
 		MessageInfos:      file_gitlabexporter_protobuf_references_proto_msgTypes,
 	}.Build()
 	File_gitlabexporter_protobuf_references_proto = out.File

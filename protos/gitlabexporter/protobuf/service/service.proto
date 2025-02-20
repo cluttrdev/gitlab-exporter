@@ -5,6 +5,7 @@ option go_package = "github.com/cluttrdev/gitlab-exporter/protobuf/servicepb";
 package gitlabexporter.protobuf.service;
 
 import "gitlabexporter/protobuf/commit.proto";
+import "gitlabexporter/protobuf/deployment.proto";
 import "gitlabexporter/protobuf/job.proto";
 import "gitlabexporter/protobuf/merge_request.proto";
 import "gitlabexporter/protobuf/metric.proto";
@@ -16,6 +17,7 @@ import "gitlabexporter/protobuf/trace.proto";
 
 service GitLabExporter {
     rpc RecordCommits(RecordCommitsRequest) returns (RecordSummary) {}
+    rpc RecordDeployments(RecordDeploymentsRequest) returns (RecordSummary) {}
     rpc RecordJobs(RecordJobsRequest) returns (RecordSummary) {}
     rpc RecordMergeRequests(RecordMergeRequestsRequest) returns (RecordSummary) {}
     rpc RecordMergeRequestNoteEvents(RecordMergeRequestNoteEventsRequest) returns (RecordSummary) {}
@@ -35,6 +37,10 @@ message RecordSummary {
 
 message RecordCommitsRequest {
     repeated gitlabexporter.protobuf.Commit data = 1;
+}
+
+message RecordDeploymentsRequest {
+    repeated gitlabexporter.protobuf.Deployment data = 1;
 }
 
 message RecordJobsRequest {

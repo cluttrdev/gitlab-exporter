@@ -65,3 +65,20 @@ message UserReference {
     string username = 2;
     string name = 3;
 }
+
+enum DeploymentTier {
+    DEPLOYMENT_TIER_UNSPECIFIED = 0;
+    DEPLOYMENT_TIER_PRODUCTION = 1;
+    DEPLOYMENT_TIER_STAGING = 2;
+    DEPLOYMENT_TIER_TESTING = 3;
+    DEPLOYMENT_TIER_DEVELOPMENT = 4;
+    DEPLOYMENT_TIER_OTHER = 5;
+}
+
+message EnvironmentReference {
+    int64 id = 1;
+    string name = 2;
+    DeploymentTier tier = 3;
+
+    ProjectReference project = 4;
+}

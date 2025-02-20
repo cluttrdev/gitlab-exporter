@@ -94,6 +94,17 @@ func (ps *ProjectsSettings) GetBatches(size int, filter func(ProjectSettings) bo
 	return batches
 }
 
+func (ps *ProjectsSettings) ExportDeployments(id int64) bool {
+	ps.mu.RLock()
+	defer ps.mu.RUnlock()
+
+	cfg, ok := ps.settings[id]
+	if !ok {
+		return false
+	}
+	return cfg.Export.Deployments.Enabled
+}
+
 func (ps *ProjectsSettings) ExportTestReports(id int64) bool {
 	ps.mu.RLock()
 	defer ps.mu.RUnlock()
@@ -354,6 +365,15 @@ func (c *Controller) process(ctx context.Context, projectSettings []ProjectSetti
 		}
 	}()
 
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		if err := c.processProjectsDeployments(ctx, result.ProjectsWithUpdatedPipelines, updatedAfter, updatedBefore); err != nil {
+			errChan <- fmt.Errorf("process deployments: %w", err)
+		}
+	}()
+
 	done := make(chan struct{})
 	go func() {
 		wg.Wait()
@@ -434,6 +454,31 @@ type projectsCiData struct {
 	TestReports []types.TestReport
 	TestSuites  []types.TestSuite
 	TestCases   []types.TestCase
+}
+
+func (c *Controller) processProjectsDeployments(ctx context.Context, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) error {
+	pids := make([]int64, 0, len(projectIds))
+	for _, pid := range projectIds {
+		if c.projectsSettings.ExportDeployments(pid) {
+			pids = append(pids, pid)
+		}
+	}
+
+	deployments, err := FetchProjectsDeployments(ctx, c.GitLab, pids, updatedAfter, updatedBefore)
+	if err != nil {
+		return fmt.Errorf("fetch deployments: %w", err)
+	}
+
+	pbDeployments := make([]*typespb.Deployment, 0, len(deployments))
+	for _, deployment := range deployments {
+		pbDeployments = append(pbDeployments, types.ConvertDeployment(deployment))
+	}
+
+	if err := c.Exporter.ExportDeployments(ctx, pbDeployments); err != nil {
+		return fmt.Errorf("export deployments: %w", err)
+	}
+
+	return nil
 }
 
 func (c *Controller) processProjectsCiData(ctx context.Context, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) error {

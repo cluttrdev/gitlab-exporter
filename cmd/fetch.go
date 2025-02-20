@@ -24,11 +24,12 @@ func NewFetchCmd(out io.Writer) *cli.Command {
 	cfg.RegisterFlags(cfg.flags)
 
 	var (
-		fetchArtifactsCmd  = NewFetchArtifactsCmd(out)
-		fetchJobLogCmd     = NewFetchJobLogCmd(out)
-		fetchPipelineCmd   = NewFetchPipelineCmd(out)
-		fetchProjectsCmd   = NewFetchProjectsCommand(out)
-		fetchTestReportCmd = NewFetchTestReportCmd(out)
+		fetchArtifactsCmd   = NewFetchArtifactsCmd(out)
+		fetchDeploymentsCmd = NewFetchDeploymentsCmd(out)
+		fetchJobLogCmd      = NewFetchJobLogCmd(out)
+		fetchPipelineCmd    = NewFetchPipelineCmd(out)
+		fetchProjectsCmd    = NewFetchProjectsCommand(out)
+		fetchTestReportCmd  = NewFetchTestReportCmd(out)
 	)
 
 	return &cli.Command{
@@ -38,6 +39,7 @@ func NewFetchCmd(out io.Writer) *cli.Command {
 		Flags:      cfg.flags,
 		Subcommands: []*cli.Command{
 			fetchArtifactsCmd,
+			fetchDeploymentsCmd,
 			fetchJobLogCmd,
 			fetchPipelineCmd,
 			fetchProjectsCmd,

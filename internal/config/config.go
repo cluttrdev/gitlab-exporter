@@ -52,12 +52,17 @@ type ProjectSettings struct {
 }
 
 type ProjectExport struct {
+	Deployments   ProjectExportDeployments   `default:"{}" yaml:"deployments"`
 	Sections      ProjectExportSections      `default:"{}" yaml:"sections"`
 	TestReports   ProjectExportTestReports   `default:"{}" yaml:"testreports"`
 	Reports       ProjectExportReports       `default:"{}" yaml:"reports"`
 	Traces        ProjectExportTraces        `default:"{}" yaml:"traces"`
 	Metrics       ProjectExportMetrics       `default:"{}" yaml:"metrics"`
 	MergeRequests ProjectExportMergeRequests `default:"{}" yaml:"mergerequests"`
+}
+
+type ProjectExportDeployments struct {
+	Enabled bool `default:"true" yaml:"enabled"`
 }
 
 type ProjectExportSections struct {

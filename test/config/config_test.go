@@ -36,6 +36,7 @@ func defaultConfig() config.Config {
 func defaultProjectSettings() config.ProjectSettings {
 	var cfg config.ProjectSettings
 
+	cfg.Export.Deployments.Enabled = true
 	cfg.Export.MergeRequests.Enabled = true
 	cfg.Export.MergeRequests.NoteEvents = true
 	cfg.Export.Metrics.Enabled = true
@@ -173,6 +174,7 @@ func TestLoad_WithProjectsEmptyDefaults(t *testing.T) {
 			Id: 42,
 			ProjectSettings: config.ProjectSettings{
 				Export: config.ProjectExport{
+					Deployments:   config.ProjectExportDeployments{Enabled: true},
 					MergeRequests: config.ProjectExportMergeRequests{Enabled: true, NoteEvents: true},
 					Metrics:       config.ProjectExportMetrics{Enabled: true},
 					Sections:      config.ProjectExportSections{Enabled: true},
@@ -232,6 +234,9 @@ func TestLoad_DataWithProjects(t *testing.T) {
 		config.Project{
 			ProjectSettings: config.ProjectSettings{
 				Export: config.ProjectExport{
+					Deployments: config.ProjectExportDeployments{
+						Enabled: true,
+					},
 					Sections: config.ProjectExportSections{
 						Enabled: true,
 					},
@@ -260,6 +265,9 @@ func TestLoad_DataWithProjects(t *testing.T) {
 		config.Project{
 			ProjectSettings: config.ProjectSettings{
 				Export: config.ProjectExport{
+					Deployments: config.ProjectExportDeployments{
+						Enabled: true,
+					},
 					Sections: config.ProjectExportSections{
 						Enabled: false,
 					},
@@ -330,6 +338,7 @@ func TestLoad_DataWithProjectDefaults(t *testing.T) {
 	expected := defaultConfig()
 	expected.ProjectDefaults = config.ProjectSettings{
 		Export: config.ProjectExport{
+			Deployments:   config.ProjectExportDeployments{Enabled: true},
 			Sections:      config.ProjectExportSections{Enabled: true},
 			TestReports:   config.ProjectExportTestReports{Enabled: true},
 			Traces:        config.ProjectExportTraces{Enabled: false},
@@ -346,6 +355,7 @@ func TestLoad_DataWithProjectDefaults(t *testing.T) {
 		config.Project{
 			ProjectSettings: config.ProjectSettings{
 				Export: config.ProjectExport{
+					Deployments:   config.ProjectExportDeployments{Enabled: true},
 					Sections:      config.ProjectExportSections{Enabled: true},
 					TestReports:   config.ProjectExportTestReports{Enabled: true},
 					Traces:        config.ProjectExportTraces{Enabled: false},
@@ -363,6 +373,7 @@ func TestLoad_DataWithProjectDefaults(t *testing.T) {
 		config.Project{
 			ProjectSettings: config.ProjectSettings{
 				Export: config.ProjectExport{
+					Deployments:   config.ProjectExportDeployments{Enabled: true},
 					Sections:      config.ProjectExportSections{Enabled: true},
 					TestReports:   config.ProjectExportTestReports{Enabled: true},
 					Traces:        config.ProjectExportTraces{Enabled: false},
@@ -380,6 +391,7 @@ func TestLoad_DataWithProjectDefaults(t *testing.T) {
 		config.Project{
 			ProjectSettings: config.ProjectSettings{
 				Export: config.ProjectExport{
+					Deployments:   config.ProjectExportDeployments{Enabled: true},
 					Sections:      config.ProjectExportSections{Enabled: false},
 					TestReports:   config.ProjectExportTestReports{Enabled: true},
 					Traces:        config.ProjectExportTraces{Enabled: true},
