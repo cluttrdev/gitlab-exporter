@@ -1,7 +1,13 @@
 # Changelog
 
+## [0.14.0](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.13.2..v0.14.0)
+
+- bb7c3c3 chore: Update example config file
+- ad757ec feat: Export deployments
+
 ## [0.13.2](https://gitlab.com/cluttrdev/gitlab-exporter/-/compare/v0.13.1..v0.13.2)
 
+- 8e7aa82 chore(release): v0.13.2
 - b66e1b4 refactor!: Use user references in merge request note events
 - b890609 patch: Add username and name to user references
 - 311d75e docs: Fix changelog
