@@ -6,6 +6,13 @@ gitlab:
   # Only requires `read-api` permissions.
   token: ""
 
+  # The username to use for http session authentication.
+  # (only required if exporting report artifacts is enabled)
+  username: ""
+  # The password to use for http session authentication.
+  # (only required if exporting report artifacts is enabled)
+  password: ""
+
   client:
     rate:
       limit: 0.0
@@ -17,28 +24,10 @@ endpoints: []
 # Default settings for projects
 project_defaults:
   export:
-    sections:
-      # Whether or not to export job section data.
-      # If enabled, this may significantly increase the export time since it
-      # requires fetching entire job logs to parse for section information.
-      enabled: true
-    
-    testreports:
-      # Whether or not to export pipeline testreports.
+    deployments:
+      # Whether to export deployments data.
       enabled: true
 
-    reports:
-      # Whether to export data from report artifacts.
-      enabled: false
-
-      junit:
-        # Whether to export unit test report data.
-        enabled: false
-    
-    traces:
-      # Whether or not to export pipeline hierarchies as traces.
-      enabled: true
-  
     metrics:
       # Whether or not to export metrics embedded in job logs.
       # If enabled, this may significantly increase the export time since it
@@ -50,6 +39,28 @@ project_defaults:
       enabled: true
 
       note_events: true
+
+    reports:
+      # Whether to export data from report artifacts.
+      enabled: false
+
+      junit:
+        # Whether to export unit test report data.
+        enabled: false
+    
+    sections:
+      # Whether or not to export job section data.
+      # If enabled, this may significantly increase the export time since it
+      # requires fetching entire job logs to parse for section information.
+      enabled: true
+
+    testreports:
+      # Whether or not to export pipeline testreports.
+      enabled: true
+
+    traces:
+      # Whether or not to export pipeline hierarchies as traces.
+      enabled: true
   
   catch_up:
     # Whether to export data from past pipelines at startup.
