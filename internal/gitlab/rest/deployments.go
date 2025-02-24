@@ -33,12 +33,12 @@ type GitLabDeployment struct {
 	Status    string     `json:"status"`
 	CreatedAt *time.Time `json:"created_at"`
 	UpdatedAt *time.Time `json:"updated_at"`
-	User      *struct {
+	User      struct {
 		ID       int    `json:"id"`
 		Name     string `json:"name"`
 		Username string `json:"username"`
 	} `json:"user"`
-	Environment *struct {
+	Environment struct {
 		ID   int    `json:"id"`
 		Name string `json:"name"`
 	} `json:"environment"`
