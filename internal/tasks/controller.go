@@ -102,6 +102,11 @@ func (ps *ProjectsSettings) ExportDeployments(id int64) bool {
 	if !ok {
 		return false
 	}
+
+	if cfg.AccessLevels.Environment == ProjectAccessLevelDisabled {
+		return false
+	}
+
 	return cfg.Export.Deployments.Enabled
 }
 
@@ -172,7 +177,24 @@ type ProjectSettings struct {
 		UpdatedAfter  *time.Time
 		UpdatedBefore *time.Time
 	}
+
+	AccessLevels ProjectAccessLevels
 }
+
+type ProjectAccessLevels struct {
+	Builds      ProjectAccessLevel
+	Environment ProjectAccessLevel
+}
+
+type ProjectAccessLevel string
+
+const ( // https://gitlab.com/gitlab-org/gitlab/-/blob/master/app/models/concerns/featurable.rb
+	ProjectAccessLevelUnspecified ProjectAccessLevel = ""
+	ProjectAccessLevelDisabled                       = "disabled"
+	ProjectAccessLevelPrivate                        = "private"
+	ProjectAccessLevelEnabled                        = "enabled"
+	ProjectAccessLevelPublic                         = "public"
+)
 
 type ControllerConfig struct {
 	GitLab     config.GitLab
@@ -853,6 +875,11 @@ func (c *Controller) ResolveProjects(ctx context.Context) (int, error) {
 					FullPath: project.PathWithNamespace,
 
 					Export: namespace.ProjectSettings.Export,
+
+					AccessLevels: ProjectAccessLevels{
+						Builds:      ProjectAccessLevel(project.BuildsAccessLevel),
+						Environment: ProjectAccessLevel(project.EnvironmentsAccessLevel),
+					},
 				}
 				ps.CatchUp.Enabled = namespace.ProjectSettings.CatchUp.Enabled
 				if updatedAfter != nil {
@@ -912,6 +939,11 @@ func (c *Controller) ResolveProjects(ctx context.Context) (int, error) {
 			FullPath: project.PathWithNamespace,
 
 			Export: p.ProjectSettings.Export,
+
+			AccessLevels: ProjectAccessLevels{
+				Builds:      ProjectAccessLevel(project.BuildsAccessLevel),
+				Environment: ProjectAccessLevel(project.EnvironmentsAccessLevel),
+			},
 		}
 
 		ps.CatchUp.Enabled = p.ProjectSettings.CatchUp.Enabled
