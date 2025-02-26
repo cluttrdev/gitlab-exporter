@@ -1,7 +1,12 @@
 # Changelog
 
+## [0.14.2](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.14.1..v0.14.2)
+
+- d154c45 fix: Add missing testcase status when converting to protobuf message
+
 ## [0.14.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.14.0..v0.14.1)
 
+- afc419c chore(release): v0.14.1
 - 33b66d8 chore: Update gitlab remote references
 - ed4a170 feat: Use project feature access levels
 - 24c0106 fix: Prevent rest.GitLabDeployment nil pointer dereference for user and environment
