@@ -130,6 +130,7 @@ func ConvertTestCase(testCase TestCase) *typespb.TestCase {
 		Id:        testCase.Id,
 		TestSuite: ConvertTestSuiteReference(testCase.TestSuite),
 
+		Status:        testCase.Status,
 		Name:          testCase.Name,
 		Classname:     testCase.Classname,
 		ExecutionTime: testCase.ExecutionTime.Seconds(),
