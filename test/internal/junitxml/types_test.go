@@ -88,8 +88,12 @@ func TestConvertTestReport(t *testing.T) {
 
 	wantReport := types.TestReport{
 		Id: "42-1337",
-		Pipeline: types.PipelineReference{
-			Id: 42,
+		Job: types.JobReference{
+			Id:   1337,
+			Name: "tests-registration",
+			Pipeline: types.PipelineReference{
+				Id: 42,
+			},
 		},
 
 		TotalTime:    time.Duration(16.082687 * float64(time.Second)),
@@ -108,8 +112,12 @@ func TestConvertTestReport(t *testing.T) {
 			Id: "42-1337-1",
 			TestReport: types.TestReportReference{
 				Id: "42-1337",
-				Pipeline: types.PipelineReference{
-					Id: 42,
+				Job: types.JobReference{
+					Id:   1337,
+					Name: "tests-registration",
+					Pipeline: types.PipelineReference{
+						Id: 42,
+					},
 				},
 			},
 
@@ -138,8 +146,12 @@ func TestConvertTestReport(t *testing.T) {
 		Id: "42-1337-1",
 		TestReport: types.TestReportReference{
 			Id: "42-1337",
-			Pipeline: types.PipelineReference{
-				Id: 42,
+			Job: types.JobReference{
+				Id:   1337,
+				Name: "tests-registration",
+				Pipeline: types.PipelineReference{
+					Id: 42,
+				},
 			},
 		},
 	}

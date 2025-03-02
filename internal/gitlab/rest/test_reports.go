@@ -80,13 +80,19 @@ func (c *Client) GetPipelineTestReportSummary(ctx context.Context, projectID int
 }
 
 func ConvertTestReport(report *gitlab.PipelineTestReport, summary *PipelineTestReportSummary, pipeline types.Pipeline) (types.TestReport, []types.TestSuite, []types.TestCase, error) {
-	testReportId := fmt.Sprint(pipeline.Id)
+	jobId := determineTestReportJobId(summary)
+	testReportId := fmt.Sprintf("%d-%d", pipeline.Id, jobId)
+
 	testReport := types.TestReport{
 		Id: testReportId,
-		Pipeline: types.PipelineReference{
-			Id:      pipeline.Id,
-			Iid:     pipeline.Iid,
-			Project: pipeline.Project,
+		Job: types.JobReference{
+			Id:   jobId,
+			Name: "",
+			Pipeline: types.PipelineReference{
+				Id:      pipeline.Id,
+				Iid:     pipeline.Iid,
+				Project: pipeline.Project,
+			},
 		},
 
 		TotalTime:    time.Duration(report.TotalTime * float64(time.Second)),
@@ -99,7 +105,7 @@ func ConvertTestReport(report *gitlab.PipelineTestReport, summary *PipelineTestR
 
 	testSuites := make([]types.TestSuite, 0, len(report.TestSuites))
 	testCases := []types.TestCase{}
-	for _, ts := range report.TestSuites {
+	for i, ts := range report.TestSuites {
 		index := slices.IndexFunc(summary.TestSuites, func(sts *PipelineTestReportSummaryTestSuite) bool {
 			return ts.Name == sts.Name
 		})
@@ -111,12 +117,12 @@ func ConvertTestReport(report *gitlab.PipelineTestReport, summary *PipelineTestR
 			return types.TestReport{}, nil, nil, fmt.Errorf("test suite has no build id: %s", testSuiteSummary.Name)
 		}
 
-		testSuiteId := fmt.Sprint(testSuiteSummary.BuildIDs[0])
+		testSuiteId := fmt.Sprintf("%s-%d", testReport.Id, i+1)
 		testSuite := types.TestSuite{
 			Id: testSuiteId,
 			TestReport: types.TestReportReference{
-				Id:       testReport.Id,
-				Pipeline: testReport.Pipeline,
+				Id:  testReport.Id,
+				Job: testReport.Job,
 			},
 
 			Name:         ts.Name,
@@ -154,4 +160,14 @@ func ConvertTestReport(report *gitlab.PipelineTestReport, summary *PipelineTestR
 	}
 
 	return testReport, testSuites, testCases, nil
+}
+
+func determineTestReportJobId(summary *PipelineTestReportSummary) int64 {
+	if summary == nil || len(summary.TestSuites) == 0 {
+		return 0
+	}
+	if len(summary.TestSuites) == 1 && len(summary.TestSuites[0].BuildIDs) == 1 {
+		return int64(summary.TestSuites[0].BuildIDs[0])
+	}
+	return 0
 }

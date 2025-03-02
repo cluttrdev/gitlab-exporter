@@ -8,7 +8,7 @@ import "gitlabexporter/protobuf/references.proto";
 
 message TestReport {
     string id = 1;
-    PipelineReference pipeline = 2;
+    JobReference job = 2;
 
     double total_time = 3;
     int64 total_count = 4;

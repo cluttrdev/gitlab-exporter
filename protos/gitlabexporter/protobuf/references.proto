@@ -33,7 +33,7 @@ message JobReference {
 message TestReportReference {
     string id = 1;
 
-    PipelineReference pipeline = 3;
+    JobReference job = 3;
 }
 
 message TestSuiteReference {

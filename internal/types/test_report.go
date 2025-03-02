@@ -7,13 +7,13 @@ import (
 )
 
 type TestReportReference struct {
-	Id       string
-	Pipeline PipelineReference
+	Id  string
+	Job JobReference
 }
 
 type TestReport struct {
-	Id       string
-	Pipeline PipelineReference
+	Id  string
+	Job JobReference
 
 	TotalTime    time.Duration
 	TotalCount   int64
@@ -75,15 +75,15 @@ type TestProperty struct {
 
 func ConvertTestReportReference(testReport TestReportReference) *typespb.TestReportReference {
 	return &typespb.TestReportReference{
-		Id:       testReport.Id,
-		Pipeline: ConvertPipelineReference(testReport.Pipeline),
+		Id:  testReport.Id,
+		Job: ConvertJobReference(testReport.Job),
 	}
 }
 
 func ConvertTestReport(testReport TestReport) *typespb.TestReport {
 	return &typespb.TestReport{
-		Id:       testReport.Id,
-		Pipeline: ConvertPipelineReference(testReport.Pipeline),
+		Id:  testReport.Id,
+		Job: ConvertJobReference(testReport.Job),
 
 		TotalTime:    testReport.TotalTime.Seconds(),
 		TotalCount:   testReport.TotalCount,

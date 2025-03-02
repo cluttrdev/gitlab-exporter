@@ -99,8 +99,8 @@ type SystemErr struct {
 func ConvertTestReport(xmlReport TestReport, job types.JobReference) (types.TestReport, []types.TestSuite, []types.TestCase) {
 	testReportId := fmt.Sprintf("%d-%d", job.Pipeline.Id, job.Id)
 	testReport := types.TestReport{
-		Id:       testReportId,
-		Pipeline: job.Pipeline,
+		Id:  testReportId,
+		Job: job,
 
 		// TotalTime:    time.Duration(xmlReport.Time * float64(time.Second)),
 		// TotalCount:   xmlReport.Tests,
@@ -111,8 +111,8 @@ func ConvertTestReport(xmlReport TestReport, job types.JobReference) (types.Test
 	}
 
 	testReportRef := types.TestReportReference{
-		Id:       testReport.Id,
-		Pipeline: job.Pipeline,
+		Id:  testReport.Id,
+		Job: testReport.Job,
 	}
 	testSuites, testCases := convertTestSuites(xmlReport.TestSuites, testReportRef)
 
