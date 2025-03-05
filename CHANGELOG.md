@@ -1,7 +1,16 @@
 # Changelog
 
+## [0.15.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.14.2..v0.15.0)
+
+- 70dea2a feat: Download junit report artifacts via api
+- 3034d40 ci: Update go version
+- f178815 build: Update default go version in Dockerfile
+- 2119961 fix: Update dependencies
+- 2c71f86 refactor!: Use job reference in testreports
+
 ## [0.14.2](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.14.1..v0.14.2)
 
+- f964506 chore(release): v0.14.2
 - d154c45 fix: Add missing testcase status when converting to protobuf message
 
 ## [0.14.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.14.0..v0.14.1)
