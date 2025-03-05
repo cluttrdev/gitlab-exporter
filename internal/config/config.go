@@ -80,7 +80,8 @@ type ProjectExportReports struct {
 }
 
 type ProjectExportReportsJunit struct {
-	Enabled bool `default:"false" yaml:"enabled"`
+	Enabled bool     `default:"false" yaml:"enabled"`
+	Paths   []string `default:"" yaml:"paths"`
 }
 
 type ProjectExportTraces struct {
@@ -145,18 +146,24 @@ func DefaultProjectSettings() ProjectSettings {
 }
 
 func IsAuthedHTTPRequired(cfg Config) bool {
-	if cfg.ProjectDefaults.Export.Reports.Enabled {
-		return true
+	if !cfg.ProjectDefaults.Export.Reports.Enabled {
+		return false
 	}
 
 	for _, p := range cfg.Projects {
-		if p.Export.Reports.Enabled {
+		if !p.Export.Reports.Enabled {
+			continue
+		}
+		if p.Export.Reports.Junit.Enabled && len(p.Export.Reports.Junit.Paths) == 0 {
 			return true
 		}
 	}
 
 	for _, n := range cfg.Namespaces {
-		if n.Export.Reports.Enabled {
+		if !n.Export.Reports.Enabled {
+			continue
+		}
+		if n.Export.Reports.Junit.Enabled && len(n.Export.Reports.Junit.Paths) == 0 {
 			return true
 		}
 	}

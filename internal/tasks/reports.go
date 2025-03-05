@@ -14,7 +14,7 @@ import (
 	"github.com/cluttrdev/gitlab-exporter/internal/types"
 )
 
-func FetchProjectsPipelinesJunitReports(ctx context.Context, glab *gitlab.Client, projectPipelines map[string][]string) ([]types.TestReport, []types.TestSuite, []types.TestCase, error) {
+func FetchProjectsPipelinesJunitReports(ctx context.Context, glab *gitlab.Client, projectPipelines map[string][]string, projectArtifactPaths map[string][]string) ([]types.TestReport, []types.TestSuite, []types.TestCase, error) {
 	var (
 		testReports []types.TestReport
 		testSuites  []types.TestSuite
@@ -38,17 +38,18 @@ func FetchProjectsPipelinesJunitReports(ctx context.Context, glab *gitlab.Client
 		defer wg.Done()
 
 		for projectPath, pipelineIids := range projectPipelines {
+			artifactPaths := projectArtifactPaths[projectPath]
 			for _, pipelineIid := range pipelineIids {
 				if err := glab.Acquire(ctx, 1); err != nil {
 					slog.Error("failed to acquire gitlab client", "error", err)
 					continue
 				}
 				wg.Add(1)
-				go func(projectPath string, pipelineIid string) {
+				go func(projectPath string, pipelineIid string, artifactPaths []string) {
 					defer glab.Release(1)
 					defer wg.Done()
 
-					tr, ts, tc, err := FetchProjectPipelineJunitReports(ctx, glab, projectPath, pipelineIid)
+					tr, ts, tc, err := FetchProjectPipelineJunitReports(ctx, glab, projectPath, pipelineIid, artifactPaths)
 
 					results <- result{
 						testReports: tr,
@@ -56,7 +57,7 @@ func FetchProjectsPipelinesJunitReports(ctx context.Context, glab *gitlab.Client
 						testCases:   tc,
 						err:         err,
 					}
-				}(projectPath, pipelineIid)
+				}(projectPath, pipelineIid, artifactPaths)
 			}
 		}
 	}()
@@ -87,7 +88,7 @@ loop:
 	return testReports, testSuites, testCases, errs
 }
 
-func FetchProjectPipelineJunitReports(ctx context.Context, glab *gitlab.Client, projectPath string, pipelineIid string) ([]types.TestReport, []types.TestSuite, []types.TestCase, error) {
+func FetchProjectPipelineJunitReports(ctx context.Context, glab *gitlab.Client, projectPath string, pipelineIid string, artifactPaths []string) ([]types.TestReport, []types.TestSuite, []types.TestCase, error) {
 	var (
 		testReports []types.TestReport
 		testSuites  []types.TestSuite
@@ -103,32 +104,25 @@ func FetchProjectPipelineJunitReports(ctx context.Context, glab *gitlab.Client, 
 		if artifact.FileType == nil || *artifact.FileType != graphql.JobArtifactFileTypeJunit {
 			continue
 		}
-		if artifact.DownloadPath == nil || *artifact.DownloadPath == "" {
-			continue
-		}
 
-		downloadPath := *artifact.DownloadPath
 		jobRef, err := graphql.ConvertJobReference(artifact.Job, artifact.Pipeline, artifact.Project)
 		if err != nil {
 			return nil, nil, nil, fmt.Errorf("convert job reference: %w", err)
 		}
 
-		resp, err := glab.HTTP.GetPath(downloadPath)
+		var report *junitxml.TestReport
+		if len(artifactPaths) > 0 {
+			report, err = fetchProjectJobJunitReportAPI(ctx, glab, projectPath, jobRef.Id, artifactPaths)
+		} else if artifact.DownloadPath != nil {
+			report, err = fetchProjectJobJunitReportHTTP(ctx, glab, *artifact.DownloadPath)
+		} else {
+			continue
+		}
 		if err != nil {
-			return nil, nil, nil, fmt.Errorf("download report: %w", err)
+			return nil, nil, nil, err
 		}
 
-		reader, err := gzip.NewReader(resp.Body)
-		if err != nil {
-			return nil, nil, nil, fmt.Errorf("read report: %w", err)
-		}
-
-		report, err := junitxml.Parse(reader)
-		if err != nil {
-			return nil, nil, nil, fmt.Errorf("parse report: %w", err)
-		}
-
-		tr, ts, tc := junitxml.ConvertTestReport(report, jobRef)
+		tr, ts, tc := junitxml.ConvertTestReport(*report, jobRef)
 
 		testReports = append(testReports, tr)
 		testSuites = append(testSuites, ts...)
@@ -136,4 +130,51 @@ func FetchProjectPipelineJunitReports(ctx context.Context, glab *gitlab.Client, 
 	}
 
 	return testReports, testSuites, testCases, nil
+}
+
+func fetchProjectJobJunitReportAPI(ctx context.Context, glab *gitlab.Client, projectPath string, jobId int64, artifactPaths []string) (*junitxml.TestReport, error) {
+	var report junitxml.TestReport
+
+	for _, path := range artifactPaths {
+		reader, err := glab.Rest.GetProjectJobArtifact(ctx, projectPath, jobId, path)
+		if errors.Is(err, gitlab.ErrNotFound) {
+			continue
+		} else if err != nil {
+			return nil, fmt.Errorf("download file: %w", err)
+		}
+
+		r, err := junitxml.Parse(reader)
+		if err != nil {
+			return nil, fmt.Errorf("parse file: %w", err)
+		}
+
+		report.Tests += r.Tests
+		report.Failures += r.Failures
+		report.Errors += r.Errors
+		report.Skipped += r.Skipped
+		report.Time += r.Time
+		report.Timestamp = r.Timestamp
+		report.TestSuites = append(report.TestSuites, r.TestSuites...)
+	}
+
+	return &report, nil
+}
+
+func fetchProjectJobJunitReportHTTP(ctx context.Context, glab *gitlab.Client, downloadPath string) (*junitxml.TestReport, error) {
+	resp, err := glab.HTTP.GetPath(downloadPath)
+	if err != nil {
+		return nil, fmt.Errorf("download report: %w", err)
+	}
+
+	reader, err := gzip.NewReader(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("read report: %w", err)
+	}
+
+	report, err := junitxml.Parse(reader)
+	if err != nil {
+		return nil, fmt.Errorf("parse report: %w", err)
+	}
+
+	return &report, nil
 }

@@ -47,6 +47,10 @@ project_defaults:
       junit:
         # Whether to export unit test report data.
         enabled: false
+        # Paths to files inside the artifacts archives.
+        # Optional, if not set it will try to donwload the report from a
+        # non-API endpoint (requires experimental authed http client).
+        paths: []
     
     sections:
       # Whether or not to export job section data.

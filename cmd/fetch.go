@@ -23,27 +23,19 @@ func NewFetchCmd(out io.Writer) *cli.Command {
 
 	cfg.RegisterFlags(cfg.flags)
 
-	var (
-		fetchArtifactsCmd   = NewFetchArtifactsCmd(out)
-		fetchDeploymentsCmd = NewFetchDeploymentsCmd(out)
-		fetchJobLogCmd      = NewFetchJobLogCmd(out)
-		fetchPipelineCmd    = NewFetchPipelineCmd(out)
-		fetchProjectsCmd    = NewFetchProjectsCommand(out)
-		fetchTestReportCmd  = NewFetchTestReportCmd(out)
-	)
-
 	return &cli.Command{
 		Name:       "fetch",
 		ShortUsage: fmt.Sprintf("%s fetch <subcommand> [option]... [args]...", exeName),
 		ShortHelp:  "Fetch data from the GitLab API",
 		Flags:      cfg.flags,
 		Subcommands: []*cli.Command{
-			fetchArtifactsCmd,
-			fetchDeploymentsCmd,
-			fetchJobLogCmd,
-			fetchPipelineCmd,
-			fetchProjectsCmd,
-			fetchTestReportCmd,
+			NewFetchArtifactsCmd(out),
+			NewFetchDeploymentsCmd(out),
+			NewFetchJobLogCmd(out),
+			NewFetchPipelineCmd(out),
+			NewFetchProjectsCommand(out),
+			NewFetchReportCmd(out),
+			NewFetchTestReportCmd(out),
 		},
 		Exec: cfg.Exec,
 	}

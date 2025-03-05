@@ -39,6 +39,14 @@ func (ps *ProjectsSettings) Set(m map[int64]ProjectSettings) {
 	ps.settings = m
 }
 
+func (ps *ProjectsSettings) Get(id int64) (ProjectSettings, bool) {
+	ps.mu.Lock()
+	defer ps.mu.Unlock()
+
+	s, ok := ps.settings[id]
+	return s, ok
+}
+
 func (ps *ProjectsSettings) Add(id int64, settings ProjectSettings) bool {
 	ps.mu.Lock()
 	defer ps.mu.Unlock()
@@ -560,11 +568,18 @@ func (c *Controller) fetchProjectsCiData(ctx context.Context, projectIds []int64
 
 	testReportProjectPipelines := []types.Pipeline{}
 	junitReportProjectPipelines := make(map[string][]string)
+	junitReportProjectArtifactPaths := make(map[string][]string)
 	for _, p := range pipelines {
-		if c.projectsSettings.ExportJunitReports(p.Project.Id) {
+		settings, ok := c.projectsSettings.Get(p.Project.Id)
+		if !ok {
+			continue
+		}
+
+		if settings.Export.Reports.Enabled && settings.Export.Reports.Junit.Enabled {
 			projectPath := p.Project.FullPath
 			pipelineIid := strconv.FormatInt(p.Iid, 10)
 			junitReportProjectPipelines[projectPath] = append(junitReportProjectPipelines[projectPath], pipelineIid)
+			junitReportProjectArtifactPaths[projectPath] = settings.Export.Reports.Junit.Paths
 		} else if c.projectsSettings.ExportTestReports(p.Project.Id) {
 			testReportProjectPipelines = append(testReportProjectPipelines, p)
 		}
@@ -573,7 +588,7 @@ func (c *Controller) fetchProjectsCiData(ctx context.Context, projectIds []int64
 	if err := handleError(err, "fetch test reports"); err != nil {
 		return projectsCiData{}, err
 	}
-	junitReports, junitSuites, junitCases, err := FetchProjectsPipelinesJunitReports(ctx, c.GitLab, junitReportProjectPipelines)
+	junitReports, junitSuites, junitCases, err := FetchProjectsPipelinesJunitReports(ctx, c.GitLab, junitReportProjectPipelines, junitReportProjectArtifactPaths)
 	if err := handleError(err, "fetch junit reports"); err != nil {
 		return projectsCiData{}, err
 	}
