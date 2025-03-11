@@ -1,7 +1,13 @@
 # Changelog
 
+## [0.15.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.15.0..v0.15.1)
+
+- 266c78f fix: Map failure messages to reasons
+- 85c96e9 ci: Update golangci-lint
+
 ## [0.15.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.14.2..v0.15.0)
 
+- bac980e chore(release): v0.15.0
 - 70dea2a feat: Download junit report artifacts via api
 - 3034d40 ci: Update go version
 - f178815 build: Update default go version in Dockerfile
