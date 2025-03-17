@@ -70,29 +70,40 @@ test:
     - <<: *cache-defaults
   variables:
     GOTESTSUM_VERSION: v1.12.0
+    GOCOVER_COBERTURA_VERSION: v1.3.0
   before_script:
+    - echo -e "\e[0Ksection_start:$(date +%s):script_step_before\r\e[0KRunning script_step_before"
     - | # Download gotestsum binary
-      echo -e "\e[0Ksection_start:$(date +%s):script_step_before\r\e[0KRunning script_step_before"
       curl -sSfL https://github.com/gotestyourself/gotestsum/releases/download/${GOTESTSUM_VERSION}/gotestsum_${GOTESTSUM_VERSION#v}_linux_amd64.tar.gz -o /tmp/gotestsum.tar.gz
       mkdir -p ${GOPATH}/bin
       tar -C ${GOPATH}/bin/ -zxof /tmp/gotestsum.tar.gz gotestsum
-      echo -e "\e[0Ksection_end:$(date +%s):script_step_before\r\e[0K"
+    - | # Install gocover-cobertura
+      go install github.com/boumenot/gocover-cobertura@${GOCOVER_COBERTURA_VERSION}
+    - echo -e "\e[0Ksection_end:$(date +%s):script_step_before\r\e[0K"
   script:
     - |
       # Run tests
       echo -e "\e[0Ksection_start:$(date +%s):script_step_run\r\e[0KRunning script_step_run"
       ${GOPATH}/bin/gotestsum \
-        --junitfile report.xml --format testname \
+        --junitfile=junit.xml --format=testname \
         -- \
-        -coverprofile coverage.txt -covermode=atomic \
+        -coverprofile=cover.out -covermode=atomic \
         ./...
       echo -e "\e[0Ksection_end:$(date +%s):script_step_run\r\e[0K"
+  after_script:
+    - echo -e "\e[0Ksection_start:$(date +%s):script_step_after\r\e[0KRunning script_step_after"
+    - ${GOPATH}/bin/gocover-cobertura < cover.out > cobertura-coverage.xml
+    - echo -e "\e[0Ksection_end:$(date +%s):script_step_after\r\e[0K"
   artifacts:
     when: always
     paths:
-      - report.xml
+      - junit.xml
+      - cobertura-coverage.xml
     reports:
-      junit: report.xml
+      junit: junit.xml
+      coverage_report:
+        coverage_format: cobertura
+        path: cobertura-coverage.xml
 
 release:
   stage: release
