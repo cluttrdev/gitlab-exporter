@@ -55,7 +55,7 @@ func RecordCommits(c *Client, ctx context.Context, data []*typespb.Commit) error
 	}
 	_, err := c.stub.RecordCommits(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return fmt.Errorf("error recording commits: %w", err)
+		return fmt.Errorf("record commits: %w", err)
 	}
 
 	return nil
@@ -67,7 +67,7 @@ func RecordCoverageReports(c *Client, ctx context.Context, data []*typespb.Cover
 	}
 	_, err := c.stub.RecordCoverageReports(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return fmt.Errorf("error recording coverage reports: %w", err)
+		return fmt.Errorf("record coverage reports: %w", err)
 	}
 
 	return nil
@@ -115,7 +115,7 @@ func RecordDeployments(c *Client, ctx context.Context, data []*typespb.Deploymen
 	}
 	_, err := c.stub.RecordDeployments(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return fmt.Errorf("error recording deployments: %w", err)
+		return fmt.Errorf("record deployments: %w", err)
 	}
 
 	return nil
@@ -127,7 +127,7 @@ func RecordJobs(c *Client, ctx context.Context, data []*typespb.Job) error {
 	}
 	_, err := c.stub.RecordJobs(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return fmt.Errorf("error recording jobs: %w", err)
+		return fmt.Errorf("record jobs: %w", err)
 	}
 
 	return nil
@@ -139,7 +139,7 @@ func RecordMergeRequests(c *Client, ctx context.Context, data []*typespb.MergeRe
 	}
 	_, err := c.stub.RecordMergeRequests(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return fmt.Errorf("error recording mergerequests: %w", err)
+		return fmt.Errorf("record mergerequests: %w", err)
 	}
 
 	return nil
@@ -151,7 +151,7 @@ func RecordMergeRequestNoteEvents(c *Client, ctx context.Context, data []*typesp
 	}
 	_, err := c.stub.RecordMergeRequestNoteEvents(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return fmt.Errorf("error recording merge request note events: %w", err)
+		return fmt.Errorf("record merge request note events: %w", err)
 	}
 
 	return nil
@@ -163,7 +163,7 @@ func RecordMetrics(c *Client, ctx context.Context, data []*typespb.Metric) error
 	}
 	_, err := c.stub.RecordMetrics(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return fmt.Errorf("error recording metrics: %w", err)
+		return fmt.Errorf("record metrics: %w", err)
 	}
 
 	return nil
@@ -175,7 +175,7 @@ func RecordPipelines(c *Client, ctx context.Context, data []*typespb.Pipeline) e
 	}
 	_, err := c.stub.RecordPipelines(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return fmt.Errorf("error recording pipelines: %w", err)
+		return fmt.Errorf("record pipelines: %w", err)
 	}
 
 	return nil
@@ -187,7 +187,7 @@ func RecordProjects(c *Client, ctx context.Context, data []*typespb.Project) err
 	}
 	_, err := c.stub.RecordProjects(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return fmt.Errorf("error recording projects: %w", err)
+		return fmt.Errorf("record projects: %w", err)
 	}
 
 	return nil
@@ -199,7 +199,7 @@ func RecordSections(c *Client, ctx context.Context, data []*typespb.Section) err
 	}
 	_, err := c.stub.RecordSections(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return fmt.Errorf("error recording sections: %w", err)
+		return fmt.Errorf("record sections: %w", err)
 	}
 
 	return nil
@@ -211,7 +211,7 @@ func RecordTestCases(c *Client, ctx context.Context, data []*typespb.TestCase) e
 	}
 	_, err := c.stub.RecordTestCases(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return fmt.Errorf("error recording testcases: %w", err)
+		return fmt.Errorf("record testcases: %w", err)
 	}
 
 	return nil
@@ -223,7 +223,7 @@ func RecordTestReports(c *Client, ctx context.Context, data []*typespb.TestRepor
 	}
 	_, err := c.stub.RecordTestReports(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return fmt.Errorf("error recording testreports: %w", err)
+		return fmt.Errorf("record testreports: %w", err)
 	}
 
 	return nil
@@ -235,7 +235,7 @@ func RecordTestSuites(c *Client, ctx context.Context, data []*typespb.TestSuite)
 	}
 	_, err := c.stub.RecordTestSuites(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return fmt.Errorf("error recording testsuites: %w", err)
+		return fmt.Errorf("record testsuites: %w", err)
 	}
 
 	return nil
@@ -247,7 +247,7 @@ func RecordTraces(c *Client, ctx context.Context, data []*typespb.Trace) error {
 	}
 	_, err := c.stub.RecordTraces(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {
-		return fmt.Errorf("error recording traces: %w", err)
+		return fmt.Errorf("record traces: %w", err)
 	}
 
 	return nil
