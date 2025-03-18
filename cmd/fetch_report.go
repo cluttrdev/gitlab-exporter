@@ -11,6 +11,7 @@ import (
 
 	"github.com/cluttrdev/cli"
 
+	"github.com/cluttrdev/gitlab-exporter/internal/cobertura"
 	"github.com/cluttrdev/gitlab-exporter/internal/config"
 	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
 	"github.com/cluttrdev/gitlab-exporter/internal/junitxml"
@@ -79,9 +80,6 @@ func (c *FetchReportConfig) Exec(ctx context.Context, args []string) error {
 	if c.jobId == 0 {
 		return fmt.Errorf("missing required option: --job-id")
 	}
-	if c.fileType != "junit" {
-		return fmt.Errorf("file type not supported, yet: %s", c.fileType)
-	}
 	if len(c.artifactPaths) == 0 {
 		return fmt.Errorf("missing report artifact paths")
 	}
@@ -97,18 +95,37 @@ func (c *FetchReportConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("create gitlab client: %w", err)
 	}
 
+	var b []byte
+	switch c.fileType {
+	case "junit":
+		b, err = c.fetchJunitReport(ctx, glab)
+	case "cobertura":
+		b, err = c.fetchCoberturaReport(ctx, glab)
+	default:
+		return fmt.Errorf("unsupported file type: %s", c.fileType)
+	}
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprint(c.FetchConfig.RootConfig.out, string(b))
+
+	return nil
+}
+
+func (c *FetchReportConfig) fetchJunitReport(ctx context.Context, glab *gitlab.Client) ([]byte, error) {
 	var report junitxml.TestReport
 	for _, path := range c.artifactPaths {
 		reader, err := glab.Rest.GetProjectJobArtifact(ctx, c.projectPath, c.jobId, path)
 		if errors.Is(err, gitlab.ErrNotFound) {
 			continue
 		} else if err != nil {
-			return fmt.Errorf("download file: %w", err)
+			return nil, fmt.Errorf("download file: %w", err)
 		}
 
 		r, err := junitxml.Parse(reader)
 		if err != nil {
-			return fmt.Errorf("parse file: %w", err)
+			return nil, fmt.Errorf("parse file: %w", err)
 		}
 
 		report.Tests += r.Tests
@@ -135,10 +152,59 @@ func (c *FetchReportConfig) Exec(ctx context.Context, args []string) error {
 		"testcases":  tc,
 	})
 	if err != nil {
-		return fmt.Errorf("error marshalling pipeline testreport: %w", err)
+		return nil, fmt.Errorf("error marshalling pipeline testreport: %w", err)
 	}
 
-	fmt.Fprint(c.FetchConfig.RootConfig.out, string(b))
+	return b, nil
+}
 
-	return nil
+func (c *FetchReportConfig) fetchCoberturaReport(ctx context.Context, glab *gitlab.Client) ([]byte, error) {
+	var (
+		reports  []types.CoverageReport
+		packages []types.CoveragePackage
+		classes  []types.CoverageClass
+		methods  []types.CoverageMethod
+	)
+
+	reportCounter := 0
+	for _, path := range c.artifactPaths {
+		reader, err := glab.Rest.GetProjectJobArtifact(ctx, c.projectPath, c.jobId, path)
+		if errors.Is(err, gitlab.ErrNotFound) {
+			continue
+		} else if err != nil {
+			return nil, fmt.Errorf("download file: %w", err)
+		}
+
+		report, err := cobertura.Parse(reader)
+		if err != nil {
+			return nil, fmt.Errorf("parse file: %w", err)
+		}
+
+		cr, cp, cc, cm := cobertura.ConvertCoverageReport(reportCounter, report, types.JobReference{
+			Id: c.jobId,
+			Pipeline: types.PipelineReference{
+				Project: types.ProjectReference{
+					FullPath: c.projectPath,
+				},
+			},
+		})
+		reports = append(reports, cr)
+		packages = append(packages, cp...)
+		classes = append(classes, cc...)
+		methods = append(methods, cm...)
+
+		reportCounter++
+	}
+
+	b, err := json.Marshal(map[string]any{
+		"reports":  reports,
+		"packages": packages,
+		"classes":  classes,
+		"methods":  methods,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("error marshalling cobertura reports: %w", err)
+	}
+
+	return b, nil
 }

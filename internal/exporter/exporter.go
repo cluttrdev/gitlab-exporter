@@ -132,6 +132,22 @@ func (e *Exporter) ExportCommits(ctx context.Context, data []*typespb.Commit) er
 	return export[*typespb.Commit](e, ctx, data, grpc_client.RecordCommits)
 }
 
+func (e *Exporter) ExportCoverageReports(ctx context.Context, data []*typespb.CoverageReport) error {
+	return export[*typespb.CoverageReport](e, ctx, data, grpc_client.RecordCoverageReports)
+}
+
+func (e *Exporter) ExportCoveragePackages(ctx context.Context, data []*typespb.CoveragePackage) error {
+	return export[*typespb.CoveragePackage](e, ctx, data, grpc_client.RecordCoveragePackages)
+}
+
+func (e *Exporter) ExportCoverageClasses(ctx context.Context, data []*typespb.CoverageClass) error {
+	return export[*typespb.CoverageClass](e, ctx, data, grpc_client.RecordCoverageClasses)
+}
+
+func (e *Exporter) ExportCoverageMethods(ctx context.Context, data []*typespb.CoverageMethod) error {
+	return export[*typespb.CoverageMethod](e, ctx, data, grpc_client.RecordCoverageMethods)
+}
+
 func (e *Exporter) ExportDeployments(ctx context.Context, data []*typespb.Deployment) error {
 	return export[*typespb.Deployment](e, ctx, data, grpc_client.RecordDeployments)
 }

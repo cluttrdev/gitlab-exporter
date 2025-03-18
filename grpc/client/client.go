@@ -61,6 +61,54 @@ func RecordCommits(c *Client, ctx context.Context, data []*typespb.Commit) error
 	return nil
 }
 
+func RecordCoverageReports(c *Client, ctx context.Context, data []*typespb.CoverageReport) error {
+	req := &servicepb.RecordCoverageReportsRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordCoverageReports(ctx, req /* opts ...grpc.CallOption */)
+	if err != nil {
+		return fmt.Errorf("error recording coverage reports: %w", err)
+	}
+
+	return nil
+}
+
+func RecordCoveragePackages(c *Client, ctx context.Context, data []*typespb.CoveragePackage) error {
+	req := &servicepb.RecordCoveragePackagesRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordCoveragePackages(ctx, req /* opts ...grpc.CallOption */)
+	if err != nil {
+		return fmt.Errorf("record coverage packages: %w", err)
+	}
+
+	return nil
+}
+
+func RecordCoverageClasses(c *Client, ctx context.Context, data []*typespb.CoverageClass) error {
+	req := &servicepb.RecordCoverageClassesRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordCoverageClasses(ctx, req /* opts ...grpc.CallOption */)
+	if err != nil {
+		return fmt.Errorf("record coverage classes: %w", err)
+	}
+
+	return nil
+}
+
+func RecordCoverageMethods(c *Client, ctx context.Context, data []*typespb.CoverageMethod) error {
+	req := &servicepb.RecordCoverageMethodsRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordCoverageMethods(ctx, req /* opts ...grpc.CallOption */)
+	if err != nil {
+		return fmt.Errorf("record coverage methods: %w", err)
+	}
+
+	return nil
+}
+
 func RecordDeployments(c *Client, ctx context.Context, data []*typespb.Deployment) error {
 	req := &servicepb.RecordDeploymentsRequest{
 		Data: data,

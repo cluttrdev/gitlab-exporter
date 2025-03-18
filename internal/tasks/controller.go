@@ -476,14 +476,18 @@ func (s *Controller) exportProjects(ctx context.Context, projects []types.Projec
 }
 
 type projectsCiData struct {
-	Pipelines   []types.Pipeline
-	Jobs        []types.Job
-	Sections    []types.Section
-	Metrics     []types.Metric
-	Traces      []*typespb.Trace
-	TestReports []types.TestReport
-	TestSuites  []types.TestSuite
-	TestCases   []types.TestCase
+	Pipelines        []types.Pipeline
+	Jobs             []types.Job
+	Sections         []types.Section
+	Metrics          []types.Metric
+	Traces           []*typespb.Trace
+	TestReports      []types.TestReport
+	TestSuites       []types.TestSuite
+	TestCases        []types.TestCase
+	CoverageReports  []types.CoverageReport
+	CoveragePackages []types.CoveragePackage
+	CoverageClasses  []types.CoverageClass
+	CoverageMethods  []types.CoverageMethod
 }
 
 func (c *Controller) processProjectsDeployments(ctx context.Context, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) error {
@@ -569,18 +573,28 @@ func (c *Controller) fetchProjectsCiData(ctx context.Context, projectIds []int64
 	testReportProjectPipelines := []types.Pipeline{}
 	junitReportProjectPipelines := make(map[string][]string)
 	junitReportProjectArtifactPaths := make(map[string][]string)
+	coberturaReportProjectPipelines := make(map[string][]string)
+	coberturaReportProjectArtifactPaths := make(map[string][]string)
 	for _, p := range pipelines {
 		settings, ok := c.projectsSettings.Get(p.Project.Id)
 		if !ok {
 			continue
 		}
 
-		if settings.Export.Reports.Enabled && settings.Export.Reports.Junit.Enabled {
+		if settings.Export.Reports.Enabled {
 			projectPath := p.Project.FullPath
 			pipelineIid := strconv.FormatInt(p.Iid, 10)
-			junitReportProjectPipelines[projectPath] = append(junitReportProjectPipelines[projectPath], pipelineIid)
-			junitReportProjectArtifactPaths[projectPath] = settings.Export.Reports.Junit.Paths
-		} else if c.projectsSettings.ExportTestReports(p.Project.Id) {
+			if settings.Export.Reports.Junit.Enabled {
+				junitReportProjectPipelines[projectPath] = append(junitReportProjectPipelines[projectPath], pipelineIid)
+				junitReportProjectArtifactPaths[projectPath] = settings.Export.Reports.Junit.Paths
+			}
+			if settings.Export.Reports.Coverage.Enabled {
+				coberturaReportProjectPipelines[projectPath] = append(coberturaReportProjectPipelines[projectPath], pipelineIid)
+				coberturaReportProjectArtifactPaths[projectPath] = settings.Export.Reports.Coverage.Paths
+			}
+		}
+
+		if (!settings.Export.Reports.Enabled || !settings.Export.Reports.Junit.Enabled) && c.projectsSettings.ExportTestReports(p.Project.Id) {
 			testReportProjectPipelines = append(testReportProjectPipelines, p)
 		}
 	}
@@ -590,6 +604,10 @@ func (c *Controller) fetchProjectsCiData(ctx context.Context, projectIds []int64
 	}
 	junitReports, junitSuites, junitCases, err := FetchProjectsPipelinesJunitReports(ctx, c.GitLab, junitReportProjectPipelines, junitReportProjectArtifactPaths)
 	if err := handleError(err, "fetch junit reports"); err != nil {
+		return projectsCiData{}, err
+	}
+	covReports, covPackages, covClasses, covMethods, err := FetchProjectsPipelinesCoberturaReports(ctx, c.GitLab, coberturaReportProjectPipelines, coberturaReportProjectArtifactPaths)
+	if err := handleError(err, "fetch coverage reports"); err != nil {
 		return projectsCiData{}, err
 	}
 
@@ -605,14 +623,18 @@ func (c *Controller) fetchProjectsCiData(ctx context.Context, projectIds []int64
 	}
 
 	return projectsCiData{
-		Pipelines:   pipelines,
-		Jobs:        jobs,
-		Sections:    sections,
-		Metrics:     metrics,
-		Traces:      traces,
-		TestReports: append(testReports, junitReports...),
-		TestSuites:  append(testSuites, junitSuites...),
-		TestCases:   append(testCases, junitCases...),
+		Pipelines:        pipelines,
+		Jobs:             jobs,
+		Sections:         sections,
+		Metrics:          metrics,
+		Traces:           traces,
+		TestReports:      append(testReports, junitReports...),
+		TestSuites:       append(testSuites, junitSuites...),
+		TestCases:        append(testCases, junitCases...),
+		CoverageReports:  covReports,
+		CoveragePackages: covPackages,
+		CoverageClasses:  covClasses,
+		CoverageMethods:  covMethods,
 	}, nil
 }
 
@@ -708,6 +730,46 @@ func (c *Controller) exportProjectsCiData(ctx context.Context, data projectsCiDa
 	}
 	err = c.Exporter.ExportTestCases(ctx, pbTestCases)
 	if herr := handleError(err, "test cases"); herr != nil {
+		return herr
+	}
+
+	// Coverage Reports
+	pbCoverageReports := make([]*typespb.CoverageReport, 0, len(data.CoverageReports))
+	for _, cr := range data.CoverageReports {
+		pbCoverageReports = append(pbCoverageReports, types.ConvertCoverageReport(cr))
+	}
+	err = c.Exporter.ExportCoverageReports(ctx, pbCoverageReports)
+	if herr := handleError(err, "coverage reports"); herr != nil {
+		return herr
+	}
+
+	// Coverage Packages
+	pbCoveragePackages := make([]*typespb.CoveragePackage, 0, len(data.CoveragePackages))
+	for _, cp := range data.CoveragePackages {
+		pbCoveragePackages = append(pbCoveragePackages, types.ConvertCoveragePackage(cp))
+	}
+	err = c.Exporter.ExportCoveragePackages(ctx, pbCoveragePackages)
+	if herr := handleError(err, "coverage packages"); herr != nil {
+		return herr
+	}
+
+	// Coverage Classes
+	pbCoverageClasses := make([]*typespb.CoverageClass, 0, len(data.CoverageClasses))
+	for _, cc := range data.CoverageClasses {
+		pbCoverageClasses = append(pbCoverageClasses, types.ConvertCoverageClass(cc))
+	}
+	err = c.Exporter.ExportCoverageClasses(ctx, pbCoverageClasses)
+	if herr := handleError(err, "coverage packages"); herr != nil {
+		return herr
+	}
+
+	// Coverage Methods
+	pbCoverageMethods := make([]*typespb.CoverageMethod, 0, len(data.CoverageMethods))
+	for _, cm := range data.CoverageMethods {
+		pbCoverageMethods = append(pbCoverageMethods, types.ConvertCoverageMethod(cm))
+	}
+	err = c.Exporter.ExportCoverageMethods(ctx, pbCoverageMethods)
+	if herr := handleError(err, "coverage reports"); herr != nil {
 		return herr
 	}
 

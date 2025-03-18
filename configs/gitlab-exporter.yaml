@@ -51,6 +51,15 @@ project_defaults:
         # Optional, if not set it will try to donwload the report from a
         # non-API endpoint (requires experimental authed http client).
         paths: []
+
+      coverage:
+        # Whether to export test coverage data.
+        # (Currently, only covertura report format is supported)
+        enabled: false
+        # Paths to files inside the artifacts archives.
+        # Optional, if not set it will try to donwload the report from a
+        # non-API endpoint (experimental, requires authed http client).
+        paths: []
     
     sections:
       # Whether or not to export job section data.

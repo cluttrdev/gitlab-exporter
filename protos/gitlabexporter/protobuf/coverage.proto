@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+option go_package = "github.com/cluttrdev/gitlab-exporter/protobuf/typespb";
+
+package gitlabexporter.protobuf;
+
+import "google/protobuf/timestamp.proto";
+
+import "gitlabexporter/protobuf/references.proto";
+
+message CoverageReport {
+    string id = 1;
+    JobReference job = 2;
+
+    float line_rate = 3;
+    int32 lines_covered = 4;
+    int32 lines_valid = 5;
+
+    float branch_rate = 6;
+    int32 branches_covered = 7;
+    int32 branches_valid = 8;
+
+    float complexity = 9;
+
+    string version = 10;
+    google.protobuf.Timestamp timestamp = 11;
+
+    repeated string source_paths = 12;
+}
+
+message CoveragePackage {
+    string id = 1;
+    CoverageReportReference report = 2;
+
+    string name = 3;
+
+    float line_rate = 4;
+    float branch_rate = 5;
+    float complexity = 6;
+}
+
+message CoverageClass {
+    string id = 1;
+    CoveragePackageReference package = 2;
+
+    string name = 3;
+    string filename = 4;
+
+    float line_rate = 5;
+    float branch_rate = 6;
+    float complexity = 7;
+}
+
+message CoverageMethod {
+    string id = 1;
+    CoverageClassReference class = 2;
+
+    string name = 3;
+    string signature = 4;
+
+    float line_rate = 5;
+    float branch_rate = 6;
+    float complexity = 7;
+}

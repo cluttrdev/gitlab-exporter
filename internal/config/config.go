@@ -76,10 +76,11 @@ type ProjectExportTestReports struct {
 type ProjectExportReports struct {
 	Enabled bool `default:"false" yaml:"enabled"`
 
-	Junit ProjectExportReportsJunit `default:"{}" yaml:"junit"`
+	Junit    ProjectExportReportsSettings `default:"{}" yaml:"junit"`
+	Coverage ProjectExportReportsSettings `default:"{}" yaml:"coverage"`
 }
 
-type ProjectExportReportsJunit struct {
+type ProjectExportReportsSettings struct {
 	Enabled bool     `default:"false" yaml:"enabled"`
 	Paths   []string `default:"" yaml:"paths"`
 }
