@@ -37,4 +37,8 @@ fragment ProjectFieldsCore on Project {
 
     archived
     visibility
+
+    repository {
+        rootRef
+    }
 }

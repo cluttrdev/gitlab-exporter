@@ -59,6 +59,8 @@ func ConvertProject(pf ProjectFields) (types.Project, error) {
 
 		Archived:   valOrZero(pf.Archived),
 		Visibility: valOrZero(pf.Visibility),
+
+		DefaultBranch: valOrZero(valOrZero(pf.Repository).RootRef),
 	}
 
 	if pf.Statistics != nil {

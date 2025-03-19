@@ -24,6 +24,8 @@ message Project {
 
     bool archived = 10;
     string visibility = 11;
+
+    string default_branch = 12;
 }
 
 message ProjectTimestamps {

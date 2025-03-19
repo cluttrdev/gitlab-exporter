@@ -1819,6 +1819,8 @@ type ProjectFieldsCore struct {
 	Archived *bool `json:"archived"`
 	// Visibility of the project.
 	Visibility *string `json:"visibility"`
+	// Git repository of the project.
+	Repository *ProjectFieldsCoreRepository `json:"repository"`
 }
 
 // GetName returns ProjectFieldsCore.Name, and is useful for accessing the field via an interface.
@@ -1858,6 +1860,18 @@ func (v *ProjectFieldsCore) GetArchived() *bool { return v.Archived }
 
 // GetVisibility returns ProjectFieldsCore.Visibility, and is useful for accessing the field via an interface.
 func (v *ProjectFieldsCore) GetVisibility() *string { return v.Visibility }
+
+// GetRepository returns ProjectFieldsCore.Repository, and is useful for accessing the field via an interface.
+func (v *ProjectFieldsCore) GetRepository() *ProjectFieldsCoreRepository { return v.Repository }
+
+// ProjectFieldsCoreRepository includes the requested fields of the GraphQL type Repository.
+type ProjectFieldsCoreRepository struct {
+	// Default branch of the repository.
+	RootRef *string `json:"rootRef"`
+}
+
+// GetRootRef returns ProjectFieldsCoreRepository.RootRef, and is useful for accessing the field via an interface.
+func (v *ProjectFieldsCoreRepository) GetRootRef() *string { return v.RootRef }
 
 // ProjectFieldsCoreStatisticsProjectStatistics includes the requested fields of the GraphQL type ProjectStatistics.
 type ProjectFieldsCoreStatisticsProjectStatistics struct {
@@ -10251,6 +10265,11 @@ func (v *getProjectsProjectsProjectConnectionNodesProject) GetVisibility() *stri
 	return v.ProjectFieldsCore.Visibility
 }
 
+// GetRepository returns getProjectsProjectsProjectConnectionNodesProject.Repository, and is useful for accessing the field via an interface.
+func (v *getProjectsProjectsProjectConnectionNodesProject) GetRepository() *ProjectFieldsCoreRepository {
+	return v.ProjectFieldsCore.Repository
+}
+
 func (v *getProjectsProjectsProjectConnectionNodesProject) UnmarshalJSON(b []byte) error {
 
 	if string(b) == "null" {
@@ -10315,6 +10334,8 @@ type __premarshalgetProjectsProjectsProjectConnectionNodesProject struct {
 	Archived *bool `json:"archived"`
 
 	Visibility *string `json:"visibility"`
+
+	Repository *ProjectFieldsCoreRepository `json:"repository"`
 }
 
 func (v *getProjectsProjectsProjectConnectionNodesProject) MarshalJSON() ([]byte, error) {
@@ -10345,6 +10366,7 @@ func (v *getProjectsProjectsProjectConnectionNodesProject) __premarshalJSON() (*
 	retval.ForksCount = v.ProjectFieldsCore.ForksCount
 	retval.Archived = v.ProjectFieldsCore.Archived
 	retval.Visibility = v.ProjectFieldsCore.Visibility
+	retval.Repository = v.ProjectFieldsCore.Repository
 	return &retval, nil
 }
 
@@ -11578,6 +11600,9 @@ fragment ProjectFieldsCore on Project {
 	forksCount
 	archived
 	visibility
+	repository {
+		rootRef
+	}
 }
 fragment pageFields on PageInfo {
 	hasNextPage

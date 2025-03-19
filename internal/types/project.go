@@ -36,6 +36,8 @@ type Project struct {
 
 	Archived   bool
 	Visibility string
+
+	DefaultBranch string
 }
 
 type ProjectStatistics struct {
@@ -87,6 +89,8 @@ func ConvertProject(p Project) *typespb.Project {
 
 		Archived:   p.Archived,
 		Visibility: string(p.Visibility),
+
+		DefaultBranch: p.DefaultBranch,
 	}
 }
 
