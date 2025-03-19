@@ -83,9 +83,10 @@ func ConvertJob(jf JobFields) (types.Job, error) {
 			},
 		},
 
-		Name:   valOrZero(jf.Name),
-		Ref:    valOrZero(jf.RefName),
-		Status: strings.ToLower(string(valOrZero(jf.Status))),
+		Name:    valOrZero(jf.Name),
+		Ref:     valOrZero(jf.RefName),
+		RefPath: valOrZero(jf.RefPath),
+		Status:  strings.ToLower(string(valOrZero(jf.Status))),
 
 		CreatedAt:  &jf.CreatedAt,
 		QueuedAt:   jf.QueuedAt,

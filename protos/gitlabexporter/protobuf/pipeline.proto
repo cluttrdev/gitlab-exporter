@@ -16,26 +16,27 @@ message Pipeline {
 
     string name = 4;
     string ref = 5;
-    string sha = 6;
-    string source = 7;
-    string status = 8;
-    string failure_reason = 9;
+    string ref_path = 6;
+    string sha = 7;
+    string source = 8;
+    string status = 9;
+    string failure_reason = 10;
 
-    PipelineTimestamps timestamps = 10;
+    PipelineTimestamps timestamps = 11;
 
-    google.protobuf.Duration queued_duration = 11;
-    google.protobuf.Duration duration = 12;
-    double coverage = 13;
+    google.protobuf.Duration queued_duration = 12;
+    google.protobuf.Duration duration = 13;
+    double coverage = 14;
 
-    bool warnings = 14;
-    bool yaml_errors = 15;
+    bool warnings = 15;
+    bool yaml_errors = 16;
 
-    bool child = 16;
-    optional PipelineReference upstream_pipeline = 17;
+    bool child = 17;
+    optional PipelineReference upstream_pipeline = 18;
 
-    optional MergeRequestReference merge_request = 18;
+    optional MergeRequestReference merge_request = 19;
 
-    UserReference user = 19;
+    UserReference user = 20;
 }
 
 message PipelineTimestamps {

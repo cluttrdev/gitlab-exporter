@@ -5,6 +5,7 @@ fragment JobReferenceFields on CiJob {
 fragment JobFieldsCore on CiJob {
     name
     refName
+    refPath
     status
     
     createdAt

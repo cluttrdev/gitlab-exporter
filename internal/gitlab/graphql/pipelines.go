@@ -39,11 +39,12 @@ func ConvertPipeline(pf PipelineFields) (types.Pipeline, error) {
 			FullPath: pf.Project.FullPath,
 		},
 
-		Name:   valOrZero(pf.Name),
-		Ref:    valOrZero(pf.Ref),
-		Sha:    valOrZero(pf.Sha),
-		Source: valOrZero(pf.Source),
-		Status: strings.ToLower(string(pf.Status)),
+		Name:    valOrZero(pf.Name),
+		Ref:     valOrZero(pf.Ref),
+		RefPath: valOrZero(pf.RefPath),
+		Sha:     valOrZero(pf.Sha),
+		Source:  valOrZero(pf.Source),
+		Status:  strings.ToLower(string(pf.Status)),
 
 		CommittedAt: pf.CommittedAt,
 		CreatedAt:   &pf.CreatedAt,

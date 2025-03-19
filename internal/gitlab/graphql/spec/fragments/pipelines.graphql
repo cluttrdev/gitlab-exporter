@@ -6,6 +6,7 @@ fragment PipelineReferenceFields on Pipeline {
 fragment PipelineFieldsCore on Pipeline {
     name
     ref
+    refPath
     status
     source
     sha(format: LONG)

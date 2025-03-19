@@ -30,6 +30,7 @@ type Job struct {
 	Pipeline PipelineReference
 
 	Ref           string
+	RefPath       string
 	Status        string
 	FailureReason string
 
@@ -72,6 +73,7 @@ func ConvertJob(job Job) *typespb.Job {
 		Pipeline: ConvertPipelineReference(job.Pipeline),
 
 		Ref:           job.Ref,
+		RefPath:       job.RefPath,
 		Status:        job.Status,
 		FailureReason: job.FailureReason,
 

@@ -197,6 +197,8 @@ type JobFieldsCore struct {
 	Name *string `json:"name"`
 	// Ref name of the job.
 	RefName *string `json:"refName"`
+	// Path to the ref.
+	RefPath *string `json:"refPath"`
 	// Status of the job.
 	Status *CiJobStatus `json:"status"`
 	// When the job was created.
@@ -226,6 +228,9 @@ func (v *JobFieldsCore) GetName() *string { return v.Name }
 
 // GetRefName returns JobFieldsCore.RefName, and is useful for accessing the field via an interface.
 func (v *JobFieldsCore) GetRefName() *string { return v.RefName }
+
+// GetRefPath returns JobFieldsCore.RefPath, and is useful for accessing the field via an interface.
+func (v *JobFieldsCore) GetRefPath() *string { return v.RefPath }
 
 // GetStatus returns JobFieldsCore.Status, and is useful for accessing the field via an interface.
 func (v *JobFieldsCore) GetStatus() *CiJobStatus { return v.Status }
@@ -1321,6 +1326,8 @@ type PipelineFieldsCore struct {
 	Name *string `json:"name"`
 	// Reference to the branch from which the pipeline was triggered.
 	Ref *string `json:"ref"`
+	// Reference path to the branch from which the pipeline was triggered.
+	RefPath *string `json:"refPath"`
 	// Status of the pipeline (CREATED, WAITING_FOR_RESOURCE, PREPARING,
 	// WAITING_FOR_CALLBACK, PENDING, RUNNING, FAILED, SUCCESS, CANCELED, CANCELING,
 	// SKIPPED, MANUAL, SCHEDULED)
@@ -1366,6 +1373,9 @@ func (v *PipelineFieldsCore) GetName() *string { return v.Name }
 
 // GetRef returns PipelineFieldsCore.Ref, and is useful for accessing the field via an interface.
 func (v *PipelineFieldsCore) GetRef() *string { return v.Ref }
+
+// GetRefPath returns PipelineFieldsCore.RefPath, and is useful for accessing the field via an interface.
+func (v *PipelineFieldsCore) GetRefPath() *string { return v.RefPath }
 
 // GetStatus returns PipelineFieldsCore.Status, and is useful for accessing the field via an interface.
 func (v *PipelineFieldsCore) GetStatus() PipelineStatusEnum { return v.Status }
@@ -2894,6 +2904,11 @@ func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetR
 	return v.PipelineFieldsCore.Ref
 }
 
+// GetRefPath returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.RefPath, and is useful for accessing the field via an interface.
+func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetRefPath() *string {
+	return v.PipelineFieldsCore.RefPath
+}
+
 // GetStatus returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.Status, and is useful for accessing the field via an interface.
 func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetStatus() PipelineStatusEnum {
 	return v.PipelineFieldsCore.Status
@@ -3023,6 +3038,8 @@ type __premarshalgetProjectIdPipelineProjectsProjectConnectionNodesProjectPipeli
 
 	Ref *string `json:"ref"`
 
+	RefPath *string `json:"refPath"`
+
 	Status PipelineStatusEnum `json:"status"`
 
 	Source *string `json:"source"`
@@ -3075,6 +3092,7 @@ func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) __pr
 	retval.Iid = v.PipelineReferenceFields.Iid
 	retval.Name = v.PipelineFieldsCore.Name
 	retval.Ref = v.PipelineFieldsCore.Ref
+	retval.RefPath = v.PipelineFieldsCore.RefPath
 	retval.Status = v.PipelineFieldsCore.Status
 	retval.Source = v.PipelineFieldsCore.Source
 	retval.Sha = v.PipelineFieldsCore.Sha
@@ -5439,6 +5457,11 @@ func (v *getProjectPipelineJobsProjectPipelineJobsCiJobConnectionNodesCiJob) Get
 	return v.JobFieldsCore.RefName
 }
 
+// GetRefPath returns getProjectPipelineJobsProjectPipelineJobsCiJobConnectionNodesCiJob.RefPath, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsProjectPipelineJobsCiJobConnectionNodesCiJob) GetRefPath() *string {
+	return v.JobFieldsCore.RefPath
+}
+
 // GetStatus returns getProjectPipelineJobsProjectPipelineJobsCiJobConnectionNodesCiJob.Status, and is useful for accessing the field via an interface.
 func (v *getProjectPipelineJobsProjectPipelineJobsCiJobConnectionNodesCiJob) GetStatus() *CiJobStatus {
 	return v.JobFieldsCore.Status
@@ -5576,6 +5599,8 @@ type __premarshalgetProjectPipelineJobsProjectPipelineJobsCiJobConnectionNodesCi
 
 	RefName *string `json:"refName"`
 
+	RefPath *string `json:"refPath"`
+
 	Status *CiJobStatus `json:"status"`
 
 	CreatedAt time.Time `json:"createdAt"`
@@ -5629,6 +5654,7 @@ func (v *getProjectPipelineJobsProjectPipelineJobsCiJobConnectionNodesCiJob) __p
 	retval.Id = v.JobReferenceFields.Id
 	retval.Name = v.JobFieldsCore.Name
 	retval.RefName = v.JobFieldsCore.RefName
+	retval.RefPath = v.JobFieldsCore.RefPath
 	retval.Status = v.JobFieldsCore.Status
 	retval.CreatedAt = v.JobFieldsCore.CreatedAt
 	retval.QueuedAt = v.JobFieldsCore.QueuedAt
@@ -5933,6 +5959,11 @@ func (v *getProjectPipelinesJobsProjectPipelinesPipelineConnectionNodesPipelineJ
 	return v.JobFieldsCore.RefName
 }
 
+// GetRefPath returns getProjectPipelinesJobsProjectPipelinesPipelineConnectionNodesPipelineJobsCiJobConnectionNodesCiJob.RefPath, and is useful for accessing the field via an interface.
+func (v *getProjectPipelinesJobsProjectPipelinesPipelineConnectionNodesPipelineJobsCiJobConnectionNodesCiJob) GetRefPath() *string {
+	return v.JobFieldsCore.RefPath
+}
+
 // GetStatus returns getProjectPipelinesJobsProjectPipelinesPipelineConnectionNodesPipelineJobsCiJobConnectionNodesCiJob.Status, and is useful for accessing the field via an interface.
 func (v *getProjectPipelinesJobsProjectPipelinesPipelineConnectionNodesPipelineJobsCiJobConnectionNodesCiJob) GetStatus() *CiJobStatus {
 	return v.JobFieldsCore.Status
@@ -6070,6 +6101,8 @@ type __premarshalgetProjectPipelinesJobsProjectPipelinesPipelineConnectionNodesP
 
 	RefName *string `json:"refName"`
 
+	RefPath *string `json:"refPath"`
+
 	Status *CiJobStatus `json:"status"`
 
 	CreatedAt time.Time `json:"createdAt"`
@@ -6123,6 +6156,7 @@ func (v *getProjectPipelinesJobsProjectPipelinesPipelineConnectionNodesPipelineJ
 	retval.Id = v.JobReferenceFields.Id
 	retval.Name = v.JobFieldsCore.Name
 	retval.RefName = v.JobFieldsCore.RefName
+	retval.RefPath = v.JobFieldsCore.RefPath
 	retval.Status = v.JobFieldsCore.Status
 	retval.CreatedAt = v.JobFieldsCore.CreatedAt
 	retval.QueuedAt = v.JobFieldsCore.QueuedAt
@@ -6401,6 +6435,11 @@ func (v *getProjectPipelinesProjectPipelinesPipelineConnectionNodesPipeline) Get
 	return v.PipelineFieldsCore.Ref
 }
 
+// GetRefPath returns getProjectPipelinesProjectPipelinesPipelineConnectionNodesPipeline.RefPath, and is useful for accessing the field via an interface.
+func (v *getProjectPipelinesProjectPipelinesPipelineConnectionNodesPipeline) GetRefPath() *string {
+	return v.PipelineFieldsCore.RefPath
+}
+
 // GetStatus returns getProjectPipelinesProjectPipelinesPipelineConnectionNodesPipeline.Status, and is useful for accessing the field via an interface.
 func (v *getProjectPipelinesProjectPipelinesPipelineConnectionNodesPipeline) GetStatus() PipelineStatusEnum {
 	return v.PipelineFieldsCore.Status
@@ -6530,6 +6569,8 @@ type __premarshalgetProjectPipelinesProjectPipelinesPipelineConnectionNodesPipel
 
 	Ref *string `json:"ref"`
 
+	RefPath *string `json:"refPath"`
+
 	Status PipelineStatusEnum `json:"status"`
 
 	Source *string `json:"source"`
@@ -6582,6 +6623,7 @@ func (v *getProjectPipelinesProjectPipelinesPipelineConnectionNodesPipeline) __p
 	retval.Iid = v.PipelineReferenceFields.Iid
 	retval.Name = v.PipelineFieldsCore.Name
 	retval.Ref = v.PipelineFieldsCore.Ref
+	retval.RefPath = v.PipelineFieldsCore.RefPath
 	retval.Status = v.PipelineFieldsCore.Status
 	retval.Source = v.PipelineFieldsCore.Source
 	retval.Sha = v.PipelineFieldsCore.Sha
@@ -8594,6 +8636,11 @@ func (v *getProjectsPipelinesJobsProjectsProjectConnectionNodesProjectPipelinesP
 	return v.JobFieldsCore.RefName
 }
 
+// GetRefPath returns getProjectsPipelinesJobsProjectsProjectConnectionNodesProjectPipelinesPipelineConnectionNodesPipelineJobsCiJobConnectionNodesCiJob.RefPath, and is useful for accessing the field via an interface.
+func (v *getProjectsPipelinesJobsProjectsProjectConnectionNodesProjectPipelinesPipelineConnectionNodesPipelineJobsCiJobConnectionNodesCiJob) GetRefPath() *string {
+	return v.JobFieldsCore.RefPath
+}
+
 // GetStatus returns getProjectsPipelinesJobsProjectsProjectConnectionNodesProjectPipelinesPipelineConnectionNodesPipelineJobsCiJobConnectionNodesCiJob.Status, and is useful for accessing the field via an interface.
 func (v *getProjectsPipelinesJobsProjectsProjectConnectionNodesProjectPipelinesPipelineConnectionNodesPipelineJobsCiJobConnectionNodesCiJob) GetStatus() *CiJobStatus {
 	return v.JobFieldsCore.Status
@@ -8731,6 +8778,8 @@ type __premarshalgetProjectsPipelinesJobsProjectsProjectConnectionNodesProjectPi
 
 	RefName *string `json:"refName"`
 
+	RefPath *string `json:"refPath"`
+
 	Status *CiJobStatus `json:"status"`
 
 	CreatedAt time.Time `json:"createdAt"`
@@ -8784,6 +8833,7 @@ func (v *getProjectsPipelinesJobsProjectsProjectConnectionNodesProjectPipelinesP
 	retval.Id = v.JobReferenceFields.Id
 	retval.Name = v.JobFieldsCore.Name
 	retval.RefName = v.JobFieldsCore.RefName
+	retval.RefPath = v.JobFieldsCore.RefPath
 	retval.Status = v.JobFieldsCore.Status
 	retval.CreatedAt = v.JobFieldsCore.CreatedAt
 	retval.QueuedAt = v.JobFieldsCore.QueuedAt
@@ -9152,6 +9202,11 @@ func (v *getProjectsPipelinesProjectsProjectConnectionNodesProjectPipelinesPipel
 	return v.PipelineFieldsCore.Ref
 }
 
+// GetRefPath returns getProjectsPipelinesProjectsProjectConnectionNodesProjectPipelinesPipelineConnectionNodesPipeline.RefPath, and is useful for accessing the field via an interface.
+func (v *getProjectsPipelinesProjectsProjectConnectionNodesProjectPipelinesPipelineConnectionNodesPipeline) GetRefPath() *string {
+	return v.PipelineFieldsCore.RefPath
+}
+
 // GetStatus returns getProjectsPipelinesProjectsProjectConnectionNodesProjectPipelinesPipelineConnectionNodesPipeline.Status, and is useful for accessing the field via an interface.
 func (v *getProjectsPipelinesProjectsProjectConnectionNodesProjectPipelinesPipelineConnectionNodesPipeline) GetStatus() PipelineStatusEnum {
 	return v.PipelineFieldsCore.Status
@@ -9281,6 +9336,8 @@ type __premarshalgetProjectsPipelinesProjectsProjectConnectionNodesProjectPipeli
 
 	Ref *string `json:"ref"`
 
+	RefPath *string `json:"refPath"`
+
 	Status PipelineStatusEnum `json:"status"`
 
 	Source *string `json:"source"`
@@ -9333,6 +9390,7 @@ func (v *getProjectsPipelinesProjectsProjectConnectionNodesProjectPipelinesPipel
 	retval.Iid = v.PipelineReferenceFields.Iid
 	retval.Name = v.PipelineFieldsCore.Name
 	retval.Ref = v.PipelineFieldsCore.Ref
+	retval.RefPath = v.PipelineFieldsCore.RefPath
 	retval.Status = v.PipelineFieldsCore.Status
 	retval.Source = v.PipelineFieldsCore.Source
 	retval.Sha = v.PipelineFieldsCore.Sha
@@ -10575,6 +10633,7 @@ fragment PipelineReferenceFields on Pipeline {
 fragment PipelineFieldsCore on Pipeline {
 	name
 	ref
+	refPath
 	status
 	source
 	sha(format: LONG)
@@ -11076,6 +11135,7 @@ fragment JobReferenceFields on CiJob {
 fragment JobFieldsCore on CiJob {
 	name
 	refName
+	refPath
 	status
 	createdAt
 	queuedAt
@@ -11254,6 +11314,7 @@ fragment PipelineReferenceFields on Pipeline {
 fragment PipelineFieldsCore on Pipeline {
 	name
 	ref
+	refPath
 	status
 	source
 	sha(format: LONG)
@@ -11373,6 +11434,7 @@ fragment JobReferenceFields on CiJob {
 fragment JobFieldsCore on CiJob {
 	name
 	refName
+	refPath
 	status
 	createdAt
 	queuedAt
@@ -11922,6 +11984,7 @@ fragment PipelineReferenceFields on Pipeline {
 fragment PipelineFieldsCore on Pipeline {
 	name
 	ref
+	refPath
 	status
 	source
 	sha(format: LONG)
@@ -12046,6 +12109,7 @@ fragment JobReferenceFields on CiJob {
 fragment JobFieldsCore on CiJob {
 	name
 	refName
+	refPath
 	status
 	createdAt
 	queuedAt

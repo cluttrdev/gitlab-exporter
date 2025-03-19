@@ -24,6 +24,7 @@ type Pipeline struct {
 
 	Name          string
 	Ref           string
+	RefPath       string
 	Sha           string
 	Source        string
 	Status        string
@@ -64,11 +65,12 @@ func ConvertPipeline(pipeline Pipeline) *typespb.Pipeline {
 		Iid:     pipeline.Iid,
 		Project: ConvertProjectReference(pipeline.Project),
 
-		Name:   pipeline.Name,
-		Ref:    pipeline.Ref,
-		Sha:    pipeline.Sha,
-		Source: pipeline.Source,
-		Status: pipeline.Status,
+		Name:    pipeline.Name,
+		Ref:     pipeline.Ref,
+		RefPath: pipeline.RefPath,
+		Sha:     pipeline.Sha,
+		Source:  pipeline.Source,
+		Status:  pipeline.Status,
 
 		Timestamps: &typespb.PipelineTimestamps{
 			CommittedAt: timestamppb.New(valOrZero(pipeline.CommittedAt)),

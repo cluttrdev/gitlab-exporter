@@ -21,26 +21,27 @@ message Job {
     PipelineReference pipeline = 3;
 
     string ref = 4;
-    string status = 5;
-    string failure_reason = 6;
+    string ref_path = 5;
+    string status = 6;
+    string failure_reason = 7;
     
-    JobTimestamps timestamps = 7;
-    google.protobuf.Duration queued_duration = 8;
-    google.protobuf.Duration duration = 9;
-    double coverage = 10;
+    JobTimestamps timestamps = 8;
+    google.protobuf.Duration queued_duration = 9;
+    google.protobuf.Duration duration = 10;
+    double coverage = 11;
 
-    string stage = 11;
-    repeated string tags = 12;
+    string stage = 12;
+    repeated string tags = 13;
 
-    bool allow_failure = 13;
-    bool manual = 14;
-    bool retried = 15;
-    bool retryable = 16;
+    bool allow_failure = 14;
+    bool manual = 15;
+    bool retried = 16;
+    bool retryable = 17;
 
-    JobKind kind = 17;
-    optional PipelineReference downstream_pipeline = 18;
+    JobKind kind = 18;
+    optional PipelineReference downstream_pipeline = 19;
 
-    RunnerReference runner = 19;
+    RunnerReference runner = 20;
 }
 
 message JobTimestamps {
