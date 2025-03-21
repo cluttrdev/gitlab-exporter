@@ -17,7 +17,7 @@ flexibly stored in various storage backends.
 
 There are recorder implementations available for the following datastore backends:
 
-  - [ClickHouse](https://github.com/mvisonneau/gitlab-ci-pipelines-exporter)
+- [ClickHouse](https://gitlab.com/akun73/gitlab-exporter-clickhouse-recorder)
 
 ### Screenshots
 
