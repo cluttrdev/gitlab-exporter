@@ -9,11 +9,11 @@ import (
 
 	"github.com/cluttrdev/cli"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/config"
-	"github.com/cluttrdev/gitlab-exporter/internal/exporter"
-	"github.com/cluttrdev/gitlab-exporter/internal/gitlab/graphql"
-	"github.com/cluttrdev/gitlab-exporter/internal/types"
-	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
+	"go.cluttr.dev/gitlab-exporter/internal/config"
+	"go.cluttr.dev/gitlab-exporter/internal/exporter"
+	"go.cluttr.dev/gitlab-exporter/internal/gitlab/graphql"
+	"go.cluttr.dev/gitlab-exporter/internal/types"
+	"go.cluttr.dev/gitlab-exporter/protobuf/typespb"
 )
 
 type ExportPipelineConfig struct {

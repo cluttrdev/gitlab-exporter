@@ -6,7 +6,7 @@ import (
 
 	"github.com/Khan/genqlient/graphql"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/httpclient"
+	"go.cluttr.dev/gitlab-exporter/internal/httpclient"
 )
 
 const apiPath string = "api/graphql/"

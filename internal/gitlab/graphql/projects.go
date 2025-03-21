@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/types"
+	"go.cluttr.dev/gitlab-exporter/internal/types"
 )
 
 type ListProjectsResult struct {

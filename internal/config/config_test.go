@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/config"
+	"go.cluttr.dev/gitlab-exporter/internal/config"
 )
 
 func defaultConfig() config.Config {
@@ -463,7 +463,7 @@ func TestLoad_WithNamespaces(t *testing.T) {
         metrics:
           enabled: false
     namespaces:
-      - id: cluttrdev
+      - id: akun73
         kind: user
         visibility: public
       - id: gitlab-exporter
@@ -479,7 +479,7 @@ func TestLoad_WithNamespaces(t *testing.T) {
 	expected.ProjectDefaults.Export.Metrics.Enabled = false
 	expected.Namespaces = []config.Namespace{
 		{
-			Id:              "cluttrdev",
+			Id:              "akun73",
 			Kind:            "user",
 			Visibility:      "public",
 			ProjectSettings: defaultProjectSettings(),

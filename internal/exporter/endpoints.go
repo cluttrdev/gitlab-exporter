@@ -4,7 +4,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/config"
+	"go.cluttr.dev/gitlab-exporter/internal/config"
 )
 
 func CreateEndpointConfigs(cfg []config.Endpoint) []EndpointConfig {

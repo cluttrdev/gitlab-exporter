@@ -13,7 +13,7 @@ import (
 	"google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 
-	"github.com/cluttrdev/gitlab-exporter/protobuf/servicepb"
+	"go.cluttr.dev/gitlab-exporter/protobuf/servicepb"
 )
 
 type Server struct {

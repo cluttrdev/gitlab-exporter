@@ -19,7 +19,7 @@
         {
           "status": "success",
           "name": "Test_NewDefault",
-          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "classname": "go.cluttr.dev/gitlab-exporter/test/config",
           "file": null,
           "execution_time": 0.0,
           "system_output": null,
@@ -29,7 +29,7 @@
         {
           "status": "success",
           "name": "Test_NewDefaultProjectSettings",
-          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "classname": "go.cluttr.dev/gitlab-exporter/test/config",
           "file": null,
           "execution_time": 0.0,
           "system_output": null,
@@ -39,7 +39,7 @@
         {
           "status": "success",
           "name": "TestLoad_EmptyData",
-          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "classname": "go.cluttr.dev/gitlab-exporter/test/config",
           "file": null,
           "execution_time": 0.0,
           "system_output": null,
@@ -49,7 +49,7 @@
         {
           "status": "success",
           "name": "TestLoad_PartialData",
-          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "classname": "go.cluttr.dev/gitlab-exporter/test/config",
           "file": null,
           "execution_time": 0.0,
           "system_output": null,
@@ -59,7 +59,7 @@
         {
           "status": "success",
           "name": "TestLoad_UnknownData",
-          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "classname": "go.cluttr.dev/gitlab-exporter/test/config",
           "file": null,
           "execution_time": 0.0,
           "system_output": null,
@@ -69,7 +69,7 @@
         {
           "status": "success",
           "name": "TestLoad_InvalidData",
-          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "classname": "go.cluttr.dev/gitlab-exporter/test/config",
           "file": null,
           "execution_time": 0.0,
           "system_output": null,
@@ -79,7 +79,7 @@
         {
           "status": "success",
           "name": "TestLoad_DataWithDefaults",
-          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "classname": "go.cluttr.dev/gitlab-exporter/test/config",
           "file": null,
           "execution_time": 0.0,
           "system_output": null,
@@ -89,7 +89,7 @@
         {
           "status": "success",
           "name": "TestLoad_DataWithProjects",
-          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "classname": "go.cluttr.dev/gitlab-exporter/test/config",
           "file": null,
           "execution_time": 0.0,
           "system_output": null,
@@ -99,7 +99,7 @@
         {
           "status": "success",
           "name": "TestLoad_DataWithProjectDefaults",
-          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "classname": "go.cluttr.dev/gitlab-exporter/test/config",
           "file": null,
           "execution_time": 0.0,
           "system_output": null,
@@ -109,7 +109,7 @@
         {
           "status": "success",
           "name": "TestLoad_DataWithCustomServerAddress",
-          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "classname": "go.cluttr.dev/gitlab-exporter/test/config",
           "file": null,
           "execution_time": 0.0,
           "system_output": null,
@@ -119,7 +119,7 @@
         {
           "status": "success",
           "name": "TestLoad_DataWithEndpoints",
-          "classname": "github.com/cluttrdev/gitlab-exporter/test/config",
+          "classname": "go.cluttr.dev/gitlab-exporter/test/config",
           "file": null,
           "execution_time": 0.0,
           "system_output": null,
@@ -129,7 +129,7 @@
         {
           "status": "success",
           "name": "Test_RecordPipelines",
-          "classname": "github.com/cluttrdev/gitlab-exporter/test/grpc",
+          "classname": "go.cluttr.dev/gitlab-exporter/test/grpc",
           "file": null,
           "execution_time": 0.0,
           "system_output": null,
@@ -139,7 +139,7 @@
         {
           "status": "success",
           "name": "Test_RecordJobs",
-          "classname": "github.com/cluttrdev/gitlab-exporter/test/grpc",
+          "classname": "go.cluttr.dev/gitlab-exporter/test/grpc",
           "file": null,
           "execution_time": 0.0,
           "system_output": null,

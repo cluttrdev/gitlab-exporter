@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/junitxml"
 	"github.com/google/go-cmp/cmp"
+	"go.cluttr.dev/gitlab-exporter/internal/junitxml"
 )
 
 const (

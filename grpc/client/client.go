@@ -8,8 +8,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
 
-	"github.com/cluttrdev/gitlab-exporter/protobuf/servicepb"
-	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
+	"go.cluttr.dev/gitlab-exporter/protobuf/servicepb"
+	"go.cluttr.dev/gitlab-exporter/protobuf/typespb"
 )
 
 type Client struct {

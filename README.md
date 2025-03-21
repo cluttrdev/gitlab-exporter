@@ -17,7 +17,7 @@ flexibly stored in various storage backends.
 
 There are recorder implementations available for the following datastore backends:
 
-  - [ClickHouse][gh-glechr]
+  - [ClickHouse](https://github.com/mvisonneau/gitlab-ci-pipelines-exporter)
 
 ### Screenshots
 
@@ -39,23 +39,24 @@ To install `gitlab-exporter` you can download a
 [prebuilt binary][prebuilt-binaries] that matches your system, e.g.
 
 ```shell
-# download latest release distribution archive
-RELEASE_TAG=$(curl -sSfL https://api.github.com/repos/cluttrdev/gitlab-exporter/releases/latest | jq -r '.tag_name')
-curl -sSfL \
-    --output /tmp/gitlab-exporter.tar.gz \
-    --url https://github.com/cluttrdev/gitlab-exporter/releases/download/${RELEASE_TAG}/gitlab-exporter_${RELEASE_TAG}_linux_amd64.tar.gz
+# download latest release archive
+RELEASES_URL=https://gitlab.com/api/v4/projects/akun73%2Fgitlab-exporter/releases
+RELEASE_TAG=$(curl -sSfL ${RELEASES_URL} | jq -r '.[0].tag_name')
+curl -sSfL ${RELEASES_URL}/downloads/${RELEASE_TAG}/gitlab-exporter_${RELEASE_TAG}_linux_amd64.tar.gz \
+    -o /tmp/gitlab-exporter.tar.gz
 
-# extract executable binary
-tar -zxof /tmp/gitlab-exporter.tar.gz gitlab-exporter
+# extract executable binary into install dir (must exist)
+INSTALL_DIR=$HOME/.local/bin
+tar -C ${INSTALL_DIR} -zxof /tmp/gitlab-exporter.tar.gz gitlab-exporter
 
 # check
-./gitlab-exporter version
+${INSTALL_DIR}/gitlab-exporter version
 ```
 
 ### Docker
 
 ```shell
-docker run -it --rm ghcr.io/cluttrdev/gitlab-exporter:latest
+docker run --rm registry.gitlab.com/akun73/gitlab-exporter:latest
 ```
 
 ### Helm
@@ -64,7 +65,7 @@ If you want to deploy on [Kubernetes](http://kubernetes.io) there is a
 [Helm](https://helm.sh) chart you can use:
 
 ```shell
-helm pull oci://ghcr.io/cluttrdev/gitlab-exporter
+helm pull oci://registry.gitlab.com/gitlab-exporter/helm-charts/gitlab-exporter
 ```
 
 ## Usage
@@ -116,7 +117,7 @@ variables, where flags take precedence.
 ## Acknowledgements
 
 This project was inspired by Maxime Visonneau's
-[gitlab-ci-pipeline-exporter][github-gcpe].
+[gitlab-ci-pipeline-exporter](https://github.com/mvisonneau/gitlab-ci-pipelines-exporter).
 
 ## License
 
@@ -125,8 +126,4 @@ This project is licensed under the [MIT License](./LICENSE).
 [protobuf]: https://protobuf.dev/
 [grpc]: https://grpc.io/
 [gitlab-api]: https://docs.gitlab.com/ee/api/rest/
-[gh-glechr]: https://github.com/cluttrdev/gitlab-clickhouse-exporter
-[go-install]: https://go.dev/doc/install
-[prebuilt-binaries]: https://github.com/cluttrdev/gitlab-exporter/releases/latest
-[github-gcpe]: https://github.com/mvisonneau/gitlab-ci-pipelines-exporter
-[gopher-artwork]: https://github.com/ashleymcnamara/gophers
+[prebuilt-binaries]: https://gitlab.com/akun73/gitlab-exporter/-/releases

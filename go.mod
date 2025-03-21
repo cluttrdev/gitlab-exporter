@@ -1,4 +1,4 @@
-module github.com/cluttrdev/gitlab-exporter
+module go.cluttr.dev/gitlab-exporter
 
 go 1.23.0
 

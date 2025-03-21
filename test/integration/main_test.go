@@ -9,7 +9,7 @@ import (
 	"strings"
 	"testing"
 
-	gitlab_mock "github.com/cluttrdev/gitlab-exporter/test/mock/gitlab"
+	gitlab_mock "go.cluttr.dev/gitlab-exporter/test/mock/gitlab"
 )
 
 const testSet string = "default"

@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/junitxml"
-	"github.com/cluttrdev/gitlab-exporter/internal/types"
 	"github.com/google/go-cmp/cmp"
+	"go.cluttr.dev/gitlab-exporter/internal/junitxml"
+	"go.cluttr.dev/gitlab-exporter/internal/types"
 )
 
 func TestConvertTestReport(t *testing.T) {

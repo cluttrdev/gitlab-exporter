@@ -6,7 +6,7 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
+	"go.cluttr.dev/gitlab-exporter/protobuf/typespb"
 )
 
 type PipelineReference struct {

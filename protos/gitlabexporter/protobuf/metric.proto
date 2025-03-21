@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/cluttrdev/gitlab-exporter/protobuf/typespb";
+option go_package = "go.cluttr.dev/gitlab-exporter/protobuf/typespb";
 
 package gitlabexporter.protobuf;
 

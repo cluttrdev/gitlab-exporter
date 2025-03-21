@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/types"
+	"go.cluttr.dev/gitlab-exporter/internal/types"
 )
 
 type PipelineFields struct {

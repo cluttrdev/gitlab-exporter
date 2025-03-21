@@ -1,6 +1,6 @@
 package types
 
-import "github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
+import "go.cluttr.dev/gitlab-exporter/protobuf/typespb"
 
 type UserReference struct {
 	Id       int64

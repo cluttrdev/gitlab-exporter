@@ -11,11 +11,11 @@ import (
 
 	"github.com/cluttrdev/cli"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/cobertura"
-	"github.com/cluttrdev/gitlab-exporter/internal/config"
-	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
-	"github.com/cluttrdev/gitlab-exporter/internal/junitxml"
-	"github.com/cluttrdev/gitlab-exporter/internal/types"
+	"go.cluttr.dev/gitlab-exporter/internal/cobertura"
+	"go.cluttr.dev/gitlab-exporter/internal/config"
+	"go.cluttr.dev/gitlab-exporter/internal/gitlab"
+	"go.cluttr.dev/gitlab-exporter/internal/junitxml"
+	"go.cluttr.dev/gitlab-exporter/internal/types"
 )
 
 type FetchReportConfig struct {

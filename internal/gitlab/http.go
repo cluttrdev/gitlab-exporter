@@ -14,7 +14,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/httpclient"
+	"go.cluttr.dev/gitlab-exporter/internal/httpclient"
 	"golang.org/x/net/html"
 )
 

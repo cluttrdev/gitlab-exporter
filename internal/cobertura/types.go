@@ -4,7 +4,7 @@ import (
 	"encoding/xml"
 	"fmt"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/types"
+	"go.cluttr.dev/gitlab-exporter/internal/types"
 )
 
 // https://github.com/gcovr/gcovr/blob/main/tests/cobertura.coverage-04.dtd

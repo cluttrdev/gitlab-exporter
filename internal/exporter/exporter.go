@@ -10,9 +10,9 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 
-	grpc_client "github.com/cluttrdev/gitlab-exporter/grpc/client"
-	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
 	"github.com/prometheus/client_golang/prometheus"
+	grpc_client "go.cluttr.dev/gitlab-exporter/grpc/client"
+	"go.cluttr.dev/gitlab-exporter/protobuf/typespb"
 )
 
 type Exporter struct {

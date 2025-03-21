@@ -3,7 +3,7 @@ package types
 import (
 	"time"
 
-	"github.com/cluttrdev/gitlab-exporter/protobuf/typespb"
+	"go.cluttr.dev/gitlab-exporter/protobuf/typespb"
 )
 
 type TestReportReference struct {

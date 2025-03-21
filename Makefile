@@ -25,8 +25,8 @@ protobuf:  ## Generate Protocol Buffer and gRPC code
 	protoc \
 		-I protos/ \
 		-I protos/vendor/opentelemetry-proto \
-		--go_out=. --go_opt=module=github.com/cluttrdev/gitlab-exporter \
-		--go-grpc_out=. --go-grpc_opt=module=github.com/cluttrdev/gitlab-exporter \
+		--go_out=. --go_opt=module=go.cluttr.dev/gitlab-exporter \
+		--go-grpc_out=. --go-grpc_opt=module=go.cluttr.dev/gitlab-exporter \
 		protos/gitlabexporter/protobuf/*.proto protos/gitlabexporter/protobuf/service/*.proto
 
 .PHONY: build

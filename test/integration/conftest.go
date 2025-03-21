@@ -7,13 +7,13 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/exporter"
-	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
+	"go.cluttr.dev/gitlab-exporter/internal/exporter"
+	"go.cluttr.dev/gitlab-exporter/internal/gitlab"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
 
-	"github.com/cluttrdev/gitlab-exporter/test/mock/recorder"
+	"go.cluttr.dev/gitlab-exporter/test/mock/recorder"
 )
 
 func setupGitLab(t *testing.T) (*http.ServeMux, *gitlab.Client) {

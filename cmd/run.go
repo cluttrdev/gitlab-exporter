@@ -23,11 +23,11 @@ import (
 
 	"github.com/cluttrdev/cli"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/config"
-	"github.com/cluttrdev/gitlab-exporter/internal/exporter"
-	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
-	"github.com/cluttrdev/gitlab-exporter/internal/healthz"
-	"github.com/cluttrdev/gitlab-exporter/internal/tasks"
+	"go.cluttr.dev/gitlab-exporter/internal/config"
+	"go.cluttr.dev/gitlab-exporter/internal/exporter"
+	"go.cluttr.dev/gitlab-exporter/internal/gitlab"
+	"go.cluttr.dev/gitlab-exporter/internal/healthz"
+	"go.cluttr.dev/gitlab-exporter/internal/tasks"
 )
 
 type RunConfig struct {

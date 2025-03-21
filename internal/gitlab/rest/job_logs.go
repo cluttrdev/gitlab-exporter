@@ -8,7 +8,7 @@ import (
 
 	_gitlab "gitlab.com/gitlab-org/api/client-go"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/expfmt"
+	"go.cluttr.dev/gitlab-exporter/internal/expfmt"
 )
 
 type JobLogData struct {

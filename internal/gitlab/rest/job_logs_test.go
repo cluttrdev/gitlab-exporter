@@ -6,7 +6,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/gitlab/rest"
+	"go.cluttr.dev/gitlab-exporter/internal/gitlab/rest"
 )
 
 func TestParseJobLog_OnlySections(t *testing.T) {

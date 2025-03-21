@@ -4,9 +4,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/cobertura"
-	"github.com/cluttrdev/gitlab-exporter/internal/types"
 	"github.com/google/go-cmp/cmp"
+	"go.cluttr.dev/gitlab-exporter/internal/cobertura"
+	"go.cluttr.dev/gitlab-exporter/internal/types"
 )
 
 const data string = `
@@ -17,7 +17,7 @@ const data string = `
         <source>/builds/akun73/gitlab-exporter</source>
       </sources>
       <packages>
-        <package name="github.com/cluttrdev/gitlab-exporter/internal/cobertura" line-rate="0.04255319" branch-rate="0" complexity="0">
+        <package name="go.cluttr.dev/gitlab-exporter/internal/cobertura" line-rate="0.04255319" branch-rate="0" complexity="0">
           <classes>
             <class name="-" filename="internal/cobertura/parse.go" line-rate="0.5714286" branch-rate="0" complexity="0">
               <methods>
@@ -33,7 +33,7 @@ const data string = `
             </class>
           </classes>
         </package>
-        <package name="github.com/cluttrdev/gitlab-exporter/internal/junitxml" line-rate="0" branch-rate="0" complexity="0">
+        <package name="go.cluttr.dev/gitlab-exporter/internal/junitxml" line-rate="0" branch-rate="0" complexity="0">
           <classes>
             <class name="-" filename="internal/junitxml/parse.go" line-rate="0" branch-rate="0" complexity="0">
               <methods>
@@ -115,7 +115,7 @@ func TestConvert(t *testing.T) {
 				Id: "0-0",
 			},
 
-			Name:       "github.com/cluttrdev/gitlab-exporter/internal/cobertura",
+			Name:       "go.cluttr.dev/gitlab-exporter/internal/cobertura",
 			LineRate:   0.04255319,
 			BranchRate: 0.0,
 			Complexity: 0.0,
@@ -126,7 +126,7 @@ func TestConvert(t *testing.T) {
 				Id: "0-0",
 			},
 
-			Name:       "github.com/cluttrdev/gitlab-exporter/internal/junitxml",
+			Name:       "go.cluttr.dev/gitlab-exporter/internal/junitxml",
 			LineRate:   0.0,
 			BranchRate: 0.0,
 			Complexity: 0.0,
@@ -139,32 +139,32 @@ func TestConvert(t *testing.T) {
 
 	wantClasses := []types.CoverageClass{
 		{
-			Id: "0-0-0-0", Package: types.CoveragePackageReference{Id: "0-0-0", Name: "github.com/cluttrdev/gitlab-exporter/internal/cobertura", Report: types.CoverageReportReference{Id: "0-0"}},
+			Id: "0-0-0-0", Package: types.CoveragePackageReference{Id: "0-0-0", Name: "go.cluttr.dev/gitlab-exporter/internal/cobertura", Report: types.CoverageReportReference{Id: "0-0"}},
 			Name: "-", Filename: "internal/cobertura/parse.go",
 			LineRate: 0.5714286, BranchRate: 0.0, Complexity: 0.0,
 		},
 		{
-			Id: "0-0-0-1", Package: types.CoveragePackageReference{Id: "0-0-0", Name: "github.com/cluttrdev/gitlab-exporter/internal/cobertura", Report: types.CoverageReportReference{Id: "0-0"}},
+			Id: "0-0-0-1", Package: types.CoveragePackageReference{Id: "0-0-0", Name: "go.cluttr.dev/gitlab-exporter/internal/cobertura", Report: types.CoverageReportReference{Id: "0-0"}},
 			Name: "-", Filename: "internal/cobertura/types.go",
 			LineRate: 0.0, BranchRate: 0.0, Complexity: 0.0,
 		},
 		{
-			Id: "0-0-1-0", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "github.com/cluttrdev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}},
+			Id: "0-0-1-0", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "go.cluttr.dev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}},
 			Name: "-", Filename: "internal/junitxml/parse.go",
 			LineRate: 0.0, BranchRate: 0.0, Complexity: 0.0,
 		},
 		{
-			Id: "0-0-1-1", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "github.com/cluttrdev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}},
+			Id: "0-0-1-1", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "go.cluttr.dev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}},
 			Name: "Failure", Filename: "internal/junitxml/types.go",
 			LineRate: 0.0, BranchRate: 0.0, Complexity: 0.0,
 		},
 		{
-			Id: "0-0-1-2", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "github.com/cluttrdev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}},
+			Id: "0-0-1-2", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "go.cluttr.dev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}},
 			Name: "Error", Filename: "internal/junitxml/types.go",
 			LineRate: 0.0, BranchRate: 0.0, Complexity: 0.0,
 		},
 		{
-			Id: "0-0-1-3", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "github.com/cluttrdev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}},
+			Id: "0-0-1-3", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "go.cluttr.dev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}},
 			Name: "-", Filename: "internal/junitxml/types.go",
 			LineRate: 0.0, BranchRate: 0.0, Complexity: 0.0,
 		},
@@ -176,62 +176,62 @@ func TestConvert(t *testing.T) {
 
 	wantMethods := []types.CoverageMethod{
 		{
-			Id: "0-0-0-0-0", Class: types.CoverageClassReference{Id: "0-0-0-0", Name: "-", Package: types.CoveragePackageReference{Id: "0-0-0", Name: "github.com/cluttrdev/gitlab-exporter/internal/cobertura", Report: types.CoverageReportReference{Id: "0-0"}}},
+			Id: "0-0-0-0-0", Class: types.CoverageClassReference{Id: "0-0-0-0", Name: "-", Package: types.CoveragePackageReference{Id: "0-0-0", Name: "go.cluttr.dev/gitlab-exporter/internal/cobertura", Report: types.CoverageReportReference{Id: "0-0"}}},
 			Name: "Parse", Signature: "",
 			LineRate: 0.5714286, BranchRate: 0.0, Complexity: 0.0,
 		},
 		{
-			Id: "0-0-0-1-0", Class: types.CoverageClassReference{Id: "0-0-0-1", Name: "-", Package: types.CoveragePackageReference{Id: "0-0-0", Name: "github.com/cluttrdev/gitlab-exporter/internal/cobertura", Report: types.CoverageReportReference{Id: "0-0"}}},
+			Id: "0-0-0-1-0", Class: types.CoverageClassReference{Id: "0-0-0-1", Name: "-", Package: types.CoveragePackageReference{Id: "0-0-0", Name: "go.cluttr.dev/gitlab-exporter/internal/cobertura", Report: types.CoverageReportReference{Id: "0-0"}}},
 			Name: "ConvertCoverageReport", Signature: "",
 			LineRate: 0.0, BranchRate: 0.0, Complexity: 0.0,
 		},
 		{
-			Id: "0-0-1-0-0", Class: types.CoverageClassReference{Id: "0-0-1-0", Name: "-", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "github.com/cluttrdev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}}},
+			Id: "0-0-1-0-0", Class: types.CoverageClassReference{Id: "0-0-1-0", Name: "-", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "go.cluttr.dev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}}},
 			Name: "Parse", Signature: "",
 			LineRate: 0.0, BranchRate: 0.0, Complexity: 0.0,
 		},
 		{
-			Id: "0-0-1-0-1", Class: types.CoverageClassReference{Id: "0-0-1-0", Name: "-", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "github.com/cluttrdev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}}},
+			Id: "0-0-1-0-1", Class: types.CoverageClassReference{Id: "0-0-1-0", Name: "-", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "go.cluttr.dev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}}},
 			Name: "ParseTextAttachments", Signature: "",
 			LineRate: 0.0, BranchRate: 0.0, Complexity: 0.0,
 		},
 		{
-			Id: "0-0-1-0-2", Class: types.CoverageClassReference{Id: "0-0-1-0", Name: "-", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "github.com/cluttrdev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}}},
+			Id: "0-0-1-0-2", Class: types.CoverageClassReference{Id: "0-0-1-0", Name: "-", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "go.cluttr.dev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}}},
 			Name: "ParseTextProperties", Signature: "",
 			LineRate: 0.0, BranchRate: 0.0, Complexity: 0.0,
 		},
 		{
-			Id: "0-0-1-1-0", Class: types.CoverageClassReference{Id: "0-0-1-1", Name: "Failure", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "github.com/cluttrdev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}}},
+			Id: "0-0-1-1-0", Class: types.CoverageClassReference{Id: "0-0-1-1", Name: "Failure", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "go.cluttr.dev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}}},
 			Name: "Output", Signature: "",
 			LineRate: 0.0, BranchRate: 0.0, Complexity: 0.0,
 		},
 		{
-			Id: "0-0-1-2-0", Class: types.CoverageClassReference{Id: "0-0-1-2", Name: "Error", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "github.com/cluttrdev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}}},
+			Id: "0-0-1-2-0", Class: types.CoverageClassReference{Id: "0-0-1-2", Name: "Error", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "go.cluttr.dev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}}},
 			Name: "Output", Signature: "",
 			LineRate: 0.0, BranchRate: 0.0, Complexity: 0.0,
 		},
 		{
-			Id: "0-0-1-3-0", Class: types.CoverageClassReference{Id: "0-0-1-3", Name: "-", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "github.com/cluttrdev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}}},
+			Id: "0-0-1-3-0", Class: types.CoverageClassReference{Id: "0-0-1-3", Name: "-", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "go.cluttr.dev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}}},
 			Name: "ConvertTestReport", Signature: "",
 			LineRate: 0.0, BranchRate: 0.0, Complexity: 0.0,
 		},
 		{
-			Id: "0-0-1-3-1", Class: types.CoverageClassReference{Id: "0-0-1-3", Name: "-", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "github.com/cluttrdev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}}},
+			Id: "0-0-1-3-1", Class: types.CoverageClassReference{Id: "0-0-1-3", Name: "-", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "go.cluttr.dev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}}},
 			Name: "convertTestSuites", Signature: "",
 			LineRate: 0.0, BranchRate: 0.0, Complexity: 0.0,
 		},
 		{
-			Id: "0-0-1-3-2", Class: types.CoverageClassReference{Id: "0-0-1-3", Name: "-", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "github.com/cluttrdev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}}},
+			Id: "0-0-1-3-2", Class: types.CoverageClassReference{Id: "0-0-1-3", Name: "-", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "go.cluttr.dev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}}},
 			Name: "convertTestCases", Signature: "",
 			LineRate: 0.0, BranchRate: 0.0, Complexity: 0.0,
 		},
 		{
-			Id: "0-0-1-3-3", Class: types.CoverageClassReference{Id: "0-0-1-3", Name: "-", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "github.com/cluttrdev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}}},
+			Id: "0-0-1-3-3", Class: types.CoverageClassReference{Id: "0-0-1-3", Name: "-", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "go.cluttr.dev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}}},
 			Name: "convertTestProperties", Signature: "",
 			LineRate: 0.0, BranchRate: 0.0, Complexity: 0.0,
 		},
 		{
-			Id: "0-0-1-3-4", Class: types.CoverageClassReference{Id: "0-0-1-3", Name: "-", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "github.com/cluttrdev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}}},
+			Id: "0-0-1-3-4", Class: types.CoverageClassReference{Id: "0-0-1-3", Name: "-", Package: types.CoveragePackageReference{Id: "0-0-1", Name: "go.cluttr.dev/gitlab-exporter/internal/junitxml", Report: types.CoverageReportReference{Id: "0-0"}}},
 			Name: "formatTestOutput", Signature: "",
 			LineRate: 0.0, BranchRate: 0.0, Complexity: 0.0,
 		},

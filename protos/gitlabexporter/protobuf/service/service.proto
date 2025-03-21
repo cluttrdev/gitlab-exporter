@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/cluttrdev/gitlab-exporter/protobuf/servicepb";
+option go_package = "go.cluttr.dev/gitlab-exporter/protobuf/servicepb";
 
 package gitlabexporter.protobuf.service;
 

@@ -8,8 +8,8 @@ import (
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"golang.org/x/sync/semaphore"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/gitlab/graphql"
-	"github.com/cluttrdev/gitlab-exporter/internal/gitlab/rest"
+	"go.cluttr.dev/gitlab-exporter/internal/gitlab/graphql"
+	"go.cluttr.dev/gitlab-exporter/internal/gitlab/rest"
 )
 
 type Client struct {

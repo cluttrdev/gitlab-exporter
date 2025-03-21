@@ -92,7 +92,7 @@ project_defaults:
 # List of projects to export
 projects: []
   # - # Project ID project (required).
-  #   id: 50817395  # cluttrdev/gitlab-exporter
+  #   id: 50817395  # akun73/gitlab-exporter
   #   
   #   # See `project_defaults` for settings that can be overwritten here.
   #   export: {}

@@ -6,7 +6,7 @@ import (
 
 	"google.golang.org/grpc"
 
-	"github.com/cluttrdev/gitlab-exporter/protobuf/servicepb"
+	"go.cluttr.dev/gitlab-exporter/protobuf/servicepb"
 )
 
 type Recorder struct {

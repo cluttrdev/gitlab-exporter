@@ -8,10 +8,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/gitlab"
-	"github.com/cluttrdev/gitlab-exporter/internal/gitlab/graphql"
-	"github.com/cluttrdev/gitlab-exporter/internal/gitlab/rest"
-	"github.com/cluttrdev/gitlab-exporter/internal/types"
+	"go.cluttr.dev/gitlab-exporter/internal/gitlab"
+	"go.cluttr.dev/gitlab-exporter/internal/gitlab/graphql"
+	"go.cluttr.dev/gitlab-exporter/internal/gitlab/rest"
+	"go.cluttr.dev/gitlab-exporter/internal/types"
 )
 
 func FetchProjectsPipelines(ctx context.Context, glab *gitlab.Client, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) ([]types.Pipeline, error) {

@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/expfmt"
+	"go.cluttr.dev/gitlab-exporter/internal/expfmt"
 )
 
 func TestTextParser_LineToMetric(t *testing.T) {

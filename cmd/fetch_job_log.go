@@ -12,7 +12,7 @@ import (
 
 	"github.com/cluttrdev/cli"
 
-	"github.com/cluttrdev/gitlab-exporter/internal/config"
+	"go.cluttr.dev/gitlab-exporter/internal/config"
 )
 
 type FetchJobLogConfig struct {
