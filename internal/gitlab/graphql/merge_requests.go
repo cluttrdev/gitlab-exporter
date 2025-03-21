@@ -403,9 +403,9 @@ func ConvertMergeRequestNoteEvent(nf MergeRequestNoteFields) (types.MergeRequest
 	}
 
 	t := getNoteEventType(nf)
-	if t == "" {
-		// TODO: what?
-	}
+	// if t == "" {
+	// 	// TODO: what?
+	// }
 
 	ne := types.MergeRequestNoteEvent{
 		Id: id,

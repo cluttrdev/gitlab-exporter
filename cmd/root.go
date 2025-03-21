@@ -8,8 +8,6 @@ import (
 	"io"
 	"log/slog"
 	"os"
-	"os/signal"
-	"syscall"
 
 	"github.com/cluttrdev/cli"
 
@@ -151,24 +149,4 @@ func initLogging(out io.Writer, cfg config.Log) {
 
 	logger := slog.New(handler)
 	slog.SetDefault(logger)
-}
-
-func setupDaemon(ctx context.Context) (context.Context, context.CancelFunc) {
-	ctx, cancel := context.WithCancel(ctx)
-
-	go func() {
-		signalChan := make(chan os.Signal, 1)
-		signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
-
-		select {
-		case <-signalChan:
-			slog.Debug("Got SIGINT/SIGTERM, exiting")
-			signal.Stop(signalChan)
-			cancel()
-		case <-ctx.Done():
-			slog.Debug("Done")
-		}
-	}()
-
-	return ctx, cancel
 }

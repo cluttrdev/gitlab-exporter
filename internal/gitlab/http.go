@@ -102,8 +102,10 @@ func (c *HTTPClient) GetProjectJobArtifactsFile(ctx context.Context, projectPath
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
-	defer io.Copy(io.Discard, resp.Body)
+	defer func() {
+		resp.Body.Close()
+		_, _ = io.Copy(io.Discard, resp.Body)
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("%d - %s", resp.StatusCode, http.StatusText(resp.StatusCode))
@@ -266,19 +268,6 @@ func (s *sessionAuthedClient) signOut() error {
 		return err
 	}
 
-	return nil
-}
-
-func (s *sessionAuthedClient) sessionCookie() *http.Cookie {
-	s.mx.RLock()
-	defer s.mx.RUnlock()
-
-	u, _ := url.Parse(s.url)
-	for _, c := range s.Jar.Cookies(u) {
-		if c.Name == "_gitlab_session" {
-			return c
-		}
-	}
 	return nil
 }
 

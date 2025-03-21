@@ -198,10 +198,10 @@ type ProjectAccessLevel string
 
 const ( // https://gitlab.com/gitlab-org/gitlab/-/blob/master/app/models/concerns/featurable.rb
 	ProjectAccessLevelUnspecified ProjectAccessLevel = ""
-	ProjectAccessLevelDisabled                       = "disabled"
-	ProjectAccessLevelPrivate                        = "private"
-	ProjectAccessLevelEnabled                        = "enabled"
-	ProjectAccessLevelPublic                         = "public"
+	ProjectAccessLevelDisabled    ProjectAccessLevel = "disabled"
+	ProjectAccessLevelPrivate     ProjectAccessLevel = "private"
+	ProjectAccessLevelEnabled     ProjectAccessLevel = "enabled"
+	ProjectAccessLevelPublic      ProjectAccessLevel = "public"
 )
 
 type ControllerConfig struct {

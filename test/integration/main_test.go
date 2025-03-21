@@ -54,3 +54,9 @@ func GetTestEnvironment(name string) (GitLabExporterTestEnvironment, error) {
 
 	return env, nil
 }
+
+func TestSetup(t *testing.T) {
+	_, _ = setupGitLab(t)
+
+	_, _ = setupExporter(t)
+}
