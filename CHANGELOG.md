@@ -1,7 +1,22 @@
 # Changelog
 
+## [0.16.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.15.1..v0.16.0)
+
+- b467b7c ci: Add chart release job
+- 3b0f6ae chore: Fix typo in example config
+- 531f82a fix: Fix linting errors
+- 4ea996b chore: Fix clickhouse-exporter link in README
+- d9ff257 refactor: Move module url to go.cluttr.dev and repo references to gitlab
+- d1a15ff test: Move test files to source file dirs
+- f2f3a53 patch!: Add pipeline and job fields ref_path
+- 34575eb patch: Add project field default_branch
+- 6681e4c refactor: Shorten grpc client error messages
+- 35e147f feat: Export cobertura coverage reports
+- 961eda2 ci: Upload cobertura coverage report
+
 ## [0.15.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.15.0..v0.15.1)
 
+- 5bc5ec5 chore(release): v0.15.1
 - 266c78f fix: Map failure messages to reasons
 - 85c96e9 ci: Update golangci-lint
 

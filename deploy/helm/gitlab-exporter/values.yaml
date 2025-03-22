@@ -1,8 +1,8 @@
 # Default values for gitlab-exporter.
 
 image:
-  registry: ghcr.io
-  repository: cluttrdev/gitlab-exporter
+  registry: registry.gitlab.com
+  repository: akun73/gitlab-exporter
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
   pullPolicy: Always
@@ -62,7 +62,7 @@ env: []
 # ---
 
 # See here for all available configuration options and their default values:
-# https://github.com/cluttrdev/gitlab-exporter/blob/main/configs/gitlab-exporter.yaml
+# https://gitlab.com/akun73/gitlab-exporter/-/blob/main/configs/gitlab-exporter.yaml
 config:
   http:
     enabled: true
