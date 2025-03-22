@@ -185,7 +185,7 @@ release-chart:
         - deploy/helm/gitlab-exporter/Chart.yaml
   needs:
     - release-image
-  image: docker.io/alpine/helm:3.17.2
+  image: quay.io/helmpack/chart-testing:v3.12.0
   variables:
     HELM_REGISTRY: registry.gitlab.com
     HELM_REGISTRY_PROJECT: gitlab-exporter/helm-charts
