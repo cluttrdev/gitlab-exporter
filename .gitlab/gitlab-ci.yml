@@ -150,25 +150,53 @@ release-image:
     - name: docker:27.3.1-dind
       alias: docker
   variables:
-    DOCKER_IMAGE: gitlab-exporter
-    DOCKER_TAG: $CI_COMMIT_TAG
+    IMAGE_NAME: gitlab-exporter
+    IMAGE_TAG: $CI_COMMIT_TAG
   script:
     - | # Build image
       docker build \
         --file ${CI_PROJECT_DIR}/Dockerfile \
         --build-arg GOVERSION \
         --build-arg VERSION="${CI_COMMIT_TAG}" \
-        --tag "${DOCKER_IMAGE}:${DOCKER_TAG}" \
+        --tag "${IMAGE_NAME}:${IMAGE_TAG}" \
         ${CI_PROJECT_DIR}
     - | # Push to GitLab container registry
-      docker tag "${DOCKER_IMAGE}:${DOCKER_TAG}" "${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE}:${DOCKER_TAG}"
-      docker tag "${DOCKER_IMAGE}:${DOCKER_TAG}" "${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE}:latest"
+      docker tag "${IMAGE_NAME}:${IMAGE_TAG}" "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
+      docker tag "${IMAGE_NAME}:${IMAGE_TAG}" "${CI_REGISTRY_IMAGE}:latest"
       echo "$CI_REGISTRY_PASSWORD" | docker login "$CI_REGISTRY" --username "$CI_REGISTRY_USER" --password-stdin
-      docker push "${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE}:${DOCKER_TAG}"
-      docker push "${CI_REGISTRY_IMAGE}/${DOCKER_IMAGE}:latest"
+      docker push "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
+      docker push "${CI_REGISTRY_IMAGE}:latest"
     - | # Push to GitHub container registry
-      docker tag "${DOCKER_IMAGE}:${DOCKER_TAG}" "ghcr.io/cluttrdev/${DOCKER_IMAGE}:${DOCKER_TAG}"
-      docker tag "${DOCKER_IMAGE}:${DOCKER_TAG}" "ghcr.io/cluttrdev/${DOCKER_IMAGE}:latest"
-      echo "$GITHUB_TOKEN" | docker login ghcr.io --username cluttrdev --password-stdin
-      docker push "ghcr.io/cluttrdev/${DOCKER_IMAGE}:${DOCKER_TAG}"
-      docker push "ghcr.io/cluttrdev/${DOCKER_IMAGE}:latest"
+      CI_REGISTRY=ghcr.io
+      CI_REGISTRY_IMAGE=ghcr.io/cluttrdev/${IMAGE_NAME}
+      CI_REGISTRY_USER=cluttrdev
+      CI_REGISTRY_PASSWORD=${GITHUB_TOKEN}
+      docker tag "${IMAGE_NAME}:${IMAGE_TAG}" "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
+      docker tag "${IMAGE_NAME}:${IMAGE_TAG}" "${CI_REGISTRY_IMAGE}:latest"
+      echo "$CI_REGISTRY_PASSWORD" | docker login "$CI_REGISTRY" --username "$CI_REGISTRY_USER" --password-stdin
+      docker push "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
+      docker push "${CI_REGISTRY_IMAGE}:latest"
+
+release-chart:
+  stage: release
+  rules:
+    - if: $CI_COMMIT_TAG != null
+      changes:
+        - deploy/helm/gitlab-exporter/Chart.yaml
+  needs:
+    - release-image
+  image: docker.io/alpine/helm:3.17.2
+  variables:
+    HELM_REGISTRY: registry.gitlab.com
+    HELM_REGISTRY_PROJECT: gitlab-exporter/helm-charts
+    HELM_REGISTRY_USER: $CI_REGISTRY_USER
+    HELM_REGISTRY_PASSWORD: $CI_REGISTRY_PASSWORD
+    HELM_CHART_DIR: deploy/helm/gitlab-exporter
+  before_script:
+    - echo "${HELM_REGISTRY_PASSWORD}" | helm registry login ${HELM_REGISTRY} --username ${HELM_REGISTRY_USER} --password-stdin
+  script:
+    - helm package "${HELM_CHART_DIR}" --destination .charts
+    - helm push .charts/*.tgz oci://${HELM_REGISTRY}/${HELM_REGISTRY_PROJECT}
+  artifacts:
+    paths:
+      - .charts/*.tgz
