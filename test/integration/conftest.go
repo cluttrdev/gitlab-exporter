@@ -5,6 +5,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"sync"
 	"testing"
 
 	"go.cluttr.dev/gitlab-exporter/internal/exporter"
@@ -32,12 +33,19 @@ func setupGitLab(t *testing.T) (*http.ServeMux, *gitlab.Client) {
 }
 
 func setupExporter(t *testing.T) (*exporter.Exporter, *recorder_mock.Recorder) {
+	var wg sync.WaitGroup
+
 	rec := recorder_mock.New()
-	t.Cleanup(rec.GracefulStop)
+	t.Cleanup(func() {
+		rec.GracefulStop()
+		wg.Wait()
+	})
 
 	const bufSize int = 4 * 1024 * 1024
 	lis := bufconn.Listen(bufSize)
+	wg.Add(1)
 	go func() {
+		defer wg.Done()
 		if err := rec.Serve(lis); err != nil {
 			t.Log(err)
 		}
