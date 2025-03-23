@@ -189,8 +189,8 @@ release-chart:
   variables:
     HELM_REGISTRY: registry.gitlab.com
     HELM_REGISTRY_PROJECT: gitlab-exporter/helm-charts
-    HELM_REGISTRY_USER: $CI_REGISTRY_USER
-    HELM_REGISTRY_PASSWORD: $CI_REGISTRY_PASSWORD
+    # HELM_REGISTRY_USER:
+    # HELM_REGISTRY_PASSWORD:
     HELM_CHART_DIR: deploy/helm/gitlab-exporter
   before_script:
     - echo "${HELM_REGISTRY_PASSWORD}" | helm registry login ${HELM_REGISTRY} --username ${HELM_REGISTRY_USER} --password-stdin
