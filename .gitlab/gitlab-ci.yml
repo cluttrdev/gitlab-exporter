@@ -41,13 +41,17 @@ lint:
     GOLANGCI_LINT_VERSION: v1.64.6
     GOLANGCI_LINT_CACHE: ${CACHE_DIR}/golangci-lint
   before_script:
-    - | # Download golangci-lint binary
+    - |
+      # Download golangci-lint binary
       echo -e "\e[0Ksection_start:$(date +%s):script_step_before\r\e[0KRunning script_step_before"
       curl -sSfL https://github.com/golangci/golangci-lint/releases/download/${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION#v}-linux-amd64.tar.gz -o /tmp/golangci-lint.tar.gz
       mkdir -p ${GOPATH}/bin
       tar -C ${GOPATH}/bin/ -zxof /tmp/golangci-lint.tar.gz --strip-components=1 golangci-lint-${GOLANGCI_LINT_VERSION#v}-linux-amd64/golangci-lint
       echo -e "\e[0Ksection_end:$(date +%s):script_step_before\r\e[0K"
   script:
+    - |
+      # Print some job properties
+      printf 'PROPERTY_%s="%s"\n' "golangci_lint_version" "${GOLANGCI_LINT_VERSION}"
     - ${GOPATH}/bin/golangci-lint run --verbose ./...
   allow_failure: true
 
@@ -55,6 +59,12 @@ build:
   stage: build
   cache:
     - <<: *cache-defaults
+  before_script:
+    - |
+      # Print some job properties
+      printf 'PROPERTY_%s="%s"\n' "ci_runner_id" "${CI_RUNNER_ID}"
+      printf 'PROPERTY_%s="%s"\n' "ci_runner_version" "${CI_RUNNER_VERSION}"
+      printf 'PROPERTY_%s="%s"\n' "ci_runner_revision" "${CI_RUNNER_REVISION}"
   script:
     - |
       start=$(date +%s%N)
@@ -73,11 +83,17 @@ test:
     GOCOVER_COBERTURA_VERSION: v1.3.0
   before_script:
     - echo -e "\e[0Ksection_start:$(date +%s):script_step_before\r\e[0KRunning script_step_before"
-    - | # Download gotestsum binary
+    - |
+      # Print some job properties
+      printf 'PROPERTY_%s="%s"\n' "gotestsum_version" "${GOTESTSUM_VERSION}"
+      printf 'PROPERTY_%s="%s"\n' "gocover_cobertura_version" "${GOCOVER_COBERTURA_VERSION}"
+    - |
+      # Download gotestsum binary
       curl -sSfL https://github.com/gotestyourself/gotestsum/releases/download/${GOTESTSUM_VERSION}/gotestsum_${GOTESTSUM_VERSION#v}_linux_amd64.tar.gz -o /tmp/gotestsum.tar.gz
       mkdir -p ${GOPATH}/bin
       tar -C ${GOPATH}/bin/ -zxof /tmp/gotestsum.tar.gz gotestsum
-    - | # Install gocover-cobertura
+    - |
+      # Install gocover-cobertura
       go install github.com/boumenot/gocover-cobertura@${GOCOVER_COBERTURA_VERSION}
     - echo -e "\e[0Ksection_end:$(date +%s):script_step_before\r\e[0K"
   script:
@@ -114,7 +130,11 @@ release:
   variables:
     ARCHIVER_VERSION: v3.5.0
   before_script:
-    - | # Download archiver binary (for windows .zip support)
+    - |
+      # Print some job properties
+      printf 'PROPERTY_%s="%s"\n' "archiver_version" "${ARCHIVER_VERSION}"
+    - |
+      # Download archiver binary (for windows .zip support)
       curl -sSL --fail-with-body https://github.com/mholt/archiver/releases/download/${ARCHIVER_VERSION}/arc_${ARCHIVER_VERSION#v}_linux_amd64 -o /tmp/arc
       mkdir -p ${GOPATH}/bin
       install -t ${GOPATH}/bin /tmp/arc
