@@ -42,7 +42,7 @@ To install `gitlab-exporter` you can download a
 # download latest release archive
 RELEASES_URL=https://gitlab.com/api/v4/projects/akun73%2Fgitlab-exporter/releases
 RELEASE_TAG=$(curl -sSfL ${RELEASES_URL} | jq -r '.[0].tag_name')
-curl -sSfL ${RELEASES_URL}/downloads/${RELEASE_TAG}/gitlab-exporter_${RELEASE_TAG}_linux_amd64.tar.gz \
+curl -sSfL ${RELEASES_URL}/${RELEASE_TAG}/downloads/gitlab-exporter_${RELEASE_TAG}_linux_amd64.tar.gz \
     -o /tmp/gitlab-exporter.tar.gz
 
 # extract executable binary into install dir (must exist)
