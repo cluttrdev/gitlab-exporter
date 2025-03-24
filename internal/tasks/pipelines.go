@@ -70,15 +70,19 @@ func FetchProjectsPipelinesJobs(ctx context.Context, glab *gitlab.Client, projec
 	return jobs, nil
 }
 
-func FetchProjectsJobsLogData(ctx context.Context, glab *gitlab.Client, jobs []types.Job) ([]types.Section, []types.Metric, error) {
+func FetchProjectsJobsLogData(ctx context.Context, glab *gitlab.Client, jobs []types.Job) ([]types.Section, []types.Metric, map[int64][]types.JobLogProperty, error) {
 	var (
-		sections []types.Section
-		metrics  []types.Metric
+		sections   []types.Section
+		metrics    []types.Metric
+		properties = make(map[int64][]types.JobLogProperty)
 	)
 
 	type result struct {
-		sections []types.Section
-		metrics  []types.Metric
+		jobId int64
+
+		sections   []types.Section
+		metrics    []types.Metric
+		properties []types.JobLogProperty
 
 		err error
 	}
@@ -101,7 +105,8 @@ func FetchProjectsJobsLogData(ctx context.Context, glab *gitlab.Client, jobs []t
 				defer wg.Done()
 
 				var r result
-				r.sections, r.metrics, r.err = FetchProjectJobLogData(ctx, glab, job)
+				r.jobId = job.Id
+				r.sections, r.metrics, r.properties, r.err = FetchProjectJobLogData(ctx, glab, job)
 				results <- r
 			}()
 		}
@@ -125,22 +130,24 @@ loop:
 			} else {
 				sections = append(sections, r.sections...)
 				metrics = append(metrics, r.metrics...)
+				properties[r.jobId] = append(properties[r.jobId], r.properties...)
 			}
 		}
 	}
 
-	return sections, metrics, errs
+	return sections, metrics, properties, errs
 }
 
-func FetchProjectJobLogData(ctx context.Context, glab *gitlab.Client, job types.Job) ([]types.Section, []types.Metric, error) {
+func FetchProjectJobLogData(ctx context.Context, glab *gitlab.Client, job types.Job) ([]types.Section, []types.Metric, []types.JobLogProperty, error) {
 	var (
-		sections []types.Section
-		metrics  []types.Metric
+		sections   []types.Section
+		metrics    []types.Metric
+		properties []types.JobLogProperty
 	)
 
 	logData, err := glab.Rest.GetJobLogData(ctx, job.Pipeline.Project.Id, job.Id)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	for secnum, secdat := range logData.Sections {
@@ -182,7 +189,14 @@ func FetchProjectJobLogData(ctx context.Context, glab *gitlab.Client, job types.
 		})
 	}
 
-	return sections, metrics, nil
+	for _, p := range logData.Properties {
+		properties = append(properties, types.JobLogProperty{
+			Name:  p.Name,
+			Value: p.Value,
+		})
+	}
+
+	return sections, metrics, properties, nil
 }
 
 func FetchProjectsPipelinesTestReports(ctx context.Context, glab *gitlab.Client, pipelines []types.Pipeline) ([]types.TestReport, []types.TestSuite, []types.TestCase, error) {
