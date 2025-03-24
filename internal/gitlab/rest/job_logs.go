@@ -35,41 +35,6 @@ func (c *Client) GetJobLogData(ctx context.Context, projectId int64, jobId int64
 	}
 
 	return data, nil
-	// var sections []types.Section
-	// for secnum, secdat := range data.Sections {
-	// 	sections = append(sections, types.Section{
-	// 		Id: jobId*1000 + int64(secnum),
-	// 		Job: types.JobRefs{
-	// 			Id: jobId,
-	// 			Pipeline: types.PipelineRefs{
-	// 				ProjectId: projectId,
-	// 			},
-	// 		},
-	//
-	// 		Name:       secdat.Name,
-	// 		StartedAt:  _gitlab.Ptr(time.Unix(secdat.Start, 0)),
-	// 		FinishedAt: _gitlab.Ptr(time.Unix(secdat.End, 0)),
-	// 		Duration:   time.Duration((secdat.End - secdat.Start) * int64(time.Second)),
-	// 	})
-	// }
-	//
-	// var metrics []types.Metric
-	// for iid, m := range data.Metrics {
-	// 	metrics = append(metrics, types.Metric{
-	// 		Id:  fmt.Sprintf("%d-%d", jobId, iid+1),
-	// 		Iid: int64(iid + 1),
-	// 		Job: types.JobRefs{
-	// 			Id: jobId,
-	// 			Pipeline: types.PipelineRefs{
-	// 				ProjectId: projectId,
-	// 			},
-	// 		},
-	// 		Name:      m.Name,
-	// 		Labels:    m.Labels,
-	// 		Value:     m.Value,
-	// 		Timestamp: m.Timestamp,
-	// 	})
-	// }
 }
 
 func ParseJobLog(trace *bytes.Reader) (JobLogData, error) {
