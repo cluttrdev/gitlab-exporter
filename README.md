@@ -22,7 +22,7 @@ There are recorder implementations available for the following datastore backend
 ### Screenshots
 
 These screenshots are taken from Grafana dashboards available
-[here](https://gitlab.com/gitlab-exporter/grafana/dashboards).
+[here](https://gitlab.com/gitlab-exporter/grafana-dashboards).
 
 <details>
     <summary>Projects / Pipelines / Overview </summary>
