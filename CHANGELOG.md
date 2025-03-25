@@ -1,7 +1,25 @@
 # Changelog
 
+## [0.17.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.16.0..v0.17.0)
+
+- 88d0ee3 patch: Make job log properties export configurable
+- c080f93 chore: Fix README dashboards link
+- b75273a Merge branch 'job-properties' into 'main'
+- 45f2a46 chore: Update README screenshots
+- 18fc625 fix: Update dependencies
+- 3696aa9 feat: Export job log properties
+- 46ade2c ci: Print some job properties to test their export
+- ed49d92 feat: Add job log property parser
+- 85a7b9c chore: Remove commented obsolete code
+- 40492e5 chore: Fix binary install instructions in README
+- ca15f22 ci: Fix release-chart job
+- e345f04 ci: Fix chart release job image
+- d598d45 ci: Add release name in github release script
+- 50b4c87 test: Fix log-in-goroutine-after-completed panic
+
 ## [0.16.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.15.1..v0.16.0)
 
+- fb8076f chore(release): v0.16.0
 - b467b7c ci: Add chart release job
 - 3b0f6ae chore: Fix typo in example config
 - 531f82a fix: Fix linting errors
