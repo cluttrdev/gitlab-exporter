@@ -21,14 +21,41 @@ There are recorder implementations available for the following datastore backend
 
 ### Screenshots
 
+These screenshots are taken from Grafana dashboards available
+[here](https://gitlab.com/gitlab-exporter/grafana/dashboards).
+
 <details>
-    <summary>Project Overviews</summary>
-    <img src="./assets/project-overview.webp" />
+    <summary>Projects / Pipelines / Overview </summary>
+    <img src="./assets/grafana/screenshots/projects-pipelines-overview-1.png" />
+    <img src="./assets/grafana/screenshots/projects-pipelines-overview-2.png" />
 </details>
 
 <details>
-    <summary>Pipeline Traces</summary>
-    <img src="./assets/pipeline-trace.webp" />
+    <summary>Projects / Pipelines / Details</summary>
+    <img src="./assets/grafana/screenshots/projects-pipelines-details-1.png" />
+    <img src="./assets/grafana/screenshots/projects-pipelines-details-2.png" />
+</details>
+
+<details>
+    <summary>Projects / Jobs / Details</summary>
+    <img src="./assets/grafana/screenshots/projects-jobs-details-1.png" />
+    <img src="./assets/grafana/screenshots/projects-jobs-details-2.png" />
+</details>
+
+<details>
+    <summary>Projects / Test Reports / Overview</summary>
+    <img src="./assets/grafana/screenshots/projects-test-reports-overview.png" />
+</details>
+
+<details>
+    <summary>Projects / Merge Requests</summary>
+    <img src="./assets/grafana/screenshots/projects-merge-requests-1.png" />
+    <img src="./assets/grafana/screenshots/projects-merge-requests-2.png" />
+</details>
+
+<details>
+    <summary>Projects / DORA</summary>
+    <img src="./assets/grafana/screenshots/projects-dora.png" />
 </details>
 
 ## Installation

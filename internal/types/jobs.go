@@ -44,8 +44,9 @@ type Job struct {
 	Duration       time.Duration
 	Coverage       float64
 
-	Stage string
-	Tags  []string
+	Stage      string
+	Tags       []string
+	Properties []JobLogProperty
 
 	AllowFailure bool
 	Manual       bool
@@ -56,6 +57,11 @@ type Job struct {
 	DownstreamPipeline *PipelineReference
 
 	RunnerId string
+}
+
+type JobLogProperty struct {
+	Name  string
+	Value string
 }
 
 func ConvertJobReference(job JobReference) *typespb.JobReference {
@@ -89,8 +95,9 @@ func ConvertJob(job Job) *typespb.Job {
 		Duration:       durationpb.New(job.Duration),
 		Coverage:       job.Coverage,
 
-		Stage: job.Stage,
-		Tags:  job.Tags,
+		Stage:      job.Stage,
+		Tags:       job.Tags,
+		Properties: convertJobProperties(job.Properties),
 
 		AllowFailure: job.AllowFailure,
 		Manual:       job.Manual,
@@ -121,4 +128,15 @@ func convertJobKind(kind JobKind) typespb.JobKind {
 	default:
 		return typespb.JobKind_JOBKIND_UNSPECIFIED
 	}
+}
+
+func convertJobProperties(props []JobLogProperty) []*typespb.JobProperty {
+	pbProps := make([]*typespb.JobProperty, 0, len(props))
+	for _, p := range props {
+		pbProps = append(pbProps, &typespb.JobProperty{
+			Name:  p.Name,
+			Value: p.Value,
+		})
+	}
+	return pbProps
 }

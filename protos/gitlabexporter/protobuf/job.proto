@@ -32,16 +32,17 @@ message Job {
 
     string stage = 12;
     repeated string tags = 13;
+    repeated JobProperty properties = 14;
 
-    bool allow_failure = 14;
-    bool manual = 15;
-    bool retried = 16;
-    bool retryable = 17;
+    bool allow_failure = 15;
+    bool manual = 16;
+    bool retried = 17;
+    bool retryable = 18;
 
-    JobKind kind = 18;
-    optional PipelineReference downstream_pipeline = 19;
+    JobKind kind = 19;
+    optional PipelineReference downstream_pipeline = 20;
 
-    RunnerReference runner = 20;
+    RunnerReference runner = 21;
 }
 
 message JobTimestamps {
@@ -50,4 +51,9 @@ message JobTimestamps {
     google.protobuf.Timestamp started_at = 3;
     google.protobuf.Timestamp finished_at = 4;
     google.protobuf.Timestamp erased_at = 5;
+}
+
+message JobProperty {
+    string name = 1;
+    string value = 2;
 }

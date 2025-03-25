@@ -197,3 +197,46 @@ METRIC_multi_labels{label_name1="label_value1",label_name2="label_value2"} 1
 		t.Errorf("Result mismatch (-want +got):\n%s", diff)
 	}
 }
+
+func TestParseJobLog_OnlyProperties(t *testing.T) {
+	trace := []byte(`
+PROPERTY_property_name="property_value"
+PROPERTY_empty_value=""
+PROPERTY_escaped_quotes="\"42\""
+PROPERTY_escaped_newlines="This is\\na multi-line\\nvalue."
+PROPERTY_invalid_only_name
+PROPERTY_invalid_missing_value=
+    `)
+
+	data, err := rest.ParseJobLog(bytes.NewReader(trace))
+	if err != nil {
+		t.Errorf("%v", err)
+	}
+
+	expected := rest.JobLogData{
+		Sections: nil,
+		Metrics:  nil,
+		Properties: []rest.PropertyData{
+			{
+				Name:  "property_name",
+				Value: "property_value",
+			},
+			{
+				Name:  "empty_value",
+				Value: "",
+			},
+			{
+				Name:  "escaped_quotes",
+				Value: "\"42\"",
+			},
+			{
+				Name:  "escaped_newlines",
+				Value: "This is\\na multi-line\\nvalue.",
+			},
+		},
+	}
+
+	if diff := cmp.Diff(expected, data); diff != "" {
+		t.Errorf("Result mismatch (-want +got):\n%s", diff)
+	}
+}

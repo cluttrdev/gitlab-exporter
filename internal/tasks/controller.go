@@ -565,9 +565,17 @@ func (c *Controller) fetchProjectsCiData(ctx context.Context, projectIds []int64
 
 		logDataProjectJobs = append(logDataProjectJobs, job)
 	}
-	sections, metrics, err := FetchProjectsJobsLogData(ctx, c.GitLab, logDataProjectJobs)
+	sections, metrics, properties, err := FetchProjectsJobsLogData(ctx, c.GitLab, logDataProjectJobs)
 	if err := handleError(err, "fetch job log data"); err != nil {
 		return projectsCiData{}, err
+	}
+	for jobId, props := range properties {
+		for i := 0; i < len(jobs); i++ {
+			if jobs[i].Id == jobId {
+				jobs[i].Properties = props
+				break // inner loop
+			}
+		}
 	}
 
 	testReportProjectPipelines := []types.Pipeline{}
