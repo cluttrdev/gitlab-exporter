@@ -137,7 +137,7 @@ func (ps *ProjectsSettings) ExportLogData(id int64) bool {
 	if !ok {
 		return false
 	}
-	return cfg.Export.Sections.Enabled || cfg.Export.Metrics.Enabled
+	return cfg.Export.Sections.Enabled || cfg.Export.Metrics.Enabled || cfg.Export.Jobs.Properties.Enabled
 }
 
 func (ps *ProjectsSettings) ExportTraces(id int64) bool {

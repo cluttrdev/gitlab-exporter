@@ -34,21 +34,52 @@ func defaultConfig() config.Config {
 }
 
 func defaultProjectSettings() config.ProjectSettings {
-	var cfg config.ProjectSettings
+	return config.ProjectSettings{
+		Export: config.ProjectExport{
+			Deployments: config.ProjectExportDeployments{
+				Enabled: true,
+			},
+			Jobs: config.ProjectExportJobs{
+				Properties: config.ProjectExportJobsProperties{
+					Enabled: true,
+				},
+			},
+			MergeRequests: config.ProjectExportMergeRequests{
+				Enabled:    true,
+				NoteEvents: true,
+			},
+			Metrics: config.ProjectExportMetrics{
+				Enabled: true,
+			},
+			Reports: config.ProjectExportReports{
+				Enabled: false,
 
-	cfg.Export.Deployments.Enabled = true
-	cfg.Export.MergeRequests.Enabled = true
-	cfg.Export.MergeRequests.NoteEvents = true
-	cfg.Export.Metrics.Enabled = true
-	cfg.Export.Sections.Enabled = true
-	cfg.Export.TestReports.Enabled = true
-	cfg.Export.Traces.Enabled = true
+				Junit: config.ProjectExportReportsSettings{
+					Enabled: false,
+					Paths:   nil,
+				},
+				Coverage: config.ProjectExportReportsSettings{
+					Enabled: false,
+					Paths:   nil,
+				},
+			},
+			Sections: config.ProjectExportSections{
+				Enabled: true,
+			},
+			TestReports: config.ProjectExportTestReports{
+				Enabled: true,
+			},
+			Traces: config.ProjectExportTraces{
+				Enabled: true,
+			},
+		},
 
-	cfg.CatchUp.Enabled = false
-	cfg.CatchUp.UpdatedAfter = ""
-	cfg.CatchUp.UpdatedBefore = ""
-
-	return cfg
+		CatchUp: config.ProjectCatchUp{
+			Enabled:       false,
+			UpdatedAfter:  "",
+			UpdatedBefore: "",
+		},
+	}
 }
 
 func checkConfig(t *testing.T, want interface{}, got interface{}) {
@@ -174,18 +205,26 @@ func TestLoad_WithProjectsEmptyDefaults(t *testing.T) {
 			Id: 42,
 			ProjectSettings: config.ProjectSettings{
 				Export: config.ProjectExport{
-					Deployments:   config.ProjectExportDeployments{Enabled: true},
-					MergeRequests: config.ProjectExportMergeRequests{Enabled: true, NoteEvents: true},
-					Metrics:       config.ProjectExportMetrics{Enabled: true},
-					Sections:      config.ProjectExportSections{Enabled: true},
-					TestReports:   config.ProjectExportTestReports{Enabled: true},
-					Traces:        config.ProjectExportTraces{Enabled: true},
+					Deployments: config.ProjectExportDeployments{
+						Enabled: true},
+					Jobs: config.ProjectExportJobs{
+						Properties: config.ProjectExportJobsProperties{
+							Enabled: true}},
+					MergeRequests: config.ProjectExportMergeRequests{
+						Enabled: true, NoteEvents: true},
+					Metrics: config.ProjectExportMetrics{
+						Enabled: true},
+					Sections: config.ProjectExportSections{
+						Enabled: true},
+					TestReports: config.ProjectExportTestReports{
+						Enabled: true},
+					Traces: config.ProjectExportTraces{
+						Enabled: true},
 				},
 				CatchUp: config.ProjectCatchUp{
 					Enabled:       false,
 					UpdatedAfter:  "",
-					UpdatedBefore: "",
-				},
+					UpdatedBefore: ""},
 			},
 		},
 	)
@@ -235,30 +274,27 @@ func TestLoad_DataWithProjects(t *testing.T) {
 			ProjectSettings: config.ProjectSettings{
 				Export: config.ProjectExport{
 					Deployments: config.ProjectExportDeployments{
-						Enabled: true,
-					},
+						Enabled: true},
+					Jobs: config.ProjectExportJobs{
+						Properties: config.ProjectExportJobsProperties{
+							Enabled: true}},
 					Sections: config.ProjectExportSections{
-						Enabled: true,
-					},
+						Enabled: true},
 					TestReports: config.ProjectExportTestReports{
-						Enabled: false,
-					},
+						Enabled: false},
 					Traces: config.ProjectExportTraces{
-						Enabled: true,
-					},
+						Enabled: true},
 					MergeRequests: config.ProjectExportMergeRequests{
 						Enabled:    true,
 						NoteEvents: true,
 					},
 					Metrics: config.ProjectExportMetrics{
-						Enabled: true,
-					},
+						Enabled: true},
 				},
 				CatchUp: config.ProjectCatchUp{
 					Enabled:       true,
 					UpdatedAfter:  "",
-					UpdatedBefore: "",
-				},
+					UpdatedBefore: ""},
 			},
 			Id: 1337, // "foo/bar",
 		},
@@ -266,30 +302,27 @@ func TestLoad_DataWithProjects(t *testing.T) {
 			ProjectSettings: config.ProjectSettings{
 				Export: config.ProjectExport{
 					Deployments: config.ProjectExportDeployments{
-						Enabled: true,
-					},
+						Enabled: true},
+					Jobs: config.ProjectExportJobs{
+						Properties: config.ProjectExportJobsProperties{
+							Enabled: true}},
 					Sections: config.ProjectExportSections{
-						Enabled: false,
-					},
+						Enabled: false},
 					TestReports: config.ProjectExportTestReports{
-						Enabled: true,
-					},
+						Enabled: true},
 					Traces: config.ProjectExportTraces{
-						Enabled: false,
-					},
+						Enabled: false},
 					MergeRequests: config.ProjectExportMergeRequests{
 						Enabled:    true,
 						NoteEvents: true,
 					},
 					Metrics: config.ProjectExportMetrics{
-						Enabled: true,
-					},
+						Enabled: true},
 				},
 				CatchUp: config.ProjectCatchUp{
 					Enabled:       true,
 					UpdatedAfter:  "2019-03-15T08:00:00Z",
-					UpdatedBefore: "",
-				},
+					UpdatedBefore: ""},
 			},
 			Id: 42, // "42",
 		},
@@ -338,71 +371,107 @@ func TestLoad_DataWithProjectDefaults(t *testing.T) {
 	expected := defaultConfig()
 	expected.ProjectDefaults = config.ProjectSettings{
 		Export: config.ProjectExport{
-			Deployments:   config.ProjectExportDeployments{Enabled: true},
-			Sections:      config.ProjectExportSections{Enabled: true},
-			TestReports:   config.ProjectExportTestReports{Enabled: true},
-			Traces:        config.ProjectExportTraces{Enabled: false},
-			MergeRequests: config.ProjectExportMergeRequests{Enabled: true, NoteEvents: true},
-			Metrics:       config.ProjectExportMetrics{Enabled: false},
+			Deployments: config.ProjectExportDeployments{
+				Enabled: true},
+			Jobs: config.ProjectExportJobs{
+				Properties: config.ProjectExportJobsProperties{
+					Enabled: true}},
+			Sections: config.ProjectExportSections{
+				Enabled: true},
+			TestReports: config.ProjectExportTestReports{
+				Enabled: true},
+			Traces: config.ProjectExportTraces{
+				Enabled: false},
+			MergeRequests: config.ProjectExportMergeRequests{
+				Enabled:    true,
+				NoteEvents: true},
+			Metrics: config.ProjectExportMetrics{
+				Enabled: false},
 		},
 		CatchUp: config.ProjectCatchUp{
 			Enabled:       true,
 			UpdatedAfter:  "",
-			UpdatedBefore: "",
-		},
+			UpdatedBefore: ""},
 	}
 	expected.Projects = append(expected.Projects,
 		config.Project{
 			ProjectSettings: config.ProjectSettings{
 				Export: config.ProjectExport{
-					Deployments:   config.ProjectExportDeployments{Enabled: true},
-					Sections:      config.ProjectExportSections{Enabled: true},
-					TestReports:   config.ProjectExportTestReports{Enabled: true},
-					Traces:        config.ProjectExportTraces{Enabled: false},
-					MergeRequests: config.ProjectExportMergeRequests{Enabled: true, NoteEvents: true},
-					Metrics:       config.ProjectExportMetrics{Enabled: false},
+					Deployments: config.ProjectExportDeployments{
+						Enabled: true},
+					Jobs: config.ProjectExportJobs{
+						Properties: config.ProjectExportJobsProperties{
+							Enabled: true}},
+					Sections: config.ProjectExportSections{
+						Enabled: true},
+					TestReports: config.ProjectExportTestReports{
+						Enabled: true},
+					Traces: config.ProjectExportTraces{
+						Enabled: false},
+					MergeRequests: config.ProjectExportMergeRequests{
+						Enabled:    true,
+						NoteEvents: true},
+					Metrics: config.ProjectExportMetrics{
+						Enabled: false},
 				},
 				CatchUp: config.ProjectCatchUp{
 					Enabled:       true,
 					UpdatedAfter:  "",
-					UpdatedBefore: "",
-				},
+					UpdatedBefore: ""},
 			},
 			Id: 314,
 		},
 		config.Project{
 			ProjectSettings: config.ProjectSettings{
 				Export: config.ProjectExport{
-					Deployments:   config.ProjectExportDeployments{Enabled: true},
-					Sections:      config.ProjectExportSections{Enabled: true},
-					TestReports:   config.ProjectExportTestReports{Enabled: true},
-					Traces:        config.ProjectExportTraces{Enabled: false},
-					MergeRequests: config.ProjectExportMergeRequests{Enabled: true, NoteEvents: true},
-					Metrics:       config.ProjectExportMetrics{Enabled: true},
+					Deployments: config.ProjectExportDeployments{
+						Enabled: true},
+					Jobs: config.ProjectExportJobs{
+						Properties: config.ProjectExportJobsProperties{
+							Enabled: true}},
+					Sections: config.ProjectExportSections{
+						Enabled: true},
+					TestReports: config.ProjectExportTestReports{
+						Enabled: true},
+					Traces: config.ProjectExportTraces{
+						Enabled: false},
+					MergeRequests: config.ProjectExportMergeRequests{
+						Enabled:    true,
+						NoteEvents: true},
+					Metrics: config.ProjectExportMetrics{
+						Enabled: true},
 				},
 				CatchUp: config.ProjectCatchUp{
 					Enabled:       true,
 					UpdatedAfter:  "",
-					UpdatedBefore: "",
-				},
+					UpdatedBefore: ""},
 			},
 			Id: 1337,
 		},
 		config.Project{
 			ProjectSettings: config.ProjectSettings{
 				Export: config.ProjectExport{
-					Deployments:   config.ProjectExportDeployments{Enabled: true},
-					Sections:      config.ProjectExportSections{Enabled: false},
-					TestReports:   config.ProjectExportTestReports{Enabled: true},
-					Traces:        config.ProjectExportTraces{Enabled: true},
-					MergeRequests: config.ProjectExportMergeRequests{Enabled: true, NoteEvents: true},
-					Metrics:       config.ProjectExportMetrics{Enabled: false},
+					Deployments: config.ProjectExportDeployments{
+						Enabled: true},
+					Jobs: config.ProjectExportJobs{
+						Properties: config.ProjectExportJobsProperties{
+							Enabled: true}},
+					Sections: config.ProjectExportSections{
+						Enabled: false},
+					TestReports: config.ProjectExportTestReports{
+						Enabled: true},
+					Traces: config.ProjectExportTraces{
+						Enabled: true},
+					MergeRequests: config.ProjectExportMergeRequests{
+						Enabled:    true,
+						NoteEvents: true},
+					Metrics: config.ProjectExportMetrics{
+						Enabled: false},
 				},
 				CatchUp: config.ProjectCatchUp{
 					Enabled:       true,
 					UpdatedAfter:  "2019-03-15T08:00:00Z",
-					UpdatedBefore: "",
-				},
+					UpdatedBefore: ""},
 			},
 			Id: 42,
 		},

@@ -31,7 +31,7 @@ project_defaults:
     metrics:
       # Whether or not to export metrics embedded in job logs.
       # If enabled, this may significantly increase the export time since it
-      # requires fetching entire job logs to parse for embedded metrics.
+      # requires fetching entire job logs.
       enabled: true
 
     mergerequests:
@@ -64,8 +64,15 @@ project_defaults:
     sections:
       # Whether or not to export job section data.
       # If enabled, this may significantly increase the export time since it
-      # requires fetching entire job logs to parse for section information.
+      # requires fetching entire job logs.
       enabled: true
+
+    jobs:
+      properties:
+        # Whether or not to export properties embedded in job logs.
+        # If enabled, this may significantly increase the export time since it
+        # requires fetching entire job logs.
+        enabled: true
 
     testreports:
       # Whether or not to export pipeline testreports.
