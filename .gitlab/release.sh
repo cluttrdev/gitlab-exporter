@@ -24,7 +24,7 @@ for os in "${!OSARCHMAP[@]}"; do
         output="${output_dir}/${output_file}"
 
         printf " build..."
-        make build output="${output}"
+        make build os="${os}" arch="${arch}" output="${output}"
 
         printf " archive..."
         case "${os}" in
