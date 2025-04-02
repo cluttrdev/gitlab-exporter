@@ -31,9 +31,11 @@ protobuf:  ## Generate Protocol Buffer and gRPC code
 
 .PHONY: build
 build:  ## Create application binary
-	export output="bin/${APP}"; \
-	if [ -n "${output}" ]; then export output="${output}"; fi; \
+	if [ -z "${os}" ]; then goos=$$(go env GOOS); else goos="${os}"; fi; \
+	if [ -z "${arch}" ]; then goarch=$$(go env GOARCH); else goarch="${arch}"; fi; \
+	if [ -z "${output}" ]; then output="bin/${APP}"; else output="${output}"; fi; \
 	export version=$$(make --no-print-directory version); \
+	GOOS="$${goos}" GOARCH="$${goarch}" \
 	go build \
 		-ldflags "-s -w -X 'main.version=$${version}'" \
 		-o "$${output}" \
