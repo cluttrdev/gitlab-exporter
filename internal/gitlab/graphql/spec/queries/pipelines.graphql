@@ -19,6 +19,7 @@ query getProjectsPipelines(
                     ...PipelineReferenceFields
 
                     ...PipelineFieldsCore
+                    ...PipelineFieldsRelations
                 }
                 pageInfo {
                     ...pageFields
@@ -52,9 +53,34 @@ query getProjectPipelines(
                 ...PipelineReferenceFields
 
                 ...PipelineFieldsCore
+                ...PipelineFieldsRelations
             }
             pageInfo {
                 ...pageFields
+            }
+        }
+    }
+}
+
+query getProjectPipelineDownstream(
+    $projectPath: ID!
+    $pipelineIid: ID!
+    $endCursor: String
+) {
+    project(fullPath: $projectPath) {
+        ...ProjectReferenceFields
+
+        pipeline(iid: $pipelineIid) {
+            downstream(after: $endCursor) {
+                nodes {
+                    ...PipelineReferenceFields
+                    project {
+                        ...ProjectReferenceFields
+                    }
+                }
+                pageInfo {
+                    ...pageFields
+                }
             }
         }
     }
@@ -72,6 +98,7 @@ query getProjectIdPipeline(
                 ...PipelineReferenceFields
 
                 ...PipelineFieldsCore
+                ...PipelineFieldsRelations
             }
         }
     }

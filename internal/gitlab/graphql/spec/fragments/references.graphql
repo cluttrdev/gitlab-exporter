@@ -1,0 +1,29 @@
+fragment NamespaceReferenceFields on Namespace {
+    id
+    fullPath
+}
+
+fragment ProjectReferenceFields on Project {
+    id
+    fullPath
+}
+
+fragment PipelineReferenceFields on Pipeline {
+    id
+    iid
+}
+
+fragment JobReferenceFields on CiJob {
+    id
+}
+
+fragment MergeRequestReferenceFields on MergeRequest {
+    id
+    iid
+}
+
+fragment UserReferenceFields on User {
+    id
+    username
+    name
+}

@@ -1,8 +1,3 @@
-fragment MergeRequestReferenceFields on MergeRequest {
-    id
-    iid
-}
-
 fragment MergeRequestFieldsCore on MergeRequest {
     createdAt
     updatedAt
@@ -55,8 +50,7 @@ fragment MergeRequestFieldsExtra on MergeRequest {
         id
         iid
         project {
-            id
-            fullPath
+            ...ProjectReferenceFields
         }
     }
 }

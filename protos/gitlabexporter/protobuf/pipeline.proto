@@ -33,10 +33,11 @@ message Pipeline {
 
     bool child = 17;
     optional PipelineReference upstream_pipeline = 18;
+    repeated PipelineReference downstream_pipelines = 19;
 
-    optional MergeRequestReference merge_request = 19;
+    optional MergeRequestReference merge_request = 20;
 
-    UserReference user = 20;
+    UserReference user = 21;
 }
 
 message PipelineTimestamps {
