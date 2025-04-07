@@ -14,6 +14,7 @@ type PipelineFields struct {
 	Project ProjectReferenceFields
 
 	PipelineFieldsCore
+	PipelineFieldsRelations
 }
 
 func ConvertPipeline(pf PipelineFields) (types.Pipeline, error) {
@@ -61,7 +62,8 @@ func ConvertPipeline(pf PipelineFields) (types.Pipeline, error) {
 		YamlErrors: pf.YamlErrors,
 
 		Child: pf.Child,
-		// Upstream: nil,
+		// UpstreamPipeline: nil,
+		// DownstreamPipelines: nil,
 
 		// MergeRequest: nil,
 
@@ -79,6 +81,21 @@ func ConvertPipeline(pf PipelineFields) (types.Pipeline, error) {
 				Id:       upstreamProjectId,
 				FullPath: pf.Upstream.Project.FullPath,
 			},
+		}
+	}
+	if pf.Downstream != nil {
+		for _, dpf := range pf.Downstream.Nodes {
+			downstreamId, _ := ParseId(dpf.Id, GlobalIdPipelinePrefix)
+			downstreamIid, _ := ParseId(dpf.Iid, "")
+			downstreamProjectId, _ := ParseId(dpf.Project.Id, GlobalIdProjectPrefix)
+			p.DownstreamPipelines = append(p.DownstreamPipelines, &types.PipelineReference{
+				Id:  downstreamId,
+				Iid: downstreamIid,
+				Project: types.ProjectReference{
+					Id:       downstreamProjectId,
+					FullPath: dpf.Project.FullPath,
+				},
+			})
 		}
 	}
 	if pf.MergeRequest != nil {
@@ -171,15 +188,27 @@ func (c *Client) getProjectsPipelines(ctx context.Context, ids []string, opts ge
 
 		for _, project_ := range resp.Projects.Nodes {
 			for _, pipeline_ := range project_.Pipelines.Nodes {
-				pfs = append(pfs, PipelineFields{
+				pf := PipelineFields{
 					PipelineReferenceFields: pipeline_.PipelineReferenceFields,
 					Project: ProjectReferenceFields{
 						Id:       project_.Id,
 						FullPath: project_.FullPath,
 					},
 
-					PipelineFieldsCore: pipeline_.PipelineFieldsCore,
-				})
+					PipelineFieldsCore:      pipeline_.PipelineFieldsCore,
+					PipelineFieldsRelations: pipeline_.PipelineFieldsRelations,
+				}
+
+				if pipeline_.Downstream != nil && pipeline_.Downstream.PageInfo.HasNextPage {
+					dpconn, err := c.getProjectPipelineDownstreamConnection(ctx, project_.FullPath, pipeline_.Iid, pipeline_.Downstream.PageInfo.EndCursor)
+					if err != nil {
+						return nil, err
+					}
+					pf.Downstream.Nodes = append(pf.Downstream.Nodes, dpconn.Nodes...)
+					pf.Downstream.PageInfo = dpconn.PageInfo
+				}
+
+				pfs = append(pfs, pf)
 			}
 
 			if project_.Pipelines.PageInfo.HasNextPage {
@@ -227,15 +256,27 @@ func (c *Client) getProjectPipelines(ctx context.Context, path string, opts getP
 		}
 
 		for _, pipeline_ := range project_.Pipelines.Nodes {
-			pfs = append(pfs, PipelineFields{
+			pf := PipelineFields{
 				PipelineReferenceFields: pipeline_.PipelineReferenceFields,
 				Project: ProjectReferenceFields{
 					Id:       project_.Id,
 					FullPath: project_.FullPath,
 				},
 
-				PipelineFieldsCore: pipeline_.PipelineFieldsCore,
-			})
+				PipelineFieldsCore:      pipeline_.PipelineFieldsCore,
+				PipelineFieldsRelations: pipeline_.PipelineFieldsRelations,
+			}
+
+			if pipeline_.Downstream != nil && pipeline_.Downstream.PageInfo.HasNextPage {
+				dpconn, err := c.getProjectPipelineDownstreamConnection(ctx, project_.FullPath, pipeline_.Iid, pipeline_.Downstream.PageInfo.EndCursor)
+				if err != nil {
+					return nil, err
+				}
+				pf.Downstream.Nodes = append(pf.Downstream.Nodes, dpconn.Nodes...)
+				pf.Downstream.PageInfo = dpconn.PageInfo
+			}
+
+			pfs = append(pfs, pf)
 		}
 
 		if !project_.Pipelines.PageInfo.HasNextPage {
@@ -246,6 +287,47 @@ func (c *Client) getProjectPipelines(ctx context.Context, path string, opts getP
 	}
 
 	return pfs, nil
+}
+
+func (c *Client) getProjectPipelineDownstreamConnection(ctx context.Context, projectPath string, pipelineIid string, endCursor *string) (*PipelineFieldsRelationsDownstreamPipelineConnection, error) {
+	var dpconn PipelineFieldsRelationsDownstreamPipelineConnection
+
+	for {
+		resp, err := getProjectPipelineDownstream(ctx, c.client, projectPath, pipelineIid, endCursor)
+		if err != nil {
+			return nil, err
+		}
+
+		project_ := resp.Project
+		if project_ == nil {
+			return nil, fmt.Errorf("project not found: %v", projectPath)
+		}
+		pipeline_ := project_.Pipeline
+		if pipeline_ == nil {
+			return nil, fmt.Errorf("project pipeline not found: %v (%v)", pipelineIid, projectPath)
+		}
+		downstream_ := pipeline_.Downstream
+		if downstream_ == nil {
+			return nil, nil
+		}
+
+		for _, node_ := range pipeline_.Downstream.Nodes {
+			dpconn.Nodes = append(dpconn.Nodes, &PipelineFieldsRelationsDownstreamPipelineConnectionNodesPipeline{
+				PipelineReferenceFields: node_.PipelineReferenceFields,
+				Project: &PipelineFieldsRelationsDownstreamPipelineConnectionNodesPipelineProject{
+					ProjectReferenceFields: node_.Project.ProjectReferenceFields,
+				},
+			})
+		}
+
+		if !downstream_.PageInfo.HasNextPage {
+			break
+		}
+
+		endCursor = downstream_.PageInfo.EndCursor
+	}
+
+	return &dpconn, nil
 }
 
 func (c *Client) getProjectIdPipeline(ctx context.Context, projectId string, pipelineId string) (PipelineFields, error) {

@@ -43,8 +43,9 @@ type Pipeline struct {
 	Warnings   bool
 	YamlErrors bool
 
-	Child            bool
-	UpstreamPipeline *PipelineReference
+	Child               bool
+	UpstreamPipeline    *PipelineReference
+	DownstreamPipelines []*PipelineReference
 
 	MergeRequest *MergeRequestReference
 
@@ -89,6 +90,7 @@ func ConvertPipeline(pipeline Pipeline) *typespb.Pipeline {
 
 		Child: pipeline.Child,
 		// UpstreamPipeline: nil,
+		// DownstreamPipelines: nil,
 
 		// MergeRequest: nil,
 
@@ -97,6 +99,12 @@ func ConvertPipeline(pipeline Pipeline) *typespb.Pipeline {
 
 	if pipeline.UpstreamPipeline != nil {
 		pbPipeline.UpstreamPipeline = ConvertPipelineReference(*pipeline.UpstreamPipeline)
+	}
+	for _, dp := range pipeline.DownstreamPipelines {
+		if dp == nil {
+			continue
+		}
+		pbPipeline.DownstreamPipelines = append(pbPipeline.DownstreamPipelines, ConvertPipelineReference(*dp))
 	}
 
 	if pipeline.MergeRequest != nil {

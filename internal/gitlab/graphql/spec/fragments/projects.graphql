@@ -1,13 +1,3 @@
-fragment NamespaceReferenceFields on Namespace {
-    id
-    fullPath
-}
-
-fragment ProjectReferenceFields on Project {
-    id
-    fullPath
-}
-
 fragment ProjectFieldsCore on Project {
     name
     nameWithNamespace
