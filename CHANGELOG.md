@@ -1,7 +1,17 @@
 # Changelog
 
+## [0.17.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.17.0..v0.17.1)
+
+- e1a88d9 ci(github): Link to gitlab release assets instead of uploading to github
+- 7c2f7a3 chore: Merge branch 'pipelines-downstream' into 'main'
+- f8c232c patch!: Export pipeline downstream references
+- d9574f2 ci: Fix release artifacts builds
+- c82d7bc build: Fix build target os/arch usage
+- 94805aa ci: Add default job properties output
+
 ## [0.17.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.16.0..v0.17.0)
 
+- ee040d8 chore(release): v0.17.0
 - 88d0ee3 patch: Make job log properties export configurable
 - c080f93 chore: Fix README dashboards link
 - b75273a Merge branch 'job-properties' into 'main'
