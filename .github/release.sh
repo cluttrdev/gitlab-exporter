@@ -18,7 +18,9 @@ release_notes=$(jq -r '.description' <<< "${response}" | sed 's/$/\\n/' | tr -d 
 # adjust commit link url
 release_notes=$(sed 's#gitlab.com/akun73/gitlab-exporter/-/commit/#github.com/cluttrdev/gitlab-exporter/commit/#g' <<< "${release_notes}")
 
-release_assets=$(jq -r '.assets.links[]|[.name, .url] | @tsv' <<< "${response}")
+# prepend link to release assets
+release_assets_url="https://gitlab.com/akun73/gitlab-exporter/-/releases/${TAG_NAME}"
+release_notes=$(printf '## Release Assets\\n\\nPlease find the release assets [here](%s).\\n\\n%s' "${release_assets_url}" "$release_notes")
 
 echo "Creating GitHub release"
 response=$(
@@ -33,33 +35,3 @@ if [ $? -ne 0 ]; then
     echo "${response}"
     exit 1
 fi
-
-upload_url=$(jq -r '.upload_url // empty' <<<"${response}")
-[ -n "${upload_url}" ] || {
-    echo "Missing upload url"
-    echo "${response}"
-    exit 1
-}
-upload_url="${upload_url%\{*\}}"
-
-echo "Synching release assets"
-echo "${release_assets}" | while IFS=$'\t' read -r name url; do
-    printf "\t%s" "${name}"
-
-    printf " donwload..."
-    curl \
-        -sSL --fail-with-body \
-        --output "${name}" \
-        "${url}"
-
-    printf " upload..."
-    curl "${upload_url}?name=${name}" \
-        -sSL --fail-with-body \
-        --header "Accept: application/vnd.github+json" \
-        --header "Authorization: Bearer ${GITHUB_TOKEN}" \
-        --header "X-GitHub-Api-Version 2022-11-28" \
-        --header "Content-Type: application/octet-stream" \
-        --data-binary "@${name}"
-
-    printf " done\n"
-done
