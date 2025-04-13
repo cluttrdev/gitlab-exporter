@@ -13,7 +13,6 @@ import (
 	"go.cluttr.dev/gitlab-exporter/internal/exporter"
 	"go.cluttr.dev/gitlab-exporter/internal/gitlab/graphql"
 	"go.cluttr.dev/gitlab-exporter/internal/types"
-	"go.cluttr.dev/gitlab-exporter/protobuf/typespb"
 )
 
 type ExportPipelineConfig struct {
@@ -101,5 +100,5 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("convert pipeline fields: %w", err)
 	}
 
-	return exp.ExportPipelines(ctx, []*typespb.Pipeline{types.ConvertPipeline(pipeline)})
+	return exp.ExportPipelines(ctx, []types.Pipeline{pipeline})
 }

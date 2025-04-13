@@ -9,15 +9,12 @@ import (
 	"sync"
 	"time"
 
-	tracepb "go.opentelemetry.io/proto/otlp/trace/v1"
-
 	"go.cluttr.dev/gitlab-exporter/internal/config"
 	"go.cluttr.dev/gitlab-exporter/internal/exporter"
 	"go.cluttr.dev/gitlab-exporter/internal/gitlab"
 	"go.cluttr.dev/gitlab-exporter/internal/gitlab/graphql"
 	"go.cluttr.dev/gitlab-exporter/internal/gitlab/rest"
 	"go.cluttr.dev/gitlab-exporter/internal/types"
-	"go.cluttr.dev/gitlab-exporter/protobuf/typespb"
 )
 
 const (
@@ -372,8 +369,8 @@ func (c *Controller) process(ctx context.Context, projectSettings []ProjectSetti
 	go func() {
 		defer wg.Done()
 
-		if err := c.exportProjects(ctx, result.UpdatedProjects); err != nil {
-			errChan <- fmt.Errorf("export projects: %w", err)
+		if err := c.processProjects(ctx, result.UpdatedProjects); err != nil {
+			errChan <- fmt.Errorf("process projects: %w", err)
 		}
 	}()
 
@@ -381,8 +378,8 @@ func (c *Controller) process(ctx context.Context, projectSettings []ProjectSetti
 	go func() {
 		defer wg.Done()
 
-		if err := c.processProjectsCiData(ctx, result.ProjectsWithUpdatedPipelines, updatedAfter, updatedBefore); err != nil {
-			errChan <- fmt.Errorf("process ci data: %w", err)
+		if err := c.processPipelines(ctx, result.ProjectsWithUpdatedPipelines, updatedAfter, updatedBefore); err != nil {
+			errChan <- fmt.Errorf("process pipelines: %w", err)
 		}
 	}()
 
@@ -390,8 +387,8 @@ func (c *Controller) process(ctx context.Context, projectSettings []ProjectSetti
 	go func() {
 		defer wg.Done()
 
-		if err := c.processProjectsMrData(ctx, result.ProjectsWithUpdatedMergeRequests, updatedAfter, updatedBefore); err != nil {
-			errChan <- fmt.Errorf("process mr data: %w", err)
+		if err := c.processProjectMergeRequests(ctx, result.ProjectsWithUpdatedMergeRequests, updatedAfter, updatedBefore); err != nil {
+			errChan <- fmt.Errorf("process merge requests: %w", err)
 		}
 	}()
 
@@ -466,28 +463,8 @@ func (c *Controller) getUpdatedProjects(ctx context.Context, projects []ProjectS
 	return result, nil
 }
 
-func (s *Controller) exportProjects(ctx context.Context, projects []types.Project) error {
-	ps := make([]*typespb.Project, 0, len(projects))
-	for _, p := range projects {
-		ps = append(ps, types.ConvertProject(p))
-	}
-
-	return s.Exporter.ExportProjects(ctx, ps)
-}
-
-type projectsCiData struct {
-	Pipelines        []types.Pipeline
-	Jobs             []types.Job
-	Sections         []types.Section
-	Metrics          []types.Metric
-	Traces           []*typespb.Trace
-	TestReports      []types.TestReport
-	TestSuites       []types.TestSuite
-	TestCases        []types.TestCase
-	CoverageReports  []types.CoverageReport
-	CoveragePackages []types.CoveragePackage
-	CoverageClasses  []types.CoverageClass
-	CoverageMethods  []types.CoverageMethod
+func (s *Controller) processProjects(ctx context.Context, projects []types.Project) error {
+	return s.Exporter.ExportProjects(ctx, projects)
 }
 
 func (c *Controller) processProjectsDeployments(ctx context.Context, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) error {
@@ -503,55 +480,69 @@ func (c *Controller) processProjectsDeployments(ctx context.Context, projectIds 
 		return fmt.Errorf("fetch deployments: %w", err)
 	}
 
-	pbDeployments := make([]*typespb.Deployment, 0, len(deployments))
-	for _, deployment := range deployments {
-		pbDeployments = append(pbDeployments, types.ConvertDeployment(deployment))
-	}
-
-	if err := c.Exporter.ExportDeployments(ctx, pbDeployments); err != nil {
+	if err := c.Exporter.ExportDeployments(ctx, deployments); err != nil {
 		return fmt.Errorf("export deployments: %w", err)
 	}
 
 	return nil
 }
 
-func (c *Controller) processProjectsCiData(ctx context.Context, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) error {
-	data, err := c.fetchProjectsCiData(ctx, projectIds, updatedAfter, updatedBefore)
-	if err != nil {
-		return fmt.Errorf("fetch projects ci data: %w", err)
-	}
-
-	if err := c.exportProjectsCiData(ctx, data); err != nil {
-		return fmt.Errorf("export projects ci data: %w", err)
-	}
-
-	return nil
-}
-
-func (c *Controller) fetchProjectsCiData(ctx context.Context, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) (projectsCiData, error) {
-	var errs error
-
-	handleError := func(err error, msg string) error {
-		if err == nil {
-			return nil
-		}
-
-		if errors.Is(err, context.Canceled) {
-			return err
-		}
-
-		errs = errors.Join(errs, fmt.Errorf("%s: %w", msg, err))
+func (c *Controller) handleError(errs *error, err error, msg string) error {
+	if err == nil {
 		return nil
 	}
 
-	pipelines, err := FetchProjectsPipelines(ctx, c.GitLab, projectIds, updatedAfter, updatedBefore)
-	if err := handleError(err, "fetch projects pipelines"); err != nil {
-		return projectsCiData{}, err
+	if errors.Is(err, context.Canceled) {
+		return err
 	}
 
+	*errs = errors.Join(*errs, fmt.Errorf("%s: %w", msg, err))
+	return nil
+}
+
+func (c *Controller) processPipelines(ctx context.Context, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) error {
+	var errs error
+
+	pipelines, err := FetchProjectsPipelines(ctx, c.GitLab, projectIds, updatedAfter, updatedBefore)
+	if err := c.handleError(&errs, err, "fetch projects pipelines"); err != nil {
+		return err
+	}
+
+	err = c.Exporter.ExportPipelines(ctx, pipelines)
+	if err := c.handleError(&errs, err, "export pipelines"); err != nil {
+		return err
+	}
+
+	var tracePipelines []types.Pipeline
+	for _, p := range pipelines {
+		if c.projectsSettings.ExportTraces(p.Project.Id) {
+			tracePipelines = append(tracePipelines, p)
+		}
+	}
+	err = c.Exporter.ExportPipelineSpans(ctx, tracePipelines)
+	if err := c.handleError(&errs, err, "export pipeline spans"); err != nil {
+		return err
+	}
+
+	err = c.exportJobs(ctx, projectIds, updatedAfter, updatedBefore)
+	if err := c.handleError(&errs, err, "export jobs"); err != nil {
+		return err
+	}
+
+	err = c.exportReports(ctx, pipelines)
+	if err := c.handleError(&errs, err, "export reports"); err != nil {
+		return err
+	}
+
+	return errs
+}
+
+func (c *Controller) exportJobs(ctx context.Context, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) error {
+	var errs error
+
 	jobs, err := FetchProjectsPipelinesJobs(ctx, c.GitLab, projectIds, updatedAfter, updatedBefore)
-	if err := handleError(err, "fetch projects pipelines jobs"); err != nil {
-		return projectsCiData{}, err
+	if err := c.handleError(&errs, err, "fetch projects pipelines jobs"); err != nil {
+		return err
 	}
 
 	var logDataProjectJobs []types.Job
@@ -559,15 +550,16 @@ func (c *Controller) fetchProjectsCiData(ctx context.Context, projectIds []int64
 		if job.Kind == types.JobKindBridge { // bridges don't have logs
 			continue
 		}
-		if !c.projectsSettings.ExportLogData(job.Pipeline.Project.Id) { // duh
+		if !c.projectsSettings.ExportLogData(job.Pipeline.Project.Id) {
 			continue
 		}
 
 		logDataProjectJobs = append(logDataProjectJobs, job)
 	}
+
 	sections, metrics, properties, err := FetchProjectsJobsLogData(ctx, c.GitLab, logDataProjectJobs)
-	if err := handleError(err, "fetch job log data"); err != nil {
-		return projectsCiData{}, err
+	if err := c.handleError(&errs, err, "fetch projects job log data"); err != nil {
+		return err
 	}
 	for jobId, props := range properties {
 		for i := 0; i < len(jobs); i++ {
@@ -577,6 +569,48 @@ func (c *Controller) fetchProjectsCiData(ctx context.Context, projectIds []int64
 			}
 		}
 	}
+
+	err = c.Exporter.ExportJobs(ctx, jobs)
+	if err := c.handleError(&errs, err, "export jobs"); err != nil {
+		return err
+	}
+	err = c.Exporter.ExportSections(ctx, sections)
+	if err := c.handleError(&errs, err, "export sections"); err != nil {
+		return err
+	}
+
+	var traceJobs []types.Job
+	var traceSections []types.Section
+	for _, j := range jobs {
+		if c.projectsSettings.ExportTraces(j.Pipeline.Project.Id) {
+			traceJobs = append(traceJobs, j)
+
+			for _, s := range sections {
+				if s.Job.Id == j.Id {
+					traceSections = append(traceSections, s)
+				}
+			}
+		}
+	}
+	err = c.Exporter.ExportJobSpans(ctx, traceJobs)
+	if err := c.handleError(&errs, err, "export job spans"); err != nil {
+		return err
+	}
+	err = c.Exporter.ExportSectionSpans(ctx, traceSections)
+	if err := c.handleError(&errs, err, "export section spans"); err != nil {
+		return err
+	}
+
+	err = c.Exporter.ExportMetrics(ctx, metrics)
+	if err := c.handleError(&errs, err, "export metrics"); err != nil {
+		return err
+	}
+
+	return errs
+}
+
+func (c *Controller) exportReports(ctx context.Context, pipelines []types.Pipeline) error {
+	var errs error
 
 	testReportProjectPipelines := []types.Pipeline{}
 	junitReportProjectPipelines := make(map[string][]string)
@@ -606,314 +640,68 @@ func (c *Controller) fetchProjectsCiData(ctx context.Context, projectIds []int64
 			testReportProjectPipelines = append(testReportProjectPipelines, p)
 		}
 	}
+
 	testReports, testSuites, testCases, err := FetchProjectsPipelinesTestReports(ctx, c.GitLab, testReportProjectPipelines)
-	if err := handleError(err, "fetch test reports"); err != nil {
-		return projectsCiData{}, err
+	if err := c.handleError(&errs, err, "fetch test reports"); err != nil {
+		return err
 	}
 	junitReports, junitSuites, junitCases, err := FetchProjectsPipelinesJunitReports(ctx, c.GitLab, junitReportProjectPipelines, junitReportProjectArtifactPaths)
-	if err := handleError(err, "fetch junit reports"); err != nil {
-		return projectsCiData{}, err
+	if err := c.handleError(&errs, err, "fetch junit reports"); err != nil {
+		return err
 	}
+	err = c.Exporter.ExportTestReports(ctx, append(junitReports, testReports...))
+	if herr := c.handleError(&errs, err, "test reports"); herr != nil {
+		return herr
+	}
+	err = c.Exporter.ExportTestSuites(ctx, append(junitSuites, testSuites...))
+	if herr := c.handleError(&errs, err, "test suites"); herr != nil {
+		return herr
+	}
+	err = c.Exporter.ExportTestCases(ctx, append(junitCases, testCases...))
+	if herr := c.handleError(&errs, err, "test cases"); herr != nil {
+		return herr
+	}
+
 	covReports, covPackages, covClasses, covMethods, err := FetchProjectsPipelinesCoberturaReports(ctx, c.GitLab, coberturaReportProjectPipelines, coberturaReportProjectArtifactPaths)
-	if err := handleError(err, "fetch coverage reports"); err != nil {
-		return projectsCiData{}, err
+	if err := c.handleError(&errs, err, "fetch coverage reports"); err != nil {
+		return err
 	}
-
-	traceData, err := c.convertTraceData(pipelines, jobs, sections)
-	if err := handleError(err, "convert trace spans"); err != nil {
-		return projectsCiData{}, err
-	}
-	var traces []*typespb.Trace
-	if len(traceData.ResourceSpans) > 0 {
-		traces = append(traces, &typespb.Trace{
-			Data: traceData,
-		})
-	}
-
-	return projectsCiData{
-		Pipelines:        pipelines,
-		Jobs:             jobs,
-		Sections:         sections,
-		Metrics:          metrics,
-		Traces:           traces,
-		TestReports:      append(testReports, junitReports...),
-		TestSuites:       append(testSuites, junitSuites...),
-		TestCases:        append(testCases, junitCases...),
-		CoverageReports:  covReports,
-		CoveragePackages: covPackages,
-		CoverageClasses:  covClasses,
-		CoverageMethods:  covMethods,
-	}, nil
-}
-
-func (c *Controller) exportProjectsCiData(ctx context.Context, data projectsCiData) error {
-	var (
-		err, errs error
-	)
-
-	handleError := func(err error, entity string) error {
-		if err == nil {
-			return nil
-		}
-
-		if errors.Is(err, context.Canceled) {
-			return err
-		}
-
-		errs = errors.Join(errs, fmt.Errorf("export %s: %w", entity, err))
-		return nil
-	}
-
-	// Pipelines
-	pbPipelines := make([]*typespb.Pipeline, 0, len(data.Pipelines))
-	for _, p := range data.Pipelines {
-		pbPipelines = append(pbPipelines, types.ConvertPipeline(p))
-	}
-	err = c.Exporter.ExportPipelines(ctx, pbPipelines)
-	if herr := handleError(err, "pipelines"); herr != nil {
+	err = c.Exporter.ExportCoverageReports(ctx, covReports)
+	if herr := c.handleError(&errs, err, "coverage reports"); herr != nil {
 		return herr
 	}
-
-	// Jobs
-	pbJobs := make([]*typespb.Job, 0, len(data.Jobs))
-	for _, j := range data.Jobs {
-		pbJobs = append(pbJobs, types.ConvertJob(j))
-	}
-	err = c.Exporter.ExportJobs(ctx, pbJobs)
-	if herr := handleError(err, "jobs"); herr != nil {
+	err = c.Exporter.ExportCoveragePackages(ctx, covPackages)
+	if herr := c.handleError(&errs, err, "coverage packages"); herr != nil {
 		return herr
 	}
-
-	// Sections
-	pbSections := make([]*typespb.Section, 0, len(data.Sections))
-	for _, s := range data.Sections {
-		pbSections = append(pbSections, types.ConvertSection(s))
-	}
-	err = c.Exporter.ExportSections(ctx, pbSections)
-	if herr := handleError(err, "sections"); herr != nil {
+	err = c.Exporter.ExportCoverageClasses(ctx, covClasses)
+	if herr := c.handleError(&errs, err, "coverage packages"); herr != nil {
 		return herr
 	}
-
-	// Metrics
-	pbMetrics := make([]*typespb.Metric, 0, len(data.Metrics))
-	for _, m := range data.Metrics {
-		pbMetrics = append(pbMetrics, types.ConvertMetric(m))
-	}
-	err = c.Exporter.ExportMetrics(ctx, pbMetrics)
-	if herr := handleError(err, "metrics"); herr != nil {
-		return herr
-	}
-
-	// Traces
-	pbTraces := data.Traces
-	err = c.Exporter.ExportTraces(ctx, pbTraces)
-	if herr := handleError(err, "traces"); herr != nil {
-		return herr
-	}
-
-	// Test Reports
-	pbTestReports := make([]*typespb.TestReport, 0, len(data.TestReports))
-	for _, tr := range data.TestReports {
-		pbTestReports = append(pbTestReports, types.ConvertTestReport(tr))
-	}
-	err = c.Exporter.ExportTestReports(ctx, pbTestReports)
-	if herr := handleError(err, "test reports"); herr != nil {
-		return herr
-	}
-
-	// Test Suites
-	pbTestSuites := make([]*typespb.TestSuite, 0, len(data.TestSuites))
-	for _, ts := range data.TestSuites {
-		pbTestSuites = append(pbTestSuites, types.ConvertTestSuite(ts))
-	}
-	err = c.Exporter.ExportTestSuites(ctx, pbTestSuites)
-	if herr := handleError(err, "test suites"); herr != nil {
-		return herr
-	}
-
-	// Test Cases
-	pbTestCases := make([]*typespb.TestCase, 0, len(data.TestCases))
-	for _, tc := range data.TestCases {
-		pbTestCases = append(pbTestCases, types.ConvertTestCase(tc))
-	}
-	err = c.Exporter.ExportTestCases(ctx, pbTestCases)
-	if herr := handleError(err, "test cases"); herr != nil {
-		return herr
-	}
-
-	// Coverage Reports
-	pbCoverageReports := make([]*typespb.CoverageReport, 0, len(data.CoverageReports))
-	for _, cr := range data.CoverageReports {
-		pbCoverageReports = append(pbCoverageReports, types.ConvertCoverageReport(cr))
-	}
-	err = c.Exporter.ExportCoverageReports(ctx, pbCoverageReports)
-	if herr := handleError(err, "coverage reports"); herr != nil {
-		return herr
-	}
-
-	// Coverage Packages
-	pbCoveragePackages := make([]*typespb.CoveragePackage, 0, len(data.CoveragePackages))
-	for _, cp := range data.CoveragePackages {
-		pbCoveragePackages = append(pbCoveragePackages, types.ConvertCoveragePackage(cp))
-	}
-	err = c.Exporter.ExportCoveragePackages(ctx, pbCoveragePackages)
-	if herr := handleError(err, "coverage packages"); herr != nil {
-		return herr
-	}
-
-	// Coverage Classes
-	pbCoverageClasses := make([]*typespb.CoverageClass, 0, len(data.CoverageClasses))
-	for _, cc := range data.CoverageClasses {
-		pbCoverageClasses = append(pbCoverageClasses, types.ConvertCoverageClass(cc))
-	}
-	err = c.Exporter.ExportCoverageClasses(ctx, pbCoverageClasses)
-	if herr := handleError(err, "coverage packages"); herr != nil {
-		return herr
-	}
-
-	// Coverage Methods
-	pbCoverageMethods := make([]*typespb.CoverageMethod, 0, len(data.CoverageMethods))
-	for _, cm := range data.CoverageMethods {
-		pbCoverageMethods = append(pbCoverageMethods, types.ConvertCoverageMethod(cm))
-	}
-	err = c.Exporter.ExportCoverageMethods(ctx, pbCoverageMethods)
-	if herr := handleError(err, "coverage reports"); herr != nil {
+	err = c.Exporter.ExportCoverageMethods(ctx, covMethods)
+	if herr := c.handleError(&errs, err, "coverage reports"); herr != nil {
 		return herr
 	}
 
 	return errs
 }
 
-func (c *Controller) convertTraceData(pipelines []types.Pipeline, jobs []types.Job, sections []types.Section) (*tracepb.TracesData, error) {
-	var (
-		pipelineSpans  []*tracepb.Span
-		buildJobSpans  []*tracepb.Span
-		bridgeJobSpans []*tracepb.Span
-		sectionSpans   []*tracepb.Span
-
-		resourceSpans []*tracepb.ResourceSpans
-	)
-
-	for _, p := range pipelines {
-		if c.projectsSettings.ExportTraces(p.Project.Id) {
-			pipelineSpans = append(pipelineSpans, types.PipelineSpan(p))
-		}
-	}
-	if len(pipelineSpans) > 0 {
-		resourceSpans = append(resourceSpans,
-			types.NewResourceSpan(
-				map[string]string{
-					"service.name": "gitlab_ci.pipeline",
-				},
-				pipelineSpans,
-			),
-		)
-	}
-
-	for _, j := range jobs {
-		if c.projectsSettings.ExportTraces(j.Pipeline.Project.Id) {
-			if j.Kind == types.JobKindBuild {
-				buildJobSpans = append(buildJobSpans, types.JobSpan(j))
-			} else if j.Kind == types.JobKindBridge {
-				bridgeJobSpans = append(bridgeJobSpans, types.JobSpan(j))
-			}
-		}
-	}
-	if len(buildJobSpans) > 0 {
-		resourceSpans = append(resourceSpans,
-			types.NewResourceSpan(
-				map[string]string{
-					"service.name": "gitlab_ci.job",
-				},
-				buildJobSpans,
-			),
-		)
-	}
-	if len(bridgeJobSpans) > 0 {
-		resourceSpans = append(resourceSpans,
-			types.NewResourceSpan(
-				map[string]string{
-					"service.name": "gitlab_ci.bridge",
-				},
-				bridgeJobSpans,
-			),
-		)
-	}
-
-	for _, s := range sections {
-		if c.projectsSettings.ExportTraces(s.Job.Pipeline.Project.Id) {
-			sectionSpans = append(sectionSpans, types.SectionSpan(s))
-		}
-	}
-	if len(sectionSpans) > 0 {
-		resourceSpans = append(resourceSpans,
-			types.NewResourceSpan(
-				map[string]string{
-					"service.name": "gitlab_ci.section",
-				},
-				sectionSpans,
-			),
-		)
-	}
-
-	return &tracepb.TracesData{
-		ResourceSpans: resourceSpans,
-	}, nil
-}
-
-type projectsMrData struct {
-	MergeRequests          []types.MergeRequest
-	MergeRequestNoteEvents []types.MergeRequestNoteEvent
-}
-
-func (c *Controller) processProjectsMrData(ctx context.Context, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) error {
-	data, err := c.fetchProjectsMrData(ctx, projectIds, updatedAfter, updatedBefore)
-	if err != nil {
-		return fmt.Errorf("fetch projects mr data: %w", err)
-	}
-
-	if err := c.exportProjectsMrData(ctx, data); err != nil {
-		return fmt.Errorf("export projects mr data: %w", err)
-	}
-
-	return nil
-}
-
-func (c *Controller) fetchProjectsMrData(ctx context.Context, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) (projectsMrData, error) {
+func (c *Controller) processProjectMergeRequests(ctx context.Context, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) error {
 	mergeRequests, err := FetchProjectsMergeRequests(ctx, c.GitLab, projectIds, updatedAfter, updatedBefore)
 	if err != nil {
-		return projectsMrData{}, err
+		return fmt.Errorf("fetch merge requests: %w", err)
 	}
 
 	mergeRequestNoteEvents, err := FetchProjectsMergeRequestsNotes(ctx, c.GitLab, projectIds, updatedAfter, updatedBefore)
 	if err != nil {
-		return projectsMrData{}, err
+		return fmt.Errorf("fetch merge request note events: %w", err)
 	}
 
-	return projectsMrData{
-		MergeRequests:          mergeRequests,
-		MergeRequestNoteEvents: mergeRequestNoteEvents,
-	}, nil
-}
-
-func (c *Controller) exportProjectsMrData(ctx context.Context, data projectsMrData) error {
-	pbMergeRequests := make([]*typespb.MergeRequest, 0, len(data.MergeRequests))
-	for _, mr := range data.MergeRequests {
-		pbMergeRequests = append(pbMergeRequests, types.ConvertMergeRequest(mr))
-	}
-
-	pbMergeRequestNoteEvents := make([]*typespb.MergeRequestNoteEvent, 0, len(data.MergeRequestNoteEvents))
-	for _, ne := range data.MergeRequestNoteEvents {
-		if ne.Type != "" {
-			pbMergeRequestNoteEvents = append(pbMergeRequestNoteEvents, types.ConvertMergeRequestNoteEvent(ne))
-		}
-	}
-
-	if err := c.Exporter.ExportMergeRequests(ctx, pbMergeRequests); err != nil {
+	if err := c.Exporter.ExportMergeRequests(ctx, mergeRequests); err != nil {
 		return fmt.Errorf("export merge requests: %w", err)
 	}
 
-	if err := c.Exporter.ExportMergeRequestNoteEvents(ctx, pbMergeRequestNoteEvents); err != nil {
+	if err := c.Exporter.ExportMergeRequestNoteEvents(ctx, mergeRequestNoteEvents); err != nil {
 		return fmt.Errorf("export merge request note events: %w", err)
 	}
 

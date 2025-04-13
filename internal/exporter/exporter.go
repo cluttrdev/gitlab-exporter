@@ -6,12 +6,15 @@ import (
 	"fmt"
 	"sync"
 
+	tracepb_v1 "go.opentelemetry.io/proto/otlp/trace/v1"
 	"golang.org/x/sync/errgroup"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 
 	"github.com/prometheus/client_golang/prometheus"
 	grpc_client "go.cluttr.dev/gitlab-exporter/grpc/client"
+	"go.cluttr.dev/gitlab-exporter/internal/exporter/messages"
+	"go.cluttr.dev/gitlab-exporter/internal/types"
 	"go.cluttr.dev/gitlab-exporter/protobuf/typespb"
 )
 
@@ -47,6 +50,16 @@ func (e *Exporter) MetricsCollectorFor(endpoint string) prometheus.Collector {
 	return c.MetricsCollector()
 }
 
+type convertFunc[T any, M proto.Message] func(data T) M
+
+func convert[T any, M proto.Message](data []T, cfun convertFunc[T, M]) []M {
+	msgs := make([]M, 0, len(data))
+	for _, d := range data {
+		msgs = append(msgs, cfun(d))
+	}
+	return msgs
+}
+
 type recordFunc[T proto.Message] func(client *grpc_client.Client, ctx context.Context, data []T) error
 
 func export[T proto.Message](exp *Exporter, ctx context.Context, data []T, record recordFunc[T]) error {
@@ -55,17 +68,9 @@ func export[T proto.Message](exp *Exporter, ctx context.Context, data []T, recor
 	}
 
 	// split data into batches to keep max message size
-	const maxChunkSize int = 2 * 1024 * 1024 // 2 MiB
-	var batches [][]T
-	var i, j int
-	for i < len(data) {
-		j = rangeEndForSize(data, maxChunkSize, i)
-		if !(i < j) {
-			return fmt.Errorf("empty range")
-		}
-
-		batches = append(batches, data[i:j])
-		i = j
+	batches, err := createBatches(data)
+	if err != nil {
+		return err
 	}
 
 	// for each client, export batches concurrently in an error group
@@ -113,6 +118,22 @@ loop:
 	return errs
 }
 
+func createBatches[T proto.Message](data []T) ([][]T, error) {
+	const maxChunkSize int = 2 * 1024 * 1024 // 2 MiB
+	var batches [][]T
+	var i, j int
+	for i < len(data) {
+		j = rangeEndForSize(data, maxChunkSize, i)
+		if !(i < j) {
+			return nil, fmt.Errorf("empty range")
+		}
+
+		batches = append(batches, data[i:j])
+		i = j
+	}
+	return batches, nil
+}
+
 func rangeEndForSize[T proto.Message](data []T, size int, start int) int {
 	if start < 0 {
 		return 0
@@ -132,66 +153,149 @@ func (e *Exporter) ExportCommits(ctx context.Context, data []*typespb.Commit) er
 	return export[*typespb.Commit](e, ctx, data, grpc_client.RecordCommits)
 }
 
-func (e *Exporter) ExportCoverageReports(ctx context.Context, data []*typespb.CoverageReport) error {
-	return export[*typespb.CoverageReport](e, ctx, data, grpc_client.RecordCoverageReports)
+func (e *Exporter) ExportCoverageReports(ctx context.Context, data []types.CoverageReport) error {
+	msgs := convert(data, messages.NewCoverageReport)
+	return export(e, ctx, msgs, grpc_client.RecordCoverageReports)
 }
 
-func (e *Exporter) ExportCoveragePackages(ctx context.Context, data []*typespb.CoveragePackage) error {
-	return export[*typespb.CoveragePackage](e, ctx, data, grpc_client.RecordCoveragePackages)
+func (e *Exporter) ExportCoveragePackages(ctx context.Context, data []types.CoveragePackage) error {
+	msgs := convert(data, messages.NewCoveragePackage)
+	return export(e, ctx, msgs, grpc_client.RecordCoveragePackages)
 }
 
-func (e *Exporter) ExportCoverageClasses(ctx context.Context, data []*typespb.CoverageClass) error {
-	return export[*typespb.CoverageClass](e, ctx, data, grpc_client.RecordCoverageClasses)
+func (e *Exporter) ExportCoverageClasses(ctx context.Context, data []types.CoverageClass) error {
+	msgs := convert(data, messages.NewCoverageClass)
+	return export(e, ctx, msgs, grpc_client.RecordCoverageClasses)
 }
 
-func (e *Exporter) ExportCoverageMethods(ctx context.Context, data []*typespb.CoverageMethod) error {
-	return export[*typespb.CoverageMethod](e, ctx, data, grpc_client.RecordCoverageMethods)
+func (e *Exporter) ExportCoverageMethods(ctx context.Context, data []types.CoverageMethod) error {
+	msgs := convert(data, messages.NewCoverageMethod)
+	return export(e, ctx, msgs, grpc_client.RecordCoverageMethods)
 }
 
-func (e *Exporter) ExportDeployments(ctx context.Context, data []*typespb.Deployment) error {
-	return export[*typespb.Deployment](e, ctx, data, grpc_client.RecordDeployments)
+func (e *Exporter) ExportDeployments(ctx context.Context, data []types.Deployment) error {
+	msgs := convert(data, messages.NewDeployment)
+	return export(e, ctx, msgs, grpc_client.RecordDeployments)
 }
 
-func (e *Exporter) ExportJobs(ctx context.Context, data []*typespb.Job) error {
-	return export[*typespb.Job](e, ctx, data, grpc_client.RecordJobs)
+func (e *Exporter) ExportJobs(ctx context.Context, data []types.Job) error {
+	msgs := convert(data, messages.NewJob)
+	return export(e, ctx, msgs, grpc_client.RecordJobs)
 }
 
-func (e *Exporter) ExportMergeRequests(ctx context.Context, data []*typespb.MergeRequest) error {
-	return export[*typespb.MergeRequest](e, ctx, data, grpc_client.RecordMergeRequests)
+func (e *Exporter) ExportMergeRequests(ctx context.Context, data []types.MergeRequest) error {
+	msgs := convert(data, messages.NewMergeRequest)
+	return export(e, ctx, msgs, grpc_client.RecordMergeRequests)
 }
 
-func (e *Exporter) ExportMergeRequestNoteEvents(ctx context.Context, data []*typespb.MergeRequestNoteEvent) error {
-	return export[*typespb.MergeRequestNoteEvent](e, ctx, data, grpc_client.RecordMergeRequestNoteEvents)
+func (e *Exporter) ExportMergeRequestNoteEvents(ctx context.Context, data []types.MergeRequestNoteEvent) error {
+	msgs := convert(data, messages.NewMergeRequestNoteEvent)
+	return export(e, ctx, msgs, grpc_client.RecordMergeRequestNoteEvents)
 }
 
-func (e *Exporter) ExportMetrics(ctx context.Context, data []*typespb.Metric) error {
-	return export[*typespb.Metric](e, ctx, data, grpc_client.RecordMetrics)
+func (e *Exporter) ExportMetrics(ctx context.Context, data []types.Metric) error {
+	msgs := convert(data, messages.NewMetric)
+	return export(e, ctx, msgs, grpc_client.RecordMetrics)
 }
 
-func (e *Exporter) ExportPipelines(ctx context.Context, data []*typespb.Pipeline) error {
-	return export[*typespb.Pipeline](e, ctx, data, grpc_client.RecordPipelines)
+func (e *Exporter) ExportPipelines(ctx context.Context, data []types.Pipeline) error {
+	msgs := convert(data, messages.NewPipeline)
+	return export(e, ctx, msgs, grpc_client.RecordPipelines)
 }
 
-func (e *Exporter) ExportProjects(ctx context.Context, data []*typespb.Project) error {
-	return export[*typespb.Project](e, ctx, data, grpc_client.RecordProjects)
+func (e *Exporter) ExportProjects(ctx context.Context, data []types.Project) error {
+	msgs := convert(data, messages.NewProject)
+	return export(e, ctx, msgs, grpc_client.RecordProjects)
 }
 
-func (e *Exporter) ExportSections(ctx context.Context, data []*typespb.Section) error {
-	return export[*typespb.Section](e, ctx, data, grpc_client.RecordSections)
+func (e *Exporter) ExportSections(ctx context.Context, data []types.Section) error {
+	msgs := convert(data, messages.NewSection)
+	return export(e, ctx, msgs, grpc_client.RecordSections)
 }
 
-func (e *Exporter) ExportTestCases(ctx context.Context, data []*typespb.TestCase) error {
-	return export[*typespb.TestCase](e, ctx, data, grpc_client.RecordTestCases)
+func (e *Exporter) ExportTestCases(ctx context.Context, data []types.TestCase) error {
+	msgs := convert(data, messages.NewTestCase)
+	return export(e, ctx, msgs, grpc_client.RecordTestCases)
 }
 
-func (e *Exporter) ExportTestReports(ctx context.Context, data []*typespb.TestReport) error {
-	return export[*typespb.TestReport](e, ctx, data, grpc_client.RecordTestReports)
+func (e *Exporter) ExportTestReports(ctx context.Context, data []types.TestReport) error {
+	msgs := convert(data, messages.NewTestReport)
+	return export(e, ctx, msgs, grpc_client.RecordTestReports)
 }
 
-func (e *Exporter) ExportTestSuites(ctx context.Context, data []*typespb.TestSuite) error {
-	return export[*typespb.TestSuite](e, ctx, data, grpc_client.RecordTestSuites)
+func (e *Exporter) ExportTestSuites(ctx context.Context, data []types.TestSuite) error {
+	msgs := convert(data, messages.NewTestSuite)
+	return export(e, ctx, msgs, grpc_client.RecordTestSuites)
 }
 
-func (e *Exporter) ExportTraces(ctx context.Context, data []*typespb.Trace) error {
-	return export[*typespb.Trace](e, ctx, data, grpc_client.RecordTraces)
+func (e *Exporter) ExportPipelineSpans(ctx context.Context, data []types.Pipeline) error {
+	spans := convert(data, messages.NewPipelineSpan)
+
+	batches, err := createBatches(spans)
+	if err != nil {
+		return err
+	}
+
+	var msgs []*typespb.Trace
+	for _, batch := range batches {
+		msgs = append(msgs, &typespb.Trace{
+			Data: &tracepb_v1.TracesData{
+				ResourceSpans: []*tracepb_v1.ResourceSpans{
+					messages.NewResourceSpan(map[string]string{
+						"service.name": "gitlab_ci.pipeline",
+					}, batch),
+				},
+			},
+		})
+	}
+
+	return export(e, ctx, msgs, grpc_client.RecordTraces)
+}
+
+func (e *Exporter) ExportJobSpans(ctx context.Context, data []types.Job) error {
+	spans := convert(data, messages.NewJobSpan)
+
+	batches, err := createBatches(spans)
+	if err != nil {
+		return err
+	}
+
+	var msgs []*typespb.Trace
+	for _, batch := range batches {
+		msgs = append(msgs, &typespb.Trace{
+			Data: &tracepb_v1.TracesData{
+				ResourceSpans: []*tracepb_v1.ResourceSpans{
+					messages.NewResourceSpan(map[string]string{
+						"service.name": "gitlab_ci.job",
+					}, batch),
+				},
+			},
+		})
+	}
+
+	return export(e, ctx, msgs, grpc_client.RecordTraces)
+}
+
+func (e *Exporter) ExportSectionSpans(ctx context.Context, data []types.Section) error {
+	spans := convert(data, messages.NewSectionSpan)
+
+	batches, err := createBatches(spans)
+	if err != nil {
+		return err
+	}
+
+	var msgs []*typespb.Trace
+	for _, batch := range batches {
+		msgs = append(msgs, &typespb.Trace{
+			Data: &tracepb_v1.TracesData{
+				ResourceSpans: []*tracepb_v1.ResourceSpans{
+					messages.NewResourceSpan(map[string]string{
+						"service.name": "gitlab_ci.section",
+					}, batch),
+				},
+			},
+		})
+	}
+
+	return export(e, ctx, msgs, grpc_client.RecordTraces)
 }
