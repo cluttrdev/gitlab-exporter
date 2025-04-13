@@ -2,8 +2,6 @@ package types
 
 import (
 	"time"
-
-	"go.cluttr.dev/gitlab-exporter/protobuf/typespb"
 )
 
 type TestReportReference struct {
@@ -71,81 +69,4 @@ const (
 type TestProperty struct {
 	Name  string
 	Value string
-}
-
-func ConvertTestReportReference(testReport TestReportReference) *typespb.TestReportReference {
-	return &typespb.TestReportReference{
-		Id:  testReport.Id,
-		Job: ConvertJobReference(testReport.Job),
-	}
-}
-
-func ConvertTestReport(testReport TestReport) *typespb.TestReport {
-	return &typespb.TestReport{
-		Id:  testReport.Id,
-		Job: ConvertJobReference(testReport.Job),
-
-		TotalTime:    testReport.TotalTime.Seconds(),
-		TotalCount:   testReport.TotalCount,
-		ErrorCount:   testReport.ErrorCount,
-		FailedCount:  testReport.FailedCount,
-		SkippedCount: testReport.SkippedCount,
-		SuccessCount: testReport.SuccessCount,
-	}
-}
-
-func ConvertTestSuiteReference(testSuite TestSuiteReference) *typespb.TestSuiteReference {
-	return &typespb.TestSuiteReference{
-		Id:         testSuite.Id,
-		TestReport: ConvertTestReportReference(testSuite.TestReport),
-	}
-}
-
-func ConvertTestSuite(testSuite TestSuite) *typespb.TestSuite {
-	ts := &typespb.TestSuite{
-		Id:         testSuite.Id,
-		TestReport: ConvertTestReportReference(testSuite.TestReport),
-
-		Name:         testSuite.Name,
-		TotalTime:    testSuite.TotalTime.Seconds(),
-		TotalCount:   testSuite.TotalCount,
-		ErrorCount:   testSuite.ErrorCount,
-		FailedCount:  testSuite.FailedCount,
-		SkippedCount: testSuite.SkippedCount,
-		SuccessCount: testSuite.SuccessCount,
-	}
-
-	for _, p := range testSuite.Properties {
-		ts.Properties = append(ts.Properties, &typespb.TestProperty{
-			Name:  p.Name,
-			Value: p.Value,
-		})
-	}
-
-	return ts
-}
-
-func ConvertTestCase(testCase TestCase) *typespb.TestCase {
-	tc := &typespb.TestCase{
-		Id:        testCase.Id,
-		TestSuite: ConvertTestSuiteReference(testCase.TestSuite),
-
-		Status:        testCase.Status,
-		Name:          testCase.Name,
-		Classname:     testCase.Classname,
-		ExecutionTime: testCase.ExecutionTime.Seconds(),
-		File:          testCase.File,
-		StackTrace:    testCase.StackTrace,
-		SystemOutput:  testCase.SystemOutput,
-		AttachmentUrl: testCase.AttachmentUrl,
-	}
-
-	for _, p := range testCase.Properties {
-		tc.Properties = append(tc.Properties, &typespb.TestProperty{
-			Name:  p.Name,
-			Value: p.Value,
-		})
-	}
-
-	return tc
 }

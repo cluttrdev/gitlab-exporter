@@ -1,4 +1,4 @@
-package types
+package messages
 
 import (
 	"strconv"
@@ -8,9 +8,11 @@ import (
 	commonpb "go.opentelemetry.io/proto/otlp/common/v1"
 	resourcepb "go.opentelemetry.io/proto/otlp/resource/v1"
 	tracepb "go.opentelemetry.io/proto/otlp/trace/v1"
+
+	"go.cluttr.dev/gitlab-exporter/internal/types"
 )
 
-func PipelineSpan(pipeline Pipeline) *tracepb.Span {
+func NewPipelineSpan(pipeline types.Pipeline) *tracepb.Span {
 	var (
 		traceId  = []byte(strconv.FormatInt(pipeline.Id, 10))
 		spanId   = []byte(strconv.FormatInt(pipeline.Id, 10))
@@ -48,7 +50,7 @@ func PipelineSpan(pipeline Pipeline) *tracepb.Span {
 	)
 }
 
-func JobSpan(job Job) *tracepb.Span {
+func NewJobSpan(job types.Job) *tracepb.Span {
 	traceId := []byte(strconv.FormatInt(job.Pipeline.Id, 10))
 	spanId := []byte(strconv.FormatInt(job.Id, 10))
 	parentId := []byte(strconv.FormatInt(job.Pipeline.Id, 10))
@@ -78,7 +80,7 @@ func JobSpan(job Job) *tracepb.Span {
 	)
 }
 
-func SectionSpan(section Section) *tracepb.Span {
+func NewSectionSpan(section types.Section) *tracepb.Span {
 	traceId := []byte(strconv.FormatInt(section.Job.Pipeline.Id, 10))
 	spanId := []byte(strconv.FormatInt(section.Id, 10))
 	parentId := []byte(strconv.FormatInt(section.Job.Id, 10))

@@ -1,4 +1,4 @@
-package types
+package messages
 
 func valOrZero[T any](p *T) T {
 	var v T
