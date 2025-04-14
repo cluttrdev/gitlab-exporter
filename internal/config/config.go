@@ -53,6 +53,7 @@ type ProjectSettings struct {
 
 type ProjectExport struct {
 	Deployments   ProjectExportDeployments   `default:"{}" yaml:"deployments"`
+	Issues        ProjectExportIssues        `default:"{}" yaml:"issues"`
 	Jobs          ProjectExportJobs          `default:"{}" yaml:"jobs"`
 	Sections      ProjectExportSections      `default:"{}" yaml:"sections"`
 	TestReports   ProjectExportTestReports   `default:"{}" yaml:"testreports"`
@@ -63,6 +64,10 @@ type ProjectExport struct {
 }
 
 type ProjectExportDeployments struct {
+	Enabled bool `default:"true" yaml:"enabled"`
+}
+
+type ProjectExportIssues struct {
 	Enabled bool `default:"true" yaml:"enabled"`
 }
 

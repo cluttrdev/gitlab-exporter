@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+option go_package = "go.cluttr.dev/gitlab-exporter/protobuf/typespb";
+
+package gitlabexporter.protobuf;
+
+import "google/protobuf/timestamp.proto";
+
+import "gitlabexporter/protobuf/references.proto";
+
+enum IssueType {
+    ISSUE_TYPE_UNSPECIFIED = 0;
+    ISSUE_TYPE_UNKNOWN = 1;
+    ISSUE_TYPE_ISSUE = 2;
+    ISSUE_TYPE_INCIDENT = 3;
+    ISSUE_TYPE_TEST_CASE = 4;
+    ISSUE_TYPE_REQUIREMENT = 5;
+    ISSUE_TYPE_TASK = 6;
+    ISSUE_TYPE_TICKET = 7;
+    ISSUE_TYPE_OBJECTIVE = 8;
+    ISSUE_TYPE_KEY_RESULT = 9;
+    ISSUE_TYPE_EPIC = 10;
+}
+
+enum IssueSeverity {
+    ISSUE_SEVERITY_UNSPECIFIED = 0;
+    ISSUE_SEVERITY_UNKNOWN = 1;
+    ISSUE_SEVERITY_LOW = 2;
+    ISSUE_SEVERITY_MEDIUM = 3;
+    ISSUE_SEVERITY_HIGH = 4;
+    ISSUE_SEVERITY_CRITICAL = 5;
+}
+
+enum IssueState {
+    ISSUE_STATE_UNSPECIFIED = 0;
+    ISSUE_STATE_UNKNOWN = 1;
+    ISSUE_STATE_OPENED = 2;
+    ISSUE_STATE_CLOSED = 3;
+    ISSUE_STATE_LOCKED = 4;
+    ISSUE_STATE_ALL = 5;
+}
+
+message Issue {
+    int64 id = 1;
+    int64 iid = 2;
+    ProjectReference project = 3;
+
+    IssueTimestamps timestamps = 4;
+
+    string title = 5;
+    repeated string labels = 6;
+
+    IssueType type = 7;
+    IssueSeverity severity = 8;
+    IssueState state = 9;
+}
+
+message IssueTimestamps {
+    google.protobuf.Timestamp created_at = 1;
+    google.protobuf.Timestamp updated_at = 2;
+    google.protobuf.Timestamp closed_at = 3;
+}

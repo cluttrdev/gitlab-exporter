@@ -3,16 +3,23 @@ package graphql
 import (
 	"strconv"
 	"strings"
+	"time"
 )
+
+type TimeRangeOptions struct {
+	UpdatedAfter  *time.Time
+	UpdatedBefore *time.Time
+}
 
 const (
 	GlobalIdPrefix             = "gid://gitlab/"
-	GlobalIdProjectPrefix      = GlobalIdPrefix + "Project/"
-	GlobalIdPipelinePrefix     = GlobalIdPrefix + "Ci::Pipeline/"
 	GlobalIdMergeRequestPrefix = GlobalIdPrefix + "MergeRequest/"
 	GlobalIdMilestonePrefix    = GlobalIdPrefix + "Milestone/"
 	GlobalIdNotePrefix         = GlobalIdPrefix + "Note/"
+	GlobalIdPipelinePrefix     = GlobalIdPrefix + "Ci::Pipeline/"
+	GlobalIdProjectPrefix      = GlobalIdPrefix + "Project/"
 	GlobalIdUserPrefix         = GlobalIdPrefix + "User/"
+	GlobalIdIssuePrefix        = GlobalIdPrefix + "Issue/"
 )
 
 func FormatId(id int64, prefix string) string {

@@ -178,6 +178,11 @@ func (e *Exporter) ExportDeployments(ctx context.Context, data []types.Deploymen
 	return export(e, ctx, msgs, grpc_client.RecordDeployments)
 }
 
+func (e *Exporter) ExportIssues(ctx context.Context, data []types.Issue) error {
+	msgs := convert(data, messages.NewIssue)
+	return export(e, ctx, msgs, grpc_client.RecordIssues)
+}
+
 func (e *Exporter) ExportJobs(ctx context.Context, data []types.Job) error {
 	msgs := convert(data, messages.NewJob)
 	return export(e, ctx, msgs, grpc_client.RecordJobs)

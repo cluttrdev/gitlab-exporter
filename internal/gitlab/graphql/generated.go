@@ -103,6 +103,215 @@ const (
 	DetailedMergeStatusRequestedChanges DetailedMergeStatus = "REQUESTED_CHANGES"
 )
 
+// Incident severity
+type IssuableSeverity string
+
+const (
+	// Unknown severity
+	IssuableSeverityUnknown IssuableSeverity = "UNKNOWN"
+	// Low severity
+	IssuableSeverityLow IssuableSeverity = "LOW"
+	// Medium severity
+	IssuableSeverityMedium IssuableSeverity = "MEDIUM"
+	// High severity
+	IssuableSeverityHigh IssuableSeverity = "HIGH"
+	// Critical severity
+	IssuableSeverityCritical IssuableSeverity = "CRITICAL"
+)
+
+// IssueFieldsCore includes the GraphQL fields of Issue requested by the fragment IssueFieldsCore.
+type IssueFieldsCore struct {
+	// Timestamp of when the issue was created.
+	CreatedAt time.Time `json:"createdAt"`
+	// Timestamp of when the issue was last updated.
+	UpdatedAt time.Time `json:"updatedAt"`
+	// Timestamp of when the issue was closed.
+	ClosedAt *time.Time `json:"closedAt"`
+	// Title of the issue.
+	Title string `json:"title"`
+	// Labels of the issue.
+	Labels *IssueFieldsCoreLabelsLabelConnection `json:"labels"`
+	// Type of the issue.
+	Type *IssueType `json:"type"`
+	// Severity level of the incident.
+	Severity *IssuableSeverity `json:"severity"`
+	// State of the issue.
+	State IssueState `json:"state"`
+}
+
+// GetCreatedAt returns IssueFieldsCore.CreatedAt, and is useful for accessing the field via an interface.
+func (v *IssueFieldsCore) GetCreatedAt() time.Time { return v.CreatedAt }
+
+// GetUpdatedAt returns IssueFieldsCore.UpdatedAt, and is useful for accessing the field via an interface.
+func (v *IssueFieldsCore) GetUpdatedAt() time.Time { return v.UpdatedAt }
+
+// GetClosedAt returns IssueFieldsCore.ClosedAt, and is useful for accessing the field via an interface.
+func (v *IssueFieldsCore) GetClosedAt() *time.Time { return v.ClosedAt }
+
+// GetTitle returns IssueFieldsCore.Title, and is useful for accessing the field via an interface.
+func (v *IssueFieldsCore) GetTitle() string { return v.Title }
+
+// GetLabels returns IssueFieldsCore.Labels, and is useful for accessing the field via an interface.
+func (v *IssueFieldsCore) GetLabels() *IssueFieldsCoreLabelsLabelConnection { return v.Labels }
+
+// GetType returns IssueFieldsCore.Type, and is useful for accessing the field via an interface.
+func (v *IssueFieldsCore) GetType() *IssueType { return v.Type }
+
+// GetSeverity returns IssueFieldsCore.Severity, and is useful for accessing the field via an interface.
+func (v *IssueFieldsCore) GetSeverity() *IssuableSeverity { return v.Severity }
+
+// GetState returns IssueFieldsCore.State, and is useful for accessing the field via an interface.
+func (v *IssueFieldsCore) GetState() IssueState { return v.State }
+
+// IssueFieldsCoreLabelsLabelConnection includes the requested fields of the GraphQL type LabelConnection.
+// The GraphQL type's documentation follows.
+//
+// The connection type for Label.
+type IssueFieldsCoreLabelsLabelConnection struct {
+	// A list of nodes.
+	Nodes []*IssueFieldsCoreLabelsLabelConnectionNodesLabel `json:"nodes"`
+	// Information to aid in pagination.
+	PageInfo IssueFieldsCoreLabelsLabelConnectionPageInfo `json:"pageInfo"`
+}
+
+// GetNodes returns IssueFieldsCoreLabelsLabelConnection.Nodes, and is useful for accessing the field via an interface.
+func (v *IssueFieldsCoreLabelsLabelConnection) GetNodes() []*IssueFieldsCoreLabelsLabelConnectionNodesLabel {
+	return v.Nodes
+}
+
+// GetPageInfo returns IssueFieldsCoreLabelsLabelConnection.PageInfo, and is useful for accessing the field via an interface.
+func (v *IssueFieldsCoreLabelsLabelConnection) GetPageInfo() IssueFieldsCoreLabelsLabelConnectionPageInfo {
+	return v.PageInfo
+}
+
+// IssueFieldsCoreLabelsLabelConnectionNodesLabel includes the requested fields of the GraphQL type Label.
+type IssueFieldsCoreLabelsLabelConnectionNodesLabel struct {
+	// Content of the label.
+	Title string `json:"title"`
+}
+
+// GetTitle returns IssueFieldsCoreLabelsLabelConnectionNodesLabel.Title, and is useful for accessing the field via an interface.
+func (v *IssueFieldsCoreLabelsLabelConnectionNodesLabel) GetTitle() string { return v.Title }
+
+// IssueFieldsCoreLabelsLabelConnectionPageInfo includes the requested fields of the GraphQL type PageInfo.
+// The GraphQL type's documentation follows.
+//
+// Information about pagination in a connection.
+type IssueFieldsCoreLabelsLabelConnectionPageInfo struct {
+	pageFields `json:"-"`
+}
+
+// GetHasNextPage returns IssueFieldsCoreLabelsLabelConnectionPageInfo.HasNextPage, and is useful for accessing the field via an interface.
+func (v *IssueFieldsCoreLabelsLabelConnectionPageInfo) GetHasNextPage() bool {
+	return v.pageFields.HasNextPage
+}
+
+// GetEndCursor returns IssueFieldsCoreLabelsLabelConnectionPageInfo.EndCursor, and is useful for accessing the field via an interface.
+func (v *IssueFieldsCoreLabelsLabelConnectionPageInfo) GetEndCursor() *string {
+	return v.pageFields.EndCursor
+}
+
+func (v *IssueFieldsCoreLabelsLabelConnectionPageInfo) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*IssueFieldsCoreLabelsLabelConnectionPageInfo
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.IssueFieldsCoreLabelsLabelConnectionPageInfo = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.pageFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalIssueFieldsCoreLabelsLabelConnectionPageInfo struct {
+	HasNextPage bool `json:"hasNextPage"`
+
+	EndCursor *string `json:"endCursor"`
+}
+
+func (v *IssueFieldsCoreLabelsLabelConnectionPageInfo) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *IssueFieldsCoreLabelsLabelConnectionPageInfo) __premarshalJSON() (*__premarshalIssueFieldsCoreLabelsLabelConnectionPageInfo, error) {
+	var retval __premarshalIssueFieldsCoreLabelsLabelConnectionPageInfo
+
+	retval.HasNextPage = v.pageFields.HasNextPage
+	retval.EndCursor = v.pageFields.EndCursor
+	return &retval, nil
+}
+
+// IssueReferenceFields includes the GraphQL fields of Issue requested by the fragment IssueReferenceFields.
+type IssueReferenceFields struct {
+	// ID of the issue.
+	Id string `json:"id"`
+	// Internal ID of the issue.
+	Iid string `json:"iid"`
+}
+
+// GetId returns IssueReferenceFields.Id, and is useful for accessing the field via an interface.
+func (v *IssueReferenceFields) GetId() string { return v.Id }
+
+// GetIid returns IssueReferenceFields.Iid, and is useful for accessing the field via an interface.
+func (v *IssueReferenceFields) GetIid() string { return v.Iid }
+
+// State of a GitLab issue
+type IssueState string
+
+const (
+	// In open state.
+	IssueStateOpened IssueState = "opened"
+	// In closed state.
+	IssueStateClosed IssueState = "closed"
+	// Discussion has been locked.
+	IssueStateLocked IssueState = "locked"
+	// All available.
+	IssueStateAll IssueState = "all"
+)
+
+// Issue type
+type IssueType string
+
+const (
+	// Issue issue type
+	IssueTypeIssue IssueType = "ISSUE"
+	// Incident issue type
+	IssueTypeIncident IssueType = "INCIDENT"
+	// Test Case issue type
+	IssueTypeTestCase IssueType = "TEST_CASE"
+	// Requirement issue type
+	IssueTypeRequirement IssueType = "REQUIREMENT"
+	// Task issue type
+	IssueTypeTask IssueType = "TASK"
+	// Objective issue type. Available only when feature flag `okrs_mvc` is enabled.
+	// Introduced in GitLab 15.6: **Status**: Experiment.
+	IssueTypeObjective IssueType = "OBJECTIVE"
+	// Key Result issue type. Available only when feature flag `okrs_mvc` is enabled.
+	// Introduced in GitLab 15.7: **Status**: Experiment.
+	IssueTypeKeyResult IssueType = "KEY_RESULT"
+	// Epic issue type. Available only when feature epics is available and the
+	// feature flag `work_item_epics` is enabled. Introduced in GitLab 16.7:
+	// **Status**: Experiment.
+	IssueTypeEpic IssueType = "EPIC"
+)
+
 // JobArtifactFieldsCore includes the GraphQL fields of CiJobArtifact requested by the fragment JobArtifactFieldsCore.
 type JobArtifactFieldsCore struct {
 	// File type of the artifact.
@@ -2798,6 +3007,26 @@ func (v *__getProjectIdPipelineInput) GetProjectId() string { return v.ProjectId
 // GetPipelineId returns __getProjectIdPipelineInput.PipelineId, and is useful for accessing the field via an interface.
 func (v *__getProjectIdPipelineInput) GetPipelineId() string { return v.PipelineId }
 
+// __getProjectIssuesInput is used internally by genqlient
+type __getProjectIssuesInput struct {
+	ProjectPath   string     `json:"projectPath"`
+	UpdatedAfter  *time.Time `json:"updatedAfter"`
+	UpdatedBefore *time.Time `json:"updatedBefore"`
+	EndCursor     *string    `json:"endCursor"`
+}
+
+// GetProjectPath returns __getProjectIssuesInput.ProjectPath, and is useful for accessing the field via an interface.
+func (v *__getProjectIssuesInput) GetProjectPath() string { return v.ProjectPath }
+
+// GetUpdatedAfter returns __getProjectIssuesInput.UpdatedAfter, and is useful for accessing the field via an interface.
+func (v *__getProjectIssuesInput) GetUpdatedAfter() *time.Time { return v.UpdatedAfter }
+
+// GetUpdatedBefore returns __getProjectIssuesInput.UpdatedBefore, and is useful for accessing the field via an interface.
+func (v *__getProjectIssuesInput) GetUpdatedBefore() *time.Time { return v.UpdatedBefore }
+
+// GetEndCursor returns __getProjectIssuesInput.EndCursor, and is useful for accessing the field via an interface.
+func (v *__getProjectIssuesInput) GetEndCursor() *string { return v.EndCursor }
+
 // __getProjectMergeRequestNotesInput is used internally by genqlient
 type __getProjectMergeRequestNotesInput struct {
 	ProjectPath     string  `json:"projectPath"`
@@ -3045,6 +3274,26 @@ func (v *__getProjectsInput) GetUpdatedBefore() *time.Time { return v.UpdatedBef
 
 // GetEndCursor returns __getProjectsInput.EndCursor, and is useful for accessing the field via an interface.
 func (v *__getProjectsInput) GetEndCursor() *string { return v.EndCursor }
+
+// __getProjectsIssuesInput is used internally by genqlient
+type __getProjectsIssuesInput struct {
+	ProjectIds    []string   `json:"projectIds"`
+	UpdatedAfter  *time.Time `json:"updatedAfter"`
+	UpdatedBefore *time.Time `json:"updatedBefore"`
+	EndCursor     *string    `json:"endCursor"`
+}
+
+// GetProjectIds returns __getProjectsIssuesInput.ProjectIds, and is useful for accessing the field via an interface.
+func (v *__getProjectsIssuesInput) GetProjectIds() []string { return v.ProjectIds }
+
+// GetUpdatedAfter returns __getProjectsIssuesInput.UpdatedAfter, and is useful for accessing the field via an interface.
+func (v *__getProjectsIssuesInput) GetUpdatedAfter() *time.Time { return v.UpdatedAfter }
+
+// GetUpdatedBefore returns __getProjectsIssuesInput.UpdatedBefore, and is useful for accessing the field via an interface.
+func (v *__getProjectsIssuesInput) GetUpdatedBefore() *time.Time { return v.UpdatedBefore }
+
+// GetEndCursor returns __getProjectsIssuesInput.EndCursor, and is useful for accessing the field via an interface.
+func (v *__getProjectsIssuesInput) GetEndCursor() *string { return v.EndCursor }
 
 // __getProjectsMergeRequestNotesInput is used internally by genqlient
 type __getProjectsMergeRequestNotesInput struct {
@@ -3528,6 +3777,301 @@ type getProjectIdPipelineResponse struct {
 func (v *getProjectIdPipelineResponse) GetProjects() *getProjectIdPipelineProjectsProjectConnection {
 	return v.Projects
 }
+
+// getProjectIssuesProject includes the requested fields of the GraphQL type Project.
+type getProjectIssuesProject struct {
+	ProjectReferenceFields `json:"-"`
+	// Issues of the project.
+	Issues *getProjectIssuesProjectIssuesIssueConnection `json:"issues"`
+}
+
+// GetIssues returns getProjectIssuesProject.Issues, and is useful for accessing the field via an interface.
+func (v *getProjectIssuesProject) GetIssues() *getProjectIssuesProjectIssuesIssueConnection {
+	return v.Issues
+}
+
+// GetId returns getProjectIssuesProject.Id, and is useful for accessing the field via an interface.
+func (v *getProjectIssuesProject) GetId() string { return v.ProjectReferenceFields.Id }
+
+// GetFullPath returns getProjectIssuesProject.FullPath, and is useful for accessing the field via an interface.
+func (v *getProjectIssuesProject) GetFullPath() string { return v.ProjectReferenceFields.FullPath }
+
+func (v *getProjectIssuesProject) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectIssuesProject
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectIssuesProject = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.ProjectReferenceFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectIssuesProject struct {
+	Issues *getProjectIssuesProjectIssuesIssueConnection `json:"issues"`
+
+	Id string `json:"id"`
+
+	FullPath string `json:"fullPath"`
+}
+
+func (v *getProjectIssuesProject) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectIssuesProject) __premarshalJSON() (*__premarshalgetProjectIssuesProject, error) {
+	var retval __premarshalgetProjectIssuesProject
+
+	retval.Issues = v.Issues
+	retval.Id = v.ProjectReferenceFields.Id
+	retval.FullPath = v.ProjectReferenceFields.FullPath
+	return &retval, nil
+}
+
+// getProjectIssuesProjectIssuesIssueConnection includes the requested fields of the GraphQL type IssueConnection.
+// The GraphQL type's documentation follows.
+//
+// The connection type for Issue.
+type getProjectIssuesProjectIssuesIssueConnection struct {
+	// A list of nodes.
+	Nodes []*getProjectIssuesProjectIssuesIssueConnectionNodesIssue `json:"nodes"`
+	// Information to aid in pagination.
+	PageInfo getProjectIssuesProjectIssuesIssueConnectionPageInfo `json:"pageInfo"`
+}
+
+// GetNodes returns getProjectIssuesProjectIssuesIssueConnection.Nodes, and is useful for accessing the field via an interface.
+func (v *getProjectIssuesProjectIssuesIssueConnection) GetNodes() []*getProjectIssuesProjectIssuesIssueConnectionNodesIssue {
+	return v.Nodes
+}
+
+// GetPageInfo returns getProjectIssuesProjectIssuesIssueConnection.PageInfo, and is useful for accessing the field via an interface.
+func (v *getProjectIssuesProjectIssuesIssueConnection) GetPageInfo() getProjectIssuesProjectIssuesIssueConnectionPageInfo {
+	return v.PageInfo
+}
+
+// getProjectIssuesProjectIssuesIssueConnectionNodesIssue includes the requested fields of the GraphQL type Issue.
+type getProjectIssuesProjectIssuesIssueConnectionNodesIssue struct {
+	IssueReferenceFields `json:"-"`
+	IssueFieldsCore      `json:"-"`
+}
+
+// GetId returns getProjectIssuesProjectIssuesIssueConnectionNodesIssue.Id, and is useful for accessing the field via an interface.
+func (v *getProjectIssuesProjectIssuesIssueConnectionNodesIssue) GetId() string {
+	return v.IssueReferenceFields.Id
+}
+
+// GetIid returns getProjectIssuesProjectIssuesIssueConnectionNodesIssue.Iid, and is useful for accessing the field via an interface.
+func (v *getProjectIssuesProjectIssuesIssueConnectionNodesIssue) GetIid() string {
+	return v.IssueReferenceFields.Iid
+}
+
+// GetCreatedAt returns getProjectIssuesProjectIssuesIssueConnectionNodesIssue.CreatedAt, and is useful for accessing the field via an interface.
+func (v *getProjectIssuesProjectIssuesIssueConnectionNodesIssue) GetCreatedAt() time.Time {
+	return v.IssueFieldsCore.CreatedAt
+}
+
+// GetUpdatedAt returns getProjectIssuesProjectIssuesIssueConnectionNodesIssue.UpdatedAt, and is useful for accessing the field via an interface.
+func (v *getProjectIssuesProjectIssuesIssueConnectionNodesIssue) GetUpdatedAt() time.Time {
+	return v.IssueFieldsCore.UpdatedAt
+}
+
+// GetClosedAt returns getProjectIssuesProjectIssuesIssueConnectionNodesIssue.ClosedAt, and is useful for accessing the field via an interface.
+func (v *getProjectIssuesProjectIssuesIssueConnectionNodesIssue) GetClosedAt() *time.Time {
+	return v.IssueFieldsCore.ClosedAt
+}
+
+// GetTitle returns getProjectIssuesProjectIssuesIssueConnectionNodesIssue.Title, and is useful for accessing the field via an interface.
+func (v *getProjectIssuesProjectIssuesIssueConnectionNodesIssue) GetTitle() string {
+	return v.IssueFieldsCore.Title
+}
+
+// GetLabels returns getProjectIssuesProjectIssuesIssueConnectionNodesIssue.Labels, and is useful for accessing the field via an interface.
+func (v *getProjectIssuesProjectIssuesIssueConnectionNodesIssue) GetLabels() *IssueFieldsCoreLabelsLabelConnection {
+	return v.IssueFieldsCore.Labels
+}
+
+// GetType returns getProjectIssuesProjectIssuesIssueConnectionNodesIssue.Type, and is useful for accessing the field via an interface.
+func (v *getProjectIssuesProjectIssuesIssueConnectionNodesIssue) GetType() *IssueType {
+	return v.IssueFieldsCore.Type
+}
+
+// GetSeverity returns getProjectIssuesProjectIssuesIssueConnectionNodesIssue.Severity, and is useful for accessing the field via an interface.
+func (v *getProjectIssuesProjectIssuesIssueConnectionNodesIssue) GetSeverity() *IssuableSeverity {
+	return v.IssueFieldsCore.Severity
+}
+
+// GetState returns getProjectIssuesProjectIssuesIssueConnectionNodesIssue.State, and is useful for accessing the field via an interface.
+func (v *getProjectIssuesProjectIssuesIssueConnectionNodesIssue) GetState() IssueState {
+	return v.IssueFieldsCore.State
+}
+
+func (v *getProjectIssuesProjectIssuesIssueConnectionNodesIssue) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectIssuesProjectIssuesIssueConnectionNodesIssue
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectIssuesProjectIssuesIssueConnectionNodesIssue = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.IssueReferenceFields)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(
+		b, &v.IssueFieldsCore)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectIssuesProjectIssuesIssueConnectionNodesIssue struct {
+	Id string `json:"id"`
+
+	Iid string `json:"iid"`
+
+	CreatedAt time.Time `json:"createdAt"`
+
+	UpdatedAt time.Time `json:"updatedAt"`
+
+	ClosedAt *time.Time `json:"closedAt"`
+
+	Title string `json:"title"`
+
+	Labels *IssueFieldsCoreLabelsLabelConnection `json:"labels"`
+
+	Type *IssueType `json:"type"`
+
+	Severity *IssuableSeverity `json:"severity"`
+
+	State IssueState `json:"state"`
+}
+
+func (v *getProjectIssuesProjectIssuesIssueConnectionNodesIssue) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectIssuesProjectIssuesIssueConnectionNodesIssue) __premarshalJSON() (*__premarshalgetProjectIssuesProjectIssuesIssueConnectionNodesIssue, error) {
+	var retval __premarshalgetProjectIssuesProjectIssuesIssueConnectionNodesIssue
+
+	retval.Id = v.IssueReferenceFields.Id
+	retval.Iid = v.IssueReferenceFields.Iid
+	retval.CreatedAt = v.IssueFieldsCore.CreatedAt
+	retval.UpdatedAt = v.IssueFieldsCore.UpdatedAt
+	retval.ClosedAt = v.IssueFieldsCore.ClosedAt
+	retval.Title = v.IssueFieldsCore.Title
+	retval.Labels = v.IssueFieldsCore.Labels
+	retval.Type = v.IssueFieldsCore.Type
+	retval.Severity = v.IssueFieldsCore.Severity
+	retval.State = v.IssueFieldsCore.State
+	return &retval, nil
+}
+
+// getProjectIssuesProjectIssuesIssueConnectionPageInfo includes the requested fields of the GraphQL type PageInfo.
+// The GraphQL type's documentation follows.
+//
+// Information about pagination in a connection.
+type getProjectIssuesProjectIssuesIssueConnectionPageInfo struct {
+	pageFields `json:"-"`
+}
+
+// GetHasNextPage returns getProjectIssuesProjectIssuesIssueConnectionPageInfo.HasNextPage, and is useful for accessing the field via an interface.
+func (v *getProjectIssuesProjectIssuesIssueConnectionPageInfo) GetHasNextPage() bool {
+	return v.pageFields.HasNextPage
+}
+
+// GetEndCursor returns getProjectIssuesProjectIssuesIssueConnectionPageInfo.EndCursor, and is useful for accessing the field via an interface.
+func (v *getProjectIssuesProjectIssuesIssueConnectionPageInfo) GetEndCursor() *string {
+	return v.pageFields.EndCursor
+}
+
+func (v *getProjectIssuesProjectIssuesIssueConnectionPageInfo) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectIssuesProjectIssuesIssueConnectionPageInfo
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectIssuesProjectIssuesIssueConnectionPageInfo = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.pageFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectIssuesProjectIssuesIssueConnectionPageInfo struct {
+	HasNextPage bool `json:"hasNextPage"`
+
+	EndCursor *string `json:"endCursor"`
+}
+
+func (v *getProjectIssuesProjectIssuesIssueConnectionPageInfo) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectIssuesProjectIssuesIssueConnectionPageInfo) __premarshalJSON() (*__premarshalgetProjectIssuesProjectIssuesIssueConnectionPageInfo, error) {
+	var retval __premarshalgetProjectIssuesProjectIssuesIssueConnectionPageInfo
+
+	retval.HasNextPage = v.pageFields.HasNextPage
+	retval.EndCursor = v.pageFields.EndCursor
+	return &retval, nil
+}
+
+// getProjectIssuesResponse is returned by getProjectIssues on success.
+type getProjectIssuesResponse struct {
+	// Find a project.
+	Project *getProjectIssuesProject `json:"project"`
+}
+
+// GetProject returns getProjectIssuesResponse.Project, and is useful for accessing the field via an interface.
+func (v *getProjectIssuesResponse) GetProject() *getProjectIssuesProject { return v.Project }
 
 // getProjectMergeRequestNotesProject includes the requested fields of the GraphQL type Project.
 type getProjectMergeRequestNotesProject struct {
@@ -8015,6 +8559,393 @@ func (v *getProjectPipelinesTestReportSummaryResponse) GetProject() *getProjectP
 	return v.Project
 }
 
+// getProjectsIssuesProjectsProjectConnection includes the requested fields of the GraphQL type ProjectConnection.
+// The GraphQL type's documentation follows.
+//
+// The connection type for Project.
+type getProjectsIssuesProjectsProjectConnection struct {
+	// A list of nodes.
+	Nodes []*getProjectsIssuesProjectsProjectConnectionNodesProject `json:"nodes"`
+	// Information to aid in pagination.
+	PageInfo getProjectsIssuesProjectsProjectConnectionPageInfo `json:"pageInfo"`
+}
+
+// GetNodes returns getProjectsIssuesProjectsProjectConnection.Nodes, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnection) GetNodes() []*getProjectsIssuesProjectsProjectConnectionNodesProject {
+	return v.Nodes
+}
+
+// GetPageInfo returns getProjectsIssuesProjectsProjectConnection.PageInfo, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnection) GetPageInfo() getProjectsIssuesProjectsProjectConnectionPageInfo {
+	return v.PageInfo
+}
+
+// getProjectsIssuesProjectsProjectConnectionNodesProject includes the requested fields of the GraphQL type Project.
+type getProjectsIssuesProjectsProjectConnectionNodesProject struct {
+	ProjectReferenceFields `json:"-"`
+	// Issues of the project.
+	Issues *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnection `json:"issues"`
+}
+
+// GetIssues returns getProjectsIssuesProjectsProjectConnectionNodesProject.Issues, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProject) GetIssues() *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnection {
+	return v.Issues
+}
+
+// GetId returns getProjectsIssuesProjectsProjectConnectionNodesProject.Id, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProject) GetId() string {
+	return v.ProjectReferenceFields.Id
+}
+
+// GetFullPath returns getProjectsIssuesProjectsProjectConnectionNodesProject.FullPath, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProject) GetFullPath() string {
+	return v.ProjectReferenceFields.FullPath
+}
+
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProject) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectsIssuesProjectsProjectConnectionNodesProject
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectsIssuesProjectsProjectConnectionNodesProject = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.ProjectReferenceFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectsIssuesProjectsProjectConnectionNodesProject struct {
+	Issues *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnection `json:"issues"`
+
+	Id string `json:"id"`
+
+	FullPath string `json:"fullPath"`
+}
+
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProject) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProject) __premarshalJSON() (*__premarshalgetProjectsIssuesProjectsProjectConnectionNodesProject, error) {
+	var retval __premarshalgetProjectsIssuesProjectsProjectConnectionNodesProject
+
+	retval.Issues = v.Issues
+	retval.Id = v.ProjectReferenceFields.Id
+	retval.FullPath = v.ProjectReferenceFields.FullPath
+	return &retval, nil
+}
+
+// getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnection includes the requested fields of the GraphQL type IssueConnection.
+// The GraphQL type's documentation follows.
+//
+// The connection type for Issue.
+type getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnection struct {
+	// A list of nodes.
+	Nodes []*getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue `json:"nodes"`
+	// Information to aid in pagination.
+	PageInfo getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionPageInfo `json:"pageInfo"`
+}
+
+// GetNodes returns getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnection.Nodes, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnection) GetNodes() []*getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue {
+	return v.Nodes
+}
+
+// GetPageInfo returns getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnection.PageInfo, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnection) GetPageInfo() getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionPageInfo {
+	return v.PageInfo
+}
+
+// getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue includes the requested fields of the GraphQL type Issue.
+type getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue struct {
+	IssueReferenceFields `json:"-"`
+	IssueFieldsCore      `json:"-"`
+}
+
+// GetId returns getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue.Id, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue) GetId() string {
+	return v.IssueReferenceFields.Id
+}
+
+// GetIid returns getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue.Iid, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue) GetIid() string {
+	return v.IssueReferenceFields.Iid
+}
+
+// GetCreatedAt returns getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue.CreatedAt, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue) GetCreatedAt() time.Time {
+	return v.IssueFieldsCore.CreatedAt
+}
+
+// GetUpdatedAt returns getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue.UpdatedAt, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue) GetUpdatedAt() time.Time {
+	return v.IssueFieldsCore.UpdatedAt
+}
+
+// GetClosedAt returns getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue.ClosedAt, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue) GetClosedAt() *time.Time {
+	return v.IssueFieldsCore.ClosedAt
+}
+
+// GetTitle returns getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue.Title, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue) GetTitle() string {
+	return v.IssueFieldsCore.Title
+}
+
+// GetLabels returns getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue.Labels, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue) GetLabels() *IssueFieldsCoreLabelsLabelConnection {
+	return v.IssueFieldsCore.Labels
+}
+
+// GetType returns getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue.Type, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue) GetType() *IssueType {
+	return v.IssueFieldsCore.Type
+}
+
+// GetSeverity returns getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue.Severity, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue) GetSeverity() *IssuableSeverity {
+	return v.IssueFieldsCore.Severity
+}
+
+// GetState returns getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue.State, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue) GetState() IssueState {
+	return v.IssueFieldsCore.State
+}
+
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.IssueReferenceFields)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(
+		b, &v.IssueFieldsCore)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue struct {
+	Id string `json:"id"`
+
+	Iid string `json:"iid"`
+
+	CreatedAt time.Time `json:"createdAt"`
+
+	UpdatedAt time.Time `json:"updatedAt"`
+
+	ClosedAt *time.Time `json:"closedAt"`
+
+	Title string `json:"title"`
+
+	Labels *IssueFieldsCoreLabelsLabelConnection `json:"labels"`
+
+	Type *IssueType `json:"type"`
+
+	Severity *IssuableSeverity `json:"severity"`
+
+	State IssueState `json:"state"`
+}
+
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue) __premarshalJSON() (*__premarshalgetProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue, error) {
+	var retval __premarshalgetProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionNodesIssue
+
+	retval.Id = v.IssueReferenceFields.Id
+	retval.Iid = v.IssueReferenceFields.Iid
+	retval.CreatedAt = v.IssueFieldsCore.CreatedAt
+	retval.UpdatedAt = v.IssueFieldsCore.UpdatedAt
+	retval.ClosedAt = v.IssueFieldsCore.ClosedAt
+	retval.Title = v.IssueFieldsCore.Title
+	retval.Labels = v.IssueFieldsCore.Labels
+	retval.Type = v.IssueFieldsCore.Type
+	retval.Severity = v.IssueFieldsCore.Severity
+	retval.State = v.IssueFieldsCore.State
+	return &retval, nil
+}
+
+// getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionPageInfo includes the requested fields of the GraphQL type PageInfo.
+// The GraphQL type's documentation follows.
+//
+// Information about pagination in a connection.
+type getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionPageInfo struct {
+	pageFields `json:"-"`
+}
+
+// GetHasNextPage returns getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionPageInfo.HasNextPage, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionPageInfo) GetHasNextPage() bool {
+	return v.pageFields.HasNextPage
+}
+
+// GetEndCursor returns getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionPageInfo.EndCursor, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionPageInfo) GetEndCursor() *string {
+	return v.pageFields.EndCursor
+}
+
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionPageInfo) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionPageInfo
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionPageInfo = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.pageFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionPageInfo struct {
+	HasNextPage bool `json:"hasNextPage"`
+
+	EndCursor *string `json:"endCursor"`
+}
+
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionPageInfo) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionPageInfo) __premarshalJSON() (*__premarshalgetProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionPageInfo, error) {
+	var retval __premarshalgetProjectsIssuesProjectsProjectConnectionNodesProjectIssuesIssueConnectionPageInfo
+
+	retval.HasNextPage = v.pageFields.HasNextPage
+	retval.EndCursor = v.pageFields.EndCursor
+	return &retval, nil
+}
+
+// getProjectsIssuesProjectsProjectConnectionPageInfo includes the requested fields of the GraphQL type PageInfo.
+// The GraphQL type's documentation follows.
+//
+// Information about pagination in a connection.
+type getProjectsIssuesProjectsProjectConnectionPageInfo struct {
+	pageFields `json:"-"`
+}
+
+// GetHasNextPage returns getProjectsIssuesProjectsProjectConnectionPageInfo.HasNextPage, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnectionPageInfo) GetHasNextPage() bool {
+	return v.pageFields.HasNextPage
+}
+
+// GetEndCursor returns getProjectsIssuesProjectsProjectConnectionPageInfo.EndCursor, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesProjectsProjectConnectionPageInfo) GetEndCursor() *string {
+	return v.pageFields.EndCursor
+}
+
+func (v *getProjectsIssuesProjectsProjectConnectionPageInfo) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectsIssuesProjectsProjectConnectionPageInfo
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectsIssuesProjectsProjectConnectionPageInfo = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.pageFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectsIssuesProjectsProjectConnectionPageInfo struct {
+	HasNextPage bool `json:"hasNextPage"`
+
+	EndCursor *string `json:"endCursor"`
+}
+
+func (v *getProjectsIssuesProjectsProjectConnectionPageInfo) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectsIssuesProjectsProjectConnectionPageInfo) __premarshalJSON() (*__premarshalgetProjectsIssuesProjectsProjectConnectionPageInfo, error) {
+	var retval __premarshalgetProjectsIssuesProjectsProjectConnectionPageInfo
+
+	retval.HasNextPage = v.pageFields.HasNextPage
+	retval.EndCursor = v.pageFields.EndCursor
+	return &retval, nil
+}
+
+// getProjectsIssuesResponse is returned by getProjectsIssues on success.
+type getProjectsIssuesResponse struct {
+	// Find projects visible to the current user.
+	Projects *getProjectsIssuesProjectsProjectConnection `json:"projects"`
+}
+
+// GetProjects returns getProjectsIssuesResponse.Projects, and is useful for accessing the field via an interface.
+func (v *getProjectsIssuesResponse) GetProjects() *getProjectsIssuesProjectsProjectConnection {
+	return v.Projects
+}
+
 // getProjectsMergeRequestNotesProjectsProjectConnection includes the requested fields of the GraphQL type ProjectConnection.
 // The GraphQL type's documentation follows.
 //
@@ -11466,6 +12397,85 @@ func getProjectIdPipeline(
 	return &data_, err_
 }
 
+// The query or mutation executed by getProjectIssues.
+const getProjectIssues_Operation = `
+query getProjectIssues ($projectPath: ID!, $updatedAfter: Time, $updatedBefore: Time, $endCursor: String) {
+	project(fullPath: $projectPath) {
+		... ProjectReferenceFields
+		issues(updatedAfter: $updatedAfter, updatedBefore: $updatedBefore, after: $endCursor) {
+			nodes {
+				... IssueReferenceFields
+				... IssueFieldsCore
+			}
+			pageInfo {
+				... pageFields
+			}
+		}
+	}
+}
+fragment ProjectReferenceFields on Project {
+	id
+	fullPath
+}
+fragment IssueReferenceFields on Issue {
+	id
+	iid
+}
+fragment IssueFieldsCore on Issue {
+	createdAt
+	updatedAt
+	closedAt
+	title
+	labels {
+		nodes {
+			title
+		}
+		pageInfo {
+			... pageFields
+		}
+	}
+	type
+	severity
+	state
+}
+fragment pageFields on PageInfo {
+	hasNextPage
+	endCursor
+}
+`
+
+func getProjectIssues(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	projectPath string,
+	updatedAfter *time.Time,
+	updatedBefore *time.Time,
+	endCursor *string,
+) (*getProjectIssuesResponse, error) {
+	req_ := &graphql.Request{
+		OpName: "getProjectIssues",
+		Query:  getProjectIssues_Operation,
+		Variables: &__getProjectIssuesInput{
+			ProjectPath:   projectPath,
+			UpdatedAfter:  updatedAfter,
+			UpdatedBefore: updatedBefore,
+			EndCursor:     endCursor,
+		},
+	}
+	var err_ error
+
+	var data_ getProjectIssuesResponse
+	resp_ := &graphql.Response{Data: &data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return &data_, err_
+}
+
 // The query or mutation executed by getProjectMergeRequestNotes.
 const getProjectMergeRequestNotes_Operation = `
 query getProjectMergeRequestNotes ($projectPath: ID!, $mergeRequestIid: String!, $endCursor: String) {
@@ -12528,6 +13538,90 @@ func getProjects(
 	var err_ error
 
 	var data_ getProjectsResponse
+	resp_ := &graphql.Response{Data: &data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return &data_, err_
+}
+
+// The query or mutation executed by getProjectsIssues.
+const getProjectsIssues_Operation = `
+query getProjectsIssues ($projectIds: [ID!], $updatedAfter: Time, $updatedBefore: Time, $endCursor: String) {
+	projects(ids: $projectIds, after: $endCursor) {
+		nodes {
+			... ProjectReferenceFields
+			issues(updatedAfter: $updatedAfter, updatedBefore: $updatedBefore) {
+				nodes {
+					... IssueReferenceFields
+					... IssueFieldsCore
+				}
+				pageInfo {
+					... pageFields
+				}
+			}
+		}
+		pageInfo {
+			... pageFields
+		}
+	}
+}
+fragment ProjectReferenceFields on Project {
+	id
+	fullPath
+}
+fragment IssueReferenceFields on Issue {
+	id
+	iid
+}
+fragment IssueFieldsCore on Issue {
+	createdAt
+	updatedAt
+	closedAt
+	title
+	labels {
+		nodes {
+			title
+		}
+		pageInfo {
+			... pageFields
+		}
+	}
+	type
+	severity
+	state
+}
+fragment pageFields on PageInfo {
+	hasNextPage
+	endCursor
+}
+`
+
+func getProjectsIssues(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	projectIds []string,
+	updatedAfter *time.Time,
+	updatedBefore *time.Time,
+	endCursor *string,
+) (*getProjectsIssuesResponse, error) {
+	req_ := &graphql.Request{
+		OpName: "getProjectsIssues",
+		Query:  getProjectsIssues_Operation,
+		Variables: &__getProjectsIssuesInput{
+			ProjectIds:    projectIds,
+			UpdatedAfter:  updatedAfter,
+			UpdatedBefore: updatedBefore,
+			EndCursor:     endCursor,
+		},
+	}
+	var err_ error
+
+	var data_ getProjectsIssuesResponse
 	resp_ := &graphql.Response{Data: &data_}
 
 	err_ = client_.MakeRequest(

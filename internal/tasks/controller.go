@@ -115,6 +115,22 @@ func (ps *ProjectsSettings) ExportDeployments(id int64) bool {
 	return cfg.Export.Deployments.Enabled
 }
 
+func (ps *ProjectsSettings) ExportIssues(id int64) bool {
+	ps.mu.RLock()
+	defer ps.mu.RUnlock()
+
+	cfg, ok := ps.settings[id]
+	if !ok {
+		return false
+	}
+
+	if cfg.AccessLevels.Issues == ProjectAccessLevelDisabled {
+		return false
+	}
+
+	return cfg.Export.Issues.Enabled
+}
+
 func (ps *ProjectsSettings) ExportTestReports(id int64) bool {
 	ps.mu.RLock()
 	defer ps.mu.RUnlock()
@@ -189,6 +205,7 @@ type ProjectSettings struct {
 type ProjectAccessLevels struct {
 	Builds      ProjectAccessLevel
 	Environment ProjectAccessLevel
+	Issues      ProjectAccessLevel
 }
 
 type ProjectAccessLevel string
@@ -396,6 +413,20 @@ func (c *Controller) process(ctx context.Context, projectSettings []ProjectSetti
 	go func() {
 		defer wg.Done()
 
+		projectIds := make([]int64, 0, len(result.UpdatedProjects))
+		for _, p := range result.UpdatedProjects {
+			projectIds = append(projectIds, p.Id)
+		}
+
+		if err := c.processProjectsIssues(ctx, projectIds, updatedAfter, updatedBefore); err != nil {
+			errChan <- fmt.Errorf("process issues: %w", err)
+		}
+	}()
+
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
 		if err := c.processProjectsDeployments(ctx, result.ProjectsWithUpdatedPipelines, updatedAfter, updatedBefore); err != nil {
 			errChan <- fmt.Errorf("process deployments: %w", err)
 		}
@@ -465,6 +496,26 @@ func (c *Controller) getUpdatedProjects(ctx context.Context, projects []ProjectS
 
 func (s *Controller) processProjects(ctx context.Context, projects []types.Project) error {
 	return s.Exporter.ExportProjects(ctx, projects)
+}
+
+func (c *Controller) processProjectsIssues(ctx context.Context, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) error {
+	pids := make([]int64, 0, len(projectIds))
+	for _, pid := range projectIds {
+		if c.projectsSettings.ExportIssues(pid) {
+			pids = append(pids, pid)
+		}
+	}
+
+	issues, err := FetchProjectsIssues(ctx, c.GitLab, pids, updatedAfter, updatedBefore)
+	if err != nil {
+		return fmt.Errorf("fetch issues: %w", err)
+	}
+
+	if err := c.Exporter.ExportIssues(ctx, issues); err != nil {
+		return fmt.Errorf("export issues: %w", err)
+	}
+
+	return nil
 }
 
 func (c *Controller) processProjectsDeployments(ctx context.Context, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) error {
@@ -752,6 +803,7 @@ func (c *Controller) ResolveProjects(ctx context.Context) (int, error) {
 					AccessLevels: ProjectAccessLevels{
 						Builds:      ProjectAccessLevel(project.BuildsAccessLevel),
 						Environment: ProjectAccessLevel(project.EnvironmentsAccessLevel),
+						Issues:      ProjectAccessLevel(project.IssuesAccessLevel),
 					},
 				}
 				ps.CatchUp.Enabled = namespace.ProjectSettings.CatchUp.Enabled

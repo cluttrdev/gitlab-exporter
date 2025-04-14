@@ -27,3 +27,8 @@ fragment UserReferenceFields on User {
     username
     name
 }
+
+fragment IssueReferenceFields on Issue {
+    id
+    iid
+}

@@ -1,0 +1,19 @@
+fragment IssueFieldsCore on Issue {
+    createdAt
+    updatedAt
+    closedAt
+
+    title
+    labels {
+        nodes {
+            title
+        }
+        pageInfo {
+            ...pageFields
+        }
+    }
+
+    type
+    severity
+    state
+}

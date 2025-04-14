@@ -25,6 +25,7 @@ const (
 	GitLabExporter_RecordCoverageClasses_FullMethodName        = "/gitlabexporter.protobuf.service.GitLabExporter/RecordCoverageClasses"
 	GitLabExporter_RecordCoverageMethods_FullMethodName        = "/gitlabexporter.protobuf.service.GitLabExporter/RecordCoverageMethods"
 	GitLabExporter_RecordDeployments_FullMethodName            = "/gitlabexporter.protobuf.service.GitLabExporter/RecordDeployments"
+	GitLabExporter_RecordIssues_FullMethodName                 = "/gitlabexporter.protobuf.service.GitLabExporter/RecordIssues"
 	GitLabExporter_RecordJobs_FullMethodName                   = "/gitlabexporter.protobuf.service.GitLabExporter/RecordJobs"
 	GitLabExporter_RecordMergeRequests_FullMethodName          = "/gitlabexporter.protobuf.service.GitLabExporter/RecordMergeRequests"
 	GitLabExporter_RecordMergeRequestNoteEvents_FullMethodName = "/gitlabexporter.protobuf.service.GitLabExporter/RecordMergeRequestNoteEvents"
@@ -48,6 +49,7 @@ type GitLabExporterClient interface {
 	RecordCoverageClasses(ctx context.Context, in *RecordCoverageClassesRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordCoverageMethods(ctx context.Context, in *RecordCoverageMethodsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordDeployments(ctx context.Context, in *RecordDeploymentsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
+	RecordIssues(ctx context.Context, in *RecordIssuesRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordJobs(ctx context.Context, in *RecordJobsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordMergeRequests(ctx context.Context, in *RecordMergeRequestsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordMergeRequestNoteEvents(ctx context.Context, in *RecordMergeRequestNoteEventsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
@@ -117,6 +119,15 @@ func (c *gitLabExporterClient) RecordCoverageMethods(ctx context.Context, in *Re
 func (c *gitLabExporterClient) RecordDeployments(ctx context.Context, in *RecordDeploymentsRequest, opts ...grpc.CallOption) (*RecordSummary, error) {
 	out := new(RecordSummary)
 	err := c.cc.Invoke(ctx, GitLabExporter_RecordDeployments_FullMethodName, in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gitLabExporterClient) RecordIssues(ctx context.Context, in *RecordIssuesRequest, opts ...grpc.CallOption) (*RecordSummary, error) {
+	out := new(RecordSummary)
+	err := c.cc.Invoke(ctx, GitLabExporter_RecordIssues_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -232,6 +243,7 @@ type GitLabExporterServer interface {
 	RecordCoverageClasses(context.Context, *RecordCoverageClassesRequest) (*RecordSummary, error)
 	RecordCoverageMethods(context.Context, *RecordCoverageMethodsRequest) (*RecordSummary, error)
 	RecordDeployments(context.Context, *RecordDeploymentsRequest) (*RecordSummary, error)
+	RecordIssues(context.Context, *RecordIssuesRequest) (*RecordSummary, error)
 	RecordJobs(context.Context, *RecordJobsRequest) (*RecordSummary, error)
 	RecordMergeRequests(context.Context, *RecordMergeRequestsRequest) (*RecordSummary, error)
 	RecordMergeRequestNoteEvents(context.Context, *RecordMergeRequestNoteEventsRequest) (*RecordSummary, error)
@@ -267,6 +279,9 @@ func (UnimplementedGitLabExporterServer) RecordCoverageMethods(context.Context, 
 }
 func (UnimplementedGitLabExporterServer) RecordDeployments(context.Context, *RecordDeploymentsRequest) (*RecordSummary, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecordDeployments not implemented")
+}
+func (UnimplementedGitLabExporterServer) RecordIssues(context.Context, *RecordIssuesRequest) (*RecordSummary, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RecordIssues not implemented")
 }
 func (UnimplementedGitLabExporterServer) RecordJobs(context.Context, *RecordJobsRequest) (*RecordSummary, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecordJobs not implemented")
@@ -418,6 +433,24 @@ func _GitLabExporter_RecordDeployments_Handler(srv interface{}, ctx context.Cont
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(GitLabExporterServer).RecordDeployments(ctx, req.(*RecordDeploymentsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GitLabExporter_RecordIssues_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RecordIssuesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GitLabExporterServer).RecordIssues(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GitLabExporter_RecordIssues_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GitLabExporterServer).RecordIssues(ctx, req.(*RecordIssuesRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -650,6 +683,10 @@ var GitLabExporter_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RecordDeployments",
 			Handler:    _GitLabExporter_RecordDeployments_Handler,
+		},
+		{
+			MethodName: "RecordIssues",
+			Handler:    _GitLabExporter_RecordIssues_Handler,
 		},
 		{
 			MethodName: "RecordJobs",

@@ -1,0 +1,48 @@
+query getProjectsIssues(
+    $projectIds: [ID!]
+    $updatedAfter: Time
+    $updatedBefore: Time
+    $endCursor: String
+) {
+    projects(ids: $projectIds, after: $endCursor) {
+        nodes {
+            ...ProjectReferenceFields
+
+            issues(updatedAfter: $updatedAfter, updatedBefore: $updatedBefore) {
+                nodes {
+                    ...IssueReferenceFields
+
+                    ...IssueFieldsCore
+                }
+                pageInfo {
+                    ...pageFields
+                }
+            }
+        }
+        pageInfo {
+            ...pageFields
+        }
+    }
+}
+
+query getProjectIssues(
+    $projectPath: ID!
+    $updatedAfter: Time
+    $updatedBefore: Time
+    $endCursor: String
+) {
+    project(fullPath: $projectPath) {
+        ...ProjectReferenceFields
+
+        issues(updatedAfter: $updatedAfter, updatedBefore: $updatedBefore, after: $endCursor) {
+            nodes {
+                ...IssueReferenceFields
+
+                ...IssueFieldsCore
+            }
+            pageInfo {
+                ...pageFields
+            }
+        }
+    }
+}

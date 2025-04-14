@@ -39,6 +39,9 @@ func defaultProjectSettings() config.ProjectSettings {
 			Deployments: config.ProjectExportDeployments{
 				Enabled: true,
 			},
+			Issues: config.ProjectExportIssues{
+				Enabled: true,
+			},
 			Jobs: config.ProjectExportJobs{
 				Properties: config.ProjectExportJobsProperties{
 					Enabled: true,
@@ -207,6 +210,8 @@ func TestLoad_WithProjectsEmptyDefaults(t *testing.T) {
 				Export: config.ProjectExport{
 					Deployments: config.ProjectExportDeployments{
 						Enabled: true},
+					Issues: config.ProjectExportIssues{
+						Enabled: true},
 					Jobs: config.ProjectExportJobs{
 						Properties: config.ProjectExportJobsProperties{
 							Enabled: true}},
@@ -243,6 +248,8 @@ func TestLoad_DataWithProjects(t *testing.T) {
       - id: 314
       - id: 1337  # foo/bar
         export:
+          issues:
+            enabled: false
           sections:
             enabled: true
           testreports:
@@ -275,6 +282,8 @@ func TestLoad_DataWithProjects(t *testing.T) {
 				Export: config.ProjectExport{
 					Deployments: config.ProjectExportDeployments{
 						Enabled: true},
+					Issues: config.ProjectExportIssues{
+						Enabled: false},
 					Jobs: config.ProjectExportJobs{
 						Properties: config.ProjectExportJobsProperties{
 							Enabled: true}},
@@ -302,6 +311,8 @@ func TestLoad_DataWithProjects(t *testing.T) {
 			ProjectSettings: config.ProjectSettings{
 				Export: config.ProjectExport{
 					Deployments: config.ProjectExportDeployments{
+						Enabled: true},
+					Issues: config.ProjectExportIssues{
 						Enabled: true},
 					Jobs: config.ProjectExportJobs{
 						Properties: config.ProjectExportJobsProperties{
@@ -373,6 +384,8 @@ func TestLoad_DataWithProjectDefaults(t *testing.T) {
 		Export: config.ProjectExport{
 			Deployments: config.ProjectExportDeployments{
 				Enabled: true},
+			Issues: config.ProjectExportIssues{
+				Enabled: true},
 			Jobs: config.ProjectExportJobs{
 				Properties: config.ProjectExportJobsProperties{
 					Enabled: true}},
@@ -398,6 +411,8 @@ func TestLoad_DataWithProjectDefaults(t *testing.T) {
 			ProjectSettings: config.ProjectSettings{
 				Export: config.ProjectExport{
 					Deployments: config.ProjectExportDeployments{
+						Enabled: true},
+					Issues: config.ProjectExportIssues{
 						Enabled: true},
 					Jobs: config.ProjectExportJobs{
 						Properties: config.ProjectExportJobsProperties{
@@ -426,6 +441,8 @@ func TestLoad_DataWithProjectDefaults(t *testing.T) {
 				Export: config.ProjectExport{
 					Deployments: config.ProjectExportDeployments{
 						Enabled: true},
+					Issues: config.ProjectExportIssues{
+						Enabled: true},
 					Jobs: config.ProjectExportJobs{
 						Properties: config.ProjectExportJobsProperties{
 							Enabled: true}},
@@ -452,6 +469,8 @@ func TestLoad_DataWithProjectDefaults(t *testing.T) {
 			ProjectSettings: config.ProjectSettings{
 				Export: config.ProjectExport{
 					Deployments: config.ProjectExportDeployments{
+						Enabled: true},
+					Issues: config.ProjectExportIssues{
 						Enabled: true},
 					Jobs: config.ProjectExportJobs{
 						Properties: config.ProjectExportJobsProperties{

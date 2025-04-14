@@ -7,6 +7,7 @@ package gitlabexporter.protobuf.service;
 import "gitlabexporter/protobuf/commit.proto";
 import "gitlabexporter/protobuf/coverage.proto";
 import "gitlabexporter/protobuf/deployment.proto";
+import "gitlabexporter/protobuf/issue.proto";
 import "gitlabexporter/protobuf/job.proto";
 import "gitlabexporter/protobuf/merge_request.proto";
 import "gitlabexporter/protobuf/metric.proto";
@@ -23,6 +24,7 @@ service GitLabExporter {
     rpc RecordCoverageClasses(RecordCoverageClassesRequest) returns (RecordSummary) {}
     rpc RecordCoverageMethods(RecordCoverageMethodsRequest) returns (RecordSummary) {}
     rpc RecordDeployments(RecordDeploymentsRequest) returns (RecordSummary) {}
+    rpc RecordIssues(RecordIssuesRequest) returns (RecordSummary) {}
     rpc RecordJobs(RecordJobsRequest) returns (RecordSummary) {}
     rpc RecordMergeRequests(RecordMergeRequestsRequest) returns (RecordSummary) {}
     rpc RecordMergeRequestNoteEvents(RecordMergeRequestNoteEventsRequest) returns (RecordSummary) {}
@@ -62,6 +64,10 @@ message RecordCoverageMethodsRequest {
 
 message RecordDeploymentsRequest {
     repeated gitlabexporter.protobuf.Deployment data = 1;
+}
+
+message RecordIssuesRequest {
+    repeated gitlabexporter.protobuf.Issue data = 1;
 }
 
 message RecordJobsRequest {
