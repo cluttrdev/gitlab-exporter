@@ -44,10 +44,11 @@ build:  ## Create application binary
 .PHONY: build-image
 build-image: ## Build container image
 	export version=$$(make --no-print-directory version); \
+	if [ -n "${tag}" ]; then tag="${tag}"; else tag="$${version/+/-}" ; fi; \
 	docker build \
 		--file Dockerfile \
 		--build-arg VERSION=$${version} \
-		--tag "${APP}:$${version/+/-}" \
+		--tag "${APP}:$${tag}" \
 		.
 
 .PHONY: test
