@@ -13,13 +13,13 @@ require (
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/hashicorp/go-retryablehttp v0.7.7
 	github.com/oklog/run v1.1.0
-	github.com/prometheus/client_golang v1.21.1
-	gitlab.com/gitlab-org/api/client-go v0.126.0
+	github.com/prometheus/client_golang v1.22.0
+	gitlab.com/gitlab-org/api/client-go v0.127.0
 	go.opentelemetry.io/proto/otlp v1.5.0
-	golang.org/x/net v0.37.0
-	golang.org/x/sync v0.12.0
+	golang.org/x/net v0.39.0
+	golang.org/x/sync v0.13.0
 	golang.org/x/time v0.11.0
-	google.golang.org/grpc v1.71.0
+	google.golang.org/grpc v1.71.1
 	google.golang.org/protobuf v1.36.6
 	gopkg.in/yaml.v3 v3.0.1
 )
@@ -33,12 +33,12 @@ require (
 	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
-	github.com/prometheus/client_model v0.6.1 // indirect
+	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.63.0 // indirect
 	github.com/prometheus/procfs v0.16.0 // indirect
-	github.com/vektah/gqlparser/v2 v2.5.23 // indirect
-	golang.org/x/oauth2 v0.28.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
-	golang.org/x/text v0.23.0 // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20250313205543-e70fdf4c4cb4 // indirect
+	github.com/vektah/gqlparser/v2 v2.5.25 // indirect
+	golang.org/x/oauth2 v0.29.0 // indirect
+	golang.org/x/sys v0.32.0 // indirect
+	golang.org/x/text v0.24.0 // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20250414145226-207652e42e2e // indirect
 )
