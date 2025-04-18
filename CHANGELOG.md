@@ -1,7 +1,16 @@
 # Changelog
 
+## [0.18.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.17.1..v0.18.0)
+
+- 236b3fe fix: Update dependencies
+- 464c632 build: Set tag for build-image target
+- 012d42b feat: Export issues
+- 5947476 refactor: Convert types in exporter and adjust controller logic
+- fe9a2ea refactor: Move typespb conversion to new exporter/messages package
+
 ## [0.17.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.17.0..v0.17.1)
 
+- 6943e60 chore(release): v0.17.1
 - e1a88d9 ci(github): Link to gitlab release assets instead of uploading to github
 - 7c2f7a3 chore: Merge branch 'pipelines-downstream' into 'main'
 - f8c232c patch!: Export pipeline downstream references
