@@ -199,6 +199,58 @@ func TestParseFull(t *testing.T) {
 	}
 }
 
+func TestParseMany(t *testing.T) {
+	data := `
+    <testsuites time="2.113871">
+        <testsuite name="Tests.Registration" time="2.113871">
+            <testcase name="testCase1" classname="Tests.Registration" time="2.113871" />
+        </testsuite>
+    </testsuites>
+    <testsuites time="2.508">
+        <testsuite name="Tests.Authentication" time="2.508">
+            <testcase name="testCase1" classname="Tests.Authentication" time="2.508" />
+        </testsuite>
+    </testsuites>
+    `
+	reports, err := junitxml.ParseMany(strings.NewReader(data))
+	if err != nil {
+		t.Errorf("error parsing data: %v", err)
+	}
+
+	want := []junitxml.TestReport{
+		{
+			XMLName: xml.Name{Local: "testsuites"},
+			Time:    2.113871,
+			TestSuites: []junitxml.TestSuite{
+				{
+					Name: "Tests.Registration",
+					Time: 2.113871,
+					TestCases: []junitxml.TestCase{
+						{Name: "testCase1", Classname: "Tests.Registration", Time: 2.113871},
+					},
+				},
+			},
+		},
+		{
+			XMLName: xml.Name{Local: "testsuites"},
+			Time:    2.508,
+			TestSuites: []junitxml.TestSuite{
+				{
+					Name: "Tests.Authentication",
+					Time: 2.508,
+					TestCases: []junitxml.TestCase{
+						{Name: "testCase1", Classname: "Tests.Authentication", Time: 2.508},
+					},
+				},
+			},
+		},
+	}
+
+	if diff := cmp.Diff(want, reports); diff != "" {
+		t.Errorf("Mismatch (-want +got):\n%s", diff)
+	}
+}
+
 func TestParseTextAttachments(t *testing.T) {
 	data := `
     Output line #1

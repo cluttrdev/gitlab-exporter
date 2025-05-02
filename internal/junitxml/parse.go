@@ -2,6 +2,7 @@ package junitxml
 
 import (
 	"encoding/xml"
+	"errors"
 	"io"
 	"regexp"
 )
@@ -13,6 +14,30 @@ func Parse(r io.Reader) (TestReport, error) {
 		return TestReport{}, err
 	}
 	return report, nil
+}
+
+func ParseMany(r io.Reader) ([]TestReport, error) {
+	var reports []TestReport
+
+	decoder := xml.NewDecoder(r)
+	for {
+		tok, err := decoder.Token()
+		if errors.Is(err, io.EOF) {
+			break
+		} else if err != nil {
+			return nil, err
+		}
+
+		if elem, ok := tok.(xml.StartElement); ok {
+			var report TestReport
+			if err := decoder.DecodeElement(&report, &elem); err != nil {
+				return nil, err
+			}
+			reports = append(reports, report)
+		}
+	}
+
+	return reports, nil
 }
 
 const (
