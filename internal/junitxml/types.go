@@ -11,52 +11,52 @@ import (
 
 type TestReport struct {
 	XMLName    xml.Name    `xml:"testsuites"`
-	Tests      int64       `xml:"tests,attr"`
-	Failures   int64       `xml:"failures,attr"`
-	Errors     int64       `xml:"errors,attr"`
-	Skipped    int64       `xml:"skipped,attr"`
-	Time       float64     `xml:"time,attr"`
-	Timestamp  string      `xml:"timestamp,attr"`
+	Tests      int64       `xml:"tests,attr,omitempty"`
+	Failures   int64       `xml:"failures,attr,omitempty"`
+	Errors     int64       `xml:"errors,attr,omitempty"`
+	Skipped    int64       `xml:"skipped,attr,omitempty"`
+	Time       float64     `xml:"time,attr,omitempty"`
+	Timestamp  string      `xml:"timestamp,attr,omitempty"`
 	TestSuites []TestSuite `xml:"testsuite"`
 }
 
 type TestSuite struct {
 	// XMLName    xml.Name   `xml:"testsuite"`
-	Name       string     `xml:"name,attr"`
-	Tests      int64      `xml:"tests,attr"`
-	Failures   int64      `xml:"failures,attr"`
-	Errors     int64      `xml:"errors,attr"`
-	Skipped    int64      `xml:"skipped,attr"`
-	Time       float64    `xml:"time,attr"`
-	Timestamp  string     `xml:"timestamp,attr"`
-	File       string     `xml:"file,attr"`
-	Properties []Property `xml:"properties>property"`
-	SystemOut  SystemOut  `xml:"system-out"`
-	SystemErr  SystemErr  `xml:"system-err"`
+	Name       string     `xml:"name,attr,omitempty"`
+	Tests      int64      `xml:"tests,attr,omitempty"`
+	Failures   int64      `xml:"failures,attr,omitempty"`
+	Errors     int64      `xml:"errors,attr,omitempty"`
+	Skipped    int64      `xml:"skipped,attr,omitempty"`
+	Time       float64    `xml:"time,attr,omitempty"`
+	Timestamp  string     `xml:"timestamp,attr,omitempty"`
+	File       string     `xml:"file,attr,omitempty"`
+	Properties []Property `xml:"properties>property,omitempty"`
+	SystemOut  *SystemOut `xml:"system-out"`
+	SystemErr  *SystemErr `xml:"system-err"`
 	TestCases  []TestCase `xml:"testcase"`
 }
 
 type TestCase struct {
 	// XMLName   xml.Name  `xml:"testcase"`
-	Name       string     `xml:"name,attr"`
-	Classname  string     `xml:"classname,attr"`
-	Tests      int64      `xml:"tests,attr"`
-	Time       float64    `xml:"time,attr"`
-	File       string     `xml:"file,attr"`
-	Line       int64      `xml:"line,attr"`
+	Name       string     `xml:"name,attr,omitempty"`
+	Classname  string     `xml:"classname,attr,omitempty"`
+	Tests      int64      `xml:"tests,attr,omitempty"`
+	Time       float64    `xml:"time,attr,omitempty"`
+	File       string     `xml:"file,attr,omitempty"`
+	Line       int64      `xml:"line,attr,omitempty"`
 	Failure    *Failure   `xml:"failure"`
 	Error      *Error     `xml:"error"`
 	Skipped    *Skipped   `xml:"skipped"`
-	Properties []Property `xml:"properties>property"`
+	Properties []Property `xml:"properties>property,omitempty"`
 	SystemOut  *SystemOut `xml:"system-out"`
 	SystemErr  *SystemErr `xml:"system-err"`
 }
 
 type Failure struct {
 	// XMLName xml.Name `xml:"failure"`
-	Message string `xml:"message,attr"`
-	Type    string `xml:"type,attr"`
-	Text    string `xml:",chardata"`
+	Message string `xml:"message,attr,omitempty"`
+	Type    string `xml:"type,attr,omitempty"`
+	Text    string `xml:",innerxml"`
 }
 
 func (f *Failure) Output() string {
@@ -65,9 +65,9 @@ func (f *Failure) Output() string {
 
 type Error struct {
 	// XMLName xml.Name `xml:"error"`
-	Message string `xml:"message,attr"`
-	Type    string `xml:"type,attr"`
-	Text    string `xml:",chardata"`
+	Message string `xml:"message,attr,omitempty"`
+	Type    string `xml:"type,attr,omitempty"`
+	Text    string `xml:",innerxml"`
 }
 
 func (e *Error) Output() string {
@@ -76,24 +76,24 @@ func (e *Error) Output() string {
 
 type Skipped struct {
 	// XMLName xml.Name `xml:"skipped"`
-	Message string `xml:"message,attr"`
+	Message string `xml:"message,attr,omitempty"`
 }
 
 type Property struct {
 	// XMLName xml.Name `xml:"property"`
-	Name  string `xml:"name,attr"`
-	Value string `xml:"value,attr"`
-	Text  string `xml:",chardata"`
+	Name  string `xml:"name,attr,omitempty"`
+	Value string `xml:"value,attr,omitempty"`
+	Text  string `xml:",innerxml"`
 }
 
 type SystemOut struct {
 	// XMLName xml.Name `xml:"system-out"`
-	Text string `xml:",chardata"`
+	Text string `xml:",innerxml"`
 }
 
 type SystemErr struct {
 	// XMLName xml.Name `xml:"system-err"`
-	Text string `xml:",chardata"`
+	Text string `xml:",innerxml"`
 }
 
 func ConvertTestReport(xmlReport TestReport, job types.JobReference) (types.TestReport, []types.TestSuite, []types.TestCase) {

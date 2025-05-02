@@ -44,8 +44,8 @@ func TestConvertTestReport(t *testing.T) {
 					{Name: "ci", Value: "https://github.com/actions/runs/1234"},
 					{Name: "config", Text: "Config line #1"},
 				},
-				SystemOut: junitxml.SystemOut{Text: "Data written to standard out."},
-				SystemErr: junitxml.SystemErr{Text: "Data written to standard error."},
+				SystemOut: &junitxml.SystemOut{Text: "Data written to standard out."},
+				SystemErr: &junitxml.SystemErr{Text: "Data written to standard error."},
 				TestCases: []junitxml.TestCase{
 					{Name: "testCase1", Classname: "Tests.Registration", Time: 2.436, File: "tests/registration.code", Line: 24},
 					{Name: "testCase2", Classname: "Tests.Registration", Time: 1.534, File: "tests/registration.code", Line: 62},

@@ -63,7 +63,7 @@ func TestParse(t *testing.T) {
 	}
 
 	if diff := cmp.Diff(want, report); diff != "" {
-		t.Errorf("Config mismatch (-want +got):\n%s", diff)
+		t.Errorf("Mismatch (-want +got):\n%s", diff)
 	}
 }
 
@@ -154,8 +154,8 @@ func TestParseFull(t *testing.T) {
 					{Name: "ci", Value: "https://github.com/actions/runs/1234"},
 					{Name: "config", Text: "Config line #1"},
 				},
-				SystemOut: junitxml.SystemOut{Text: "Data written to standard out."},
-				SystemErr: junitxml.SystemErr{Text: "Data written to standard error."},
+				SystemOut: &junitxml.SystemOut{Text: "Data written to standard out."},
+				SystemErr: &junitxml.SystemErr{Text: "Data written to standard error."},
 				TestCases: []junitxml.TestCase{
 					{Name: "testCase1", Classname: "Tests.Registration", Time: 2.436, File: "tests/registration.code", Line: 24},
 					{Name: "testCase2", Classname: "Tests.Registration", Time: 1.534, File: "tests/registration.code", Line: 62},
@@ -195,7 +195,7 @@ func TestParseFull(t *testing.T) {
 	}
 
 	if diff := cmp.Diff(want, report); diff != "" {
-		t.Errorf("Config mismatch (-want +got):\n%s", diff)
+		t.Errorf("Mismatch (-want +got):\n%s", diff)
 	}
 }
 
