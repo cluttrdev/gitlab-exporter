@@ -1,7 +1,10 @@
 package cmd
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -9,7 +12,9 @@ import (
 
 	"github.com/cluttrdev/cli"
 
+	"go.cluttr.dev/gitlab-exporter/internal/cobertura"
 	"go.cluttr.dev/gitlab-exporter/internal/config"
+	"go.cluttr.dev/gitlab-exporter/internal/junitxml"
 )
 
 type FetchArtifactsConfig struct {
@@ -19,6 +24,7 @@ type FetchArtifactsConfig struct {
 	jobId       int64
 	fileType    string
 
+	parse  bool
 	output string
 }
 
@@ -50,6 +56,7 @@ func (c *FetchArtifactsConfig) RegisterFlags(fs *flag.FlagSet) {
 	fs.Int64Var(&c.jobId, "job-id", 0, "The job id.")
 	fs.StringVar(&c.fileType, "file-type", "", "The artifacts file type.")
 
+	fs.BoolVar(&c.parse, "parse", false, "Whether to parse the artifacts file before writing to the output file.")
 	fs.StringVar(&c.output, "output", "", "The output file.")
 }
 
@@ -84,6 +91,26 @@ func (c *FetchArtifactsConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("fetch artifact file: %w", err)
 	}
 
+	if c.parse {
+		var (
+			b   []byte
+			err error
+		)
+		switch c.fileType {
+		case "junit":
+			b, err = c.parseJunitArtifact(r)
+		case "cobertura":
+			b, err = c.parseCoberturaArtifact(r)
+		default:
+			return fmt.Errorf("unsupported file type for parsing: %s", c.fileType)
+		}
+		if err != nil {
+			return fmt.Errorf("parse artifact file: %w", err)
+		}
+
+		r = bytes.NewReader(b)
+	}
+
 	file, err := os.Create(c.output)
 	if err != nil {
 		return err
@@ -96,4 +123,37 @@ func (c *FetchArtifactsConfig) Exec(ctx context.Context, args []string) error {
 	}
 
 	return nil
+}
+
+func (c *FetchArtifactsConfig) parseJunitArtifact(r io.Reader) ([]byte, error) {
+	reader, err := gzip.NewReader(r)
+	if err != nil {
+		return nil, err
+	}
+
+	reports, err := junitxml.ParseMany(reader)
+	if err != nil {
+		return nil, err
+	}
+
+	b, err := json.Marshal(reports)
+	if err != nil {
+		return nil, err
+	}
+
+	return b, nil
+}
+
+func (c *FetchArtifactsConfig) parseCoberturaArtifact(r io.Reader) ([]byte, error) {
+	report, err := cobertura.Parse(r)
+	if err != nil {
+		return nil, fmt.Errorf("parse: %w", err)
+	}
+
+	b, err := json.Marshal(report)
+	if err != nil {
+		return nil, fmt.Errorf("marshal: %w", err)
+	}
+
+	return b, nil
 }

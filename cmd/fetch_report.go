@@ -98,7 +98,7 @@ func (c *FetchReportConfig) Exec(ctx context.Context, args []string) error {
 	var b []byte
 	switch c.fileType {
 	case "junit":
-		b, err = c.fetchJunitReport(ctx, glab)
+		b, err = c.fetchJunitReports(ctx, glab)
 	case "cobertura":
 		b, err = c.fetchCoberturaReport(ctx, glab)
 	default:
@@ -113,8 +113,15 @@ func (c *FetchReportConfig) Exec(ctx context.Context, args []string) error {
 	return nil
 }
 
-func (c *FetchReportConfig) fetchJunitReport(ctx context.Context, glab *gitlab.Client) ([]byte, error) {
-	var report junitxml.TestReport
+func (c *FetchReportConfig) fetchJunitReports(ctx context.Context, glab *gitlab.Client) ([]byte, error) {
+	type result struct {
+		TestReport types.TestReport  `json:"testreport"`
+		TestSuites []types.TestSuite `json:"testsuites"`
+		TestCases  []types.TestCase  `json:"testcases"`
+	}
+
+	var results []result
+
 	for _, path := range c.artifactPaths {
 		reader, err := glab.Rest.GetProjectJobArtifact(ctx, c.projectPath, c.jobId, path)
 		if errors.Is(err, gitlab.ErrNotFound) {
@@ -123,34 +130,27 @@ func (c *FetchReportConfig) fetchJunitReport(ctx context.Context, glab *gitlab.C
 			return nil, fmt.Errorf("download file: %w", err)
 		}
 
-		r, err := junitxml.Parse(reader)
+		report, err := junitxml.Parse(reader)
 		if err != nil {
 			return nil, fmt.Errorf("parse file: %w", err)
 		}
 
-		report.Tests += r.Tests
-		report.Failures += r.Failures
-		report.Errors += r.Errors
-		report.Skipped += r.Skipped
-		report.Time += r.Time
-		report.Timestamp = r.Timestamp
-		report.TestSuites = append(report.TestSuites, r.TestSuites...)
+		tr, ts, tc := junitxml.ConvertTestReport(report, types.JobReference{
+			Id: c.jobId,
+			Pipeline: types.PipelineReference{
+				Project: types.ProjectReference{
+					FullPath: c.projectPath,
+				},
+			},
+		})
+		results = append(results, result{
+			TestReport: tr,
+			TestSuites: ts,
+			TestCases:  tc,
+		})
 	}
 
-	tr, ts, tc := junitxml.ConvertTestReport(report, types.JobReference{
-		Id: c.jobId,
-		Pipeline: types.PipelineReference{
-			Project: types.ProjectReference{
-				FullPath: c.projectPath,
-			},
-		},
-	})
-
-	b, err := json.Marshal(map[string]any{
-		"testreport": tr,
-		"testsuites": ts,
-		"testcases":  tc,
-	})
+	b, err := json.Marshal(results)
 	if err != nil {
 		return nil, fmt.Errorf("error marshalling pipeline testreport: %w", err)
 	}
