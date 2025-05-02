@@ -115,11 +115,11 @@ func FetchProjectPipelineJunitReports(ctx context.Context, glab *gitlab.Client, 
 			return nil, nil, nil, fmt.Errorf("convert job reference: %w", err)
 		}
 
-		var report *junitxml.TestReport
+		var reports []junitxml.TestReport
 		if len(artifactPaths) > 0 {
-			report, err = fetchProjectJobJunitReportAPI(ctx, glab, projectPath, jobRef.Id, artifactPaths)
+			reports, err = fetchProjectJobJunitReportsAPI(ctx, glab, projectPath, jobRef.Id, artifactPaths)
 		} else if artifact.DownloadPath != nil {
-			report, err = fetchProjectJobJunitReportHTTP(ctx, glab, *artifact.DownloadPath)
+			reports, err = fetchProjectJobJunitReportHTTP(ctx, glab, *artifact.DownloadPath)
 		} else {
 			continue
 		}
@@ -127,18 +127,20 @@ func FetchProjectPipelineJunitReports(ctx context.Context, glab *gitlab.Client, 
 			return nil, nil, nil, err
 		}
 
-		tr, ts, tc := junitxml.ConvertTestReport(*report, jobRef)
+		for _, report := range reports {
+			tr, ts, tc := junitxml.ConvertTestReport(report, jobRef)
 
-		testReports = append(testReports, tr)
-		testSuites = append(testSuites, ts...)
-		testCases = append(testCases, tc...)
+			testReports = append(testReports, tr)
+			testSuites = append(testSuites, ts...)
+			testCases = append(testCases, tc...)
+		}
 	}
 
 	return testReports, testSuites, testCases, nil
 }
 
-func fetchProjectJobJunitReportAPI(ctx context.Context, glab *gitlab.Client, projectPath string, jobId int64, artifactPaths []string) (*junitxml.TestReport, error) {
-	var report junitxml.TestReport
+func fetchProjectJobJunitReportsAPI(ctx context.Context, glab *gitlab.Client, projectPath string, jobId int64, artifactPaths []string) ([]junitxml.TestReport, error) {
+	var reports []junitxml.TestReport
 
 	for _, path := range artifactPaths {
 		reader, err := glab.Rest.GetProjectJobArtifact(ctx, projectPath, jobId, path)
@@ -148,24 +150,18 @@ func fetchProjectJobJunitReportAPI(ctx context.Context, glab *gitlab.Client, pro
 			return nil, fmt.Errorf("download file: %w", err)
 		}
 
-		r, err := junitxml.Parse(reader)
+		report, err := junitxml.Parse(reader)
 		if err != nil {
 			return nil, fmt.Errorf("parse file: %w", err)
 		}
 
-		report.Tests += r.Tests
-		report.Failures += r.Failures
-		report.Errors += r.Errors
-		report.Skipped += r.Skipped
-		report.Time += r.Time
-		report.Timestamp = r.Timestamp
-		report.TestSuites = append(report.TestSuites, r.TestSuites...)
+		reports = append(reports, report)
 	}
 
-	return &report, nil
+	return reports, nil
 }
 
-func fetchProjectJobJunitReportHTTP(ctx context.Context, glab *gitlab.Client, downloadPath string) (*junitxml.TestReport, error) {
+func fetchProjectJobJunitReportHTTP(ctx context.Context, glab *gitlab.Client, downloadPath string) ([]junitxml.TestReport, error) {
 	resp, err := glab.HTTP.GetPath(downloadPath)
 	if err != nil {
 		return nil, fmt.Errorf("download report: %w", err)
@@ -177,12 +173,12 @@ func fetchProjectJobJunitReportHTTP(ctx context.Context, glab *gitlab.Client, do
 		return nil, fmt.Errorf("read report: %w", err)
 	}
 
-	report, err := junitxml.Parse(reader)
+	reports, err := junitxml.ParseMany(reader)
 	if err != nil {
 		return nil, fmt.Errorf("parse report: %w", err)
 	}
 
-	return &report, nil
+	return reports, nil
 }
 
 // ############################################################################
