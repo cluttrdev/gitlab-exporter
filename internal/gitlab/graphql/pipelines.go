@@ -53,7 +53,7 @@ func ConvertPipeline(pf PipelineFields) (types.Pipeline, error) {
 		StartedAt:   pf.StartedAt,
 		FinishedAt:  pf.FinishedAt,
 
-		QueuedDuration: time.Duration(valOrZero(pf.QueuedDuration)),
+		QueuedDuration: time.Duration(valOrZero(pf.QueuedDuration) * float64(time.Second)),
 		Duration:       time.Duration(valOrZero(pf.Duration) * int(time.Second)),
 		Coverage:       valOrZero(pf.Coverage),
 		FailureReason:  valOrZero(pf.FailureReason),
