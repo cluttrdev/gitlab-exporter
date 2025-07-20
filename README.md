@@ -15,9 +15,9 @@ flexibly stored in various storage backends.
 
 ### Recorders
 
-There are recorder implementations available for the following datastore backends:
+The following officially supported recorder implementations are currently available:
 
-- [ClickHouse](https://gitlab.com/akun73/gitlab-exporter-clickhouse-recorder)
+- [gitlab-exporter-clickhouse-recorder](https://gitlab.com/akun73/gitlab-exporter-clickhouse-recorder)
 
 ### Screenshots
 
@@ -57,6 +57,11 @@ These screenshots are taken from Grafana dashboards available
     <summary>Projects / DORA</summary>
     <img src="./assets/grafana/screenshots/projects-dora.png" />
 </details>
+
+## Getting started
+
+Please have a look at the [demo](https://gitlab.com/gitlab-exporter/demo)
+project which provides a `docker compose` based setup to help you get started.
 
 ## Installation
 
