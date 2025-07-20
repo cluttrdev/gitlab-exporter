@@ -10,11 +10,11 @@ import (
 	"strings"
 
 	"github.com/cluttrdev/cli"
+	"go.cluttr.dev/junitxml"
 
 	"go.cluttr.dev/gitlab-exporter/internal/cobertura"
 	"go.cluttr.dev/gitlab-exporter/internal/config"
 	"go.cluttr.dev/gitlab-exporter/internal/gitlab"
-	"go.cluttr.dev/gitlab-exporter/internal/junitxml"
 	"go.cluttr.dev/gitlab-exporter/internal/types"
 )
 
@@ -135,7 +135,7 @@ func (c *FetchReportConfig) fetchJunitReports(ctx context.Context, glab *gitlab.
 			return nil, fmt.Errorf("parse file: %w", err)
 		}
 
-		tr, ts, tc := junitxml.ConvertTestReport(report, types.JobReference{
+		tr, ts, tc := types.ConvertTestReport(report, types.JobReference{
 			Id: c.jobId,
 			Pipeline: types.PipelineReference{
 				Project: types.ProjectReference{

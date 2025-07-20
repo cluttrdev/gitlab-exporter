@@ -13,6 +13,7 @@ require (
 	github.com/oklog/run v1.2.0
 	github.com/prometheus/client_golang v1.22.0
 	gitlab.com/gitlab-org/api/client-go v0.134.0
+	go.cluttr.dev/junitxml v0.1.0
 	go.opentelemetry.io/proto/otlp v1.7.0
 	golang.org/x/net v0.42.0
 	golang.org/x/sync v0.16.0

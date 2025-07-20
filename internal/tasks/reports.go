@@ -8,10 +8,11 @@ import (
 	"log/slog"
 	"sync"
 
+	"go.cluttr.dev/junitxml"
+
 	"go.cluttr.dev/gitlab-exporter/internal/cobertura"
 	"go.cluttr.dev/gitlab-exporter/internal/gitlab"
 	"go.cluttr.dev/gitlab-exporter/internal/gitlab/graphql"
-	"go.cluttr.dev/gitlab-exporter/internal/junitxml"
 	"go.cluttr.dev/gitlab-exporter/internal/types"
 )
 
@@ -128,7 +129,7 @@ func FetchProjectPipelineJunitReports(ctx context.Context, glab *gitlab.Client, 
 		}
 
 		for _, report := range reports {
-			tr, ts, tc := junitxml.ConvertTestReport(report, jobRef)
+			tr, ts, tc := types.ConvertTestReport(report, jobRef)
 
 			testReports = append(testReports, tr)
 			testSuites = append(testSuites, ts...)

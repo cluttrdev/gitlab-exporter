@@ -11,10 +11,10 @@ import (
 	"os"
 
 	"github.com/cluttrdev/cli"
+	"go.cluttr.dev/junitxml"
 
 	"go.cluttr.dev/gitlab-exporter/internal/cobertura"
 	"go.cluttr.dev/gitlab-exporter/internal/config"
-	"go.cluttr.dev/gitlab-exporter/internal/junitxml"
 )
 
 type FetchArtifactsConfig struct {
