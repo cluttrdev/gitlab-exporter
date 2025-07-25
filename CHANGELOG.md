@@ -1,7 +1,22 @@
 # Changelog
 
+## [0.19.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.18.0..v0.19.0)
+
+- dbd8105 fix: Use junitxml.ParseMany everywhere
+- 892a35d docs: Link to demo project in README.md
+- 7dd4efc refactor: Replace internal/junitxml with go.cluttr.dev/junitxml
+- 78c14b9 fix(deps): Update dependencies
+- 40edaa6 fix: Pipeline queued_duration graphql field conversion
+- 3f23ea7 ci: Run non-release pipelines on self-hosted runners
+- faa7acf feat: Add junitxml.Merge and corresponding cli tool
+- e16b8cb patch: Adjust report fetching commands
+- 49e9f18 refactor: Adjust JUnit report fetching
+- 0504174 feat: Parse multiple <testsuites> elements in same file
+- b76208d fix: Improve test report structs tags for encoding
+
 ## [0.18.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.17.1..v0.18.0)
 
+- ba2ea0e chore(release): v0.18.0
 - 236b3fe fix: Update dependencies
 - 464c632 build: Set tag for build-image target
 - 012d42b feat: Export issues
