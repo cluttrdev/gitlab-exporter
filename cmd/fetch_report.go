@@ -130,24 +130,26 @@ func (c *FetchReportConfig) fetchJunitReports(ctx context.Context, glab *gitlab.
 			return nil, fmt.Errorf("download file: %w", err)
 		}
 
-		report, err := junitxml.Parse(reader)
+		reports, err := junitxml.ParseMany(reader)
 		if err != nil {
 			return nil, fmt.Errorf("parse file: %w", err)
 		}
 
-		tr, ts, tc := types.ConvertTestReport(report, types.JobReference{
-			Id: c.jobId,
-			Pipeline: types.PipelineReference{
-				Project: types.ProjectReference{
-					FullPath: c.projectPath,
+		for _, report := range reports {
+			tr, ts, tc := types.ConvertTestReport(report, types.JobReference{
+				Id: c.jobId,
+				Pipeline: types.PipelineReference{
+					Project: types.ProjectReference{
+						FullPath: c.projectPath,
+					},
 				},
-			},
-		})
-		results = append(results, result{
-			TestReport: tr,
-			TestSuites: ts,
-			TestCases:  tc,
-		})
+			})
+			results = append(results, result{
+				TestReport: tr,
+				TestSuites: ts,
+				TestCases:  tc,
+			})
+		}
 	}
 
 	b, err := json.Marshal(results)

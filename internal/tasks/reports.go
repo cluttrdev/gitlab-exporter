@@ -151,12 +151,12 @@ func fetchProjectJobJunitReportsAPI(ctx context.Context, glab *gitlab.Client, pr
 			return nil, fmt.Errorf("download file: %w", err)
 		}
 
-		report, err := junitxml.Parse(reader)
+		rs, err := junitxml.ParseMany(reader)
 		if err != nil {
 			return nil, fmt.Errorf("parse file: %w", err)
 		}
 
-		reports = append(reports, report)
+		reports = append(reports, rs...)
 	}
 
 	return reports, nil
