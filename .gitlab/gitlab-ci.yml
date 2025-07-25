@@ -87,6 +87,38 @@ build:
       timestamp=$(( end/1000000 ))
       echo "METRIC_go_build_time{package=\"$(go list .)\"} ${duration} ${timestamp}"
 
+build-image:
+  stage: build
+  tags: [ $RUNNER_TAG ]
+  image:
+    name: docker.io/moby/buildkit:rootless
+    entrypoint: ["sh", "-c"]
+  variables:
+    BUILDKIT_IMAGE_NAME: gitlab-exporter
+    BUILDKIT_IMAGE_TAG: $CI_COMMIT_SHA
+    BUILDKIT_PUSH: "false"
+
+    BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
+  before_script:
+    - mkdir ~/.docker
+    - |
+      echo "{
+        \"auths\": {
+          \"${CI_REGISTRY}\": {
+            \"auth\": \"$(printf "%s:%s" "${CI_REGISTRY_USER}" "${CI_REGISTRY_PASSWORD}" | base64 | tr -d '\n')\"
+          }
+        }
+      }" > ~/.docker/config.json
+  script:
+    - |
+      buildctl-daemonless.sh build \
+        --frontend dockerfile.v0 \
+        --local context=${CI_PROJECT_DIR} \
+        --local dockerfile=${CI_PROJECT_DIR} \
+        --opt build-arg=GOVERSION \
+        --opt build-arg=VERSION="${BUILDKIT_IMAGE_TAG}" \
+        --output type=image,name=$CI_REGISTRY_IMAGE:$BUILDKIT_IMAGE_TAG,push=$BUILDKIT_PUSH
+
 test:
   stage: test
   tags: [ $RUNNER_TAG ]
