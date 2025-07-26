@@ -111,7 +111,7 @@ build-image:
         --frontend dockerfile.v0 \
         --local context=${CI_PROJECT_DIR} \
         --local dockerfile=${CI_PROJECT_DIR} \
-        --opt build-arg:GOVERSION \
+        --opt build-arg:GOVERSION="$GOVERSION" \
         --opt build-arg:VERSION="${BUILDKIT_IMAGE_TAG}" \
         --output type=image,name=$CI_REGISTRY_IMAGE:$BUILDKIT_IMAGE_TAG,push=$BUILDKIT_PUSH
 
