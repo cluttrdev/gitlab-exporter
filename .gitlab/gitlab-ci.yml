@@ -17,10 +17,11 @@ workflow:
   rules:
     - if: $CI_COMMIT_TAG != null
       variables:
-        RUNNER_TAG: gitlab-org
+        RUNNER_TAG: saas-linux-small-amd64
     - when: always
 
 default:
+  tags: [ $RUNNER_TAG ]
   image: golang:${GOVERSION}
   before_script:
     - |
@@ -32,7 +33,6 @@ default:
 
 download:
   stage: .pre
-  tags: [ $RUNNER_TAG ]
   script:
     - |
       start=$(date +%s%N)
@@ -51,7 +51,6 @@ download:
 
 lint:
   stage: lint
-  tags: [ $RUNNER_TAG ]
   cache:
     - <<: *cache-defaults
   variables:
@@ -75,7 +74,6 @@ lint:
 
 build:
   stage: build
-  tags: [ $RUNNER_TAG ]
   cache:
     - <<: *cache-defaults
   script:
@@ -89,7 +87,6 @@ build:
 
 build-image:
   stage: build
-  tags: [ $RUNNER_TAG ]
   image:
     name: docker.io/moby/buildkit:rootless
     entrypoint: ["sh", "-c"]
@@ -121,7 +118,6 @@ build-image:
 
 test:
   stage: test
-  tags: [ $RUNNER_TAG ]
   cache:
     - <<: *cache-defaults
   variables:
@@ -170,7 +166,6 @@ test:
 
 release:
   stage: release
-  tags: [ $RUNNER_TAG ]
   rules:
     - if: $CI_COMMIT_TAG != null
   cache:
@@ -192,7 +187,6 @@ release:
 
 release-sync:
   stage: release
-  tags: [ $RUNNER_TAG ]
   rules:
     - if: $CI_COMMIT_TAG != null
   needs:
@@ -211,7 +205,6 @@ release-sync:
 
 release-image:
   stage: release
-  tags: [ $RUNNER_TAG ]
   rules:
     - if: $CI_COMMIT_TAG != null
   needs:
@@ -250,7 +243,6 @@ release-image:
 
 release-chart:
   stage: release
-  tags: [ $RUNNER_TAG ]
   rules:
     - if: $CI_COMMIT_TAG != null
       changes:
