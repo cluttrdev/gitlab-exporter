@@ -90,11 +90,11 @@ build-image:
     name: docker.io/moby/buildkit:rootless
     entrypoint: ["sh", "-c"]
   variables:
+    BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
+
     BUILDKIT_IMAGE_NAME: gitlab-exporter
     BUILDKIT_IMAGE_TAG: $CI_COMMIT_SHA
     BUILDKIT_PUSH: "false"
-
-    BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
   before_script:
     - mkdir ~/.docker
     - |
@@ -111,8 +111,8 @@ build-image:
         --frontend dockerfile.v0 \
         --local context=${CI_PROJECT_DIR} \
         --local dockerfile=${CI_PROJECT_DIR} \
-        --opt build-arg=GOVERSION \
-        --opt build-arg=VERSION="${BUILDKIT_IMAGE_TAG}" \
+        --opt build-arg:GOVERSION \
+        --opt build-arg:VERSION="${BUILDKIT_IMAGE_TAG}" \
         --output type=image,name=$CI_REGISTRY_IMAGE:$BUILDKIT_IMAGE_TAG,push=$BUILDKIT_PUSH
 
 test:
@@ -204,39 +204,12 @@ release-image:
   stage: release
   rules:
     - if: $CI_COMMIT_TAG != null
+  extends: build-image
   needs:
     - release
-  image: docker:27.3.1
-  services:
-    - name: docker:27.3.1-dind
-      alias: docker
   variables:
-    IMAGE_NAME: gitlab-exporter
-    IMAGE_TAG: $CI_COMMIT_TAG
-  script:
-    - | # Build image
-      docker build \
-        --file ${CI_PROJECT_DIR}/Dockerfile \
-        --build-arg GOVERSION \
-        --build-arg VERSION="${CI_COMMIT_TAG}" \
-        --tag "${IMAGE_NAME}:${IMAGE_TAG}" \
-        ${CI_PROJECT_DIR}
-    - | # Push to GitLab container registry
-      docker tag "${IMAGE_NAME}:${IMAGE_TAG}" "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
-      docker tag "${IMAGE_NAME}:${IMAGE_TAG}" "${CI_REGISTRY_IMAGE}:latest"
-      echo "$CI_REGISTRY_PASSWORD" | docker login "$CI_REGISTRY" --username "$CI_REGISTRY_USER" --password-stdin
-      docker push "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
-      docker push "${CI_REGISTRY_IMAGE}:latest"
-    - | # Push to GitHub container registry
-      CI_REGISTRY=ghcr.io
-      CI_REGISTRY_IMAGE=ghcr.io/cluttrdev/${IMAGE_NAME}
-      CI_REGISTRY_USER=cluttrdev
-      CI_REGISTRY_PASSWORD=${GITHUB_TOKEN}
-      docker tag "${IMAGE_NAME}:${IMAGE_TAG}" "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
-      docker tag "${IMAGE_NAME}:${IMAGE_TAG}" "${CI_REGISTRY_IMAGE}:latest"
-      echo "$CI_REGISTRY_PASSWORD" | docker login "$CI_REGISTRY" --username "$CI_REGISTRY_USER" --password-stdin
-      docker push "${CI_REGISTRY_IMAGE}:${IMAGE_TAG}"
-      docker push "${CI_REGISTRY_IMAGE}:latest"
+    BUILDKIT_IMAGE_TAG: $CI_COMMIT_TAG
+    BUILDKIT_PUSH: "true"
 
 release-chart:
   stage: release
