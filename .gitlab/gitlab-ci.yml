@@ -23,13 +23,13 @@ workflow:
 default:
   tags: [ $RUNNER_TAG ]
   image: golang:${GOVERSION}
-  before_script:
-    - |
-      # Print some job properties
-      printf 'PROPERTY_%s="%s"\n' "ci_runner_id" "${CI_RUNNER_ID}"
-      printf 'PROPERTY_%s="%s"\n' "ci_runner_version" "${CI_RUNNER_VERSION}"
-      printf 'PROPERTY_%s="%s"\n' "ci_runner_revision" "${CI_RUNNER_REVISION}"
-      printf 'PROPERTY_%s="%s"\n' "ci_runner_hostname" "${HOSTNAME}"
+  hooks:
+    pre_get_sources_script:
+      - | # Print some job properties
+        printf 'PROPERTY_%s="%s"\n' "ci_runner_id" "${CI_RUNNER_ID}"
+        printf 'PROPERTY_%s="%s"\n' "ci_runner_version" "${CI_RUNNER_VERSION}"
+        printf 'PROPERTY_%s="%s"\n' "ci_runner_revision" "${CI_RUNNER_REVISION}"
+        printf 'PROPERTY_%s="%s"\n' "ci_runner_hostname" "${HOSTNAME}"
 
 download:
   stage: .pre
@@ -57,7 +57,6 @@ lint:
     GOLANGCI_LINT_VERSION: v1.64.6
     GOLANGCI_LINT_CACHE: ${CACHE_DIR}/golangci-lint
   before_script:
-    - !reference [default, before_script]
     - |
       # Download golangci-lint binary
       echo -e "\e[0Ksection_start:$(date +%s):script_step_before\r\e[0KRunning script_step_before"
@@ -124,7 +123,6 @@ test:
     GOTESTSUM_VERSION: v1.12.0
     GOCOVER_COBERTURA_VERSION: v1.3.0
   before_script:
-    - !reference [default, before_script]
     - |
       # Print some job properties
       printf 'PROPERTY_%s="%s"\n' "gotestsum_version" "${GOTESTSUM_VERSION}"
@@ -173,7 +171,6 @@ release:
   variables:
     ARCHIVER_VERSION: v3.5.0
   before_script:
-    - !reference [default, before_script]
     - |
       # Print some job properties
       printf 'PROPERTY_%s="%s"\n' "archiver_version" "${ARCHIVER_VERSION}"
@@ -257,7 +254,6 @@ release-chart:
     # HELM_REGISTRY_PASSWORD:
     HELM_CHART_DIR: deploy/helm/gitlab-exporter
   before_script:
-    - !reference [default, before_script]
     - echo "${HELM_REGISTRY_PASSWORD}" | helm registry login ${HELM_REGISTRY} --username ${HELM_REGISTRY_USER} --password-stdin
   script:
     - helm package "${HELM_CHART_DIR}" --destination .charts
