@@ -13,6 +13,7 @@ import (
 	"go.cluttr.dev/gitlab-exporter/internal/cobertura"
 	"go.cluttr.dev/gitlab-exporter/internal/gitlab"
 	"go.cluttr.dev/gitlab-exporter/internal/gitlab/graphql"
+	"go.cluttr.dev/gitlab-exporter/internal/metaerr"
 	"go.cluttr.dev/gitlab-exporter/internal/types"
 )
 
@@ -165,18 +166,27 @@ func fetchProjectJobJunitReportsAPI(ctx context.Context, glab *gitlab.Client, pr
 func fetchProjectJobJunitReportHTTP(ctx context.Context, glab *gitlab.Client, downloadPath string) ([]junitxml.TestReport, error) {
 	resp, err := glab.HTTP.GetPath(downloadPath)
 	if err != nil {
-		return nil, fmt.Errorf("download report: %w", err)
+		return nil, metaerr.WithMetadata(
+			fmt.Errorf("download report: %w", err),
+			"download_path", downloadPath,
+		)
 	}
 
 	// junit.xml.gz
 	reader, err := gzip.NewReader(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("read report: %w", err)
+		return nil, metaerr.WithMetadata(
+			fmt.Errorf("read report: %w", err),
+			"download_path", downloadPath,
+		)
 	}
 
 	reports, err := junitxml.ParseMany(reader)
 	if err != nil {
-		return nil, fmt.Errorf("parse report: %w", err)
+		return nil, metaerr.WithMetadata(
+			fmt.Errorf("parse report: %w", err),
+			"download_path", downloadPath,
+		)
 	}
 
 	return reports, nil

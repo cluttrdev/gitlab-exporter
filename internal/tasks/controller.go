@@ -14,6 +14,7 @@ import (
 	"go.cluttr.dev/gitlab-exporter/internal/gitlab"
 	"go.cluttr.dev/gitlab-exporter/internal/gitlab/graphql"
 	"go.cluttr.dev/gitlab-exporter/internal/gitlab/rest"
+	"go.cluttr.dev/gitlab-exporter/internal/metaerr"
 	"go.cluttr.dev/gitlab-exporter/internal/types"
 )
 
@@ -299,10 +300,15 @@ func (c *Controller) Run(ctx context.Context) error {
 					defer wg.Done()
 
 					if err := c.process(ctx, batch, &after, &before, firstIteration); err != nil {
-						slog.Error("[RUN] error processing projects", "error", err,
-							"iteration", iteration, "after", after.Format(time.RFC3339), "before", before.Format(time.RFC3339),
-							"batchIndex", i, "batchCount", len(projectBatches),
-						)
+						slog.
+							With(
+								slog.String("error", err.Error()),
+								slog.Int("iteration", iteration),
+								slog.String("after", after.Format(time.RFC3339)), slog.String("before", before.Format(time.RFC3339)),
+								slog.Int("batchIndex", i), slog.Int("batchCount", len(projectBatches)),
+							).
+							With(metaerr.GetMetadata(err)...).
+							Error("[RUN] error processing projects")
 					}
 				}()
 			}
@@ -358,10 +364,15 @@ func (c *Controller) CatchUp(ctx context.Context) error {
 				defer wg.Done()
 
 				if err := c.process(ctx, batch, &after, &before, firstIteration); err != nil {
-					slog.Error("[CATCHUP] error processing projects", "error", err,
-						"iteration", iteration, "after", after.Format(time.RFC3339), "before", before.Format(time.RFC3339),
-						"batchIndex", i, "batchCount", len(projectBatches),
-					)
+					slog.
+						With(
+							slog.String("error", err.Error()),
+							slog.Int("iteration", iteration),
+							slog.String("after", after.Format(time.RFC3339)), slog.String("before", before.Format(time.RFC3339)),
+							slog.Int("batchIndex", i), slog.Int("batchCount", len(projectBatches)),
+						).
+						With(metaerr.GetMetadata(err)...).
+						Error("[CATCHUP] error processing projects")
 				}
 			}()
 		}
