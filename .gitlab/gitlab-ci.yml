@@ -90,11 +90,12 @@ build-image:
     name: docker.io/moby/buildkit:rootless
     entrypoint: ["sh", "-c"]
   variables:
-    BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
+    VERSION: $CI_COMMIT_SHA
 
-    BUILDKIT_IMAGE_NAME: gitlab-exporter
-    BUILDKIT_IMAGE_TAG: $CI_COMMIT_SHA
+    BUILDKIT_IMAGE: "$CI_REGISTRY_IMAGE:$VERSION"
     BUILDKIT_PUSH: "false"
+
+    BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
   before_script:
     - mkdir ~/.docker
     - |
@@ -111,9 +112,9 @@ build-image:
         --frontend dockerfile.v0 \
         --local context=${CI_PROJECT_DIR} \
         --local dockerfile=${CI_PROJECT_DIR} \
-        --opt build-arg:GOVERSION="$GOVERSION" \
-        --opt build-arg:VERSION="${BUILDKIT_IMAGE_TAG}" \
-        --output type=image,name=$CI_REGISTRY_IMAGE:$BUILDKIT_IMAGE_TAG,push=$BUILDKIT_PUSH
+        --opt build-arg:GOVERSION="${GOVERSION}" \
+        --opt build-arg:VERSION="${VERSION}" \
+        --output type=image,\"name=${BUILDKIT_IMAGE}\",push=${BUILDKIT_PUSH}
 
 test:
   stage: test
@@ -208,7 +209,9 @@ release-image:
   needs:
     - release
   variables:
-    BUILDKIT_IMAGE_TAG: $CI_COMMIT_TAG
+    VERSION: $CI_COMMIT_TAG
+
+    BUILDKIT_IMAGE: "${CI_REGISTRY_IMAGE}:${VERSION},${CI_REGISTRY_IMAGE}:latest"
     BUILDKIT_PUSH: "true"
 
 release-chart:
