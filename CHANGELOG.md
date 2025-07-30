@@ -1,7 +1,12 @@
 # Changelog
 
+## [0.19.2](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.19.1..v0.19.2)
+
+- 5d8408b fix: Instead of fetching graphql.CiJobTrace do not treat job log 404 as error
+
 ## [0.19.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.19.0..v0.19.1)
 
+- 6e3d595 chore(release): v0.19.1
 - 9094caf fix(deps): Update go.cluttr.dev/junitxml to v0.2.0
 - f30b5c7 fix: Only try to fetch job trace log if there is one
 - 4fe8b3e build: Add khan/genqlient go tool
