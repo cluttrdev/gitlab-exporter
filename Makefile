@@ -18,7 +18,7 @@ vet: ## Examine code for suspicious constructs
 
 .PHONY: graphql
 graphql: ## Generate the GitLab GraphQL API client code
-	genqlient internal/gitlab/graphql/genqlient.yaml
+	go tool -modfile go.tool.mod genqlient internal/gitlab/graphql/genqlient.yaml
 
 .PHONY: protobuf
 protobuf:  ## Generate Protocol Buffer and gRPC code
