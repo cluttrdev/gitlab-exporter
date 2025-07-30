@@ -1,7 +1,22 @@
 # Changelog
 
+## [0.19.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.19.0..v0.19.1)
+
+- 9094caf fix(deps): Update go.cluttr.dev/junitxml to v0.2.0
+- f30b5c7 fix: Only try to fetch job trace log if there is one
+- 4fe8b3e build: Add khan/genqlient go tool
+- a85d1e4 fix: Improve logging with error metadata
+- e029c22 ci: Refactor build-image job
+- b7878a5 ci: Fix goversion build-arg
+- 7f8a00b ci: Extend release-image from build-image, stop pushing to ghcr.io
+- da6b527 ci: Use hook to print job properties
+- 007af6d ci: Use default.tags
+- c7092c9 ci: Add buildkit base image build job
+- 6b27465 build: Fix makefile build-image version substitution
+
 ## [0.19.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.18.0..v0.19.0)
 
+- f7a9b08 chore(release): v0.19.0
 - dbd8105 fix: Use junitxml.ParseMany everywhere
 - 892a35d docs: Link to demo project in README.md
 - 7dd4efc refactor: Replace internal/junitxml with go.cluttr.dev/junitxml
