@@ -113,6 +113,10 @@ func ConvertJob(jf JobFields) (types.Job, error) {
 		RunnerId: valOrZero(jf.Runner).Id,
 	}
 
+	if jf.Trace != nil {
+		job.Trace = &types.JobTrace{}
+	}
+
 	if valOrZero(jf.Status) == CiJobStatusFailed {
 		job.FailureReason = mapFailureMessage(valOrZero(jf.FailureMessage))
 	}

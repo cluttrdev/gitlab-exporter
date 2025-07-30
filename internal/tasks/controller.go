@@ -612,6 +612,9 @@ func (c *Controller) exportJobs(ctx context.Context, projectIds []int64, updated
 		if job.Kind == types.JobKindBridge { // bridges don't have logs
 			continue
 		}
+		if job.Trace == nil { // duh
+			continue
+		}
 		if !c.projectsSettings.ExportLogData(job.Pipeline.Project.Id) {
 			continue
 		}

@@ -40,6 +40,10 @@ fragment JobFieldsExtra on CiJob {
     runner {
         id
     }
+
+    trace {
+        __typename
+    }
 }
 
 fragment JobArtifactFieldsCore on CiJobArtifact {
