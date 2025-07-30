@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net/http"
 	"unicode/utf8"
 
 	_gitlab "gitlab.com/gitlab-org/api/client-go"
@@ -32,8 +33,15 @@ type PropertyData struct {
 }
 
 func (c *Client) GetJobLogData(ctx context.Context, projectId int64, jobId int64) (JobLogData, error) {
-	log, _, err := c.client.Jobs.GetTraceFile(int(projectId), int(jobId), _gitlab.WithContext(ctx))
+	log, resp, err := c.client.Jobs.GetTraceFile(int(projectId), int(jobId), _gitlab.WithContext(ctx))
 	if err != nil {
+		if resp.StatusCode == http.StatusNotFound {
+			// Some jobs may not have a log, like the special `pages:deploy`
+			// that is inserted into the pipeline but runs in the background
+			// without a runner.
+			// We don't treat this as an error.
+			return JobLogData{}, nil
+		}
 		return JobLogData{}, fmt.Errorf("get job log: %w", err)
 	}
 

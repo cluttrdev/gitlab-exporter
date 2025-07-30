@@ -52,7 +52,6 @@ type Job struct {
 	DownstreamPipeline *PipelineReference
 
 	RunnerId string
-	Trace    *JobTrace
 }
 
 type JobLogProperty struct {
@@ -67,5 +66,3 @@ type JobArtifact struct {
 	Name         string
 	DownloadPath string
 }
-
-type JobTrace struct {}
