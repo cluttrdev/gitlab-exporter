@@ -3,6 +3,8 @@ package graphql
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"time"
 
 	"go.cluttr.dev/gitlab-exporter/internal/types"
 )
@@ -139,15 +141,21 @@ type getProjectsIssuesOptions struct {
 }
 
 func (c *Client) getProjectsIssues(ctx context.Context, projectIds []string, opts getProjectsIssuesOptions) ([]IssueFields, error) {
-	var issues []IssueFields
+	var (
+		issues []IssueFields
+
+		data *getProjectsIssuesResponse
+		err  error
+	)
 
 	for {
-		resp, err := getProjectsIssues(ctx, c.client, projectIds, opts.UpdatedAfter, opts.UpdatedBefore, opts.endCursor)
+		data, err = getProjectsIssues(ctx, c.client, projectIds, opts.UpdatedAfter, opts.UpdatedBefore, opts.endCursor)
+		err = handleError(err, "getProjectsIssues", slog.Any("ids", projectIds))
 		if err != nil {
-			return nil, err
+			break
 		}
 
-		for _, project_ := range resp.GetProjects().GetNodes() {
+		for _, project_ := range data.GetProjects().GetNodes() {
 			for _, issue_ := range project_.GetIssues().GetNodes() {
 				issue := IssueFields{
 					IssueReferenceFields: issue_.IssueReferenceFields,
@@ -170,28 +178,39 @@ func (c *Client) getProjectsIssues(ctx context.Context, projectIds []string, opt
 			}
 		}
 
-		if !resp.GetProjects().GetPageInfo().HasNextPage {
+		if !data.GetProjects().GetPageInfo().HasNextPage {
 			break
 		}
 
-		opts.endCursor = resp.GetProjects().GetPageInfo().EndCursor
+		opts.endCursor = data.GetProjects().GetPageInfo().EndCursor
 	}
 
-	return issues, nil
+	return issues, err
 }
 
 func (c *Client) getProjectIssues(ctx context.Context, projectPath string, opts getProjectsIssuesOptions) ([]IssueFields, error) {
-	var issues []IssueFields
+	var (
+		issues []IssueFields
+
+		data *getProjectIssuesResponse
+		err  error
+	)
 
 	for {
-		resp, err := getProjectIssues(ctx, c.client, projectPath, opts.UpdatedAfter, opts.UpdatedBefore, opts.endCursor)
+		data, err = getProjectIssues(ctx, c.client, projectPath, opts.UpdatedAfter, opts.UpdatedBefore, opts.endCursor)
+		err = handleError(err, "getProjectIssues",
+			slog.String("projectPath", projectPath),
+			slog.String("updatedAfter", opts.UpdatedAfter.Format(time.RFC3339)),
+			slog.String("updatedBefore", opts.UpdatedBefore.Format(time.RFC3339)),
+		)
 		if err != nil {
-			return nil, err
+			break
 		}
 
-		project_ := resp.GetProject()
+		project_ := data.GetProject()
 		if project_ == nil {
-			return nil, fmt.Errorf("project not found: %v", projectPath)
+			err = fmt.Errorf("project not found: %v", projectPath)
+			break
 		}
 
 		for _, issue_ := range project_.GetIssues().GetNodes() {
@@ -212,5 +231,5 @@ func (c *Client) getProjectIssues(ctx context.Context, projectPath string, opts 
 		opts.endCursor = project_.GetIssues().GetPageInfo().EndCursor
 	}
 
-	return issues, nil
+	return issues, err
 }

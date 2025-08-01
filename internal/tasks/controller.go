@@ -518,15 +518,17 @@ func (c *Controller) processProjectsIssues(ctx context.Context, projectIds []int
 	}
 
 	issues, err := FetchProjectsIssues(ctx, c.GitLab, pids, updatedAfter, updatedBefore)
-	if err != nil {
-		return fmt.Errorf("fetch issues: %w", err)
+	if errors.Is(err, context.Canceled) {
+		return err
+	} else if err != nil {
+		err = fmt.Errorf("fetch issues: %w", err)
 	}
 
 	if err := c.Exporter.ExportIssues(ctx, issues); err != nil {
 		return fmt.Errorf("export issues: %w", err)
 	}
 
-	return nil
+	return err
 }
 
 func (c *Controller) processProjectsDeployments(ctx context.Context, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) error {
