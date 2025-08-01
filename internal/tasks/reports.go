@@ -13,7 +13,6 @@ import (
 	"go.cluttr.dev/gitlab-exporter/internal/cobertura"
 	"go.cluttr.dev/gitlab-exporter/internal/gitlab"
 	"go.cluttr.dev/gitlab-exporter/internal/gitlab/graphql"
-	"go.cluttr.dev/gitlab-exporter/internal/metaerr"
 	"go.cluttr.dev/gitlab-exporter/internal/types"
 )
 
@@ -103,8 +102,10 @@ func FetchProjectPipelineJunitReports(ctx context.Context, glab *gitlab.Client, 
 	)
 
 	artifacts, err := glab.GraphQL.GetProjectPipelineJobsArtifacts(ctx, projectPath, pipelineIid)
-	if err != nil {
-		return nil, nil, nil, fmt.Errorf("get project pipeline job artifacts: %w", err)
+	if errors.Is(err, context.Canceled) {
+		return nil, nil, nil, err
+	} else if err != nil {
+		slog.Error("error getting project pipeline job artifacts", "error", err)
 	}
 
 	for _, artifact := range artifacts {
@@ -114,7 +115,11 @@ func FetchProjectPipelineJunitReports(ctx context.Context, glab *gitlab.Client, 
 
 		jobRef, err := graphql.ConvertJobReference(artifact.Job, artifact.Pipeline, artifact.Project)
 		if err != nil {
-			return nil, nil, nil, fmt.Errorf("convert job reference: %w", err)
+			slog.Error("error converting job reference",
+				slog.String("jobId", *artifact.Job.Id),
+				slog.String("error", err.Error()),
+			)
+			continue
 		}
 
 		var reports []junitxml.TestReport
@@ -125,8 +130,14 @@ func FetchProjectPipelineJunitReports(ctx context.Context, glab *gitlab.Client, 
 		} else {
 			continue
 		}
-		if err != nil {
+		if errors.Is(err, context.Canceled) {
 			return nil, nil, nil, err
+		} else if err != nil {
+			slog.Error("error fetching junit report",
+				slog.String("error", err.Error()),
+				slog.String("donwloadPath", *artifact.DownloadPath),
+			)
+			continue
 		}
 
 		for _, report := range reports {
@@ -146,7 +157,9 @@ func fetchProjectJobJunitReportsAPI(ctx context.Context, glab *gitlab.Client, pr
 
 	for _, path := range artifactPaths {
 		reader, err := glab.Rest.GetProjectJobArtifact(ctx, projectPath, jobId, path)
-		if errors.Is(err, gitlab.ErrNotFound) {
+		if errors.Is(err, context.Canceled) {
+			return nil, err
+		} else if errors.Is(err, gitlab.ErrNotFound) {
 			continue
 		} else if err != nil {
 			return nil, fmt.Errorf("download file: %w", err)
@@ -166,27 +179,18 @@ func fetchProjectJobJunitReportsAPI(ctx context.Context, glab *gitlab.Client, pr
 func fetchProjectJobJunitReportHTTP(ctx context.Context, glab *gitlab.Client, downloadPath string) ([]junitxml.TestReport, error) {
 	resp, err := glab.HTTP.GetPath(downloadPath)
 	if err != nil {
-		return nil, metaerr.WithMetadata(
-			fmt.Errorf("download report: %w", err),
-			"download_path", downloadPath,
-		)
+		return nil, fmt.Errorf("download report: %w", err)
 	}
 
 	// junit.xml.gz
 	reader, err := gzip.NewReader(resp.Body)
 	if err != nil {
-		return nil, metaerr.WithMetadata(
-			fmt.Errorf("read report: %w", err),
-			"download_path", downloadPath,
-		)
+		return nil, fmt.Errorf("read report: %w", err)
 	}
 
 	reports, err := junitxml.ParseMany(reader)
 	if err != nil {
-		return nil, metaerr.WithMetadata(
-			fmt.Errorf("parse report: %w", err),
-			"download_path", downloadPath,
-		)
+		return nil, fmt.Errorf("parse report: %w", err)
 	}
 
 	return reports, nil

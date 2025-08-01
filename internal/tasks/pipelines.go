@@ -275,5 +275,5 @@ loop:
 		}
 	}
 
-	return testReports, testSuites, testCases, nil
+	return testReports, testSuites, testCases, errs
 }

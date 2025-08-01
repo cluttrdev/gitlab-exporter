@@ -674,8 +674,6 @@ func (c *Controller) exportJobs(ctx context.Context, projectIds []int64, updated
 }
 
 func (c *Controller) exportReports(ctx context.Context, pipelines []types.Pipeline) error {
-	var errs error
-
 	testReportProjectPipelines := []types.Pipeline{}
 	junitReportProjectPipelines := make(map[string][]string)
 	junitReportProjectArtifactPaths := make(map[string][]string)
@@ -705,49 +703,55 @@ func (c *Controller) exportReports(ctx context.Context, pipelines []types.Pipeli
 		}
 	}
 
+	var joinedErr error
+
+	// fetch test reports
 	testReports, testSuites, testCases, err := FetchProjectsPipelinesTestReports(ctx, c.GitLab, testReportProjectPipelines)
-	if err := c.handleError(&errs, err, "fetch test reports"); err != nil {
+	if err := c.handleError(&joinedErr, err, "fetch test reports"); err != nil {
 		return err
 	}
 	junitReports, junitSuites, junitCases, err := FetchProjectsPipelinesJunitReports(ctx, c.GitLab, junitReportProjectPipelines, junitReportProjectArtifactPaths)
-	if err := c.handleError(&errs, err, "fetch junit reports"); err != nil {
+	if err := c.handleError(&joinedErr, err, "fetch junit reports"); err != nil {
 		return err
 	}
+	// export test reports
 	err = c.Exporter.ExportTestReports(ctx, append(junitReports, testReports...))
-	if herr := c.handleError(&errs, err, "test reports"); herr != nil {
+	if herr := c.handleError(&joinedErr, err, "test reports"); herr != nil {
 		return herr
 	}
 	err = c.Exporter.ExportTestSuites(ctx, append(junitSuites, testSuites...))
-	if herr := c.handleError(&errs, err, "test suites"); herr != nil {
+	if herr := c.handleError(&joinedErr, err, "test suites"); herr != nil {
 		return herr
 	}
 	err = c.Exporter.ExportTestCases(ctx, append(junitCases, testCases...))
-	if herr := c.handleError(&errs, err, "test cases"); herr != nil {
+	if herr := c.handleError(&joinedErr, err, "test cases"); herr != nil {
 		return herr
 	}
 
+	// fetch coverage reports
 	covReports, covPackages, covClasses, covMethods, err := FetchProjectsPipelinesCoberturaReports(ctx, c.GitLab, coberturaReportProjectPipelines, coberturaReportProjectArtifactPaths)
-	if err := c.handleError(&errs, err, "fetch coverage reports"); err != nil {
+	if err := c.handleError(&joinedErr, err, "fetch coverage reports"); err != nil {
 		return err
 	}
+	// export coverage reports
 	err = c.Exporter.ExportCoverageReports(ctx, covReports)
-	if herr := c.handleError(&errs, err, "coverage reports"); herr != nil {
+	if herr := c.handleError(&joinedErr, err, "coverage reports"); herr != nil {
 		return herr
 	}
 	err = c.Exporter.ExportCoveragePackages(ctx, covPackages)
-	if herr := c.handleError(&errs, err, "coverage packages"); herr != nil {
+	if herr := c.handleError(&joinedErr, err, "coverage packages"); herr != nil {
 		return herr
 	}
 	err = c.Exporter.ExportCoverageClasses(ctx, covClasses)
-	if herr := c.handleError(&errs, err, "coverage packages"); herr != nil {
+	if herr := c.handleError(&joinedErr, err, "coverage packages"); herr != nil {
 		return herr
 	}
 	err = c.Exporter.ExportCoverageMethods(ctx, covMethods)
-	if herr := c.handleError(&errs, err, "coverage reports"); herr != nil {
+	if herr := c.handleError(&joinedErr, err, "coverage reports"); herr != nil {
 		return herr
 	}
 
-	return errs
+	return joinedErr
 }
 
 func (c *Controller) processProjectMergeRequests(ctx context.Context, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) error {

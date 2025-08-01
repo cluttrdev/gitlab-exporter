@@ -3,6 +3,7 @@ package graphql
 import (
 	"context"
 	"fmt"
+	"log/slog"
 
 	"go.cluttr.dev/gitlab-exporter/internal/types"
 )
@@ -54,29 +55,41 @@ func (c *Client) GetProjectPipelineJobsArtifacts(ctx context.Context, projectPat
 }
 
 func (c *Client) getProjectPipelineJobsArtifacts(ctx context.Context, projectPath string, pipelineIid string, endCursor *string) ([]JobArtifactFields, error) {
-	var jobArtifacts []JobArtifactFields
+	var (
+		jobArtifacts []JobArtifactFields
+
+		data *getProjectPipelineJobsArtifactsResponse
+		err  error
+	)
 
 	for {
-		resp, err := getProjectPipelineJobsArtifacts(
+		data, err = getProjectPipelineJobsArtifacts(
 			ctx,
 			c.client,
 			projectPath,
 			pipelineIid,
 			endCursor,
 		)
+		err = handleError(err, "getProjectPipelineJobsArtifacts",
+			slog.String("projectPath", projectPath),
+			slog.String("pipelineIid", pipelineIid),
+		)
 		if err != nil {
-			return nil, err
+			break
 		}
 
-		project_ := resp.Project
+		project_ := data.Project
 		if project_ == nil {
-			return nil, fmt.Errorf("project not found: %v", projectPath)
+			err = fmt.Errorf("project not found: %v", projectPath)
+			break
 		}
 		pipeline_ := project_.Pipeline
 		if pipeline_ == nil {
-			return nil, fmt.Errorf("project pipeline not found: %v (%v)", pipelineIid, projectPath)
+			err = fmt.Errorf("project pipeline not found: %v (%v)", pipelineIid, projectPath)
+			break
 		}
 
+	jobsLoop:
 		for _, job_ := range pipeline_.Jobs.Nodes {
 			if job_.Artifacts == nil {
 				continue
@@ -96,12 +109,16 @@ func (c *Client) getProjectPipelineJobsArtifacts(ctx context.Context, projectPat
 
 			if job_.Artifacts.PageInfo.HasNextPage && job_.Id != nil {
 				endCursor_ := job_.Artifacts.PageInfo.EndCursor
-				jobArtifacts_, err := c.getProjectPipelineJobArtifacts(ctx, projectPath, pipelineIid, *job_.Id, endCursor_)
-				if err != nil {
-					return nil, err
+				jobArtifacts_, err_ := c.getProjectPipelineJobArtifacts(ctx, projectPath, pipelineIid, *job_.Id, endCursor_)
+				if err_ != nil {
+					err = err_
+					break jobsLoop
 				}
 				jobArtifacts = append(jobArtifacts, jobArtifacts_...)
 			}
+		}
+		if err != nil {
+			break
 		}
 
 		if !pipeline_.Jobs.PageInfo.HasNextPage {
@@ -111,14 +128,19 @@ func (c *Client) getProjectPipelineJobsArtifacts(ctx context.Context, projectPat
 		endCursor = pipeline_.Jobs.PageInfo.EndCursor
 	}
 
-	return jobArtifacts, nil
+	return jobArtifacts, err
 }
 
 func (c *Client) getProjectPipelineJobArtifacts(ctx context.Context, projectPath string, pipelineIid string, jobId string, endCursor *string) ([]JobArtifactFields, error) {
-	var jobArtifacts []JobArtifactFields
+	var (
+		jobArtifacts []JobArtifactFields
+
+		data *getProjectPipelineJobArtifactsResponse
+		err  error
+	)
 
 	for {
-		resp, err := getProjectPipelineJobArtifacts(
+		data, err = getProjectPipelineJobArtifacts(
 			ctx,
 			c.client,
 			projectPath,
@@ -126,21 +148,29 @@ func (c *Client) getProjectPipelineJobArtifacts(ctx context.Context, projectPath
 			jobId,
 			endCursor,
 		)
+		err = handleError(err, "getProjectPipelineJobArtifacts",
+			slog.String("projectPath", projectPath),
+			slog.String("pipelineIid", pipelineIid),
+			slog.String("jobId", jobId),
+		)
 		if err != nil {
-			return nil, err
+			break
 		}
 
-		project_ := resp.Project
+		project_ := data.Project
 		if project_ == nil {
-			return nil, fmt.Errorf("project not found: %v", projectPath)
+			err = fmt.Errorf("project not found: %v", projectPath)
+			break
 		}
 		pipeline_ := project_.Pipeline
 		if pipeline_ == nil {
-			return nil, fmt.Errorf("project pipeline not found: %v (%v)", pipelineIid, projectPath)
+			err = fmt.Errorf("project pipeline not found: %v (%v)", pipelineIid, projectPath)
+			break
 		}
 		job_ := pipeline_.Job
 		if job_ == nil {
-			return nil, fmt.Errorf("project pipeline job not found: %v [%v] (%v)", jobId, pipelineIid, projectPath)
+			err = fmt.Errorf("project pipeline job not found: %v [%v] (%v)", jobId, pipelineIid, projectPath)
+			break
 		}
 
 		if job_.Artifacts == nil {
@@ -166,5 +196,5 @@ func (c *Client) getProjectPipelineJobArtifacts(ctx context.Context, projectPath
 		endCursor = job_.Artifacts.PageInfo.EndCursor
 	}
 
-	return jobArtifacts, nil
+	return jobArtifacts, err
 }

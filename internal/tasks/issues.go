@@ -37,7 +37,7 @@ func FetchProjectsIssues(ctx context.Context, glab *gitlab.Client, projectIds []
 		iss, err := graphql.ConvertIssue(isf)
 		if err != nil {
 			slog.Error("error converting issue fields",
-				slog.String("err", err.Error()),
+				slog.String("error", err.Error()),
 				slog.String("id", isf.Id),
 			)
 			continue
