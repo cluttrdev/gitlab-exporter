@@ -1,9 +1,15 @@
 package graphql
 
 import (
+	"context"
+	"errors"
+	"fmt"
+	"log/slog"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 type TimeRangeOptions struct {
@@ -79,4 +85,28 @@ func valOrZero[T any](t *T) T {
 
 func ptr[T any](v T) *T {
 	return &v
+}
+
+func handleError(err error, query string, attrs ...slog.Attr) error {
+	var errList gqlerror.List
+	if errors.As(err, &errList) {
+		attrs_ := make([]slog.Attr, 1, 1+len(attrs)+len(errList))
+
+		const msg = "gqlerror"
+		attrs_[0] = slog.String("query", query)
+
+		attrs_ = append(attrs_, attrs...)
+
+		for i, e := range errList {
+			attrs_ = append(attrs_, slog.Group(
+				fmt.Sprintf("error[%d]", i),
+				slog.String("path", e.Path.String()),
+				slog.String("message", e.Message),
+			))
+		}
+
+		slog.LogAttrs(context.Background(), slog.LevelError, msg, attrs...)
+		return nil
+	}
+	return err
 }
