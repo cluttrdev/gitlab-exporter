@@ -3,9 +3,11 @@ package graphql
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
+	"go.cluttr.dev/gitlab-exporter/internal/metaerr"
 	"go.cluttr.dev/gitlab-exporter/internal/types"
 )
 
@@ -233,10 +235,16 @@ type getPipelinesJobsOptions struct {
 }
 
 func (c *Client) getProjectsPipelinesJobsPart(ctx context.Context, ids []string, opts getPipelinesJobsOptions) ([]JobFields, error) {
-	var jfs []JobFields
+	var (
+		jfs []JobFields
 
+		data *getProjectsPipelinesJobsResponse
+		err  error
+	)
+
+outerLoop:
 	for {
-		resp, err := getProjectsPipelinesJobs(
+		data, err = getProjectsPipelinesJobs(
 			ctx,
 			c.client,
 			ids,
@@ -248,11 +256,16 @@ func (c *Client) getProjectsPipelinesJobsPart(ctx context.Context, ids []string,
 			opts.core,
 			opts.extra,
 		)
+		err = handleError(err, "getProjectsPipelinesJobs",
+			slog.Any("projectIds", ids),
+			slog.String("updatedAfter", opts.UpdatedAfter.Format(time.RFC3339)),
+			slog.String("updatedBefore", opts.UpdatedBefore.Format(time.RFC3339)),
+		)
 		if err != nil {
-			return nil, err
+			break
 		}
 
-		for _, project_ := range resp.Projects.Nodes {
+		for _, project_ := range data.Projects.Nodes {
 			for _, pipeline_ := range project_.Pipelines.Nodes {
 				for _, job_ := range pipeline_.Jobs.Nodes {
 					jf := JobFields{
@@ -272,9 +285,10 @@ func (c *Client) getProjectsPipelinesJobsPart(ctx context.Context, ids []string,
 				if pipeline_.Jobs.PageInfo.HasNextPage {
 					opts_ := opts
 					opts_.endCursor = pipeline_.Jobs.PageInfo.EndCursor
-					jfs_, err := c.getProjectPipelineJobs(ctx, project_.FullPath, pipeline_.Iid, opts_)
-					if err != nil {
-						return nil, err
+					jfs_, err_ := c.getProjectPipelineJobs(ctx, project_.FullPath, pipeline_.Iid, opts_)
+					if err_ != nil {
+						err = metaerr.WithMetadata(err_, "projectPath", project_.FullPath, "pipelineiid", pipeline_.Iid)
+						break outerLoop
 					}
 					jfs = append(jfs, jfs_...)
 				}
@@ -283,29 +297,36 @@ func (c *Client) getProjectsPipelinesJobsPart(ctx context.Context, ids []string,
 			if project_.Pipelines.PageInfo.HasNextPage {
 				opts_ := opts
 				opts_.endCursor = project_.Pipelines.PageInfo.EndCursor
-				jfs_, err := c.getProjectPipelinesJobs(ctx, project_.FullPath, opts_)
-				if err != nil {
-					return nil, err
+				jfs_, err_ := c.getProjectPipelinesJobs(ctx, project_.FullPath, opts_)
+				if err_ != nil {
+					err = metaerr.WithMetadata(err_, "projectPath", project_.FullPath)
+					break outerLoop
 				}
 				jfs = append(jfs, jfs_...)
 			}
 		}
 
-		if !resp.Projects.PageInfo.HasNextPage {
+		if !data.Projects.PageInfo.HasNextPage {
 			break
 		}
 
-		opts.endCursor = resp.Projects.PageInfo.EndCursor
+		opts.endCursor = data.Projects.PageInfo.EndCursor
 	}
 
-	return jfs, nil
+	return jfs, err
 }
 
 func (c *Client) getProjectPipelinesJobs(ctx context.Context, projectPath string, opts getPipelinesJobsOptions) ([]JobFields, error) {
-	var jfs []JobFields
+	var (
+		jfs []JobFields
 
+		data *getProjectPipelinesJobsResponse
+		err  error
+	)
+
+outerLoop:
 	for {
-		resp, err := getProjectPipelinesJobs(
+		data, err = getProjectPipelinesJobs(
 			ctx,
 			c.client,
 			projectPath,
@@ -317,13 +338,19 @@ func (c *Client) getProjectPipelinesJobs(ctx context.Context, projectPath string
 			opts.core,
 			opts.extra,
 		)
+		err = handleError(err, "getProjectPipelinesJobs",
+			slog.String("projectPath", projectPath),
+			slog.String("updatedAfter", opts.UpdatedAfter.Format(time.RFC3339)),
+			slog.String("updatedBefore", opts.UpdatedBefore.Format(time.RFC3339)),
+		)
 		if err != nil {
-			return nil, err
+			break
 		}
 
-		project_ := resp.Project
+		project_ := data.Project
 		if project_ == nil {
-			return nil, fmt.Errorf("project not found: %v", projectPath)
+			err = fmt.Errorf("project not found: %v", projectPath)
+			break
 		}
 
 		for _, pipeline_ := range project_.Pipelines.Nodes {
@@ -345,9 +372,10 @@ func (c *Client) getProjectPipelinesJobs(ctx context.Context, projectPath string
 			if pipeline_.Jobs.PageInfo.HasNextPage {
 				opts_ := opts
 				opts_.endCursor = pipeline_.Jobs.PageInfo.EndCursor
-				jfs_, err := c.getProjectPipelineJobs(ctx, projectPath, pipeline_.Iid, opts_)
-				if err != nil {
-					return nil, err
+				jfs_, err_ := c.getProjectPipelineJobs(ctx, projectPath, pipeline_.Iid, opts_)
+				if err_ != nil {
+					err = metaerr.WithMetadata(err_, "projectPath", projectPath, "pipelineIid", pipeline_.Iid)
+					break outerLoop
 				}
 				jfs = append(jfs, jfs_...)
 			}
@@ -360,14 +388,19 @@ func (c *Client) getProjectPipelinesJobs(ctx context.Context, projectPath string
 		opts.endCursor = project_.Pipelines.PageInfo.EndCursor
 	}
 
-	return jfs, nil
+	return jfs, err
 }
 
 func (c *Client) getProjectPipelineJobs(ctx context.Context, projectPath string, pipelineIid string, opts getPipelinesJobsOptions) ([]JobFields, error) {
-	var jfs []JobFields
+	var (
+		jfs []JobFields
+
+		data *getProjectPipelineJobsResponse
+		err  error
+	)
 
 	for {
-		resp, err := getProjectPipelineJobs(
+		data, err = getProjectPipelineJobs(
 			ctx,
 			c.client,
 			projectPath,
@@ -377,17 +410,23 @@ func (c *Client) getProjectPipelineJobs(ctx context.Context, projectPath string,
 			opts.core,
 			opts.extra,
 		)
+		err = handleError(err, "getProjectPipelineJobs",
+			slog.String("projectPath", projectPath),
+			slog.String("pipelineIid", pipelineIid),
+		)
 		if err != nil {
-			return nil, err
+			break
 		}
 
-		project_ := resp.Project
+		project_ := data.Project
 		if project_ == nil {
-			return nil, fmt.Errorf("project not found: %v", projectPath)
+			err = fmt.Errorf("project not found: %v", projectPath)
+			break
 		}
 		pipeline_ := project_.Pipeline
 		if pipeline_ == nil {
-			return nil, fmt.Errorf("project pipeline not found: %v (%v)", pipelineIid, projectPath)
+			err = fmt.Errorf("project pipeline not found: %v (%v)", pipelineIid, projectPath)
+			break
 		}
 
 		for _, job_ := range pipeline_.Jobs.Nodes {
@@ -412,7 +451,7 @@ func (c *Client) getProjectPipelineJobs(ctx context.Context, projectPath string,
 		opts.endCursor = pipeline_.Jobs.PageInfo.EndCursor
 	}
 
-	return jfs, nil
+	return jfs, err
 }
 
 // mapFailureMessage returns the failure reason corresponding to a job failure message
