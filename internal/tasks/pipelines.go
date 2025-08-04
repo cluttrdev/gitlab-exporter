@@ -26,20 +26,27 @@ func FetchProjectsPipelines(ctx context.Context, glab *gitlab.Client, projectIds
 	}
 
 	pipelinesFields, err := glab.GraphQL.GetProjectsPipelines(ctx, gids, opts)
-	if err != nil {
-		return nil, fmt.Errorf("get pipeline fields: %w", err)
+	if errors.Is(err, context.Canceled) {
+		return nil, err
+	} else if err != nil {
+		err = fmt.Errorf("get pipeline fields: %w", err)
 	}
 
 	pipelines := make([]types.Pipeline, 0, len(pipelinesFields))
 	for _, pf := range pipelinesFields {
 		p, err := graphql.ConvertPipeline(pf)
 		if err != nil {
-			return nil, fmt.Errorf("convert pipeline fields: %w", err)
+			slog.Error("error converting pipeline fields",
+				slog.String("id", pf.Id),
+				slog.String("projectId", pf.Project.Id),
+				slog.String("error", err.Error()),
+			)
+			continue
 		}
 		pipelines = append(pipelines, p)
 	}
 
-	return pipelines, nil
+	return pipelines, err
 }
 
 func FetchProjectsPipelinesJobs(ctx context.Context, glab *gitlab.Client, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) ([]types.Job, error) {

@@ -3,9 +3,11 @@ package graphql
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 	"time"
 
+	"go.cluttr.dev/gitlab-exporter/internal/metaerr"
 	"go.cluttr.dev/gitlab-exporter/internal/types"
 )
 
@@ -155,7 +157,7 @@ func (c *Client) GetProjectsPipelines(ctx context.Context, ids []string, opts Ge
 
 	pipelines = append(pipelines, append(childPipelines, downstreamPipelines...)...)
 
-	return pipelines, nil
+	return pipelines, err
 }
 
 func (c *Client) GetProjectPipeline(ctx context.Context, projectId string, pipelineId string) (PipelineFields, error) {
@@ -170,10 +172,16 @@ type getPipelinesOptions struct {
 }
 
 func (c *Client) getProjectsPipelines(ctx context.Context, ids []string, opts getPipelinesOptions) ([]PipelineFields, error) {
-	var pfs []PipelineFields
+	var (
+		pfs []PipelineFields
 
+		data *getProjectsPipelinesResponse
+		err  error
+	)
+
+outerLoop:
 	for {
-		resp, err := getProjectsPipelines(
+		data, err = getProjectsPipelines(
 			ctx,
 			c.client,
 			ids,
@@ -182,11 +190,16 @@ func (c *Client) getProjectsPipelines(ctx context.Context, ids []string, opts ge
 			opts.UpdatedBefore,
 			opts.endCursor,
 		)
+		err = handleError(err, "getProjectsPipelines",
+			slog.Any("projectIds", ids),
+			slog.String("updatedAfter", opts.UpdatedAfter.Format(time.RFC3339)),
+			slog.String("updatedBefore", opts.UpdatedBefore.Format(time.RFC3339)),
+		)
 		if err != nil {
-			return nil, err
+			break
 		}
 
-		for _, project_ := range resp.Projects.Nodes {
+		for _, project_ := range data.Projects.Nodes {
 			for _, pipeline_ := range project_.Pipelines.Nodes {
 				pf := PipelineFields{
 					PipelineReferenceFields: pipeline_.PipelineReferenceFields,
@@ -200,9 +213,10 @@ func (c *Client) getProjectsPipelines(ctx context.Context, ids []string, opts ge
 				}
 
 				if pipeline_.Downstream != nil && pipeline_.Downstream.PageInfo.HasNextPage {
-					dpconn, err := c.getProjectPipelineDownstreamConnection(ctx, project_.FullPath, pipeline_.Iid, pipeline_.Downstream.PageInfo.EndCursor)
-					if err != nil {
-						return nil, err
+					dpconn, err_ := c.getProjectPipelineDownstreamConnection(ctx, project_.FullPath, pipeline_.Iid, pipeline_.Downstream.PageInfo.EndCursor)
+					if err_ != nil {
+						err = metaerr.WithMetadata(err_, "projectPath", project_.FullPath, "pipelineIid", pipeline_.Iid)
+						break outerLoop
 					}
 					pf.Downstream.Nodes = append(pf.Downstream.Nodes, dpconn.Nodes...)
 					pf.Downstream.PageInfo = dpconn.PageInfo
@@ -214,30 +228,37 @@ func (c *Client) getProjectsPipelines(ctx context.Context, ids []string, opts ge
 			if project_.Pipelines.PageInfo.HasNextPage {
 				opts_ := opts
 				opts_.endCursor = project_.Pipelines.PageInfo.EndCursor
-				pfs_, err := c.getProjectPipelines(ctx, project_.FullPath, opts_)
-				if err != nil {
-					return nil, err
+				pfs_, err_ := c.getProjectPipelines(ctx, project_.FullPath, opts_)
+				if err_ != nil {
+					err = metaerr.WithMetadata(err_, "projectPath", project_.FullPath, "pipelineIid")
+					break outerLoop
 				}
 
 				pfs = append(pfs, pfs_...)
 			}
 		}
 
-		if !resp.Projects.PageInfo.HasNextPage {
+		if !data.Projects.PageInfo.HasNextPage {
 			break
 		}
 
-		opts.endCursor = resp.Projects.PageInfo.EndCursor
+		opts.endCursor = data.Projects.PageInfo.EndCursor
 	}
 
-	return pfs, nil
+	return pfs, err
 }
 
 func (c *Client) getProjectPipelines(ctx context.Context, path string, opts getPipelinesOptions) ([]PipelineFields, error) {
-	var pfs []PipelineFields
+	var (
+		pfs []PipelineFields
 
+		data *getProjectPipelinesResponse
+		err  error
+	)
+
+outerLoop:
 	for {
-		resp, err := getProjectPipelines(
+		data, err = getProjectPipelines(
 			ctx,
 			c.client,
 			path,
@@ -246,13 +267,19 @@ func (c *Client) getProjectPipelines(ctx context.Context, path string, opts getP
 			opts.UpdatedBefore,
 			opts.endCursor,
 		)
+		err = handleError(err, "getProjectPipelines",
+			slog.String("projectPath", path),
+			slog.String("updatedAfter", opts.UpdatedAfter.Format(time.RFC3339)),
+			slog.String("updatedBefore", opts.UpdatedBefore.Format(time.RFC3339)),
+		)
 		if err != nil {
-			return nil, err
+			break
 		}
 
-		project_ := resp.Project
+		project_ := data.Project
 		if project_ == nil {
-			return nil, fmt.Errorf("project not found: %v", path)
+			err = fmt.Errorf("project not found: %v", path)
+			break
 		}
 
 		for _, pipeline_ := range project_.Pipelines.Nodes {
@@ -268,9 +295,10 @@ func (c *Client) getProjectPipelines(ctx context.Context, path string, opts getP
 			}
 
 			if pipeline_.Downstream != nil && pipeline_.Downstream.PageInfo.HasNextPage {
-				dpconn, err := c.getProjectPipelineDownstreamConnection(ctx, project_.FullPath, pipeline_.Iid, pipeline_.Downstream.PageInfo.EndCursor)
-				if err != nil {
-					return nil, err
+				dpconn, err_ := c.getProjectPipelineDownstreamConnection(ctx, project_.FullPath, pipeline_.Iid, pipeline_.Downstream.PageInfo.EndCursor)
+				if err_ != nil {
+					err = metaerr.WithMetadata(err_, "projectPath", project_.FullPath, "pipelineIid", pipeline_.Iid)
+					break outerLoop
 				}
 				pf.Downstream.Nodes = append(pf.Downstream.Nodes, dpconn.Nodes...)
 				pf.Downstream.PageInfo = dpconn.PageInfo
@@ -286,29 +314,40 @@ func (c *Client) getProjectPipelines(ctx context.Context, path string, opts getP
 		opts.endCursor = project_.Pipelines.PageInfo.EndCursor
 	}
 
-	return pfs, nil
+	return pfs, err
 }
 
 func (c *Client) getProjectPipelineDownstreamConnection(ctx context.Context, projectPath string, pipelineIid string, endCursor *string) (*PipelineFieldsRelationsDownstreamPipelineConnection, error) {
-	var dpconn PipelineFieldsRelationsDownstreamPipelineConnection
+	var (
+		dpconn PipelineFieldsRelationsDownstreamPipelineConnection
+
+		data *getProjectPipelineDownstreamResponse
+		err  error
+	)
 
 	for {
-		resp, err := getProjectPipelineDownstream(ctx, c.client, projectPath, pipelineIid, endCursor)
+		data, err = getProjectPipelineDownstream(ctx, c.client, projectPath, pipelineIid, endCursor)
+		err = handleError(err, "getProjectPipelineDownstream",
+			slog.String("projectPath", projectPath),
+			slog.String("pipelineIid", pipelineIid),
+		)
 		if err != nil {
-			return nil, err
+			break
 		}
 
-		project_ := resp.Project
+		project_ := data.Project
 		if project_ == nil {
-			return nil, fmt.Errorf("project not found: %v", projectPath)
+			err = fmt.Errorf("project not found: %v", projectPath)
+			break
 		}
 		pipeline_ := project_.Pipeline
 		if pipeline_ == nil {
-			return nil, fmt.Errorf("project pipeline not found: %v (%v)", pipelineIid, projectPath)
+			err = fmt.Errorf("project pipeline not found: %v/%v", projectPath, pipelineIid)
+			break
 		}
 		downstream_ := pipeline_.Downstream
 		if downstream_ == nil {
-			return nil, nil
+			break
 		}
 
 		for _, node_ := range pipeline_.Downstream.Nodes {
@@ -327,7 +366,7 @@ func (c *Client) getProjectPipelineDownstreamConnection(ctx context.Context, pro
 		endCursor = downstream_.PageInfo.EndCursor
 	}
 
-	return &dpconn, nil
+	return &dpconn, err
 }
 
 func (c *Client) getProjectIdPipeline(ctx context.Context, projectId string, pipelineId string) (PipelineFields, error) {
