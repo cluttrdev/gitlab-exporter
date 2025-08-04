@@ -755,25 +755,27 @@ func (c *Controller) exportReports(ctx context.Context, pipelines []types.Pipeli
 }
 
 func (c *Controller) processProjectMergeRequests(ctx context.Context, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) error {
+	var errs []error
+
 	mergeRequests, err := FetchProjectsMergeRequests(ctx, c.GitLab, projectIds, updatedAfter, updatedBefore)
 	if err != nil {
-		return fmt.Errorf("fetch merge requests: %w", err)
+		errs = append(errs, fmt.Errorf("fetch merge requests: %w", err))
 	}
 
 	mergeRequestNoteEvents, err := FetchProjectsMergeRequestsNotes(ctx, c.GitLab, projectIds, updatedAfter, updatedBefore)
 	if err != nil {
-		return fmt.Errorf("fetch merge request note events: %w", err)
+		errs = append(errs, fmt.Errorf("fetch merge request note events: %w", err))
 	}
 
 	if err := c.Exporter.ExportMergeRequests(ctx, mergeRequests); err != nil {
-		return fmt.Errorf("export merge requests: %w", err)
+		errs = append(errs, fmt.Errorf("export merge requests: %w", err))
 	}
 
 	if err := c.Exporter.ExportMergeRequestNoteEvents(ctx, mergeRequestNoteEvents); err != nil {
-		return fmt.Errorf("export merge request note events: %w", err)
+		errs = append(errs, fmt.Errorf("export merge request note events: %w", err))
 	}
 
-	return nil
+	return errors.Join(errs...)
 }
 
 func (c *Controller) ResolveProjects(ctx context.Context) (int, error) {

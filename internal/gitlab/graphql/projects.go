@@ -3,6 +3,7 @@ package graphql
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"go.cluttr.dev/gitlab-exporter/internal/types"
@@ -92,6 +93,7 @@ func (c *Client) ListProjects(
 
 	for {
 		resp, err := getProjects(ctx, c.client, ids, updatedAfter, updatedBefore, endCursor)
+		err = handleError(err, "getProjects", slog.Any("ids", ids))
 		if err != nil {
 			return err
 		}

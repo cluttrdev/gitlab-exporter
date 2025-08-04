@@ -3,11 +3,13 @@ package graphql
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
+	"go.cluttr.dev/gitlab-exporter/internal/metaerr"
 	"go.cluttr.dev/gitlab-exporter/internal/types"
 )
 
@@ -267,10 +269,16 @@ type getMergeRequestsOptions struct {
 }
 
 func (c *Client) getProjectsMergeRequests(ctx context.Context, ids []string, opts getMergeRequestsOptions) ([]MergeRequestFields, error) {
-	var mergeRequests []MergeRequestFields
+	var (
+		mergeRequests []MergeRequestFields
 
+		data *getProjectsMergeRequestsResponse
+		err  error
+	)
+
+outerLoop:
 	for {
-		resp, err := getProjectsMergeRequests(
+		data, err = getProjectsMergeRequests(
 			ctx,
 			c.client,
 			ids,
@@ -282,11 +290,16 @@ func (c *Client) getProjectsMergeRequests(ctx context.Context, ids []string, opt
 			&opts.includeExtra,
 			&opts.includeParticipants,
 		)
+		err = handleError(err, "getProjectsMergeRequests",
+			slog.Any("projectIds", ids),
+			slog.String("updatedAfter", opts.UpdatedAfter.Format(time.RFC3339)),
+			slog.String("updatedBefore", opts.UpdatedBefore.Format(time.RFC3339)),
+		)
 		if err != nil {
-			return nil, err
+			break
 		}
 
-		for _, project_ := range resp.Projects.Nodes {
+		for _, project_ := range data.Projects.Nodes {
 			for _, mergeRequest_ := range project_.MergeRequests.Nodes {
 				mergeRequest := MergeRequestFields{
 					MergeRequestReferenceFields: mergeRequest_.MergeRequestReferenceFields,
@@ -307,29 +320,35 @@ func (c *Client) getProjectsMergeRequests(ctx context.Context, ids []string, opt
 			if project_.MergeRequests.PageInfo.HasNextPage {
 				opts_ := opts
 				opts_.endCursor = project_.MergeRequests.PageInfo.EndCursor
-				mergeRequests_, err := c.getProjectMergeRequests(ctx, project_.FullPath, opts_)
-				if err != nil {
-					return nil, err
+				mergeRequests_, err_ := c.getProjectMergeRequests(ctx, project_.FullPath, opts_)
+				if err_ != nil {
+					err = err_
+					break outerLoop
 				}
 				mergeRequests = append(mergeRequests, mergeRequests_...)
 			}
 		}
 
-		if !resp.Projects.PageInfo.HasNextPage {
+		if !data.Projects.PageInfo.HasNextPage {
 			break
 		}
 
-		opts.endCursor = resp.Projects.PageInfo.EndCursor
+		opts.endCursor = data.Projects.PageInfo.EndCursor
 	}
 
-	return mergeRequests, nil
+	return mergeRequests, err
 }
 
 func (c *Client) getProjectMergeRequests(ctx context.Context, projectPath string, opts getMergeRequestsOptions) ([]MergeRequestFields, error) {
-	var mergeRequests []MergeRequestFields
+	var (
+		mergeRequests []MergeRequestFields
+
+		data *getProjectMergeRequestsResponse
+		err  error
+	)
 
 	for {
-		resp, err := getProjectMergeRequests(
+		data, err = getProjectMergeRequests(
 			ctx,
 			c.client,
 			projectPath,
@@ -341,13 +360,19 @@ func (c *Client) getProjectMergeRequests(ctx context.Context, projectPath string
 			&opts.includeExtra,
 			&opts.includeParticipants,
 		)
+		err = handleError(err, "getProjectsMergeRequests",
+			slog.String("projectPath", projectPath),
+			slog.String("updatedAfter", opts.UpdatedAfter.Format(time.RFC3339)),
+			slog.String("updatedBefore", opts.UpdatedBefore.Format(time.RFC3339)),
+		)
 		if err != nil {
-			return nil, err
+			break
 		}
 
-		project_ := resp.Project
+		project_ := data.Project
 		if project_ == nil {
-			return nil, fmt.Errorf("project not found: %v", projectPath)
+			err = fmt.Errorf("project not found: %v", projectPath)
+			break
 		}
 
 		for _, mergeRequest_ := range project_.MergeRequests.Nodes {
@@ -374,7 +399,7 @@ func (c *Client) getProjectMergeRequests(ctx context.Context, projectPath string
 		opts.endCursor = project_.MergeRequests.PageInfo.EndCursor
 	}
 
-	return mergeRequests, nil
+	return mergeRequests, err
 }
 
 type MergeRequestNoteFields struct {
@@ -525,10 +550,16 @@ type getMergeRequestsNotesOptions struct {
 }
 
 func (c *Client) getProjectsMergeRequestsNotes(ctx context.Context, projectGids []string, opts getMergeRequestsNotesOptions) ([]MergeRequestNoteFields, error) {
-	var notes []MergeRequestNoteFields
+	var (
+		notes []MergeRequestNoteFields
 
+		data *getProjectsMergeRequestNotesResponse
+		err  error
+	)
+
+outerLoop:
 	for {
-		resp, err := getProjectsMergeRequestNotes(
+		data, err = getProjectsMergeRequestNotes(
 			ctx,
 			c.client,
 			projectGids,
@@ -536,11 +567,16 @@ func (c *Client) getProjectsMergeRequestsNotes(ctx context.Context, projectGids 
 			opts.UpdatedBefore,
 			opts.endCursor,
 		)
+		err = handleError(err, "getProjectsMergeRequestsNotes",
+			slog.Any("projectIds", projectGids),
+			slog.String("updatedAfter", opts.UpdatedAfter.Format(time.RFC3339)),
+			slog.String("updatedBefore", opts.UpdatedBefore.Format(time.RFC3339)),
+		)
 		if err != nil {
-			return nil, err
+			break
 		}
 
-		for _, project_ := range resp.Projects.Nodes {
+		for _, project_ := range data.Projects.Nodes {
 			for _, mr_ := range project_.MergeRequests.Nodes {
 				for _, note_ := range mr_.Notes.Nodes {
 					note := MergeRequestNoteFields{
@@ -555,9 +591,10 @@ func (c *Client) getProjectsMergeRequestsNotes(ctx context.Context, projectGids 
 				if mr_.Notes.PageInfo.HasNextPage {
 					opts_ := opts
 					opts_.endCursor = mr_.Notes.PageInfo.EndCursor
-					notes_, err := c.getProjectMergeRequestNotes(ctx, project_.FullPath, mr_.Iid, opts_)
-					if err != nil {
-						return nil, err
+					notes_, err_ := c.getProjectMergeRequestNotes(ctx, project_.FullPath, mr_.Iid, opts_)
+					if err_ != nil {
+						err = metaerr.WithMetadata(err_, "projectPath", project_.FullPath, "iid", mr_.Iid)
+						break outerLoop
 					}
 					notes = append(notes, notes_...)
 				}
@@ -566,29 +603,36 @@ func (c *Client) getProjectsMergeRequestsNotes(ctx context.Context, projectGids 
 			if project_.MergeRequests.PageInfo.HasNextPage {
 				opts_ := opts
 				opts_.endCursor = project_.MergeRequests.PageInfo.EndCursor
-				notes_, err := c.getProjectMergeRequestsNotes(ctx, project_.FullPath, opts_)
-				if err != nil {
-					return nil, err
+				notes_, err_ := c.getProjectMergeRequestsNotes(ctx, project_.FullPath, opts_)
+				if err_ != nil {
+					err = metaerr.WithMetadata(err_, "projectPath", project_.FullPath)
+					break outerLoop
 				}
 				notes = append(notes, notes_...)
 			}
 		}
 
-		if !resp.Projects.PageInfo.HasNextPage {
+		if !data.Projects.PageInfo.HasNextPage {
 			break
 		}
 
-		opts.endCursor = resp.Projects.PageInfo.EndCursor
+		opts.endCursor = data.Projects.PageInfo.EndCursor
 	}
 
-	return notes, nil
+	return notes, err
 }
 
 func (c *Client) getProjectMergeRequestsNotes(ctx context.Context, projectPath string, opts getMergeRequestsNotesOptions) ([]MergeRequestNoteFields, error) {
-	var notes []MergeRequestNoteFields
+	var (
+		notes []MergeRequestNoteFields
 
+		data *getProjectMergeRequestsNotesResponse
+		err  error
+	)
+
+outerLoop:
 	for {
-		resp, err := getProjectMergeRequestsNotes(
+		data, err = getProjectMergeRequestsNotes(
 			ctx,
 			c.client,
 			projectPath,
@@ -596,13 +640,19 @@ func (c *Client) getProjectMergeRequestsNotes(ctx context.Context, projectPath s
 			opts.UpdatedBefore,
 			opts.endCursor,
 		)
+		err = handleError(err, "getProjectMergeRequestsNotes",
+			slog.String("projectPath", projectPath),
+			slog.String("updatedAfter", opts.UpdatedAfter.Format(time.RFC3339)),
+			slog.String("updatedBefore", opts.UpdatedBefore.Format(time.RFC3339)),
+		)
 		if err != nil {
-			return nil, err
+			break
 		}
 
-		project_ := resp.Project
+		project_ := data.Project
 		if project_ == nil {
-			return nil, fmt.Errorf("project not found: %v", projectPath)
+			err = fmt.Errorf("project not found: %v", projectPath)
+			break
 		}
 
 		for _, mr_ := range project_.MergeRequests.Nodes {
@@ -620,9 +670,10 @@ func (c *Client) getProjectMergeRequestsNotes(ctx context.Context, projectPath s
 			if mr_.Notes.PageInfo.HasNextPage {
 				opts_ := opts
 				opts_.endCursor = mr_.Notes.PageInfo.EndCursor
-				notes_, err := c.getProjectMergeRequestNotes(ctx, project_.FullPath, mr_.Iid, opts_)
-				if err != nil {
-					return nil, err
+				notes_, err_ := c.getProjectMergeRequestNotes(ctx, project_.FullPath, mr_.Iid, opts_)
+				if err_ != nil {
+					err = metaerr.WithMetadata(err_, "projectPath", project_.FullPath, "iid", mr_.Iid)
+					break outerLoop
 				}
 				notes = append(notes, notes_...)
 			}
@@ -635,31 +686,42 @@ func (c *Client) getProjectMergeRequestsNotes(ctx context.Context, projectPath s
 		opts.endCursor = project_.MergeRequests.PageInfo.EndCursor
 	}
 
-	return notes, nil
+	return notes, err
 }
 
 func (c *Client) getProjectMergeRequestNotes(ctx context.Context, projectPath string, mergeRequestIid string, opts getMergeRequestsNotesOptions) ([]MergeRequestNoteFields, error) {
-	var notes []MergeRequestNoteFields
+	var (
+		notes []MergeRequestNoteFields
+
+		data *getProjectMergeRequestNotesResponse
+		err  error
+	)
 
 	for {
-		resp, err := getProjectMergeRequestNotes(
+		data, err = getProjectMergeRequestNotes(
 			ctx,
 			c.client,
 			projectPath,
 			mergeRequestIid,
 			opts.endCursor,
 		)
+		err = handleError(err, "getProjectMergeRequestNotes",
+			slog.String("projectPath", projectPath),
+			slog.String("iid", mergeRequestIid),
+		)
 		if err != nil {
-			return nil, err
+			break
 		}
 
-		project_ := resp.Project
+		project_ := data.Project
 		if project_ == nil {
-			return nil, fmt.Errorf("project not found: %v", projectPath)
+			err = fmt.Errorf("project not found: %v", projectPath)
+			break
 		}
 		mr_ := project_.MergeRequest
 		if mr_ == nil {
-			return nil, fmt.Errorf("project merge request not found: %v (%v)", mergeRequestIid, projectPath)
+			err = fmt.Errorf("project merge request not found: %v/%v", projectPath, mergeRequestIid)
+			break
 		}
 
 		for _, note_ := range mr_.Notes.Nodes {
@@ -679,5 +741,5 @@ func (c *Client) getProjectMergeRequestNotes(ctx context.Context, projectPath st
 		opts.endCursor = mr_.Notes.PageInfo.EndCursor
 	}
 
-	return notes, nil
+	return notes, err
 }
