@@ -105,7 +105,7 @@ func handleError(err error, query string, attrs ...slog.Attr) error {
 			))
 		}
 
-		slog.LogAttrs(context.Background(), slog.LevelError, msg, attrs...)
+		slog.LogAttrs(context.Background(), slog.LevelError, msg, attrs_...)
 		return nil
 	}
 	return err
