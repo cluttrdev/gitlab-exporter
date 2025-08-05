@@ -155,6 +155,9 @@ func (c *Client) getProjectsIssues(ctx context.Context, projectIds []string, opt
 			break
 		}
 
+		if data.Projects == nil {
+			break
+		}
 		for _, project_ := range data.Projects.Nodes {
 			if project_.Issues == nil {
 				continue
@@ -210,12 +213,15 @@ func (c *Client) getProjectIssues(ctx context.Context, projectPath string, opts 
 			break
 		}
 
-		project_ := data.GetProject()
+		project_ := data.Project
 		if project_ == nil {
 			err = fmt.Errorf("project not found: %v", projectPath)
 			break
 		}
 
+		if project_.Issues == nil {
+			break
+		}
 		for _, issue_ := range project_.Issues.Nodes {
 			issue := IssueFields{
 				IssueReferenceFields: issue_.IssueReferenceFields,

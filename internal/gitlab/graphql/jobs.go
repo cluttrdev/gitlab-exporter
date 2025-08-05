@@ -265,6 +265,9 @@ outerLoop:
 			break
 		}
 
+		if data.Projects == nil {
+			break
+		}
 		for _, project_ := range data.Projects.Nodes {
 			if project_.Pipelines == nil {
 				continue
@@ -359,6 +362,9 @@ outerLoop:
 			break
 		}
 
+		if project_.Pipelines == nil {
+			break
+		}
 		for _, pipeline_ := range project_.Pipelines.Nodes {
 			if pipeline_.Jobs == nil {
 				continue
@@ -438,6 +444,9 @@ func (c *Client) getProjectPipelineJobs(ctx context.Context, projectPath string,
 			break
 		}
 
+		if pipeline_.Jobs == nil {
+			break
+		}
 		for _, job_ := range pipeline_.Jobs.Nodes {
 			jf := JobFields{
 				JobReferenceFields: job_.JobReferenceFields,

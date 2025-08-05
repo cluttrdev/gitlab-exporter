@@ -199,6 +199,9 @@ outerLoop:
 			break
 		}
 
+		if data.Projects == nil {
+			break
+		}
 		for _, project_ := range data.Projects.Nodes {
 			if project_.Pipelines == nil {
 				continue
@@ -285,6 +288,9 @@ outerLoop:
 			break
 		}
 
+		if project_.Pipelines == nil {
+			break
+		}
 		for _, pipeline_ := range project_.Pipelines.Nodes {
 			pf := PipelineFields{
 				PipelineReferenceFields: pipeline_.PipelineReferenceFields,

@@ -89,6 +89,10 @@ func (c *Client) getProjectPipelineJobsArtifacts(ctx context.Context, projectPat
 			break
 		}
 
+		if pipeline_.Jobs == nil {
+			break
+		}
+
 	jobsLoop:
 		for _, job_ := range pipeline_.Jobs.Nodes {
 			if job_.Artifacts == nil {

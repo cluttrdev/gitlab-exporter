@@ -299,6 +299,9 @@ outerLoop:
 			break
 		}
 
+		if data.Projects == nil {
+			break
+		}
 		for _, project_ := range data.Projects.Nodes {
 			if project_.MergeRequests == nil {
 				continue
@@ -378,6 +381,9 @@ func (c *Client) getProjectMergeRequests(ctx context.Context, projectPath string
 			break
 		}
 
+		if project_.MergeRequests == nil {
+			break
+		}
 		for _, mergeRequest_ := range project_.MergeRequests.Nodes {
 			mergeRequest := MergeRequestFields{
 				MergeRequestReferenceFields: mergeRequest_.MergeRequestReferenceFields,
@@ -579,6 +585,9 @@ outerLoop:
 			break
 		}
 
+		if data.Projects == nil {
+			break
+		}
 		for _, project_ := range data.Projects.Nodes {
 			if project_.MergeRequests == nil {
 				continue
