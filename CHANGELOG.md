@@ -1,7 +1,19 @@
 # Changelog
 
+## [0.19.3](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.19.2..v0.19.3)
+
+- c9a8b3a fix: GraphQL handleError log attrs
+- 4420f19 fix: Prevent some possible graphql nil pointer dereferences
+- f69f9c2 fix: Improve error handling when fetching pipelines
+- 1ff2ad1 fix: Improve error handling when fetching jobs
+- d77f86f fix: Improve error handling when fetching merge requests
+- 2b19213 fix: Improve error handling when fetching reports
+- e3f6e96 fix: Improve error handling when fetching issues
+- e7ef4ce fix: Add graphql error handling convenience function
+
 ## [0.19.2](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.19.1..v0.19.2)
 
+- 6fc4dae chore(release): v0.19.2
 - 5d8408b fix: Instead of fetching graphql.CiJobTrace do not treat job log 404 as error
 
 ## [0.19.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.19.0..v0.19.1)
