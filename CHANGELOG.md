@@ -1,7 +1,12 @@
 # Changelog
 
+## [0.19.4](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.19.3..v0.19.4)
+
+- c9cb77f fix: Prevent more potential graphql data nil pointer dereferences
+
 ## [0.19.3](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.19.2..v0.19.3)
 
+- 0ab66c0 chore(release): v0.19.3
 - c9a8b3a fix: GraphQL handleError log attrs
 - 4420f19 fix: Prevent some possible graphql nil pointer dereferences
 - f69f9c2 fix: Improve error handling when fetching pipelines
