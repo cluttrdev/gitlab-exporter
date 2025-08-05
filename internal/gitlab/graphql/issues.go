@@ -155,8 +155,11 @@ func (c *Client) getProjectsIssues(ctx context.Context, projectIds []string, opt
 			break
 		}
 
-		for _, project_ := range data.GetProjects().GetNodes() {
-			for _, issue_ := range project_.GetIssues().GetNodes() {
+		for _, project_ := range data.Projects.Nodes {
+			if project_.Issues == nil {
+				continue
+			}
+			for _, issue_ := range project_.Issues.Nodes {
 				issue := IssueFields{
 					IssueReferenceFields: issue_.IssueReferenceFields,
 					Project:              project_.ProjectReferenceFields,
@@ -167,10 +170,10 @@ func (c *Client) getProjectsIssues(ctx context.Context, projectIds []string, opt
 				issues = append(issues, issue)
 			}
 
-			if project_.GetIssues().GetPageInfo().HasNextPage {
+			if project_.Issues.PageInfo.HasNextPage {
 				opts_ := opts
-				opts_.endCursor = project_.GetIssues().GetPageInfo().EndCursor
-				issues_, err := c.getProjectIssues(ctx, project_.GetFullPath(), opts_)
+				opts_.endCursor = project_.Issues.PageInfo.EndCursor
+				issues_, err := c.getProjectIssues(ctx, project_.FullPath, opts_)
 				if err != nil {
 					return nil, err
 				}
@@ -178,7 +181,7 @@ func (c *Client) getProjectsIssues(ctx context.Context, projectIds []string, opt
 			}
 		}
 
-		if !data.GetProjects().GetPageInfo().HasNextPage {
+		if !data.Projects.PageInfo.HasNextPage {
 			break
 		}
 
@@ -213,7 +216,7 @@ func (c *Client) getProjectIssues(ctx context.Context, projectPath string, opts 
 			break
 		}
 
-		for _, issue_ := range project_.GetIssues().GetNodes() {
+		for _, issue_ := range project_.Issues.Nodes {
 			issue := IssueFields{
 				IssueReferenceFields: issue_.IssueReferenceFields,
 				Project:              project_.ProjectReferenceFields,
@@ -224,11 +227,11 @@ func (c *Client) getProjectIssues(ctx context.Context, projectPath string, opts 
 			issues = append(issues, issue)
 		}
 
-		if !project_.GetIssues().GetPageInfo().HasNextPage {
+		if !project_.Issues.PageInfo.HasNextPage {
 			break
 		}
 
-		opts.endCursor = project_.GetIssues().GetPageInfo().EndCursor
+		opts.endCursor = project_.Issues.PageInfo.EndCursor
 	}
 
 	return issues, err

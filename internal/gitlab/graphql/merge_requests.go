@@ -300,6 +300,9 @@ outerLoop:
 		}
 
 		for _, project_ := range data.Projects.Nodes {
+			if project_.MergeRequests == nil {
+				continue
+			}
 			for _, mergeRequest_ := range project_.MergeRequests.Nodes {
 				mergeRequest := MergeRequestFields{
 					MergeRequestReferenceFields: mergeRequest_.MergeRequestReferenceFields,
@@ -577,6 +580,9 @@ outerLoop:
 		}
 
 		for _, project_ := range data.Projects.Nodes {
+			if project_.MergeRequests == nil {
+				continue
+			}
 			for _, mr_ := range project_.MergeRequests.Nodes {
 				for _, note_ := range mr_.Notes.Nodes {
 					note := MergeRequestNoteFields{
@@ -652,6 +658,9 @@ outerLoop:
 		project_ := data.Project
 		if project_ == nil {
 			err = fmt.Errorf("project not found: %v", projectPath)
+			break
+		}
+		if project_.MergeRequests == nil {
 			break
 		}
 

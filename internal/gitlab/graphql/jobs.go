@@ -266,7 +266,13 @@ outerLoop:
 		}
 
 		for _, project_ := range data.Projects.Nodes {
+			if project_.Pipelines == nil {
+				continue
+			}
 			for _, pipeline_ := range project_.Pipelines.Nodes {
+				if pipeline_.Jobs == nil {
+					continue
+				}
 				for _, job_ := range pipeline_.Jobs.Nodes {
 					jf := JobFields{
 						JobReferenceFields: job_.JobReferenceFields,
@@ -354,6 +360,9 @@ outerLoop:
 		}
 
 		for _, pipeline_ := range project_.Pipelines.Nodes {
+			if pipeline_.Jobs == nil {
+				continue
+			}
 			for _, job_ := range pipeline_.Jobs.Nodes {
 				jf := JobFields{
 					JobReferenceFields: job_.JobReferenceFields,
