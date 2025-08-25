@@ -25,3 +25,5 @@ bindings:
     type: string
   NoteID:
     type: string
+  UserID:
+    type: string

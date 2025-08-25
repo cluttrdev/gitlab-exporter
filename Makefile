@@ -17,6 +17,10 @@ vet: ## Examine code for suspicious constructs
 	go vet ${PKG}/...
 
 .PHONY: graphql
+graphql-schema: ## Generate the GitLab GraphQL schema
+	go tool -modfile go.tool.mod gqlfetch --endpoint https://gitlab.com/api/graphql > internal/gitlab/graphql/spec/schema.graphql
+
+.PHONY: graphql
 graphql: ## Generate the GitLab GraphQL API client code
 	go tool -modfile go.tool.mod genqlient internal/gitlab/graphql/genqlient.yaml
 

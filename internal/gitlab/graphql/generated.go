@@ -114,12 +114,12 @@ const (
 	DetailedMergeStatusLockedPaths DetailedMergeStatus = "LOCKED_PATHS"
 	// Merge request includes locked LFS files.
 	DetailedMergeStatusLockedLfsFiles DetailedMergeStatus = "LOCKED_LFS_FILES"
-	// All security policies must be evaluated.
-	DetailedMergeStatusSecurityPoliciesEvaluating DetailedMergeStatus = "SECURITY_POLICIES_EVALUATING"
 	// Merge request may not be merged until after the specified time.
 	DetailedMergeStatusMergeTime DetailedMergeStatus = "MERGE_TIME"
 	// All policy rules must be satisfied.
 	DetailedMergeStatusSecurityPoliciesViolations DetailedMergeStatus = "SECURITY_POLICIES_VIOLATIONS"
+	// Merge request title does not match required regex.
+	DetailedMergeStatusTitleNotMatching DetailedMergeStatus = "TITLE_NOT_MATCHING"
 	// Indicates a reviewer has requested changes.
 	DetailedMergeStatusRequestedChanges DetailedMergeStatus = "REQUESTED_CHANGES"
 )
@@ -144,9 +144,9 @@ var AllDetailedMergeStatus = []DetailedMergeStatus{
 	DetailedMergeStatusApprovalsSyncing,
 	DetailedMergeStatusLockedPaths,
 	DetailedMergeStatusLockedLfsFiles,
-	DetailedMergeStatusSecurityPoliciesEvaluating,
 	DetailedMergeStatusMergeTime,
 	DetailedMergeStatusSecurityPoliciesViolations,
+	DetailedMergeStatusTitleNotMatching,
 	DetailedMergeStatusRequestedChanges,
 }
 
@@ -362,15 +362,13 @@ const (
 	IssueTypeRequirement IssueType = "REQUIREMENT"
 	// Task issue type
 	IssueTypeTask IssueType = "TASK"
-	// Objective issue type. Available only when feature flag `okrs_mvc` is enabled.
-	// Introduced in GitLab 15.6: **Status**: Experiment.
+	// Ticket issue type
+	IssueTypeTicket IssueType = "TICKET"
+	// Objective issue type. Available only when feature flag `okrs_mvc` is enabled. Introduced in GitLab 15.6: **Status**: Experiment.
 	IssueTypeObjective IssueType = "OBJECTIVE"
-	// Key Result issue type. Available only when feature flag `okrs_mvc` is enabled.
-	// Introduced in GitLab 15.7: **Status**: Experiment.
+	// Key Result issue type. Available only when feature flag `okrs_mvc` is enabled. Introduced in GitLab 15.7: **Status**: Experiment.
 	IssueTypeKeyResult IssueType = "KEY_RESULT"
-	// Epic issue type. Available only when feature epics is available and the
-	// feature flag `work_item_epics` is enabled. Introduced in GitLab 16.7:
-	// **Status**: Experiment.
+	// Epic issue type. Available only when feature epics is available. Introduced in GitLab 16.7: **Status**: Experiment.
 	IssueTypeEpic IssueType = "EPIC"
 )
 
@@ -380,6 +378,7 @@ var AllIssueType = []IssueType{
 	IssueTypeTestCase,
 	IssueTypeRequirement,
 	IssueTypeTask,
+	IssueTypeTicket,
 	IssueTypeObjective,
 	IssueTypeKeyResult,
 	IssueTypeEpic,
@@ -793,7 +792,7 @@ type MergeRequestFieldsCore struct {
 	MergedAt *time.Time `json:"mergedAt"`
 	// Timestamp of when the merge request was closed, null if not closed.
 	ClosedAt *time.Time `json:"closedAt"`
-	// Name or title of this object.
+	// Name or title of the object.
 	Name *string `json:"name"`
 	// Title of the merge request.
 	Title string `json:"title"`
@@ -898,9 +897,9 @@ type MergeRequestFieldsExtra struct {
 	MergeCommitSha *string `json:"mergeCommitSha"`
 	// Rebase commit SHA of the merge request.
 	RebaseCommitSha *string `json:"rebaseCommitSha"`
-	// References of the base SHA, the head SHA, and the start SHA for this merge request.
+	// References of the base SHA, the head SHA, and the start SHA for the merge request.
 	DiffRefs *MergeRequestFieldsExtraDiffRefs `json:"diffRefs"`
-	// Summary of which files were changed in this merge request.
+	// Summary of which files were changed in the merge request.
 	DiffStatsSummary *MergeRequestFieldsExtraDiffStatsSummary `json:"diffStatsSummary"`
 	// Number of commits in the merge request.
 	CommitCount *int `json:"commitCount"`
@@ -1079,7 +1078,7 @@ func (v *MergeRequestFieldsExtraMilestoneProject) __premarshalJSON() (*__premars
 
 // MergeRequestFieldsParticipants includes the GraphQL fields of MergeRequest requested by the fragment MergeRequestFieldsParticipants.
 type MergeRequestFieldsParticipants struct {
-	// User who created this merge request.
+	// User who created the merge request.
 	Author *MergeRequestFieldsParticipantsAuthorMergeRequestAuthor `json:"author"`
 	// Assignees of the merge request.
 	Assignees *MergeRequestFieldsParticipantsAssigneesMergeRequestAssigneeConnection `json:"assignees"`
@@ -1087,7 +1086,7 @@ type MergeRequestFieldsParticipants struct {
 	Reviewers *MergeRequestFieldsParticipantsReviewersMergeRequestReviewerConnection `json:"reviewers"`
 	// Users who approved the merge request.
 	ApprovedBy *MergeRequestFieldsParticipantsApprovedByUserCoreConnection `json:"approvedBy"`
-	// User who merged this merge request or set it to auto-merge.
+	// User who merged the merge request or set it to auto-merge.
 	MergeUser *MergeRequestFieldsParticipantsMergeUserUserCore `json:"mergeUser"`
 }
 
@@ -1792,9 +1791,7 @@ type PipelineFieldsCore struct {
 	Ref *string `json:"ref"`
 	// Reference path to the branch from which the pipeline was triggered.
 	RefPath *string `json:"refPath"`
-	// Status of the pipeline (CREATED, WAITING_FOR_RESOURCE, PREPARING,
-	// WAITING_FOR_CALLBACK, PENDING, RUNNING, FAILED, SUCCESS, CANCELED, CANCELING,
-	// SKIPPED, MANUAL, SCHEDULED)
+	// Status of the pipeline (CREATED, WAITING_FOR_RESOURCE, PREPARING, WAITING_FOR_CALLBACK, PENDING, RUNNING, FAILED, SUCCESS, CANCELED, CANCELING, SKIPPED, MANUAL, SCHEDULED)
 	Status PipelineStatusEnum `json:"status"`
 	// Source of the pipeline.
 	Source *string `json:"source"`
@@ -2520,9 +2517,9 @@ var AllPipelineStatusEnum = []PipelineStatusEnum{
 
 // ProjectFieldsCore includes the GraphQL fields of Project requested by the fragment ProjectFieldsCore.
 type ProjectFieldsCore struct {
-	// Name of the project (without namespace).
+	// Name of the project without the namespace.
 	Name string `json:"name"`
-	// Full name of the project with its namespace.
+	// Name of the project including the namespace.
 	NameWithNamespace string `json:"nameWithNamespace"`
 	// Path of the project.
 	Path string `json:"path"`
@@ -2602,7 +2599,7 @@ func (v *ProjectFieldsCoreRepository) GetRootRef() *string { return v.RootRef }
 type ProjectFieldsCoreStatisticsProjectStatistics struct {
 	// Build artifacts size of the project in bytes.
 	BuildArtifactsSize float64 `json:"buildArtifactsSize"`
-	// Container Registry size of the project in bytes.
+	// Container registry size of the project in bytes.
 	ContainerRegistrySize *float64 `json:"containerRegistrySize"`
 	// Large File Storage (LFS) object size of the project in bytes.
 	LfsObjectsSize float64 `json:"lfsObjectsSize"`
@@ -2795,18 +2792,17 @@ type UserReferenceFields interface {
 	// GetId returns the interface-field "id" from its implementation.
 	// The GraphQL interface field's documentation follows.
 	//
-	// ID of the user.
+	// Representation of a GitLab user.
 	GetId() string
 	// GetUsername returns the interface-field "username" from its implementation.
 	// The GraphQL interface field's documentation follows.
 	//
-	// Username of the user. Unique within this instance of GitLab.
+	// Representation of a GitLab user.
 	GetUsername() string
 	// GetName returns the interface-field "name" from its implementation.
 	// The GraphQL interface field's documentation follows.
 	//
-	// Human-readable name of the user. Returns `****` if the user is a project bot
-	// and the requester does not have permission to view the project.
+	// Representation of a GitLab user.
 	GetName() string
 }
 
@@ -2948,12 +2944,11 @@ func __marshalUserReferenceFields(v *UserReferenceFields) ([]byte, error) {
 //
 // Representation of a GitLab user.
 type UserReferenceFieldsAddOnUser struct {
-	// ID of the user.
+	// Representation of a GitLab user.
 	Id string `json:"id"`
-	// Username of the user. Unique within this instance of GitLab.
+	// Representation of a GitLab user.
 	Username string `json:"username"`
-	// Human-readable name of the user. Returns `****` if the user is a project bot
-	// and the requester does not have permission to view the project.
+	// Representation of a GitLab user.
 	Name string `json:"name"`
 }
 
@@ -2971,12 +2966,11 @@ func (v *UserReferenceFieldsAddOnUser) GetName() string { return v.Name }
 //
 // Representation of a GitLab user.
 type UserReferenceFieldsAutocompletedUser struct {
-	// ID of the user.
+	// Representation of a GitLab user.
 	Id string `json:"id"`
-	// Username of the user. Unique within this instance of GitLab.
+	// Representation of a GitLab user.
 	Username string `json:"username"`
-	// Human-readable name of the user. Returns `****` if the user is a project bot
-	// and the requester does not have permission to view the project.
+	// Representation of a GitLab user.
 	Name string `json:"name"`
 }
 
@@ -2994,12 +2988,11 @@ func (v *UserReferenceFieldsAutocompletedUser) GetName() string { return v.Name 
 //
 // Representation of a GitLab user.
 type UserReferenceFieldsCurrentUser struct {
-	// ID of the user.
+	// Representation of a GitLab user.
 	Id string `json:"id"`
-	// Username of the user. Unique within this instance of GitLab.
+	// Representation of a GitLab user.
 	Username string `json:"username"`
-	// Human-readable name of the user. Returns `****` if the user is a project bot
-	// and the requester does not have permission to view the project.
+	// Representation of a GitLab user.
 	Name string `json:"name"`
 }
 
@@ -3017,12 +3010,11 @@ func (v *UserReferenceFieldsCurrentUser) GetName() string { return v.Name }
 //
 // Representation of a GitLab user.
 type UserReferenceFieldsMergeRequestAssignee struct {
-	// ID of the user.
+	// Representation of a GitLab user.
 	Id string `json:"id"`
-	// Username of the user. Unique within this instance of GitLab.
+	// Representation of a GitLab user.
 	Username string `json:"username"`
-	// Human-readable name of the user. Returns `****` if the user is a project bot
-	// and the requester does not have permission to view the project.
+	// Representation of a GitLab user.
 	Name string `json:"name"`
 }
 
@@ -3040,12 +3032,11 @@ func (v *UserReferenceFieldsMergeRequestAssignee) GetName() string { return v.Na
 //
 // Representation of a GitLab user.
 type UserReferenceFieldsMergeRequestAuthor struct {
-	// ID of the user.
+	// Representation of a GitLab user.
 	Id string `json:"id"`
-	// Username of the user. Unique within this instance of GitLab.
+	// Representation of a GitLab user.
 	Username string `json:"username"`
-	// Human-readable name of the user. Returns `****` if the user is a project bot
-	// and the requester does not have permission to view the project.
+	// Representation of a GitLab user.
 	Name string `json:"name"`
 }
 
@@ -3063,12 +3054,11 @@ func (v *UserReferenceFieldsMergeRequestAuthor) GetName() string { return v.Name
 //
 // Representation of a GitLab user.
 type UserReferenceFieldsMergeRequestParticipant struct {
-	// ID of the user.
+	// Representation of a GitLab user.
 	Id string `json:"id"`
-	// Username of the user. Unique within this instance of GitLab.
+	// Representation of a GitLab user.
 	Username string `json:"username"`
-	// Human-readable name of the user. Returns `****` if the user is a project bot
-	// and the requester does not have permission to view the project.
+	// Representation of a GitLab user.
 	Name string `json:"name"`
 }
 
@@ -3086,12 +3076,11 @@ func (v *UserReferenceFieldsMergeRequestParticipant) GetName() string { return v
 //
 // Representation of a GitLab user.
 type UserReferenceFieldsMergeRequestReviewer struct {
-	// ID of the user.
+	// Representation of a GitLab user.
 	Id string `json:"id"`
-	// Username of the user. Unique within this instance of GitLab.
+	// Representation of a GitLab user.
 	Username string `json:"username"`
-	// Human-readable name of the user. Returns `****` if the user is a project bot
-	// and the requester does not have permission to view the project.
+	// Representation of a GitLab user.
 	Name string `json:"name"`
 }
 
@@ -3109,12 +3098,11 @@ func (v *UserReferenceFieldsMergeRequestReviewer) GetName() string { return v.Na
 //
 // Representation of a GitLab user.
 type UserReferenceFieldsUserCore struct {
-	// ID of the user.
+	// Representation of a GitLab user.
 	Id string `json:"id"`
-	// Username of the user. Unique within this instance of GitLab.
+	// Representation of a GitLab user.
 	Username string `json:"username"`
-	// Human-readable name of the user. Returns `****` if the user is a project bot
-	// and the requester does not have permission to view the project.
+	// Representation of a GitLab user.
 	Name string `json:"name"`
 }
 
@@ -3580,7 +3568,7 @@ func (v *getProjectIdPipelineProjectsProjectConnection) GetNodes() []*getProject
 // getProjectIdPipelineProjectsProjectConnectionNodesProject includes the requested fields of the GraphQL type Project.
 type getProjectIdPipelineProjectsProjectConnectionNodesProject struct {
 	ProjectReferenceFields `json:"-"`
-	// Build pipeline of the project.
+	// Pipeline of the project. If no arguments are provided, returns the latest pipeline for the head commit on the default branch
 	Pipeline *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline `json:"pipeline"`
 }
 
@@ -5527,7 +5515,7 @@ func (v *getProjectMergeRequestsResponse) GetProject() *getProjectMergeRequestsP
 // getProjectPipelineDownstreamProject includes the requested fields of the GraphQL type Project.
 type getProjectPipelineDownstreamProject struct {
 	ProjectReferenceFields `json:"-"`
-	// Build pipeline of the project.
+	// Pipeline of the project. If no arguments are provided, returns the latest pipeline for the head commit on the default branch
 	Pipeline *getProjectPipelineDownstreamProjectPipeline `json:"pipeline"`
 }
 
@@ -5839,7 +5827,7 @@ func (v *getProjectPipelineDownstreamResponse) GetProject() *getProjectPipelineD
 // getProjectPipelineJobArtifactsProject includes the requested fields of the GraphQL type Project.
 type getProjectPipelineJobArtifactsProject struct {
 	ProjectReferenceFields `json:"-"`
-	// Build pipeline of the project.
+	// Pipeline of the project. If no arguments are provided, returns the latest pipeline for the head commit on the default branch
 	Pipeline *getProjectPipelineJobArtifactsProjectPipeline `json:"pipeline"`
 }
 
@@ -6212,7 +6200,7 @@ func (v *getProjectPipelineJobArtifactsResponse) GetProject() *getProjectPipelin
 // getProjectPipelineJobsArtifactsProject includes the requested fields of the GraphQL type Project.
 type getProjectPipelineJobsArtifactsProject struct {
 	ProjectReferenceFields `json:"-"`
-	// Build pipeline of the project.
+	// Pipeline of the project. If no arguments are provided, returns the latest pipeline for the head commit on the default branch
 	Pipeline *getProjectPipelineJobsArtifactsProjectPipeline `json:"pipeline"`
 }
 
@@ -6671,7 +6659,7 @@ func (v *getProjectPipelineJobsArtifactsResponse) GetProject() *getProjectPipeli
 // getProjectPipelineJobsProject includes the requested fields of the GraphQL type Project.
 type getProjectPipelineJobsProject struct {
 	ProjectReferenceFields `json:"-"`
-	// Build pipeline of the project.
+	// Pipeline of the project. If no arguments are provided, returns the latest pipeline for the head commit on the default branch
 	Pipeline *getProjectPipelineJobsProjectPipeline `json:"pipeline"`
 }
 
@@ -7148,7 +7136,7 @@ func (v *getProjectPipelineJobsResponse) GetProject() *getProjectPipelineJobsPro
 // getProjectPipelinesJobsProject includes the requested fields of the GraphQL type Project.
 type getProjectPipelinesJobsProject struct {
 	ProjectReferenceFields `json:"-"`
-	// Build pipelines of the project.
+	// Pipelines of the project.
 	Pipelines *getProjectPipelinesJobsProjectPipelinesPipelineConnection `json:"pipelines"`
 }
 
@@ -7715,7 +7703,7 @@ func (v *getProjectPipelinesJobsResponse) GetProject() *getProjectPipelinesJobsP
 // getProjectPipelinesProject includes the requested fields of the GraphQL type Project.
 type getProjectPipelinesProject struct {
 	ProjectReferenceFields `json:"-"`
-	// Build pipelines of the project.
+	// Pipelines of the project.
 	Pipelines *getProjectPipelinesProjectPipelinesPipelineConnection `json:"pipelines"`
 }
 
@@ -8128,7 +8116,7 @@ func (v *getProjectPipelinesResponse) GetProject() *getProjectPipelinesProject {
 // getProjectPipelinesTestReportSummaryProject includes the requested fields of the GraphQL type Project.
 type getProjectPipelinesTestReportSummaryProject struct {
 	ProjectReferenceFields `json:"-"`
-	// Build pipelines of the project.
+	// Pipelines of the project.
 	Pipelines *getProjectPipelinesTestReportSummaryProjectPipelinesPipelineConnection `json:"pipelines"`
 }
 
@@ -10224,7 +10212,7 @@ func (v *getProjectsPipelinesJobsProjectsProjectConnection) GetPageInfo() getPro
 // getProjectsPipelinesJobsProjectsProjectConnectionNodesProject includes the requested fields of the GraphQL type Project.
 type getProjectsPipelinesJobsProjectsProjectConnectionNodesProject struct {
 	ProjectReferenceFields `json:"-"`
-	// Build pipelines of the project.
+	// Pipelines of the project.
 	Pipelines *getProjectsPipelinesJobsProjectsProjectConnectionNodesProjectPipelinesPipelineConnection `json:"pipelines"`
 }
 
@@ -10879,7 +10867,7 @@ func (v *getProjectsPipelinesProjectsProjectConnection) GetPageInfo() getProject
 // getProjectsPipelinesProjectsProjectConnectionNodesProject includes the requested fields of the GraphQL type Project.
 type getProjectsPipelinesProjectsProjectConnectionNodesProject struct {
 	ProjectReferenceFields `json:"-"`
-	// Build pipelines of the project.
+	// Pipelines of the project.
 	Pipelines *getProjectsPipelinesProjectsProjectConnectionNodesProjectPipelinesPipelineConnection `json:"pipelines"`
 }
 
@@ -11384,7 +11372,7 @@ func (v *getProjectsPipelinesTestReportSummaryProjectsProjectConnection) GetPage
 // getProjectsPipelinesTestReportSummaryProjectsProjectConnectionNodesProject includes the requested fields of the GraphQL type Project.
 type getProjectsPipelinesTestReportSummaryProjectsProjectConnectionNodesProject struct {
 	ProjectReferenceFields `json:"-"`
-	// Build pipelines of the project.
+	// Pipelines of the project.
 	Pipelines *getProjectsPipelinesTestReportSummaryProjectsProjectConnectionNodesProjectPipelinesPipelineConnection `json:"pipelines"`
 }
 
@@ -12039,7 +12027,7 @@ type getProjectsProjectsProjectConnectionNodesProject struct {
 	// Namespace of the project.
 	Namespace         *getProjectsProjectsProjectConnectionNodesProjectNamespace `json:"namespace"`
 	ProjectFieldsCore `json:"-"`
-	// Build pipelines of the project.
+	// Pipelines of the project.
 	Pipelines *getProjectsProjectsProjectConnectionNodesProjectPipelinesPipelineConnection `json:"pipelines"`
 	// Merge requests of the project.
 	MergeRequests *getProjectsProjectsProjectConnectionNodesProjectMergeRequestsMergeRequestConnection `json:"mergeRequests"`
