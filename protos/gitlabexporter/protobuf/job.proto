@@ -24,25 +24,26 @@ message Job {
     string ref_path = 5;
     string status = 6;
     string failure_reason = 7;
+    int64 exit_code = 8;
     
-    JobTimestamps timestamps = 8;
-    google.protobuf.Duration queued_duration = 9;
-    google.protobuf.Duration duration = 10;
-    double coverage = 11;
+    JobTimestamps timestamps = 9;
+    google.protobuf.Duration queued_duration = 10;
+    google.protobuf.Duration duration = 11;
+    double coverage = 12;
 
-    string stage = 12;
-    repeated string tags = 13;
-    repeated JobProperty properties = 14;
+    string stage = 13;
+    repeated string tags = 14;
+    repeated JobProperty properties = 15;
 
-    bool allow_failure = 15;
-    bool manual = 16;
-    bool retried = 17;
-    bool retryable = 18;
+    bool allow_failure = 16;
+    bool manual = 17;
+    bool retried = 18;
+    bool retryable = 19;
 
-    JobKind kind = 19;
-    optional PipelineReference downstream_pipeline = 20;
+    JobKind kind = 20;
+    optional PipelineReference downstream_pipeline = 21;
 
-    RunnerReference runner = 21;
+    RunnerReference runner = 22;
 }
 
 message JobTimestamps {

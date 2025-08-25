@@ -26,6 +26,7 @@ func NewJob(job types.Job) *typespb.Job {
 		RefPath:       job.RefPath,
 		Status:        job.Status,
 		FailureReason: job.FailureReason,
+		ExitCode:      job.ExitCode,
 
 		Timestamps: &typespb.JobTimestamps{
 			CreatedAt:  timestamppb.New(valOrZero(job.CreatedAt)),

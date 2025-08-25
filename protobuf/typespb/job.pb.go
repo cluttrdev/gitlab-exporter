@@ -81,20 +81,21 @@ type Job struct {
 	RefPath            string                 `protobuf:"bytes,5,opt,name=ref_path,json=refPath,proto3" json:"ref_path,omitempty"`
 	Status             string                 `protobuf:"bytes,6,opt,name=status,proto3" json:"status,omitempty"`
 	FailureReason      string                 `protobuf:"bytes,7,opt,name=failure_reason,json=failureReason,proto3" json:"failure_reason,omitempty"`
-	Timestamps         *JobTimestamps         `protobuf:"bytes,8,opt,name=timestamps,proto3" json:"timestamps,omitempty"`
-	QueuedDuration     *durationpb.Duration   `protobuf:"bytes,9,opt,name=queued_duration,json=queuedDuration,proto3" json:"queued_duration,omitempty"`
-	Duration           *durationpb.Duration   `protobuf:"bytes,10,opt,name=duration,proto3" json:"duration,omitempty"`
-	Coverage           float64                `protobuf:"fixed64,11,opt,name=coverage,proto3" json:"coverage,omitempty"`
-	Stage              string                 `protobuf:"bytes,12,opt,name=stage,proto3" json:"stage,omitempty"`
-	Tags               []string               `protobuf:"bytes,13,rep,name=tags,proto3" json:"tags,omitempty"`
-	Properties         []*JobProperty         `protobuf:"bytes,14,rep,name=properties,proto3" json:"properties,omitempty"`
-	AllowFailure       bool                   `protobuf:"varint,15,opt,name=allow_failure,json=allowFailure,proto3" json:"allow_failure,omitempty"`
-	Manual             bool                   `protobuf:"varint,16,opt,name=manual,proto3" json:"manual,omitempty"`
-	Retried            bool                   `protobuf:"varint,17,opt,name=retried,proto3" json:"retried,omitempty"`
-	Retryable          bool                   `protobuf:"varint,18,opt,name=retryable,proto3" json:"retryable,omitempty"`
-	Kind               JobKind                `protobuf:"varint,19,opt,name=kind,proto3,enum=gitlabexporter.protobuf.JobKind" json:"kind,omitempty"`
-	DownstreamPipeline *PipelineReference     `protobuf:"bytes,20,opt,name=downstream_pipeline,json=downstreamPipeline,proto3,oneof" json:"downstream_pipeline,omitempty"`
-	Runner             *RunnerReference       `protobuf:"bytes,21,opt,name=runner,proto3" json:"runner,omitempty"`
+	ExitCode           int64                  `protobuf:"varint,8,opt,name=exit_code,json=exitCode,proto3" json:"exit_code,omitempty"`
+	Timestamps         *JobTimestamps         `protobuf:"bytes,9,opt,name=timestamps,proto3" json:"timestamps,omitempty"`
+	QueuedDuration     *durationpb.Duration   `protobuf:"bytes,10,opt,name=queued_duration,json=queuedDuration,proto3" json:"queued_duration,omitempty"`
+	Duration           *durationpb.Duration   `protobuf:"bytes,11,opt,name=duration,proto3" json:"duration,omitempty"`
+	Coverage           float64                `protobuf:"fixed64,12,opt,name=coverage,proto3" json:"coverage,omitempty"`
+	Stage              string                 `protobuf:"bytes,13,opt,name=stage,proto3" json:"stage,omitempty"`
+	Tags               []string               `protobuf:"bytes,14,rep,name=tags,proto3" json:"tags,omitempty"`
+	Properties         []*JobProperty         `protobuf:"bytes,15,rep,name=properties,proto3" json:"properties,omitempty"`
+	AllowFailure       bool                   `protobuf:"varint,16,opt,name=allow_failure,json=allowFailure,proto3" json:"allow_failure,omitempty"`
+	Manual             bool                   `protobuf:"varint,17,opt,name=manual,proto3" json:"manual,omitempty"`
+	Retried            bool                   `protobuf:"varint,18,opt,name=retried,proto3" json:"retried,omitempty"`
+	Retryable          bool                   `protobuf:"varint,19,opt,name=retryable,proto3" json:"retryable,omitempty"`
+	Kind               JobKind                `protobuf:"varint,20,opt,name=kind,proto3,enum=gitlabexporter.protobuf.JobKind" json:"kind,omitempty"`
+	DownstreamPipeline *PipelineReference     `protobuf:"bytes,21,opt,name=downstream_pipeline,json=downstreamPipeline,proto3,oneof" json:"downstream_pipeline,omitempty"`
+	Runner             *RunnerReference       `protobuf:"bytes,22,opt,name=runner,proto3" json:"runner,omitempty"`
 	unknownFields      protoimpl.UnknownFields
 	sizeCache          protoimpl.SizeCache
 }
@@ -176,6 +177,13 @@ func (x *Job) GetFailureReason() string {
 		return x.FailureReason
 	}
 	return ""
+}
+
+func (x *Job) GetExitCode() int64 {
+	if x != nil {
+		return x.ExitCode
+	}
+	return 0
 }
 
 func (x *Job) GetTimestamps() *JobTimestamps {
@@ -408,7 +416,7 @@ var File_gitlabexporter_protobuf_job_proto protoreflect.FileDescriptor
 
 const file_gitlabexporter_protobuf_job_proto_rawDesc = "" +
 	"\n" +
-	"!gitlabexporter/protobuf/job.proto\x12\x17gitlabexporter.protobuf\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/duration.proto\x1a(gitlabexporter/protobuf/references.proto\"\x93\a\n" +
+	"!gitlabexporter/protobuf/job.proto\x12\x17gitlabexporter.protobuf\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1egoogle/protobuf/duration.proto\x1a(gitlabexporter/protobuf/references.proto\"\xb0\a\n" +
 	"\x03Job\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12F\n" +
@@ -416,26 +424,27 @@ const file_gitlabexporter_protobuf_job_proto_rawDesc = "" +
 	"\x03ref\x18\x04 \x01(\tR\x03ref\x12\x19\n" +
 	"\bref_path\x18\x05 \x01(\tR\arefPath\x12\x16\n" +
 	"\x06status\x18\x06 \x01(\tR\x06status\x12%\n" +
-	"\x0efailure_reason\x18\a \x01(\tR\rfailureReason\x12F\n" +
+	"\x0efailure_reason\x18\a \x01(\tR\rfailureReason\x12\x1b\n" +
+	"\texit_code\x18\b \x01(\x03R\bexitCode\x12F\n" +
 	"\n" +
-	"timestamps\x18\b \x01(\v2&.gitlabexporter.protobuf.JobTimestampsR\n" +
+	"timestamps\x18\t \x01(\v2&.gitlabexporter.protobuf.JobTimestampsR\n" +
 	"timestamps\x12B\n" +
-	"\x0fqueued_duration\x18\t \x01(\v2\x19.google.protobuf.DurationR\x0equeuedDuration\x125\n" +
-	"\bduration\x18\n" +
-	" \x01(\v2\x19.google.protobuf.DurationR\bduration\x12\x1a\n" +
-	"\bcoverage\x18\v \x01(\x01R\bcoverage\x12\x14\n" +
-	"\x05stage\x18\f \x01(\tR\x05stage\x12\x12\n" +
-	"\x04tags\x18\r \x03(\tR\x04tags\x12D\n" +
+	"\x0fqueued_duration\x18\n" +
+	" \x01(\v2\x19.google.protobuf.DurationR\x0equeuedDuration\x125\n" +
+	"\bduration\x18\v \x01(\v2\x19.google.protobuf.DurationR\bduration\x12\x1a\n" +
+	"\bcoverage\x18\f \x01(\x01R\bcoverage\x12\x14\n" +
+	"\x05stage\x18\r \x01(\tR\x05stage\x12\x12\n" +
+	"\x04tags\x18\x0e \x03(\tR\x04tags\x12D\n" +
 	"\n" +
-	"properties\x18\x0e \x03(\v2$.gitlabexporter.protobuf.JobPropertyR\n" +
+	"properties\x18\x0f \x03(\v2$.gitlabexporter.protobuf.JobPropertyR\n" +
 	"properties\x12#\n" +
-	"\rallow_failure\x18\x0f \x01(\bR\fallowFailure\x12\x16\n" +
-	"\x06manual\x18\x10 \x01(\bR\x06manual\x12\x18\n" +
-	"\aretried\x18\x11 \x01(\bR\aretried\x12\x1c\n" +
-	"\tretryable\x18\x12 \x01(\bR\tretryable\x124\n" +
-	"\x04kind\x18\x13 \x01(\x0e2 .gitlabexporter.protobuf.JobKindR\x04kind\x12`\n" +
-	"\x13downstream_pipeline\x18\x14 \x01(\v2*.gitlabexporter.protobuf.PipelineReferenceH\x00R\x12downstreamPipeline\x88\x01\x01\x12@\n" +
-	"\x06runner\x18\x15 \x01(\v2(.gitlabexporter.protobuf.RunnerReferenceR\x06runnerB\x16\n" +
+	"\rallow_failure\x18\x10 \x01(\bR\fallowFailure\x12\x16\n" +
+	"\x06manual\x18\x11 \x01(\bR\x06manual\x12\x18\n" +
+	"\aretried\x18\x12 \x01(\bR\aretried\x12\x1c\n" +
+	"\tretryable\x18\x13 \x01(\bR\tretryable\x124\n" +
+	"\x04kind\x18\x14 \x01(\x0e2 .gitlabexporter.protobuf.JobKindR\x04kind\x12`\n" +
+	"\x13downstream_pipeline\x18\x15 \x01(\v2*.gitlabexporter.protobuf.PipelineReferenceH\x00R\x12downstreamPipeline\x88\x01\x01\x12@\n" +
+	"\x06runner\x18\x16 \x01(\v2(.gitlabexporter.protobuf.RunnerReferenceR\x06runnerB\x16\n" +
 	"\x14_downstream_pipeline\"\xb4\x02\n" +
 	"\rJobTimestamps\x129\n" +
 	"\n" +

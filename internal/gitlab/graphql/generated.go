@@ -587,6 +587,8 @@ type JobFieldsExtra struct {
 	Stage *JobFieldsExtraStageCiStage `json:"stage"`
 	// Tags for the current job.
 	Tags []string `json:"tags"`
+	// Exit code of the job. Available for jobs that started after upgrading to GitLab 16.10 and failed with an exit code.
+	ExitCode *int `json:"exitCode"`
 	// Whether the job has a manual action.
 	ManualJob *bool `json:"manualJob"`
 	// Indicates the job can be retried.
@@ -606,6 +608,9 @@ func (v *JobFieldsExtra) GetStage() *JobFieldsExtraStageCiStage { return v.Stage
 
 // GetTags returns JobFieldsExtra.Tags, and is useful for accessing the field via an interface.
 func (v *JobFieldsExtra) GetTags() []string { return v.Tags }
+
+// GetExitCode returns JobFieldsExtra.ExitCode, and is useful for accessing the field via an interface.
+func (v *JobFieldsExtra) GetExitCode() *int { return v.ExitCode }
 
 // GetManualJob returns JobFieldsExtra.ManualJob, and is useful for accessing the field via an interface.
 func (v *JobFieldsExtra) GetManualJob() *bool { return v.ManualJob }
@@ -6907,6 +6912,11 @@ func (v *getProjectPipelineJobsProjectPipelineJobsCiJobConnectionNodesCiJob) Get
 	return v.JobFieldsExtra.Tags
 }
 
+// GetExitCode returns getProjectPipelineJobsProjectPipelineJobsCiJobConnectionNodesCiJob.ExitCode, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineJobsProjectPipelineJobsCiJobConnectionNodesCiJob) GetExitCode() *int {
+	return v.JobFieldsExtra.ExitCode
+}
+
 // GetManualJob returns getProjectPipelineJobsProjectPipelineJobsCiJobConnectionNodesCiJob.ManualJob, and is useful for accessing the field via an interface.
 func (v *getProjectPipelineJobsProjectPipelineJobsCiJobConnectionNodesCiJob) GetManualJob() *bool {
 	return v.JobFieldsExtra.ManualJob
@@ -7007,6 +7017,8 @@ type __premarshalgetProjectPipelineJobsProjectPipelineJobsCiJobConnectionNodesCi
 
 	Tags []string `json:"tags"`
 
+	ExitCode *int `json:"exitCode"`
+
 	ManualJob *bool `json:"manualJob"`
 
 	Retryable bool `json:"retryable"`
@@ -7048,6 +7060,7 @@ func (v *getProjectPipelineJobsProjectPipelineJobsCiJobConnectionNodesCiJob) __p
 	retval.FailureMessage = v.JobFieldsCore.FailureMessage
 	retval.Stage = v.JobFieldsExtra.Stage
 	retval.Tags = v.JobFieldsExtra.Tags
+	retval.ExitCode = v.JobFieldsExtra.ExitCode
 	retval.ManualJob = v.JobFieldsExtra.ManualJob
 	retval.Retryable = v.JobFieldsExtra.Retryable
 	retval.Retried = v.JobFieldsExtra.Retried
@@ -7409,6 +7422,11 @@ func (v *getProjectPipelinesJobsProjectPipelinesPipelineConnectionNodesPipelineJ
 	return v.JobFieldsExtra.Tags
 }
 
+// GetExitCode returns getProjectPipelinesJobsProjectPipelinesPipelineConnectionNodesPipelineJobsCiJobConnectionNodesCiJob.ExitCode, and is useful for accessing the field via an interface.
+func (v *getProjectPipelinesJobsProjectPipelinesPipelineConnectionNodesPipelineJobsCiJobConnectionNodesCiJob) GetExitCode() *int {
+	return v.JobFieldsExtra.ExitCode
+}
+
 // GetManualJob returns getProjectPipelinesJobsProjectPipelinesPipelineConnectionNodesPipelineJobsCiJobConnectionNodesCiJob.ManualJob, and is useful for accessing the field via an interface.
 func (v *getProjectPipelinesJobsProjectPipelinesPipelineConnectionNodesPipelineJobsCiJobConnectionNodesCiJob) GetManualJob() *bool {
 	return v.JobFieldsExtra.ManualJob
@@ -7509,6 +7527,8 @@ type __premarshalgetProjectPipelinesJobsProjectPipelinesPipelineConnectionNodesP
 
 	Tags []string `json:"tags"`
 
+	ExitCode *int `json:"exitCode"`
+
 	ManualJob *bool `json:"manualJob"`
 
 	Retryable bool `json:"retryable"`
@@ -7550,6 +7570,7 @@ func (v *getProjectPipelinesJobsProjectPipelinesPipelineConnectionNodesPipelineJ
 	retval.FailureMessage = v.JobFieldsCore.FailureMessage
 	retval.Stage = v.JobFieldsExtra.Stage
 	retval.Tags = v.JobFieldsExtra.Tags
+	retval.ExitCode = v.JobFieldsExtra.ExitCode
 	retval.ManualJob = v.JobFieldsExtra.ManualJob
 	retval.Retryable = v.JobFieldsExtra.Retryable
 	retval.Retried = v.JobFieldsExtra.Retried
@@ -10487,6 +10508,11 @@ func (v *getProjectsPipelinesJobsProjectsProjectConnectionNodesProjectPipelinesP
 	return v.JobFieldsExtra.Tags
 }
 
+// GetExitCode returns getProjectsPipelinesJobsProjectsProjectConnectionNodesProjectPipelinesPipelineConnectionNodesPipelineJobsCiJobConnectionNodesCiJob.ExitCode, and is useful for accessing the field via an interface.
+func (v *getProjectsPipelinesJobsProjectsProjectConnectionNodesProjectPipelinesPipelineConnectionNodesPipelineJobsCiJobConnectionNodesCiJob) GetExitCode() *int {
+	return v.JobFieldsExtra.ExitCode
+}
+
 // GetManualJob returns getProjectsPipelinesJobsProjectsProjectConnectionNodesProjectPipelinesPipelineConnectionNodesPipelineJobsCiJobConnectionNodesCiJob.ManualJob, and is useful for accessing the field via an interface.
 func (v *getProjectsPipelinesJobsProjectsProjectConnectionNodesProjectPipelinesPipelineConnectionNodesPipelineJobsCiJobConnectionNodesCiJob) GetManualJob() *bool {
 	return v.JobFieldsExtra.ManualJob
@@ -10587,6 +10613,8 @@ type __premarshalgetProjectsPipelinesJobsProjectsProjectConnectionNodesProjectPi
 
 	Tags []string `json:"tags"`
 
+	ExitCode *int `json:"exitCode"`
+
 	ManualJob *bool `json:"manualJob"`
 
 	Retryable bool `json:"retryable"`
@@ -10628,6 +10656,7 @@ func (v *getProjectsPipelinesJobsProjectsProjectConnectionNodesProjectPipelinesP
 	retval.FailureMessage = v.JobFieldsCore.FailureMessage
 	retval.Stage = v.JobFieldsExtra.Stage
 	retval.Tags = v.JobFieldsExtra.Tags
+	retval.ExitCode = v.JobFieldsExtra.ExitCode
 	retval.ManualJob = v.JobFieldsExtra.ManualJob
 	retval.Retryable = v.JobFieldsExtra.Retryable
 	retval.Retried = v.JobFieldsExtra.Retried
@@ -13101,6 +13130,7 @@ fragment JobFieldsExtra on CiJob {
 		name
 	}
 	tags
+	exitCode
 	manualJob
 	retryable
 	retried
@@ -13409,6 +13439,7 @@ fragment JobFieldsExtra on CiJob {
 		name
 	}
 	tags
+	exitCode
 	manualJob
 	retryable
 	retried
@@ -14172,6 +14203,7 @@ fragment JobFieldsExtra on CiJob {
 		name
 	}
 	tags
+	exitCode
 	manualJob
 	retryable
 	retried

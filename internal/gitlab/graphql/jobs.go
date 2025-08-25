@@ -99,6 +99,8 @@ func ConvertJob(jf JobFields) (types.Job, error) {
 		Stage: stage,
 		Tags:  jf.Tags,
 
+		ExitCode: int64(valOr(jf.ExitCode, -1)),
+
 		QueuedDuration: time.Duration(valOrZero(jf.QueuedDuration) * float64(time.Second)),
 		Duration:       time.Duration(valOrZero(jf.Duration) * int(time.Second)),
 		Coverage:       valOrZero(jf.Coverage),

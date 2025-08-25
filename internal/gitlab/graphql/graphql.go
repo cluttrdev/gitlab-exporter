@@ -83,6 +83,13 @@ func valOrZero[T any](t *T) T {
 	return v
 }
 
+func valOr[T any](t *T, v T) T {
+	if t != nil {
+		return *t
+	}
+	return v
+}
+
 func ptr[T any](v T) *T {
 	return &v
 }

@@ -25,6 +25,8 @@ fragment JobFieldsExtra on CiJob {
 
     tags
 
+    exitCode
+
     manualJob
     retryable
     retried

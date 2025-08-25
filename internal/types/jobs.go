@@ -43,6 +43,8 @@ type Job struct {
 	Tags       []string
 	Properties []JobLogProperty
 
+	ExitCode int64
+
 	AllowFailure bool
 	Manual       bool
 	Retried      bool
