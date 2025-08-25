@@ -109,12 +109,17 @@ build-image:
   script:
     - |
       buildctl-daemonless.sh build \
+        --trace ${CI_PROJECT_DIR}/buildctl-trace.json \
         --frontend dockerfile.v0 \
         --local context=${CI_PROJECT_DIR} \
         --local dockerfile=${CI_PROJECT_DIR} \
         --opt build-arg:GOVERSION="${GOVERSION}" \
         --opt build-arg:VERSION="${VERSION}" \
         --output type=image,\"name=${BUILDKIT_IMAGE}\",push=${BUILDKIT_PUSH}
+  artifacts:
+    paths:
+      - buildctl-trace.json
+    when: always
 
 test:
   stage: test
