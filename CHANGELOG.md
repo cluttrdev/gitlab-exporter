@@ -1,7 +1,15 @@
 # Changelog
 
+## [0.20.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.19.4..v0.20.0)
+
+- 1bffda2 feat: Export job exit code
+- 55bc923 fix: Update protoc,protoc-gen-go,protoc-gen-go-grpc and regenerate
+- db2183d chore: Update gitlab graphql schema
+- 8412347 ci: Add buildctl trace file job artifact
+
 ## [0.19.4](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.19.3..v0.19.4)
 
+- df1386b chore(release): v0.19.4
 - c9cb77f fix: Prevent more potential graphql data nil pointer dereferences
 
 ## [0.19.3](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.19.2..v0.19.3)
