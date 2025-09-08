@@ -194,9 +194,13 @@ func FetchProjectJobLogData(ctx context.Context, glab *gitlab.Client, job types.
 		return nil, nil, nil, fmt.Errorf("parse job log: %w", err)
 	}
 
+	var jobFinishedAtUnix int64
+	if job.FinishedAt != nil {
+		jobFinishedAtUnix = job.FinishedAt.Unix()
+	}
 	for secnum, secdat := range logData.Sections {
 		if secdat.Start > 0 && secdat.End == 0 { // section started but not finished
-			secdat.End = max(secdat.Start, job.FinishedAt.Unix())
+			secdat.End = max(secdat.Start, jobFinishedAtUnix)
 		}
 
 		section := types.Section{
