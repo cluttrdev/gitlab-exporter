@@ -105,6 +105,14 @@ type ProjectExportTraces struct {
 
 type ProjectExportMetrics struct {
 	Enabled bool `default:"true" yaml:"enabled"`
+
+	LogQueries []ProjectExportMetricsLogQuery `default:"" yaml:"log_queries"`
+}
+
+type ProjectExportMetricsLogQuery struct {
+	Name       string            `default:"" yaml:"name"`
+	LineFilter string            `default:"" yaml:"line_filter"`
+	LabelAdd   map[string]string `default:"{}" yaml:"label_add"`
 }
 
 type ProjectExportMergeRequests struct {

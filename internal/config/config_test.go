@@ -52,7 +52,8 @@ func defaultProjectSettings() config.ProjectSettings {
 				NoteEvents: true,
 			},
 			Metrics: config.ProjectExportMetrics{
-				Enabled: true,
+				Enabled:    true,
+				LogQueries: nil,
 			},
 			Reports: config.ProjectExportReports{
 				Enabled: false,
@@ -583,6 +584,39 @@ func TestLoad_WithNamespaces(t *testing.T) {
 	expected.Namespaces[0].ProjectSettings.Export.Metrics.Enabled = false
 	expected.Namespaces[1].ProjectSettings.Export.Sections.Enabled = false
 	expected.Namespaces[1].ProjectSettings.Export.Metrics.Enabled = true
+
+	cfg := config.Default()
+	if err := config.Load(data, &cfg); err != nil {
+		t.Fatal(err)
+	}
+
+	checkConfig(t, expected, cfg)
+}
+
+func TestLoad_WithMetricsLogQueries(t *testing.T) {
+	data := []byte(`
+    project_defaults:
+      export:
+        metrics:
+          enabled: true
+
+          log_queries:
+            - name: gitlab_ci_job_log_msg_levels_total
+              line_filter: '|= "ERROR"'
+              label_add:
+                level: error
+    `)
+
+	expected := defaultConfig()
+	expected.ProjectDefaults.Export.Metrics.LogQueries = []config.ProjectExportMetricsLogQuery{
+		{
+			Name:       "gitlab_ci_job_log_msg_levels_total",
+			LineFilter: `|= "ERROR"`,
+			LabelAdd: map[string]string{
+				"level": "error",
+			},
+		},
+	}
 
 	cfg := config.Default()
 	if err := config.Load(data, &cfg); err != nil {

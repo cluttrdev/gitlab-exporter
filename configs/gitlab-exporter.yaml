@@ -34,6 +34,14 @@ project_defaults:
       # requires fetching entire job logs.
       enabled: true
 
+      # Experimental
+      # Create metrics from job logs by counting lines that match a filter.
+      log_queries: []
+        # - name: ci_job_log_warning_total
+        #   line_filter: '!~ `^WARN` |= "msg_a" or "msg_b"'
+        #   label_add:
+        #     name: "value"
+
     mergerequests:
       # Whether or not to export merge request data.
       enabled: true

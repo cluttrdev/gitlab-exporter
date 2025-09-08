@@ -33,16 +33,9 @@ type PropertyData struct {
 }
 
 func (c *Client) GetJobLogData(ctx context.Context, projectId int64, jobId int64) (JobLogData, error) {
-	log, resp, err := c.client.Jobs.GetTraceFile(int(projectId), int(jobId), _gitlab.WithContext(ctx))
+	log, err := c.GetJobLog(ctx, projectId, jobId)
 	if err != nil {
-		if resp.StatusCode == http.StatusNotFound {
-			// Some jobs may not have a log, like the special `pages:deploy`
-			// that is inserted into the pipeline but runs in the background
-			// without a runner.
-			// We don't treat this as an error.
-			return JobLogData{}, nil
-		}
-		return JobLogData{}, fmt.Errorf("get job log: %w", err)
+		return JobLogData{}, err
 	}
 
 	data, err := ParseJobLog(log)
@@ -53,7 +46,29 @@ func (c *Client) GetJobLogData(ctx context.Context, projectId int64, jobId int64
 	return data, nil
 }
 
+func (c *Client) GetJobLog(ctx context.Context, projectId int64, jobId int64) (*bytes.Reader, error) {
+	log, resp, err := c.client.Jobs.GetTraceFile(int(projectId), int(jobId), _gitlab.WithContext(ctx))
+	if err != nil {
+		if resp != nil && resp.StatusCode == http.StatusNotFound {
+			// Some jobs may not have a log, like the special `pages:deploy`
+			// that is inserted into the pipeline but runs in the background
+			// without a runner.
+			// We don't treat this as an error.
+			resp.Body.Close()
+			return nil, nil
+		}
+		return nil, fmt.Errorf("get trace file: %w", err)
+	}
+	defer resp.Body.Close()
+
+	return log, nil
+}
+
 func ParseJobLog(trace *bytes.Reader) (JobLogData, error) {
+	if trace == nil {
+		return JobLogData{}, nil
+	}
+
 	var (
 		data           JobLogData
 		sections       sectionStack

@@ -14,6 +14,7 @@ import (
 	"go.cluttr.dev/gitlab-exporter/internal/gitlab"
 	"go.cluttr.dev/gitlab-exporter/internal/gitlab/graphql"
 	"go.cluttr.dev/gitlab-exporter/internal/gitlab/rest"
+	"go.cluttr.dev/gitlab-exporter/internal/logql"
 	"go.cluttr.dev/gitlab-exporter/internal/metaerr"
 	"go.cluttr.dev/gitlab-exporter/internal/types"
 )
@@ -38,8 +39,8 @@ func (ps *ProjectsSettings) Set(m map[int64]ProjectSettings) {
 }
 
 func (ps *ProjectsSettings) Get(id int64) (ProjectSettings, bool) {
-	ps.mu.Lock()
-	defer ps.mu.Unlock()
+	ps.mu.RLock()
+	defer ps.mu.RUnlock()
 
 	s, ok := ps.settings[id]
 	return s, ok
@@ -192,7 +193,11 @@ type ProjectSettings struct {
 	Id       int64
 	FullPath string
 
-	Export config.ProjectExport
+	Export struct {
+		config.ProjectExport
+
+		logQLQueries []logql.MetricQuery
+	}
 
 	CatchUp struct {
 		Enabled       bool
@@ -609,24 +614,31 @@ func (c *Controller) exportJobs(ctx context.Context, projectIds []int64, updated
 		return err
 	}
 
-	var logDataProjectJobs []types.Job
+	var (
+		logDataProjectJobs    []types.Job
+		logDataProjectJobsOpt FetchProjectsJobsLogDataOptions
+	)
+	logDataProjectJobsOpt.ProjectJobLogQueries = make(map[int64][]logql.MetricQuery)
 	for _, job := range jobs {
 		if job.Kind == types.JobKindBridge { // bridges don't have logs
 			continue
 		}
+
 		if !c.projectsSettings.ExportLogData(job.Pipeline.Project.Id) {
 			continue
 		}
 
 		logDataProjectJobs = append(logDataProjectJobs, job)
+		settings, _ := c.projectsSettings.Get(job.Pipeline.Project.Id)
+		logDataProjectJobsOpt.ProjectJobLogQueries[job.Pipeline.Project.Id] = settings.Export.logQLQueries
 	}
 
-	sections, metrics, properties, err := FetchProjectsJobsLogData(ctx, c.GitLab, logDataProjectJobs)
+	sections, metrics, properties, err := FetchProjectsJobsLogData(ctx, c.GitLab, logDataProjectJobs, logDataProjectJobsOpt)
 	if err := c.handleError(&errs, err, "fetch projects job log data"); err != nil {
 		return err
 	}
 	for jobId, props := range properties {
-		for i := 0; i < len(jobs); i++ {
+		for i := range len(jobs) {
 			if jobs[i].Id == jobId {
 				jobs[i].Properties = props
 				break // inner loop
@@ -817,7 +829,8 @@ func (c *Controller) ResolveProjects(ctx context.Context) (int, error) {
 					Id:       int64(project.ID),
 					FullPath: project.PathWithNamespace,
 
-					Export: namespace.ProjectSettings.Export,
+					// Export: {},
+					// CatchUp: {},
 
 					AccessLevels: ProjectAccessLevels{
 						Builds:      ProjectAccessLevel(project.BuildsAccessLevel),
@@ -825,6 +838,27 @@ func (c *Controller) ResolveProjects(ctx context.Context) (int, error) {
 						Issues:      ProjectAccessLevel(project.IssuesAccessLevel),
 					},
 				}
+
+				// Export
+				ps.Export.ProjectExport = namespace.ProjectSettings.Export
+				for _, query := range namespace.ProjectSettings.Export.Metrics.LogQueries {
+					lineFilter, err := logql.ParseLineFilter(query.LineFilter)
+					if err != nil {
+						slog.LogAttrs(context.Background(), slog.LevelError, "parse logql line filter",
+							slog.String("error", err.Error()),
+							slog.Int("project_id", project.ID),
+							slog.String("namespace_id", namespace.Id),
+						)
+						return false
+					}
+					ps.Export.logQLQueries = append(ps.Export.logQLQueries, logql.MetricQuery{
+						Name:       query.Name,
+						LineFilter: lineFilter,
+						LabelAdd:   query.LabelAdd,
+					})
+				}
+
+				// Catchup
 				ps.CatchUp.Enabled = namespace.ProjectSettings.CatchUp.Enabled
 				if updatedAfter != nil {
 					ps.CatchUp.UpdatedAfter = updatedAfter
@@ -882,7 +916,8 @@ func (c *Controller) ResolveProjects(ctx context.Context) (int, error) {
 			Id:       int64(project.ID),
 			FullPath: project.PathWithNamespace,
 
-			Export: p.ProjectSettings.Export,
+			// Export: p.ProjectSettings.Export,
+			// CatchUp: {}
 
 			AccessLevels: ProjectAccessLevels{
 				Builds:      ProjectAccessLevel(project.BuildsAccessLevel),
@@ -890,6 +925,25 @@ func (c *Controller) ResolveProjects(ctx context.Context) (int, error) {
 			},
 		}
 
+		// Export
+		ps.Export.ProjectExport = p.ProjectSettings.Export
+		for _, query := range p.ProjectSettings.Export.Metrics.LogQueries {
+			lineFilter, err := logql.ParseLineFilter(query.LineFilter)
+			if err != nil {
+				slog.LogAttrs(context.Background(), slog.LevelError, "parse logql line filter",
+					slog.String("error", err.Error()),
+					slog.Int("project_id", project.ID),
+				)
+				continue
+			}
+			ps.Export.logQLQueries = append(ps.Export.logQLQueries, logql.MetricQuery{
+				Name:       query.Name,
+				LineFilter: lineFilter,
+				LabelAdd:   query.LabelAdd,
+			})
+		}
+
+		// CatchUp
 		ps.CatchUp.Enabled = p.ProjectSettings.CatchUp.Enabled
 		ps.CatchUp.UpdatedAfter = updatedAfter
 		ps.CatchUp.UpdatedBefore = updatedBefore

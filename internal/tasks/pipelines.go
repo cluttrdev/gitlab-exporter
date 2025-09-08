@@ -1,6 +1,7 @@
 package tasks
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
@@ -11,6 +12,7 @@ import (
 	"go.cluttr.dev/gitlab-exporter/internal/gitlab"
 	"go.cluttr.dev/gitlab-exporter/internal/gitlab/graphql"
 	"go.cluttr.dev/gitlab-exporter/internal/gitlab/rest"
+	"go.cluttr.dev/gitlab-exporter/internal/logql"
 	"go.cluttr.dev/gitlab-exporter/internal/types"
 )
 
@@ -89,7 +91,11 @@ func FetchProjectsPipelinesJobs(ctx context.Context, glab *gitlab.Client, projec
 	return jobs, err
 }
 
-func FetchProjectsJobsLogData(ctx context.Context, glab *gitlab.Client, jobs []types.Job) ([]types.Section, []types.Metric, map[int64][]types.JobLogProperty, error) {
+type FetchProjectsJobsLogDataOptions struct {
+	ProjectJobLogQueries map[int64][]logql.MetricQuery
+}
+
+func FetchProjectsJobsLogData(ctx context.Context, glab *gitlab.Client, jobs []types.Job, opts FetchProjectsJobsLogDataOptions) ([]types.Section, []types.Metric, map[int64][]types.JobLogProperty, error) {
 	var (
 		sections   []types.Section
 		metrics    []types.Metric
@@ -123,9 +129,13 @@ func FetchProjectsJobsLogData(ctx context.Context, glab *gitlab.Client, jobs []t
 				defer glab.Release(1)
 				defer wg.Done()
 
+				var opt = FetchProjectJobLogDataOptions{
+					Queries: opts.ProjectJobLogQueries[job.Pipeline.Project.Id],
+				}
+
 				var r result
 				r.jobId = job.Id
-				r.sections, r.metrics, r.properties, r.err = FetchProjectJobLogData(ctx, glab, job)
+				r.sections, r.metrics, r.properties, r.err = FetchProjectJobLogData(ctx, glab, job, opt)
 				results <- r
 			}()
 		}
@@ -157,16 +167,31 @@ loop:
 	return sections, metrics, properties, errs
 }
 
-func FetchProjectJobLogData(ctx context.Context, glab *gitlab.Client, job types.Job) ([]types.Section, []types.Metric, []types.JobLogProperty, error) {
+type FetchProjectJobLogDataOptions struct {
+	Queries []logql.MetricQuery
+}
+
+func FetchProjectJobLogData(ctx context.Context, glab *gitlab.Client, job types.Job, opts FetchProjectJobLogDataOptions) ([]types.Section, []types.Metric, []types.JobLogProperty, error) {
 	var (
 		sections   []types.Section
 		metrics    []types.Metric
 		properties []types.JobLogProperty
 	)
 
-	logData, err := glab.Rest.GetJobLogData(ctx, job.Pipeline.Project.Id, job.Id)
-	if err != nil {
+	jobRef := types.JobReference{
+		Id:       job.Id,
+		Name:     job.Name,
+		Pipeline: job.Pipeline,
+	}
+
+	log, err := glab.Rest.GetJobLog(ctx, job.Pipeline.Project.Id, job.Id)
+	if err != nil || log == nil {
 		return nil, nil, nil, err
+	}
+
+	logData, err := rest.ParseJobLog(log)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("parse job log: %w", err)
 	}
 
 	for secnum, secdat := range logData.Sections {
@@ -175,12 +200,8 @@ func FetchProjectJobLogData(ctx context.Context, glab *gitlab.Client, job types.
 		}
 
 		section := types.Section{
-			Id: job.Id*1000 + int64(secnum),
-			Job: types.JobReference{
-				Id:       job.Id,
-				Name:     job.Name,
-				Pipeline: job.Pipeline,
-			},
+			Id:  jobRef.Id*1000 + int64(secnum),
+			Job: jobRef,
 
 			Name:       secdat.Name,
 			StartedAt:  gitlab.Ptr(time.Unix(secdat.Start, 0)),
@@ -193,13 +214,9 @@ func FetchProjectJobLogData(ctx context.Context, glab *gitlab.Client, job types.
 
 	for iid, m := range logData.Metrics {
 		metrics = append(metrics, types.Metric{
-			Id:  fmt.Sprintf("%d-%d", job.Id, iid+1),
+			Id:  fmt.Sprintf("%d-%d", jobRef.Id, iid+1),
 			Iid: int64(iid + 1),
-			Job: types.JobReference{
-				Id:       job.Id,
-				Name:     job.Name,
-				Pipeline: job.Pipeline,
-			},
+			Job: jobRef,
 
 			Name:      m.Name,
 			Labels:    m.Labels,
@@ -215,7 +232,51 @@ func FetchProjectJobLogData(ctx context.Context, glab *gitlab.Client, job types.
 		})
 	}
 
+	_, _ = log.Seek(0, 0)
+	logqlMetrics, err := queryJobLogQLMetrics(log, opts.Queries, jobRef, int64(len(logData.Metrics)))
+	if err != nil {
+		return sections, metrics, properties, fmt.Errorf("query job logql metrics: %w", err)
+	}
+	if job.FinishedAt != nil {
+		for i := range len(logqlMetrics) {
+			logqlMetrics[i].Timestamp = job.FinishedAt.UnixMilli()
+		}
+	}
+	for _, m := range logqlMetrics {
+		if m.Value > 0 {
+			metrics = append(metrics, m)
+		}
+	}
+
 	return sections, metrics, properties, nil
+}
+
+func queryJobLogQLMetrics(log *bytes.Reader, queries []logql.MetricQuery, job types.JobReference, startIid int64) ([]types.Metric, error) {
+	filters := make([]logql.LineFilter, 0, len(queries))
+	for _, query := range queries {
+		filters = append(filters, query.LineFilter)
+	}
+
+	counts, err := logql.Count(log, filters)
+	if err != nil {
+		return nil, err
+	}
+
+	metrics := make([]types.Metric, 0, len(queries))
+	for i, query := range queries {
+		iid := startIid + 1 + int64(i)
+		metrics = append(metrics, types.Metric{
+			Id:  fmt.Sprintf("%d-%d", job.Id, iid),
+			Iid: iid,
+			Job: job,
+
+			Name:   query.Name,
+			Labels: query.LabelAdd,
+			Value:  float64(counts[i]),
+		})
+	}
+
+	return metrics, nil
 }
 
 func FetchProjectsPipelinesTestReports(ctx context.Context, glab *gitlab.Client, pipelines []types.Pipeline) ([]types.TestReport, []types.TestSuite, []types.TestCase, error) {
