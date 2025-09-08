@@ -1,7 +1,12 @@
 # Changelog
 
+## [0.21.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.21.0..v0.21.1)
+
+- b6fd9b8 fix: Prevent null pointer deref
+
 ## [0.21.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.20.0..v0.21.0)
 
+- 72a07b8 chore(release): v0.21.0
 - ba5600d feat: Support job log metric queries
 
 ## [0.20.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.19.4..v0.20.0)
