@@ -1,7 +1,12 @@
 # Changelog
 
+## [0.21.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.20.0..v0.21.0)
+
+- ba5600d feat: Support job log metric queries
+
 ## [0.20.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.19.4..v0.20.0)
 
+- 69286d8 chore(release): v0.20.0
 - 1bffda2 feat: Export job exit code
 - 55bc923 fix: Update protoc,protoc-gen-go,protoc-gen-go-grpc and regenerate
 - db2183d chore: Update gitlab graphql schema
