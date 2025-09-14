@@ -188,24 +188,6 @@ release:
   script:
     - .gitlab/release.sh
 
-release-sync:
-  stage: release
-  rules:
-    - if: $CI_COMMIT_TAG != null
-  needs:
-    - release
-  variables:
-    GITHUB_OWNER: cluttrdev
-    GITHUB_REPO: gitlab-exporter
-  script:
-    - | # Trigger GitHub release sync workflow
-      curl \
-        -sSL --fail-with-body \
-        --header "Accept: application/vnd.github.v3+json" \
-        --header "Authorization: Bearer ${GITHUB_TOKEN}" \
-        --data "{\"ref\":\"${CI_COMMIT_TAG}\"}" \
-        "https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/actions/workflows/release.yml/dispatches"
-
 release-image:
   stage: release
   rules:
