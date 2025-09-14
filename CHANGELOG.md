@@ -1,15 +1,16 @@
 # Changelog
 
-## [0.21.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.21.0..v0.21.1)
+## [0.21.1](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.21.0..v0.21.1)
 
+- 84e6c2e chore(release): v0.21.1
 - b6fd9b8 fix: Prevent null pointer deref
 
-## [0.21.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.20.0..v0.21.0)
+## [0.21.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.20.0..v0.21.0)
 
 - 72a07b8 chore(release): v0.21.0
 - ba5600d feat: Support job log metric queries
 
-## [0.20.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.19.4..v0.20.0)
+## [0.20.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.19.4..v0.20.0)
 
 - 69286d8 chore(release): v0.20.0
 - 1bffda2 feat: Export job exit code
@@ -17,12 +18,12 @@
 - db2183d chore: Update gitlab graphql schema
 - 8412347 ci: Add buildctl trace file job artifact
 
-## [0.19.4](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.19.3..v0.19.4)
+## [0.19.4](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.19.3..v0.19.4)
 
 - df1386b chore(release): v0.19.4
 - c9cb77f fix: Prevent more potential graphql data nil pointer dereferences
 
-## [0.19.3](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.19.2..v0.19.3)
+## [0.19.3](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.19.2..v0.19.3)
 
 - 0ab66c0 chore(release): v0.19.3
 - c9a8b3a fix: GraphQL handleError log attrs
@@ -34,12 +35,12 @@
 - e3f6e96 fix: Improve error handling when fetching issues
 - e7ef4ce fix: Add graphql error handling convenience function
 
-## [0.19.2](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.19.1..v0.19.2)
+## [0.19.2](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.19.1..v0.19.2)
 
 - 6fc4dae chore(release): v0.19.2
 - 5d8408b fix: Instead of fetching graphql.CiJobTrace do not treat job log 404 as error
 
-## [0.19.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.19.0..v0.19.1)
+## [0.19.1](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.19.0..v0.19.1)
 
 - 6e3d595 chore(release): v0.19.1
 - 9094caf fix(deps): Update go.cluttr.dev/junitxml to v0.2.0
@@ -54,7 +55,7 @@
 - c7092c9 ci: Add buildkit base image build job
 - 6b27465 build: Fix makefile build-image version substitution
 
-## [0.19.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.18.0..v0.19.0)
+## [0.19.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.18.0..v0.19.0)
 
 - f7a9b08 chore(release): v0.19.0
 - dbd8105 fix: Use junitxml.ParseMany everywhere
@@ -69,7 +70,7 @@
 - 0504174 feat: Parse multiple <testsuites> elements in same file
 - b76208d fix: Improve test report structs tags for encoding
 
-## [0.18.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.17.1..v0.18.0)
+## [0.18.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.17.1..v0.18.0)
 
 - ba2ea0e chore(release): v0.18.0
 - 236b3fe fix: Update dependencies
@@ -78,7 +79,7 @@
 - 5947476 refactor: Convert types in exporter and adjust controller logic
 - fe9a2ea refactor: Move typespb conversion to new exporter/messages package
 
-## [0.17.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.17.0..v0.17.1)
+## [0.17.1](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.17.0..v0.17.1)
 
 - 6943e60 chore(release): v0.17.1
 - e1a88d9 ci(github): Link to gitlab release assets instead of uploading to github
@@ -88,7 +89,7 @@
 - c82d7bc build: Fix build target os/arch usage
 - 94805aa ci: Add default job properties output
 
-## [0.17.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.16.0..v0.17.0)
+## [0.17.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.16.0..v0.17.0)
 
 - ee040d8 chore(release): v0.17.0
 - 88d0ee3 patch: Make job log properties export configurable
@@ -106,7 +107,7 @@
 - d598d45 ci: Add release name in github release script
 - 50b4c87 test: Fix log-in-goroutine-after-completed panic
 
-## [0.16.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.15.1..v0.16.0)
+## [0.16.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.15.1..v0.16.0)
 
 - fb8076f chore(release): v0.16.0
 - b467b7c ci: Add chart release job
@@ -121,13 +122,13 @@
 - 35e147f feat: Export cobertura coverage reports
 - 961eda2 ci: Upload cobertura coverage report
 
-## [0.15.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.15.0..v0.15.1)
+## [0.15.1](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.15.0..v0.15.1)
 
 - 5bc5ec5 chore(release): v0.15.1
 - 266c78f fix: Map failure messages to reasons
 - 85c96e9 ci: Update golangci-lint
 
-## [0.15.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.14.2..v0.15.0)
+## [0.15.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.14.2..v0.15.0)
 
 - bac980e chore(release): v0.15.0
 - 70dea2a feat: Download junit report artifacts via api
@@ -136,32 +137,32 @@
 - 2119961 fix: Update dependencies
 - 2c71f86 refactor!: Use job reference in testreports
 
-## [0.14.2](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.14.1..v0.14.2)
+## [0.14.2](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.14.1..v0.14.2)
 
 - f964506 chore(release): v0.14.2
 - d154c45 fix: Add missing testcase status when converting to protobuf message
 
-## [0.14.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.14.0..v0.14.1)
+## [0.14.1](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.14.0..v0.14.1)
 
 - afc419c chore(release): v0.14.1
 - 33b66d8 chore: Update gitlab remote references
 - ed4a170 feat: Use project feature access levels
 - 24c0106 fix: Prevent rest.GitLabDeployment nil pointer dereference for user and environment
 
-## [0.14.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.13.2..v0.14.0)
+## [0.14.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.13.2..v0.14.0)
 
 - 0675d78 chore(release): v0.14.0
 - d01da14 chore: Update example config file
 - 4b767cf feat: Export deployments
 
-## [0.13.2](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.13.1..v0.13.2)
+## [0.13.2](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.13.1..v0.13.2)
 
 - 8e7aa82 chore(release): v0.13.2
 - b66e1b4 refactor!: Use user references in merge request note events
 - b890609 patch: Add username and name to user references
 - 311d75e docs: Fix changelog
 
-## [0.13.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.13.0..v0.13.1)
+## [0.13.1](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.13.0..v0.13.1)
 
 - 690f199 chore(release): v0.13.1
 - 81fc2ff chore: Remove unused rest api functions
@@ -172,14 +173,14 @@
 - 9ff135b fix: Possible gitlab client blocking when fetching many resources
 - 99a9333 fix: Session authed http client locking
 
-## [0.13.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.12.0..v0.13.0)
+## [0.13.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.12.0..v0.13.0)
 
 - b501326 chore(release): v0.13.0
 - 002f430 refactor(cmd): Consolidate gitlab client creation
 - 5d6be44 feat: Add session authed gitlab http client (experimental)
 - 4b17dfe fix: OAuth redirect handler path
 
-## [0.12.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.11.0..v0.12.0)
+## [0.12.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.11.0..v0.12.0)
 
 - 3081af6 chore(release): v0.12.0
 - 116e486 docs: Update readme
@@ -200,7 +201,7 @@
 - 9515877 refactor: Adjust test report types
 - d45bb8a ci(github): Fix docker image tags and repo urls
 
-## [0.11.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.10.3..v0.11.0)
+## [0.11.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.10.3..v0.11.0)
 
 - 7ba86e7 chore(release): v0.11.0
 - 8e76142 build: Add make target to generate changelog
@@ -216,7 +217,7 @@
 - e0117ce refactor: Make task controller projects settings map thread safe
 - 7453403 refactor: Call export methods concurrently for endpoint clients and data batches
 
-## [0.10.3](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.10.2..v0.10.3)
+## [0.10.3](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.10.2..v0.10.3)
 
 - ebdc3ca chore(release): v0.10.3
 - 6e9045d refactor: Remove custom protobuf time conversion functions
@@ -224,12 +225,12 @@
 - c00e7fd fix: Job protobuf queued duration value
 - 6dabc7c fix: Catchup command project resolution
 
-## [0.10.2](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.10.1..v0.10.2)
+## [0.10.2](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.10.1..v0.10.2)
 
 - 97c6bcc chore(release): v0.10.2
 - dd8cc4c fix: Regenerate protobuf code
 
-## [0.10.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.10.0..v0.10.1)
+## [0.10.1](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.10.0..v0.10.1)
 
 - 6841b39 chore(release): v0.10.1
 - a01cb80 refactor: Use pipeline name for trace span name if available
@@ -238,7 +239,7 @@
 - 9f9b0e0 chore: Add graphql generation recipe to justfile
 - 0b3fae6 fix: Remove gitlab-api-(url|token) config usage
 
-## [0.10.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.9.1..v0.10.0)
+## [0.10.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.9.1..v0.10.0)
 
 - d02d72b chore(release): v0.10.0
 - b326797 refactor!: Adjust protobuf and grpc stuff
@@ -249,7 +250,7 @@
 - 881e0f2 feat: Add gitlab graphql client
 - a7824b5 feat: Add internal types
 
-## [0.9.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.9.0..v0.9.1)
+## [0.9.1](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.9.0..v0.9.1)
 
 - a663eae chore(release): v0.9.1
 - dcecdb2 fix(cmd): Move namespace project resolution into jobs run group
@@ -257,7 +258,7 @@
 - 0b43bed test: Add config test for export defaults
 - ef4ef33 chore: Update helm chart
 
-## [0.9.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.8.1..v0.9.0)
+## [0.9.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.8.1..v0.9.0)
 
 - 1b09bd7 chore(release): v0.9.0
 - 819e027 feat: Remove custom worker pool package
@@ -266,12 +267,12 @@
 - 9480e4d feat: Add merge request note events
 - 053d870 refactor: Move proto types conversion to separate package
 
-## [0.8.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.8.0..v0.8.1)
+## [0.8.1](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.8.0..v0.8.1)
 
 - b977639 chore(release): v0.8.1
 - f9c9fc2 patch: Add ids to metric proto message and remove job reference message
 
-## [0.8.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.7.1..v0.8.0)
+## [0.8.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.7.1..v0.8.0)
 
 - 44bf374 chore(release): v0.8.0
 - d50f297 patch: Ensure data is exported in chunks with max size
@@ -300,7 +301,7 @@
 - 35d27d3 Add project defaults config options
 - 55b1857 Fix helm chart ports config again
 
-## [0.7.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.7.0..v0.7.1)
+## [0.7.1](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.7.0..v0.7.1)
 
 - 6d6364e Release v0.7.1
 - eaf813a Fix helm selector labels helper
@@ -311,7 +312,7 @@
 - 4f91e98 Start adding tests
 - fbd0bf9 Make grpc client creation more flexible
 
-## [0.7.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.6.3..v0.7.0)
+## [0.7.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.6.3..v0.7.0)
 
 - e5e8943 Release v0.7.0
 - 687536e Fix execution when no projects are configured
@@ -325,25 +326,25 @@
 - 68778f6 Rename config 'server' block to 'http'
 - ed71393 Switch to unary grpc calls
 
-## [0.6.3](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.6.2..v0.6.3)
+## [0.6.3](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.6.2..v0.6.3)
 
 - 4f6df05 Release v0.6.3
 - 7d00d04 Fix testreport exports
 - f853c10 Fix list project pipelines error handling
 
-## [0.6.2](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.6.1..v0.6.2)
+## [0.6.2](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.6.1..v0.6.2)
 
 - 33bf746 Release v0.6.2
 - c18c9a4 Fix command flags env var prefix
 
-## [0.6.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.6.0..v0.6.1)
+## [0.6.1](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.6.0..v0.6.1)
 
 - 14dc288 Release v0.6.1
 - 878d557 Fix command config flags propagation
 - 4edf8c0 chore: Support helm chart podLabels value
 - 070bcac Fix .dockerignore
 
-## [0.6.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.5.1..v0.6.0)
+## [0.6.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.5.1..v0.6.0)
 
 - 725ecc3 Release v0.6.0
 - a23dc7a Update dependencies
@@ -362,7 +363,7 @@
 - 71d3e92 Add template support for helm env and config values
 - f10fc73 Update helm chart versions
 
-## [0.5.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.5.0..v0.5.1)
+## [0.5.1](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.5.0..v0.5.1)
 
 - 4c1550d Release v0.5.1
 - 9edd1b5 Remove unused projects model
@@ -371,7 +372,7 @@
 - 3ab95af Add pipeline testreport summary method
 - eafaec2 Update helm chart appVersion and default registry
 
-## [0.5.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.4.1..v0.5.0)
+## [0.5.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.4.1..v0.5.0)
 
 - 7c8e421 Release v0.5.0
 - 7c655b2 Fix version info subcommand
@@ -454,12 +455,12 @@
 - 81c710c Add debug and preliminary health endpoints
 - 68561f6 Add simple http server with minimal prometheus metrics
 
-## [0.4.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.4.0..v0.4.1)
+## [0.4.1](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.4.0..v0.4.1)
 
 - 86e8e26 Release v0.4.1
 - db2a5c6 Remove retry loop in catch-up worker and check for closed channel when producing
 
-## [0.4.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.3.1..v0.4.0)
+## [0.4.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.3.1..v0.4.0)
 
 - c0a9843 Release v0.4.0
 - f840fd5 Add option to force data export during catch-up
@@ -485,7 +486,7 @@
 - 89d5e66 Use custom logic to load config from file
 - ac13fbd Add loading configuration from yaml and first tests
 
-## [0.3.1](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.3.0..v0.3.1)
+## [0.3.1](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.3.0..v0.3.1)
 
 - 8dcff37 Release v0.3.1
 - 0dd72e1 Add docker run just recipe
@@ -495,7 +496,7 @@
 - 135b7d8 Add .dockerignore and update Dockerfile
 - 8ad8346 Add some attributes to trace spans
 
-## [0.3.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.2.0..v0.3.0)
+## [0.3.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.2.0..v0.3.0)
 
 - c33b90b Release v0.3.0
 - 5f81568 Add CHANGELOG.md
@@ -509,7 +510,7 @@
 - 191567c Add support for gitlab-client-requests-per-second flag
 - b6ce63d Sanitize keys read from config file
 
-## [0.2.0](https://gitlab.com/akun73/gitlab-exporter/-/compare/v0.1.0..v0.2.0)
+## [0.2.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.1.0..v0.2.0)
 
 - c2a02f4 Add version command
 - e1d3512 Init controller only in commands that use it
@@ -519,7 +520,7 @@
 - 22b333d Add github release script and update justfile
 - ef1e667 Add worker pool and rate limiter
 
-## [0.1.0](https://gitlab.com/akun73/gitlab-exporter/-/commits/v0.1.0)
+## [0.1.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/commits/v0.1.0)
 
 - 546cfbb Add justfile
 - 5cc1a21 Update README and tidy up

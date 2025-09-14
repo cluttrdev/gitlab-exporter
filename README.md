@@ -17,7 +17,7 @@ flexibly stored in various storage backends.
 
 The following officially supported recorder implementations are currently available:
 
-- [gitlab-exporter-clickhouse-recorder](https://gitlab.com/akun73/gitlab-exporter-clickhouse-recorder)
+- [gitlab-exporter-clickhouse-recorder](https://gitlab.com/gitlab-exporter/clickhouse-recorder)
 
 ### Screenshots
 
@@ -72,7 +72,7 @@ To install `gitlab-exporter` you can download a
 
 ```shell
 # download latest release archive
-RELEASES_URL=https://gitlab.com/api/v4/projects/akun73%2Fgitlab-exporter/releases
+RELEASES_URL=https://gitlab.com/api/v4/projects/gitlab-exporter%2Fgitlab-exporter/releases
 RELEASE_TAG=$(curl -sSfL ${RELEASES_URL} | jq -r '.[0].tag_name')
 curl -sSfL ${RELEASES_URL}/${RELEASE_TAG}/downloads/gitlab-exporter_${RELEASE_TAG}_linux_amd64.tar.gz \
     -o /tmp/gitlab-exporter.tar.gz
@@ -88,7 +88,7 @@ ${INSTALL_DIR}/gitlab-exporter version
 ### Docker
 
 ```shell
-docker run --rm registry.gitlab.com/akun73/gitlab-exporter:latest
+docker run --rm registry.gitlab.com/gitlab-exporter/gitlab-exporter:latest
 ```
 
 ### Helm
@@ -158,4 +158,4 @@ This project is licensed under the [MIT License](./LICENSE).
 [protobuf]: https://protobuf.dev/
 [grpc]: https://grpc.io/
 [gitlab-api]: https://docs.gitlab.com/ee/api/rest/
-[prebuilt-binaries]: https://gitlab.com/akun73/gitlab-exporter/-/releases
+[prebuilt-binaries]: https://gitlab.com/gitlab-exporter/gitlab-exporter/-/releases
