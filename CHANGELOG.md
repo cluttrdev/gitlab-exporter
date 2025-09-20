@@ -1,6 +1,12 @@
 # Changelog
 
-## [0.15.0](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.14.0..v0.15.0)
+## [Unreleased](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.15.0..HEAD)
+
+- 287b3fd ci: Remove github release sync
+- 4f631b8 chore: Update default image repository in helm chart
+- 728ecde docs: Update releases url in README, Makefile and CHANGELOG.md
+
+## [0.15.0](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.14.0..v0.15.0)
 
 - 5e87bf4 chore(release): v0.15.0
 - 7225aec ci: Use default.tags
@@ -10,19 +16,19 @@
 - b6b1da8 feat: Record job exit_code
 - b361c03 fix(deps): Update dependencies
 
-## [0.14.0](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.13.2..v0.14.0)
+## [0.14.0](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.13.2..v0.14.0)
 
 - 7cbbdad chore(release): v0.14.0
 - ab14a1f feat: Record issues
 - e85bb88 build: Set tag for build-image target
 - 4af0a72 fix: Update dependencies
 
-## [0.13.2](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.13.1..v0.13.2)
+## [0.13.2](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.13.1..v0.13.2)
 
 - 9ad70bf chore(release): v0.13.2
 - 1c28a81 fix: Version number of add_pipelines_downstream migrations
 
-## [0.13.1](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.13.0..v0.13.1)
+## [0.13.1](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.13.0..v0.13.1)
 
 - 19c7523 chore(release): v0.13.1
 - 3a08e83 ci(github): Link to gitlab release assets instead of re-uploading to github
@@ -33,7 +39,7 @@
 - 7e48599 ci: Print some job properties
 - 1df8d70 fix(db): Add missing pipelines name column
 
-## [0.13.0](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.12.0..v0.13.0)
+## [0.13.0](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.12.0..v0.13.0)
 
 - 9bb44ac chore(release): v0.13.0
 - b4f7cad Merge branch 'job-properties' into 'main'
@@ -45,7 +51,7 @@
 - f238fa7 ci: Fix release-chart job
 - 0a72230 ci: Specify chart release job image tag
 
-## [0.12.0](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.11.2..v0.12.0)
+## [0.12.0](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.11.2..v0.12.0)
 
 - c3c1ebf chore(release): v0.12.0
 - 457abd2 chore: Fix linting errors
@@ -64,13 +70,13 @@
 - e02f5de chore: Add sql snippet to map job failure reasons
 - 55d1eb4 chore: Add cli to generate schema from migrations
 
-## [0.11.2](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.11.1..v0.11.2)
+## [0.11.2](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.11.1..v0.11.2)
 
 - c1b07f6 chore(release): v0.11.2
 - 73f925c fix: InsertDeployments log message
 - 447ebc5 fix: Nullify latest error in health check
 
-## [0.11.1](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.11.0..v0.11.1)
+## [0.11.1](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.11.0..v0.11.1)
 
 - d115c2f chore(release): v0.11.1
 - 562f2e9 patch: Add job_id to test entity tables
@@ -79,7 +85,7 @@
 - dec0038 build: Update Dockerfile go version
 - 401363a fix: Update dependencies
 
-## [0.11.0](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.10.1..v0.11.0)
+## [0.11.0](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.10.1..v0.11.0)
 
 - 819b9fa chore(release): v0.11.0
 - a24833a ci: Use go version 1.23
@@ -88,14 +94,14 @@
 - 3fb4a91 feat: Record deployments
 - b622558 fix: Update dependencies
 
-## [0.10.1](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.10.0..v0.10.1)
+## [0.10.1](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.10.0..v0.10.1)
 
 - 912f9c8 chore(release): v0.10.1
 - b2e8e35 patch: Add user reference names in mr tables
 - 0418208 fix: Update dependencies
 - dfc1ae0 chore: Allow disabling migrations job in helm chart
 
-## [0.10.0](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.9.0..v0.10.0)
+## [0.10.0](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.9.0..v0.10.0)
 
 - 175e5f1 chore(release): v0.10.0
 - daccd6a ci: Skip integration tests
@@ -111,7 +117,7 @@
 - d19d524 refactor: Alter table projects
 - e296702 chore: Remove unused cache struct
 
-## [0.9.0](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.8.3..v0.9.0)
+## [0.9.0](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.8.3..v0.9.0)
 
 - 08bdc6d chore(release): v0.9.0
 - 2cd8e8f ci: Disable/skip integrations tests
@@ -124,18 +130,18 @@
 - f886c1d chore: Update dependencies
 - 8b9199c feat: Allow setting clickhouse client max concurrent queries
 
-## [0.8.3](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.8.2..v0.8.3)
+## [0.8.3](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.8.2..v0.8.3)
 
 - 1218609 chore(release): v0.8.3
 - ec29c05 fix: Fix trace view sql
 - 8c72134 chore(deps): Update gitlab-exporter dependency
 
-## [0.8.2](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.8.1..v0.8.2)
+## [0.8.2](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.8.1..v0.8.2)
 
 - 00f2812 chore(release): v0.8.2
 - a053aeb fix: Update gitlab-exporter to v0.10.2
 
-## [0.8.1](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.8.0..v0.8.1)
+## [0.8.1](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.8.0..v0.8.1)
 
 - e5ac371 chore(release): v0.8.1
 - 4fac122 chore: Update demo
@@ -144,7 +150,7 @@
 - 88b512b fix: Adjust to gitlab-exporter v0.10.0 changes
 - ea64c57 chore(deps): Update dependencies
 
-## [0.8.0](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.7.1..v0.8.0)
+## [0.8.0](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.7.1..v0.8.0)
 
 - 46f447a chore(release): v0.8.0
 - b6cabb7 chore: Update grafana dashboards
@@ -152,7 +158,7 @@
 - 6c04441 feat: Record merge request note events
 - dc073d1 chore: Update dependencies
 
-## [0.7.1](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.7.0..v0.7.1)
+## [0.7.1](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.7.0..v0.7.1)
 
 - 86d5437 chore(release): v0.7.1
 - 8820b5c patch: Optimize deduplicating insert queries
@@ -162,7 +168,7 @@
 - d357d38 chore: Add init container to helm chart deployment template
 - 7397491 chore: Add migrate job template to helm chart
 
-## [0.7.0](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.6.2..v0.7.0)
+## [0.7.0](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.6.2..v0.7.0)
 
 - 0d50af5 chore(release): v0.7.0
 - efcf7f3 patch: Use async inserts
@@ -181,7 +187,7 @@
 - 613f9fd refactor: Use gitlab-exporter/grpc/server
 - 2a90177 chore: Update go version and dependencies
 
-## [0.6.2](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.6.1..v0.6.2)
+## [0.6.2](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.6.1..v0.6.2)
 
 - 8366b57 Release v0.6.2
 - 190aa11 chore: Update demo with readonly user
@@ -195,7 +201,7 @@
 - 3bbaf9f chore: Fix helm chart selector labels helper template
 - 84d3779 chore: Fix docker compose glchr image
 
-## [0.6.1](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.6.0..v0.6.1)
+## [0.6.1](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.6.0..v0.6.1)
 
 - 189358d Release v0.6.1
 - aa71003 chore: Extend quickstart example to full demo
@@ -204,7 +210,7 @@
 - 128b588 fix: Catch jobs without pipeline
 - 474465d refactor: Improve table creation functions
 
-## [0.6.0](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.5.3..v0.6.0)
+## [0.6.0](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.5.3..v0.6.0)
 
 - 1ade409 Release v0.6.0
 - 594d73d refactor: Add some log output in run command
@@ -216,13 +222,13 @@
 - 4c6a95c chore: Fix helm service monitor template port
 - ed9b518 chore: Fix helm chart service monitor typo
 
-## [0.5.3](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.5.2..v0.5.3)
+## [0.5.3](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.5.2..v0.5.3)
 
 - 5ceea0d Release v0.5.3
 - 759c03a refactor: Add some debug output
 - 1490691 fix: Not waiting on retry ticker after stopped
 
-## [0.5.2](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.5.1..v0.5.2)
+## [0.5.2](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.5.1..v0.5.2)
 
 - 418c5a0 Release v0.5.2
 - 2b41766 chore: Add helm chart service monitor template
@@ -232,7 +238,7 @@
 - 551fc46 fix: Improve config heap escapes
 - 629e207 fix: Improve retry allocations
 
-## [0.5.1](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.5.0..v0.5.1)
+## [0.5.1](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.5.0..v0.5.1)
 
 - 3218669 Release v0.5.1
 - 5af58ba fix: Adjust config env var prefix
@@ -240,32 +246,32 @@
 - 377a04e chore: Fix helm chart version
 - 8f5cc22 chore: Rename helm chart directory
 
-## [0.5.0](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.4.2..v0.5.0)
+## [0.5.0](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.4.2..v0.5.0)
 
 - 25547c8 Release v0.5.0
 - 3a8dce9 BREAKING CHANGE: Rename project
 - d9a0d5e chore: Update quickstart example
 
-## [0.4.2](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.4.1..v0.4.2)
+## [0.4.2](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.4.1..v0.4.2)
 
 - 1acff02 Release v0.4.2
 - 0c66605 fix: Fix trace spans insertion cache update
 - 8ae58b6 fix: Fix log embedded metrics cache update
 
-## [0.4.1](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.4.0..v0.4.1)
+## [0.4.1](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.4.0..v0.4.1)
 
 - f838ba7 Release v0.4.1
 - 2624351 fix: Rename RecordLogEmbeddedMetrics to RecordMetrics
 - f2529c4 chore: Update helm chart versions
 
-## [0.4.0](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.3.1..v0.4.0)
+## [0.4.0](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.3.1..v0.4.0)
 
 - d9d6d91 Release v0.4.0
 - d6b7c6f chore: Update gitlab-exporter to v0.6.0
 - 4dc0cee chore: Update dependencies
 - c71dfaf chore: Update helm chart versions
 
-## [0.3.1](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.3.0..v0.3.1)
+## [0.3.1](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.3.0..v0.3.1)
 
 - 673fabf Release v0.3.1
 - 873f3c5 fix: Convert labels when inserting log embedded metrics
@@ -274,19 +280,19 @@
 - ebdaa73 fix: Log readiness check failures as errors
 - a053d19 fix: Set initial serving status to UNKNOWN
 
-## [0.3.0](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.2.1..v0.3.0)
+## [0.3.0](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.2.1..v0.3.0)
 
 - 3e123e3 Release v0.3.0
 - 297cfe9 refactor: Use gRPC health checks instead of HTTP probes
 
-## [0.2.1](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.2.0..v0.2.1)
+## [0.2.1](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.2.0..v0.2.1)
 
 - 61742b2 Release v0.2.1
 - 3690639 refactor: Improve readiness and retry logic in run command
 - aca115b chore(helm): Add template support for env and config values
 - f80365d fix: Handle both grpc and http ports in helm chart
 
-## [0.2.0](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/v0.1.0..v0.2.0)
+## [0.2.0](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.1.0..v0.2.0)
 
 - d7131d9 Release v0.2.0
 - fcbf0ee feat: Add http probes server
@@ -303,7 +309,7 @@
 - 1698ebb refactor: Remove unused latest pipeline update method
 - 6ab6479 chore: Add deployment helm chart
 
-## [0.1.0](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/commits/v0.1.0)
+## [0.1.0](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/commits/v0.1.0)
 
 - 91a8680 Release v0.1.0
 - 13931f0 build: Fix gitlab-exporter reference in go.mod

@@ -1,7 +1,7 @@
 # gitlab-exporter-clickhouse-recorder
 
 `gitlab-exporter-clickhouse-recorder` serves a gRPC endpoint that can receive data
-from a [gitlab-exporter](https://gitlab.com/akun73/gitlab-exporter) and records it
+from a [gitlab-exporter](https://gitlab.com/gitlab-exporter/gitlab-exporter) and records it
 in a [ClickHouse](https://clickhouse.com) database.
 
 ## Dashboards
@@ -11,12 +11,12 @@ For some Grafana dashboards and screenshots see [here](https://gitlab.com/gitlab
 ## Installation
 
 To install `gitlab-exporter-clickhouse-recorder` you can download a 
-[prebuilt binary](https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/releases)
+[prebuilt binary](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/releases)
 that matches your system, e.g.
 
 ```shell
 # download latest release archive
-RELEASES_URL=https://gitlab.com/api/v4/projects/gitlab-exporter%2Fclickhouse-recorder/releases
+RELEASES_URL=https://gitlab.com/api/v4/projects/gitlab-exporter%2Fgitlab-exporter-clickhouse-recorder/releases
 RELEASE_TAG=$(curl -sSfL ${RELEASES_URL} | jq -r '.[0].tag_name')
 curl -sSfL ${RELEASES_URL}/${RELEASE_TAG}/downloads/gitlab-exporter-clickhouse-recorder_${RELEASE_TAG}_linux_amd64.tar.gz \
     -o /tmp/gitlab-exporter-clickhouse-recorder.tar.gz

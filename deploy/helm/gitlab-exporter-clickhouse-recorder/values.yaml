@@ -5,7 +5,7 @@ fullnameOverride: ""
 
 image:
   registry: registry.gitlab.com
-  repository: gitlab-exporter/clickhouse-recorder
+  repository: gitlab-exporter/gitlab-exporter-clickhouse-recorder
   # Overrides the image tag whose default is the chart appVersion.
   tag: ""
   pullPolicy: Always

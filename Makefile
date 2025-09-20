@@ -60,16 +60,16 @@ changelog:
 	latest=$$(git describe --tags --abbrev=0); \
 	changes=$$(make --no-print-directory changes from="$${latest}" | awk '{ print "- " $$0 }'); \
 	if [ -n "$${changes}" ]; then \
-		url="https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/$${latest}..HEAD"; \
+		url="https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/$${latest}..HEAD"; \
 		printf "## [Unreleased](%s)\n\n%s\n\n" "$${url}" "$${changes}"; \
 	fi; \
 	for tag in $$(git tag --list | sort --version-sort --reverse); do \
 		previous=$$(git describe --tags --abbrev=0 "$${tag}^" 2>/dev/null); \
 		changes=$$(make --no-print-directory changes to=$${tag} | awk '{ print "- " $$0 }'); \
 		if [ -n "$${previous}" ]; then \
-			url="https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/compare/$${previous}..$${tag}"; \
+			url="https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/$${previous}..$${tag}"; \
 		else \
-			url="https://gitlab.com/gitlab-exporter/clickhouse-recorder/-/commits/$${tag}"; \
+			url="https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/commits/$${tag}"; \
 		fi; \
 		printf "## [%s](%s)\n\n%s\n\n" "$${tag#v}" "$${url}" "$${changes}"; \
 	done
