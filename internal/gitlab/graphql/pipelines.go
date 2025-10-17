@@ -161,7 +161,7 @@ func (c *Client) GetProjectsPipelines(ctx context.Context, ids []string, opts Ge
 }
 
 func (c *Client) GetProjectPipeline(ctx context.Context, projectId string, pipelineId string) (PipelineFields, error) {
-	return c.getProjectIdPipeline(ctx, projectId, pipelineId)
+	return c.getProjectPipeline(ctx, projectId, pipelineId)
 }
 
 type getPipelinesOptions struct {
@@ -172,6 +172,47 @@ type getPipelinesOptions struct {
 }
 
 func (c *Client) getProjectsPipelines(ctx context.Context, ids []string, opts getPipelinesOptions) ([]PipelineFields, error) {
+	// First fetch core fields (cheaper query)
+	pfsCore, err := c.getProjectsPipelinesPart(ctx, ids, opts, pipelineFieldsFragments{core: true})
+	if err != nil {
+		return nil, err
+	}
+
+	// Build a map for efficient lookup
+	pipelineMap := make(map[string]PipelineFields)
+	for _, pf := range pfsCore {
+		pipelineMap[pf.Id] = pf
+	}
+
+	// Then fetch relations fields (more expensive)
+	pfsRelations, err := c.getProjectsPipelinesPart(ctx, ids, opts, pipelineFieldsFragments{relations: true})
+	if err != nil {
+		return nil, err
+	}
+
+	// Merge relations into core fields
+	for _, pfRel := range pfsRelations {
+		if pf, ok := pipelineMap[pfRel.Id]; ok {
+			pf.PipelineFieldsRelations = pfRel.PipelineFieldsRelations
+			pipelineMap[pfRel.Id] = pf
+		}
+	}
+
+	// Convert map back to slice
+	pfs := make([]PipelineFields, 0, len(pipelineMap))
+	for _, pf := range pipelineMap {
+		pfs = append(pfs, pf)
+	}
+
+	return pfs, nil
+}
+
+type pipelineFieldsFragments struct {
+	core      bool
+	relations bool
+}
+
+func (c *Client) getProjectsPipelinesPart(ctx context.Context, ids []string, opts getPipelinesOptions, frags pipelineFieldsFragments) ([]PipelineFields, error) {
 	var (
 		pfs []PipelineFields
 
@@ -189,6 +230,8 @@ outerLoop:
 			opts.UpdatedAfter,
 			opts.UpdatedBefore,
 			opts.endCursor,
+			frags.core,
+			frags.relations,
 		)
 		err = handleError(err, "getProjectsPipelines",
 			slog.Any("projectIds", ids),
@@ -255,6 +298,42 @@ outerLoop:
 }
 
 func (c *Client) getProjectPipelines(ctx context.Context, path string, opts getPipelinesOptions) ([]PipelineFields, error) {
+	// First fetch core fields (cheaper query)
+	pfsCore, err := c.getProjectPipelinesPart(ctx, path, opts, pipelineFieldsFragments{core: true})
+	if err != nil {
+		return nil, err
+	}
+
+	// Build a map for efficient lookup
+	pipelineMap := make(map[string]PipelineFields)
+	for _, pf := range pfsCore {
+		pipelineMap[pf.Id] = pf
+	}
+
+	// Then fetch relations fields (more expensive)
+	pfsRelations, err := c.getProjectPipelinesPart(ctx, path, opts, pipelineFieldsFragments{relations: true})
+	if err != nil {
+		return nil, err
+	}
+
+	// Merge relations into core fields
+	for _, pfRel := range pfsRelations {
+		if pf, ok := pipelineMap[pfRel.Id]; ok {
+			pf.PipelineFieldsRelations = pfRel.PipelineFieldsRelations
+			pipelineMap[pfRel.Id] = pf
+		}
+	}
+
+	// Convert map back to slice
+	pfs := make([]PipelineFields, 0, len(pipelineMap))
+	for _, pf := range pipelineMap {
+		pfs = append(pfs, pf)
+	}
+
+	return pfs, nil
+}
+
+func (c *Client) getProjectPipelinesPart(ctx context.Context, path string, opts getPipelinesOptions, frags pipelineFieldsFragments) ([]PipelineFields, error) {
 	var (
 		pfs []PipelineFields
 
@@ -272,6 +351,8 @@ outerLoop:
 			opts.UpdatedAfter,
 			opts.UpdatedBefore,
 			opts.endCursor,
+			frags.core,
+			frags.relations,
 		)
 		err = handleError(err, "getProjectPipelines",
 			slog.String("projectPath", path),
@@ -378,28 +459,45 @@ func (c *Client) getProjectPipelineDownstreamConnection(ctx context.Context, pro
 	return &dpconn, err
 }
 
-func (c *Client) getProjectIdPipeline(ctx context.Context, projectId string, pipelineId string) (PipelineFields, error) {
-	resp, err := getProjectIdPipeline(ctx, c.client, projectId, pipelineId)
+func (c *Client) getProjectPipeline(ctx context.Context, projectId string, pipelineId string) (PipelineFields, error) {
+	var (
+		pf PipelineFields
+
+		data *getProjectPipelineResponse
+		err  error
+	)
+
+	data, err = getProjectPipeline(ctx, c.client, projectId, pipelineId, true, true)
+	err = handleError(err, "getProjectPipeline",
+		slog.String("projectId", projectId),
+		slog.String("pipelineId", pipelineId),
+	)
 	if err != nil {
 		return PipelineFields{}, err
 	}
 
-	if len(resp.Projects.Nodes) == 0 {
-		return PipelineFields{}, fmt.Errorf("project not found: %v", projectId)
+	if len(data.Projects.Nodes) == 0 {
+		return pf, fmt.Errorf("project not found: %v", projectId)
 	}
-	project_ := resp.Projects.Nodes[0]
+	project_ := data.Projects.Nodes[0]
+	if project_ == nil {
+		return pf, fmt.Errorf("project not found: %v", projectId)
+	}
 	pipeline_ := project_.Pipeline
 	if pipeline_ == nil {
-		return PipelineFields{}, fmt.Errorf("project pipeline not found: %v/%v", projectId, pipelineId)
+		return pf, fmt.Errorf("pipeline not found: %v", pipelineId)
 	}
 
-	return PipelineFields{
+	pf = PipelineFields{
 		PipelineReferenceFields: pipeline_.PipelineReferenceFields,
 		Project: ProjectReferenceFields{
 			Id:       project_.Id,
 			FullPath: project_.FullPath,
 		},
 
-		PipelineFieldsCore: pipeline_.PipelineFieldsCore,
-	}, nil
+		PipelineFieldsCore:      pipeline_.PipelineFieldsCore,
+		PipelineFieldsRelations: pipeline_.PipelineFieldsRelations,
+	}
+
+	return pf, nil
 }
