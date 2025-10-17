@@ -3120,18 +3120,6 @@ func (v *UserReferenceFieldsUserCore) GetUsername() string { return v.Username }
 // GetName returns UserReferenceFieldsUserCore.Name, and is useful for accessing the field via an interface.
 func (v *UserReferenceFieldsUserCore) GetName() string { return v.Name }
 
-// __getProjectIdPipelineInput is used internally by genqlient
-type __getProjectIdPipelineInput struct {
-	ProjectId  string `json:"projectId"`
-	PipelineId string `json:"pipelineId"`
-}
-
-// GetProjectId returns __getProjectIdPipelineInput.ProjectId, and is useful for accessing the field via an interface.
-func (v *__getProjectIdPipelineInput) GetProjectId() string { return v.ProjectId }
-
-// GetPipelineId returns __getProjectIdPipelineInput.PipelineId, and is useful for accessing the field via an interface.
-func (v *__getProjectIdPipelineInput) GetPipelineId() string { return v.PipelineId }
-
 // __getProjectIssuesInput is used internally by genqlient
 type __getProjectIssuesInput struct {
 	ProjectPath   string     `json:"projectPath"`
@@ -3236,6 +3224,26 @@ func (v *__getProjectPipelineDownstreamInput) GetPipelineIid() string { return v
 // GetEndCursor returns __getProjectPipelineDownstreamInput.EndCursor, and is useful for accessing the field via an interface.
 func (v *__getProjectPipelineDownstreamInput) GetEndCursor() *string { return v.EndCursor }
 
+// __getProjectPipelineInput is used internally by genqlient
+type __getProjectPipelineInput struct {
+	ProjectId  string `json:"projectId"`
+	PipelineId string `json:"pipelineId"`
+	Core       bool   `json:"_core"`
+	Relations  bool   `json:"_relations"`
+}
+
+// GetProjectId returns __getProjectPipelineInput.ProjectId, and is useful for accessing the field via an interface.
+func (v *__getProjectPipelineInput) GetProjectId() string { return v.ProjectId }
+
+// GetPipelineId returns __getProjectPipelineInput.PipelineId, and is useful for accessing the field via an interface.
+func (v *__getProjectPipelineInput) GetPipelineId() string { return v.PipelineId }
+
+// GetCore returns __getProjectPipelineInput.Core, and is useful for accessing the field via an interface.
+func (v *__getProjectPipelineInput) GetCore() bool { return v.Core }
+
+// GetRelations returns __getProjectPipelineInput.Relations, and is useful for accessing the field via an interface.
+func (v *__getProjectPipelineInput) GetRelations() bool { return v.Relations }
+
 // __getProjectPipelineJobArtifactsInput is used internally by genqlient
 type __getProjectPipelineJobArtifactsInput struct {
 	ProjectPath string  `json:"projectPath"`
@@ -3303,6 +3311,8 @@ type __getProjectPipelinesInput struct {
 	UpdatedAfter  *time.Time `json:"updatedAfter"`
 	UpdatedBefore *time.Time `json:"updatedBefore"`
 	EndCursor     *string    `json:"endCursor"`
+	Core          bool       `json:"_core"`
+	Relations     bool       `json:"_relations"`
 }
 
 // GetProjectPath returns __getProjectPipelinesInput.ProjectPath, and is useful for accessing the field via an interface.
@@ -3319,6 +3329,12 @@ func (v *__getProjectPipelinesInput) GetUpdatedBefore() *time.Time { return v.Up
 
 // GetEndCursor returns __getProjectPipelinesInput.EndCursor, and is useful for accessing the field via an interface.
 func (v *__getProjectPipelinesInput) GetEndCursor() *string { return v.EndCursor }
+
+// GetCore returns __getProjectPipelinesInput.Core, and is useful for accessing the field via an interface.
+func (v *__getProjectPipelinesInput) GetCore() bool { return v.Core }
+
+// GetRelations returns __getProjectPipelinesInput.Relations, and is useful for accessing the field via an interface.
+func (v *__getProjectPipelinesInput) GetRelations() bool { return v.Relations }
 
 // __getProjectPipelinesJobsInput is used internally by genqlient
 type __getProjectPipelinesJobsInput struct {
@@ -3479,6 +3495,8 @@ type __getProjectsPipelinesInput struct {
 	UpdatedAfter  *time.Time `json:"updatedAfter"`
 	UpdatedBefore *time.Time `json:"updatedBefore"`
 	EndCursor     *string    `json:"endCursor"`
+	Core          bool       `json:"_core"`
+	Relations     bool       `json:"_relations"`
 }
 
 // GetIds returns __getProjectsPipelinesInput.Ids, and is useful for accessing the field via an interface.
@@ -3495,6 +3513,12 @@ func (v *__getProjectsPipelinesInput) GetUpdatedBefore() *time.Time { return v.U
 
 // GetEndCursor returns __getProjectsPipelinesInput.EndCursor, and is useful for accessing the field via an interface.
 func (v *__getProjectsPipelinesInput) GetEndCursor() *string { return v.EndCursor }
+
+// GetCore returns __getProjectsPipelinesInput.Core, and is useful for accessing the field via an interface.
+func (v *__getProjectsPipelinesInput) GetCore() bool { return v.Core }
+
+// GetRelations returns __getProjectsPipelinesInput.Relations, and is useful for accessing the field via an interface.
+func (v *__getProjectsPipelinesInput) GetRelations() bool { return v.Relations }
 
 // __getProjectsPipelinesJobsInput is used internally by genqlient
 type __getProjectsPipelinesJobsInput struct {
@@ -3555,353 +3579,6 @@ func (v *__getProjectsPipelinesTestReportSummaryInput) GetSource() *string { ret
 
 // GetEndCursor returns __getProjectsPipelinesTestReportSummaryInput.EndCursor, and is useful for accessing the field via an interface.
 func (v *__getProjectsPipelinesTestReportSummaryInput) GetEndCursor() *string { return v.EndCursor }
-
-// getProjectIdPipelineProjectsProjectConnection includes the requested fields of the GraphQL type ProjectConnection.
-// The GraphQL type's documentation follows.
-//
-// The connection type for Project.
-type getProjectIdPipelineProjectsProjectConnection struct {
-	// A list of nodes.
-	Nodes []*getProjectIdPipelineProjectsProjectConnectionNodesProject `json:"nodes"`
-}
-
-// GetNodes returns getProjectIdPipelineProjectsProjectConnection.Nodes, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnection) GetNodes() []*getProjectIdPipelineProjectsProjectConnectionNodesProject {
-	return v.Nodes
-}
-
-// getProjectIdPipelineProjectsProjectConnectionNodesProject includes the requested fields of the GraphQL type Project.
-type getProjectIdPipelineProjectsProjectConnectionNodesProject struct {
-	ProjectReferenceFields `json:"-"`
-	// Pipeline of the project. If no arguments are provided, returns the latest pipeline for the head commit on the default branch
-	Pipeline *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline `json:"pipeline"`
-}
-
-// GetPipeline returns getProjectIdPipelineProjectsProjectConnectionNodesProject.Pipeline, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProject) GetPipeline() *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline {
-	return v.Pipeline
-}
-
-// GetId returns getProjectIdPipelineProjectsProjectConnectionNodesProject.Id, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProject) GetId() string {
-	return v.ProjectReferenceFields.Id
-}
-
-// GetFullPath returns getProjectIdPipelineProjectsProjectConnectionNodesProject.FullPath, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProject) GetFullPath() string {
-	return v.ProjectReferenceFields.FullPath
-}
-
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProject) UnmarshalJSON(b []byte) error {
-
-	if string(b) == "null" {
-		return nil
-	}
-
-	var firstPass struct {
-		*getProjectIdPipelineProjectsProjectConnectionNodesProject
-		graphql.NoUnmarshalJSON
-	}
-	firstPass.getProjectIdPipelineProjectsProjectConnectionNodesProject = v
-
-	err := json.Unmarshal(b, &firstPass)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(
-		b, &v.ProjectReferenceFields)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-type __premarshalgetProjectIdPipelineProjectsProjectConnectionNodesProject struct {
-	Pipeline *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline `json:"pipeline"`
-
-	Id string `json:"id"`
-
-	FullPath string `json:"fullPath"`
-}
-
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProject) MarshalJSON() ([]byte, error) {
-	premarshaled, err := v.__premarshalJSON()
-	if err != nil {
-		return nil, err
-	}
-	return json.Marshal(premarshaled)
-}
-
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProject) __premarshalJSON() (*__premarshalgetProjectIdPipelineProjectsProjectConnectionNodesProject, error) {
-	var retval __premarshalgetProjectIdPipelineProjectsProjectConnectionNodesProject
-
-	retval.Pipeline = v.Pipeline
-	retval.Id = v.ProjectReferenceFields.Id
-	retval.FullPath = v.ProjectReferenceFields.FullPath
-	return &retval, nil
-}
-
-// getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline includes the requested fields of the GraphQL type Pipeline.
-type getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline struct {
-	PipelineReferenceFields `json:"-"`
-	PipelineFieldsCore      `json:"-"`
-	PipelineFieldsRelations `json:"-"`
-}
-
-// GetId returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.Id, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetId() string {
-	return v.PipelineReferenceFields.Id
-}
-
-// GetIid returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.Iid, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetIid() string {
-	return v.PipelineReferenceFields.Iid
-}
-
-// GetName returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.Name, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetName() *string {
-	return v.PipelineFieldsCore.Name
-}
-
-// GetRef returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.Ref, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetRef() *string {
-	return v.PipelineFieldsCore.Ref
-}
-
-// GetRefPath returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.RefPath, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetRefPath() *string {
-	return v.PipelineFieldsCore.RefPath
-}
-
-// GetStatus returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.Status, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetStatus() PipelineStatusEnum {
-	return v.PipelineFieldsCore.Status
-}
-
-// GetSource returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.Source, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetSource() *string {
-	return v.PipelineFieldsCore.Source
-}
-
-// GetSha returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.Sha, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetSha() *string {
-	return v.PipelineFieldsCore.Sha
-}
-
-// GetCommittedAt returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.CommittedAt, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetCommittedAt() *time.Time {
-	return v.PipelineFieldsCore.CommittedAt
-}
-
-// GetCreatedAt returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.CreatedAt, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetCreatedAt() time.Time {
-	return v.PipelineFieldsCore.CreatedAt
-}
-
-// GetUpdatedAt returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.UpdatedAt, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetUpdatedAt() time.Time {
-	return v.PipelineFieldsCore.UpdatedAt
-}
-
-// GetStartedAt returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.StartedAt, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetStartedAt() *time.Time {
-	return v.PipelineFieldsCore.StartedAt
-}
-
-// GetFinishedAt returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.FinishedAt, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetFinishedAt() *time.Time {
-	return v.PipelineFieldsCore.FinishedAt
-}
-
-// GetQueuedDuration returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.QueuedDuration, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetQueuedDuration() *float64 {
-	return v.PipelineFieldsCore.QueuedDuration
-}
-
-// GetDuration returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.Duration, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetDuration() *int {
-	return v.PipelineFieldsCore.Duration
-}
-
-// GetCoverage returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.Coverage, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetCoverage() *float64 {
-	return v.PipelineFieldsCore.Coverage
-}
-
-// GetFailureReason returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.FailureReason, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetFailureReason() *string {
-	return v.PipelineFieldsCore.FailureReason
-}
-
-// GetWarnings returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.Warnings, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetWarnings() bool {
-	return v.PipelineFieldsCore.Warnings
-}
-
-// GetYamlErrors returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.YamlErrors, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetYamlErrors() bool {
-	return v.PipelineFieldsCore.YamlErrors
-}
-
-// GetMergeRequest returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.MergeRequest, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetMergeRequest() *PipelineFieldsCoreMergeRequest {
-	return v.PipelineFieldsCore.MergeRequest
-}
-
-// GetUser returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.User, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetUser() *PipelineFieldsCoreUserUserCore {
-	return v.PipelineFieldsCore.User
-}
-
-// GetChild returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.Child, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetChild() bool {
-	return v.PipelineFieldsRelations.Child
-}
-
-// GetUpstream returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.Upstream, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetUpstream() *PipelineFieldsRelationsUpstreamPipeline {
-	return v.PipelineFieldsRelations.Upstream
-}
-
-// GetDownstream returns getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline.Downstream, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) GetDownstream() *PipelineFieldsRelationsDownstreamPipelineConnection {
-	return v.PipelineFieldsRelations.Downstream
-}
-
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) UnmarshalJSON(b []byte) error {
-
-	if string(b) == "null" {
-		return nil
-	}
-
-	var firstPass struct {
-		*getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline
-		graphql.NoUnmarshalJSON
-	}
-	firstPass.getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline = v
-
-	err := json.Unmarshal(b, &firstPass)
-	if err != nil {
-		return err
-	}
-
-	err = json.Unmarshal(
-		b, &v.PipelineReferenceFields)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(
-		b, &v.PipelineFieldsCore)
-	if err != nil {
-		return err
-	}
-	err = json.Unmarshal(
-		b, &v.PipelineFieldsRelations)
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-type __premarshalgetProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline struct {
-	Id string `json:"id"`
-
-	Iid string `json:"iid"`
-
-	Name *string `json:"name"`
-
-	Ref *string `json:"ref"`
-
-	RefPath *string `json:"refPath"`
-
-	Status PipelineStatusEnum `json:"status"`
-
-	Source *string `json:"source"`
-
-	Sha *string `json:"sha"`
-
-	CommittedAt *time.Time `json:"committedAt"`
-
-	CreatedAt time.Time `json:"createdAt"`
-
-	UpdatedAt time.Time `json:"updatedAt"`
-
-	StartedAt *time.Time `json:"startedAt"`
-
-	FinishedAt *time.Time `json:"finishedAt"`
-
-	QueuedDuration *float64 `json:"queuedDuration"`
-
-	Duration *int `json:"duration"`
-
-	Coverage *float64 `json:"coverage"`
-
-	FailureReason *string `json:"failureReason"`
-
-	Warnings bool `json:"warnings"`
-
-	YamlErrors bool `json:"yamlErrors"`
-
-	MergeRequest *PipelineFieldsCoreMergeRequest `json:"mergeRequest"`
-
-	User *PipelineFieldsCoreUserUserCore `json:"user"`
-
-	Child bool `json:"child"`
-
-	Upstream *PipelineFieldsRelationsUpstreamPipeline `json:"upstream"`
-
-	Downstream *PipelineFieldsRelationsDownstreamPipelineConnection `json:"downstream"`
-}
-
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) MarshalJSON() ([]byte, error) {
-	premarshaled, err := v.__premarshalJSON()
-	if err != nil {
-		return nil, err
-	}
-	return json.Marshal(premarshaled)
-}
-
-func (v *getProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline) __premarshalJSON() (*__premarshalgetProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline, error) {
-	var retval __premarshalgetProjectIdPipelineProjectsProjectConnectionNodesProjectPipeline
-
-	retval.Id = v.PipelineReferenceFields.Id
-	retval.Iid = v.PipelineReferenceFields.Iid
-	retval.Name = v.PipelineFieldsCore.Name
-	retval.Ref = v.PipelineFieldsCore.Ref
-	retval.RefPath = v.PipelineFieldsCore.RefPath
-	retval.Status = v.PipelineFieldsCore.Status
-	retval.Source = v.PipelineFieldsCore.Source
-	retval.Sha = v.PipelineFieldsCore.Sha
-	retval.CommittedAt = v.PipelineFieldsCore.CommittedAt
-	retval.CreatedAt = v.PipelineFieldsCore.CreatedAt
-	retval.UpdatedAt = v.PipelineFieldsCore.UpdatedAt
-	retval.StartedAt = v.PipelineFieldsCore.StartedAt
-	retval.FinishedAt = v.PipelineFieldsCore.FinishedAt
-	retval.QueuedDuration = v.PipelineFieldsCore.QueuedDuration
-	retval.Duration = v.PipelineFieldsCore.Duration
-	retval.Coverage = v.PipelineFieldsCore.Coverage
-	retval.FailureReason = v.PipelineFieldsCore.FailureReason
-	retval.Warnings = v.PipelineFieldsCore.Warnings
-	retval.YamlErrors = v.PipelineFieldsCore.YamlErrors
-	retval.MergeRequest = v.PipelineFieldsCore.MergeRequest
-	retval.User = v.PipelineFieldsCore.User
-	retval.Child = v.PipelineFieldsRelations.Child
-	retval.Upstream = v.PipelineFieldsRelations.Upstream
-	retval.Downstream = v.PipelineFieldsRelations.Downstream
-	return &retval, nil
-}
-
-// getProjectIdPipelineResponse is returned by getProjectIdPipeline on success.
-type getProjectIdPipelineResponse struct {
-	// Find projects visible to the current user.
-	Projects *getProjectIdPipelineProjectsProjectConnection `json:"projects"`
-}
-
-// GetProjects returns getProjectIdPipelineResponse.Projects, and is useful for accessing the field via an interface.
-func (v *getProjectIdPipelineResponse) GetProjects() *getProjectIdPipelineProjectsProjectConnection {
-	return v.Projects
-}
 
 // getProjectIssuesProject includes the requested fields of the GraphQL type Project.
 type getProjectIssuesProject struct {
@@ -7144,6 +6821,353 @@ type getProjectPipelineJobsResponse struct {
 // GetProject returns getProjectPipelineJobsResponse.Project, and is useful for accessing the field via an interface.
 func (v *getProjectPipelineJobsResponse) GetProject() *getProjectPipelineJobsProject {
 	return v.Project
+}
+
+// getProjectPipelineProjectsProjectConnection includes the requested fields of the GraphQL type ProjectConnection.
+// The GraphQL type's documentation follows.
+//
+// The connection type for Project.
+type getProjectPipelineProjectsProjectConnection struct {
+	// A list of nodes.
+	Nodes []*getProjectPipelineProjectsProjectConnectionNodesProject `json:"nodes"`
+}
+
+// GetNodes returns getProjectPipelineProjectsProjectConnection.Nodes, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnection) GetNodes() []*getProjectPipelineProjectsProjectConnectionNodesProject {
+	return v.Nodes
+}
+
+// getProjectPipelineProjectsProjectConnectionNodesProject includes the requested fields of the GraphQL type Project.
+type getProjectPipelineProjectsProjectConnectionNodesProject struct {
+	ProjectReferenceFields `json:"-"`
+	// Pipeline of the project. If no arguments are provided, returns the latest pipeline for the head commit on the default branch
+	Pipeline *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline `json:"pipeline"`
+}
+
+// GetPipeline returns getProjectPipelineProjectsProjectConnectionNodesProject.Pipeline, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProject) GetPipeline() *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline {
+	return v.Pipeline
+}
+
+// GetId returns getProjectPipelineProjectsProjectConnectionNodesProject.Id, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProject) GetId() string {
+	return v.ProjectReferenceFields.Id
+}
+
+// GetFullPath returns getProjectPipelineProjectsProjectConnectionNodesProject.FullPath, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProject) GetFullPath() string {
+	return v.ProjectReferenceFields.FullPath
+}
+
+func (v *getProjectPipelineProjectsProjectConnectionNodesProject) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectPipelineProjectsProjectConnectionNodesProject
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectPipelineProjectsProjectConnectionNodesProject = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.ProjectReferenceFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectPipelineProjectsProjectConnectionNodesProject struct {
+	Pipeline *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline `json:"pipeline"`
+
+	Id string `json:"id"`
+
+	FullPath string `json:"fullPath"`
+}
+
+func (v *getProjectPipelineProjectsProjectConnectionNodesProject) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectPipelineProjectsProjectConnectionNodesProject) __premarshalJSON() (*__premarshalgetProjectPipelineProjectsProjectConnectionNodesProject, error) {
+	var retval __premarshalgetProjectPipelineProjectsProjectConnectionNodesProject
+
+	retval.Pipeline = v.Pipeline
+	retval.Id = v.ProjectReferenceFields.Id
+	retval.FullPath = v.ProjectReferenceFields.FullPath
+	return &retval, nil
+}
+
+// getProjectPipelineProjectsProjectConnectionNodesProjectPipeline includes the requested fields of the GraphQL type Pipeline.
+type getProjectPipelineProjectsProjectConnectionNodesProjectPipeline struct {
+	PipelineReferenceFields `json:"-"`
+	PipelineFieldsCore      `json:"-"`
+	PipelineFieldsRelations `json:"-"`
+}
+
+// GetId returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.Id, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetId() string {
+	return v.PipelineReferenceFields.Id
+}
+
+// GetIid returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.Iid, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetIid() string {
+	return v.PipelineReferenceFields.Iid
+}
+
+// GetName returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.Name, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetName() *string {
+	return v.PipelineFieldsCore.Name
+}
+
+// GetRef returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.Ref, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetRef() *string {
+	return v.PipelineFieldsCore.Ref
+}
+
+// GetRefPath returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.RefPath, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetRefPath() *string {
+	return v.PipelineFieldsCore.RefPath
+}
+
+// GetStatus returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.Status, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetStatus() PipelineStatusEnum {
+	return v.PipelineFieldsCore.Status
+}
+
+// GetSource returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.Source, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetSource() *string {
+	return v.PipelineFieldsCore.Source
+}
+
+// GetSha returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.Sha, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetSha() *string {
+	return v.PipelineFieldsCore.Sha
+}
+
+// GetCommittedAt returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.CommittedAt, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetCommittedAt() *time.Time {
+	return v.PipelineFieldsCore.CommittedAt
+}
+
+// GetCreatedAt returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.CreatedAt, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetCreatedAt() time.Time {
+	return v.PipelineFieldsCore.CreatedAt
+}
+
+// GetUpdatedAt returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.UpdatedAt, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetUpdatedAt() time.Time {
+	return v.PipelineFieldsCore.UpdatedAt
+}
+
+// GetStartedAt returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.StartedAt, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetStartedAt() *time.Time {
+	return v.PipelineFieldsCore.StartedAt
+}
+
+// GetFinishedAt returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.FinishedAt, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetFinishedAt() *time.Time {
+	return v.PipelineFieldsCore.FinishedAt
+}
+
+// GetQueuedDuration returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.QueuedDuration, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetQueuedDuration() *float64 {
+	return v.PipelineFieldsCore.QueuedDuration
+}
+
+// GetDuration returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.Duration, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetDuration() *int {
+	return v.PipelineFieldsCore.Duration
+}
+
+// GetCoverage returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.Coverage, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetCoverage() *float64 {
+	return v.PipelineFieldsCore.Coverage
+}
+
+// GetFailureReason returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.FailureReason, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetFailureReason() *string {
+	return v.PipelineFieldsCore.FailureReason
+}
+
+// GetWarnings returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.Warnings, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetWarnings() bool {
+	return v.PipelineFieldsCore.Warnings
+}
+
+// GetYamlErrors returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.YamlErrors, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetYamlErrors() bool {
+	return v.PipelineFieldsCore.YamlErrors
+}
+
+// GetMergeRequest returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.MergeRequest, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetMergeRequest() *PipelineFieldsCoreMergeRequest {
+	return v.PipelineFieldsCore.MergeRequest
+}
+
+// GetUser returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.User, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetUser() *PipelineFieldsCoreUserUserCore {
+	return v.PipelineFieldsCore.User
+}
+
+// GetChild returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.Child, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetChild() bool {
+	return v.PipelineFieldsRelations.Child
+}
+
+// GetUpstream returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.Upstream, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetUpstream() *PipelineFieldsRelationsUpstreamPipeline {
+	return v.PipelineFieldsRelations.Upstream
+}
+
+// GetDownstream returns getProjectPipelineProjectsProjectConnectionNodesProjectPipeline.Downstream, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) GetDownstream() *PipelineFieldsRelationsDownstreamPipelineConnection {
+	return v.PipelineFieldsRelations.Downstream
+}
+
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectPipelineProjectsProjectConnectionNodesProjectPipeline
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectPipelineProjectsProjectConnectionNodesProjectPipeline = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.PipelineReferenceFields)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(
+		b, &v.PipelineFieldsCore)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(
+		b, &v.PipelineFieldsRelations)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectPipelineProjectsProjectConnectionNodesProjectPipeline struct {
+	Id string `json:"id"`
+
+	Iid string `json:"iid"`
+
+	Name *string `json:"name"`
+
+	Ref *string `json:"ref"`
+
+	RefPath *string `json:"refPath"`
+
+	Status PipelineStatusEnum `json:"status"`
+
+	Source *string `json:"source"`
+
+	Sha *string `json:"sha"`
+
+	CommittedAt *time.Time `json:"committedAt"`
+
+	CreatedAt time.Time `json:"createdAt"`
+
+	UpdatedAt time.Time `json:"updatedAt"`
+
+	StartedAt *time.Time `json:"startedAt"`
+
+	FinishedAt *time.Time `json:"finishedAt"`
+
+	QueuedDuration *float64 `json:"queuedDuration"`
+
+	Duration *int `json:"duration"`
+
+	Coverage *float64 `json:"coverage"`
+
+	FailureReason *string `json:"failureReason"`
+
+	Warnings bool `json:"warnings"`
+
+	YamlErrors bool `json:"yamlErrors"`
+
+	MergeRequest *PipelineFieldsCoreMergeRequest `json:"mergeRequest"`
+
+	User *PipelineFieldsCoreUserUserCore `json:"user"`
+
+	Child bool `json:"child"`
+
+	Upstream *PipelineFieldsRelationsUpstreamPipeline `json:"upstream"`
+
+	Downstream *PipelineFieldsRelationsDownstreamPipelineConnection `json:"downstream"`
+}
+
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectPipelineProjectsProjectConnectionNodesProjectPipeline) __premarshalJSON() (*__premarshalgetProjectPipelineProjectsProjectConnectionNodesProjectPipeline, error) {
+	var retval __premarshalgetProjectPipelineProjectsProjectConnectionNodesProjectPipeline
+
+	retval.Id = v.PipelineReferenceFields.Id
+	retval.Iid = v.PipelineReferenceFields.Iid
+	retval.Name = v.PipelineFieldsCore.Name
+	retval.Ref = v.PipelineFieldsCore.Ref
+	retval.RefPath = v.PipelineFieldsCore.RefPath
+	retval.Status = v.PipelineFieldsCore.Status
+	retval.Source = v.PipelineFieldsCore.Source
+	retval.Sha = v.PipelineFieldsCore.Sha
+	retval.CommittedAt = v.PipelineFieldsCore.CommittedAt
+	retval.CreatedAt = v.PipelineFieldsCore.CreatedAt
+	retval.UpdatedAt = v.PipelineFieldsCore.UpdatedAt
+	retval.StartedAt = v.PipelineFieldsCore.StartedAt
+	retval.FinishedAt = v.PipelineFieldsCore.FinishedAt
+	retval.QueuedDuration = v.PipelineFieldsCore.QueuedDuration
+	retval.Duration = v.PipelineFieldsCore.Duration
+	retval.Coverage = v.PipelineFieldsCore.Coverage
+	retval.FailureReason = v.PipelineFieldsCore.FailureReason
+	retval.Warnings = v.PipelineFieldsCore.Warnings
+	retval.YamlErrors = v.PipelineFieldsCore.YamlErrors
+	retval.MergeRequest = v.PipelineFieldsCore.MergeRequest
+	retval.User = v.PipelineFieldsCore.User
+	retval.Child = v.PipelineFieldsRelations.Child
+	retval.Upstream = v.PipelineFieldsRelations.Upstream
+	retval.Downstream = v.PipelineFieldsRelations.Downstream
+	return &retval, nil
+}
+
+// getProjectPipelineResponse is returned by getProjectPipeline on success.
+type getProjectPipelineResponse struct {
+	// Find projects visible to the current user.
+	Projects *getProjectPipelineProjectsProjectConnection `json:"projects"`
+}
+
+// GetProjects returns getProjectPipelineResponse.Projects, and is useful for accessing the field via an interface.
+func (v *getProjectPipelineResponse) GetProjects() *getProjectPipelineProjectsProjectConnection {
+	return v.Projects
 }
 
 // getProjectPipelinesJobsProject includes the requested fields of the GraphQL type Project.
@@ -12433,118 +12457,6 @@ func (v *pageFields) GetHasNextPage() bool { return v.HasNextPage }
 // GetEndCursor returns pageFields.EndCursor, and is useful for accessing the field via an interface.
 func (v *pageFields) GetEndCursor() *string { return v.EndCursor }
 
-// The query executed by getProjectIdPipeline.
-const getProjectIdPipeline_Operation = `
-query getProjectIdPipeline ($projectId: ID!, $pipelineId: CiPipelineID!) {
-	projects(ids: [$projectId]) {
-		nodes {
-			... ProjectReferenceFields
-			pipeline(id: $pipelineId) {
-				... PipelineReferenceFields
-				... PipelineFieldsCore
-				... PipelineFieldsRelations
-			}
-		}
-	}
-}
-fragment ProjectReferenceFields on Project {
-	id
-	fullPath
-}
-fragment PipelineReferenceFields on Pipeline {
-	id
-	iid
-}
-fragment PipelineFieldsCore on Pipeline {
-	name
-	ref
-	refPath
-	status
-	source
-	sha(format: LONG)
-	committedAt
-	createdAt
-	updatedAt
-	startedAt
-	finishedAt
-	queuedDuration
-	duration
-	coverage
-	failureReason
-	warnings
-	yamlErrors
-	mergeRequest {
-		... MergeRequestReferenceFields
-		project {
-			... ProjectReferenceFields
-		}
-	}
-	user {
-		... UserReferenceFields
-	}
-}
-fragment PipelineFieldsRelations on Pipeline {
-	child
-	upstream {
-		... PipelineReferenceFields
-		project {
-			... ProjectReferenceFields
-		}
-	}
-	downstream {
-		nodes {
-			... PipelineReferenceFields
-			project {
-				... ProjectReferenceFields
-			}
-		}
-		pageInfo {
-			... pageFields
-		}
-	}
-}
-fragment MergeRequestReferenceFields on MergeRequest {
-	id
-	iid
-}
-fragment UserReferenceFields on User {
-	id
-	username
-	name
-}
-fragment pageFields on PageInfo {
-	hasNextPage
-	endCursor
-}
-`
-
-func getProjectIdPipeline(
-	ctx_ context.Context,
-	client_ graphql.Client,
-	projectId string,
-	pipelineId string,
-) (data_ *getProjectIdPipelineResponse, err_ error) {
-	req_ := &graphql.Request{
-		OpName: "getProjectIdPipeline",
-		Query:  getProjectIdPipeline_Operation,
-		Variables: &__getProjectIdPipelineInput{
-			ProjectId:  projectId,
-			PipelineId: pipelineId,
-		},
-	}
-
-	data_ = &getProjectIdPipelineResponse{}
-	resp_ := &graphql.Response{Data: data_}
-
-	err_ = client_.MakeRequest(
-		ctx_,
-		req_,
-		resp_,
-	)
-
-	return data_, err_
-}
-
 // The query executed by getProjectIssues.
 const getProjectIssues_Operation = `
 query getProjectIssues ($projectPath: ID!, $updatedAfter: Time, $updatedBefore: Time, $endCursor: String) {
@@ -12941,6 +12853,122 @@ func getProjectMergeRequestsNotes(
 	return data_, err_
 }
 
+// The query executed by getProjectPipeline.
+const getProjectPipeline_Operation = `
+query getProjectPipeline ($projectId: ID!, $pipelineId: CiPipelineID!, $_core: Boolean!, $_relations: Boolean!) {
+	projects(ids: [$projectId]) {
+		nodes {
+			... ProjectReferenceFields
+			pipeline(id: $pipelineId) {
+				... PipelineReferenceFields
+				... PipelineFieldsCore @include(if: $_core)
+				... PipelineFieldsRelations @include(if: $_relations)
+			}
+		}
+	}
+}
+fragment ProjectReferenceFields on Project {
+	id
+	fullPath
+}
+fragment PipelineReferenceFields on Pipeline {
+	id
+	iid
+}
+fragment PipelineFieldsCore on Pipeline {
+	name
+	ref
+	refPath
+	status
+	source
+	sha(format: LONG)
+	committedAt
+	createdAt
+	updatedAt
+	startedAt
+	finishedAt
+	queuedDuration
+	duration
+	coverage
+	failureReason
+	warnings
+	yamlErrors
+	mergeRequest {
+		... MergeRequestReferenceFields
+		project {
+			... ProjectReferenceFields
+		}
+	}
+	user {
+		... UserReferenceFields
+	}
+}
+fragment PipelineFieldsRelations on Pipeline {
+	child
+	upstream {
+		... PipelineReferenceFields
+		project {
+			... ProjectReferenceFields
+		}
+	}
+	downstream {
+		nodes {
+			... PipelineReferenceFields
+			project {
+				... ProjectReferenceFields
+			}
+		}
+		pageInfo {
+			... pageFields
+		}
+	}
+}
+fragment MergeRequestReferenceFields on MergeRequest {
+	id
+	iid
+}
+fragment UserReferenceFields on User {
+	id
+	username
+	name
+}
+fragment pageFields on PageInfo {
+	hasNextPage
+	endCursor
+}
+`
+
+func getProjectPipeline(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	projectId string,
+	pipelineId string,
+	_core bool,
+	_relations bool,
+) (data_ *getProjectPipelineResponse, err_ error) {
+	req_ := &graphql.Request{
+		OpName: "getProjectPipeline",
+		Query:  getProjectPipeline_Operation,
+		Variables: &__getProjectPipelineInput{
+			ProjectId:  projectId,
+			PipelineId: pipelineId,
+			Core:       _core,
+			Relations:  _relations,
+		},
+	}
+
+	data_ = &getProjectPipelineResponse{}
+	resp_ := &graphql.Response{Data: data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return data_, err_
+}
+
 // The query executed by getProjectPipelineDownstream.
 const getProjectPipelineDownstream_Operation = `
 query getProjectPipelineDownstream ($projectPath: ID!, $pipelineIid: ID!, $endCursor: String) {
@@ -13263,14 +13291,14 @@ func getProjectPipelineJobsArtifacts(
 
 // The query executed by getProjectPipelines.
 const getProjectPipelines_Operation = `
-query getProjectPipelines ($projectPath: ID!, $source: String, $updatedAfter: Time, $updatedBefore: Time, $endCursor: String) {
+query getProjectPipelines ($projectPath: ID!, $source: String, $updatedAfter: Time, $updatedBefore: Time, $endCursor: String, $_core: Boolean!, $_relations: Boolean!) {
 	project(fullPath: $projectPath) {
 		... ProjectReferenceFields
 		pipelines(scope: FINISHED, source: $source, updatedAfter: $updatedAfter, updatedBefore: $updatedBefore, after: $endCursor) {
 			nodes {
 				... PipelineReferenceFields
-				... PipelineFieldsCore
-				... PipelineFieldsRelations
+				... PipelineFieldsCore @include(if: $_core)
+				... PipelineFieldsRelations @include(if: $_relations)
 			}
 			pageInfo {
 				... pageFields
@@ -13357,6 +13385,8 @@ func getProjectPipelines(
 	updatedAfter *time.Time,
 	updatedBefore *time.Time,
 	endCursor *string,
+	_core bool,
+	_relations bool,
 ) (data_ *getProjectPipelinesResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "getProjectPipelines",
@@ -13367,6 +13397,8 @@ func getProjectPipelines(
 			UpdatedAfter:  updatedAfter,
 			UpdatedBefore: updatedBefore,
 			EndCursor:     endCursor,
+			Core:          _core,
+			Relations:     _relations,
 		},
 	}
 
@@ -14017,15 +14049,15 @@ func getProjectsMergeRequests(
 
 // The query executed by getProjectsPipelines.
 const getProjectsPipelines_Operation = `
-query getProjectsPipelines ($ids: [ID!], $source: String, $updatedAfter: Time, $updatedBefore: Time, $endCursor: String) {
+query getProjectsPipelines ($ids: [ID!], $source: String, $updatedAfter: Time, $updatedBefore: Time, $endCursor: String, $_core: Boolean!, $_relations: Boolean!) {
 	projects(ids: $ids, after: $endCursor) {
 		nodes {
 			... ProjectReferenceFields
 			pipelines(scope: FINISHED, source: $source, updatedAfter: $updatedAfter, updatedBefore: $updatedBefore) {
 				nodes {
 					... PipelineReferenceFields
-					... PipelineFieldsCore
-					... PipelineFieldsRelations
+					... PipelineFieldsCore @include(if: $_core)
+					... PipelineFieldsRelations @include(if: $_relations)
 				}
 				pageInfo {
 					... pageFields
@@ -14116,6 +14148,8 @@ func getProjectsPipelines(
 	updatedAfter *time.Time,
 	updatedBefore *time.Time,
 	endCursor *string,
+	_core bool,
+	_relations bool,
 ) (data_ *getProjectsPipelinesResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "getProjectsPipelines",
@@ -14126,6 +14160,8 @@ func getProjectsPipelines(
 			UpdatedAfter:  updatedAfter,
 			UpdatedBefore: updatedBefore,
 			EndCursor:     endCursor,
+			Core:          _core,
+			Relations:     _relations,
 		},
 	}
 
