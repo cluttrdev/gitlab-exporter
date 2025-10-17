@@ -4,6 +4,9 @@ query getProjectsPipelines(
     $updatedAfter: Time
     $updatedBefore: Time
     $endCursor: String
+    # field fragments (choose one)
+    $_core: Boolean!
+    $_relations: Boolean!
 ){
     projects(ids: $ids, after: $endCursor) {
         nodes {
@@ -18,8 +21,8 @@ query getProjectsPipelines(
                 nodes {
                     ...PipelineReferenceFields
 
-                    ...PipelineFieldsCore
-                    ...PipelineFieldsRelations
+                    ...PipelineFieldsCore @include(if: $_core)
+                    ...PipelineFieldsRelations @include(if: $_relations)
                 }
                 pageInfo {
                     ...pageFields
@@ -38,6 +41,9 @@ query getProjectPipelines(
     $updatedAfter: Time
     $updatedBefore: Time
     $endCursor: String
+    # field fragments (choose one)
+    $_core: Boolean!
+    $_relations: Boolean!
 ) {
     project(fullPath: $projectPath) {
         ...ProjectReferenceFields
@@ -52,8 +58,8 @@ query getProjectPipelines(
             nodes {
                 ...PipelineReferenceFields
 
-                ...PipelineFieldsCore
-                ...PipelineFieldsRelations
+                ...PipelineFieldsCore @include(if: $_core)
+                ...PipelineFieldsRelations @include(if: $_relations)
             }
             pageInfo {
                 ...pageFields
@@ -86,9 +92,12 @@ query getProjectPipelineDownstream(
     }
 }
 
-query getProjectIdPipeline(
+query getProjectPipeline(
     $projectId: ID!
     $pipelineId: CiPipelineID!
+    # field fragments
+    $_core: Boolean!
+    $_relations: Boolean!
 ) {
     projects(ids: [$projectId]){
         nodes {
@@ -97,8 +106,8 @@ query getProjectIdPipeline(
             pipeline(id: $pipelineId) {
                 ...PipelineReferenceFields
 
-                ...PipelineFieldsCore
-                ...PipelineFieldsRelations
+                ...PipelineFieldsCore @include(if: $_core)
+                ...PipelineFieldsRelations @include(if: $_relations)
             }
         }
     }
