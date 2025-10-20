@@ -72,6 +72,57 @@ var AllCiJobStatus = []CiJobStatus{
 	CiJobStatusScheduled,
 }
 
+type CiRunnerAccessLevel string
+
+const (
+	// A runner that is not protected.
+	CiRunnerAccessLevelNotProtected CiRunnerAccessLevel = "NOT_PROTECTED"
+	// A runner that is ref protected.
+	CiRunnerAccessLevelRefProtected CiRunnerAccessLevel = "REF_PROTECTED"
+)
+
+var AllCiRunnerAccessLevel = []CiRunnerAccessLevel{
+	CiRunnerAccessLevelNotProtected,
+	CiRunnerAccessLevelRefProtected,
+}
+
+type CiRunnerStatus string
+
+const (
+	// Runner that contacted this instance within the last 2 hours.
+	CiRunnerStatusOnline CiRunnerStatus = "ONLINE"
+	// Runner that has not contacted this instance within the last 2 hours. Will be considered `STALE` if offline for more than 7 days.
+	CiRunnerStatusOffline CiRunnerStatus = "OFFLINE"
+	// Runner that has not contacted this instance within the last 7 days.
+	CiRunnerStatusStale CiRunnerStatus = "STALE"
+	// Runner that has never contacted the instance.
+	CiRunnerStatusNeverContacted CiRunnerStatus = "NEVER_CONTACTED"
+)
+
+var AllCiRunnerStatus = []CiRunnerStatus{
+	CiRunnerStatusOnline,
+	CiRunnerStatusOffline,
+	CiRunnerStatusStale,
+	CiRunnerStatusNeverContacted,
+}
+
+type CiRunnerType string
+
+const (
+	// A runner that is instance type.
+	CiRunnerTypeInstanceType CiRunnerType = "INSTANCE_TYPE"
+	// A runner that is group type.
+	CiRunnerTypeGroupType CiRunnerType = "GROUP_TYPE"
+	// A runner that is project type.
+	CiRunnerTypeProjectType CiRunnerType = "PROJECT_TYPE"
+)
+
+var AllCiRunnerType = []CiRunnerType{
+	CiRunnerTypeInstanceType,
+	CiRunnerTypeGroupType,
+	CiRunnerTypeProjectType,
+}
+
 // Detailed representation of whether a GitLab merge request can be merged.
 type DetailedMergeStatus string
 
@@ -762,12 +813,61 @@ func (v *JobFieldsExtraDownstreamPipelineProject) __premarshalJSON() (*__premars
 
 // JobFieldsExtraRunnerCiRunner includes the requested fields of the GraphQL type CiRunner.
 type JobFieldsExtraRunnerCiRunner struct {
-	// ID of the runner.
-	Id string `json:"id"`
+	RunnerReferenceFields `json:"-"`
 }
 
 // GetId returns JobFieldsExtraRunnerCiRunner.Id, and is useful for accessing the field via an interface.
-func (v *JobFieldsExtraRunnerCiRunner) GetId() string { return v.Id }
+func (v *JobFieldsExtraRunnerCiRunner) GetId() string { return v.RunnerReferenceFields.Id }
+
+// GetShortSha returns JobFieldsExtraRunnerCiRunner.ShortSha, and is useful for accessing the field via an interface.
+func (v *JobFieldsExtraRunnerCiRunner) GetShortSha() *string { return v.RunnerReferenceFields.ShortSha }
+
+func (v *JobFieldsExtraRunnerCiRunner) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*JobFieldsExtraRunnerCiRunner
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.JobFieldsExtraRunnerCiRunner = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.RunnerReferenceFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalJobFieldsExtraRunnerCiRunner struct {
+	Id string `json:"id"`
+
+	ShortSha *string `json:"shortSha"`
+}
+
+func (v *JobFieldsExtraRunnerCiRunner) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *JobFieldsExtraRunnerCiRunner) __premarshalJSON() (*__premarshalJobFieldsExtraRunnerCiRunner, error) {
+	var retval __premarshalJobFieldsExtraRunnerCiRunner
+
+	retval.Id = v.RunnerReferenceFields.Id
+	retval.ShortSha = v.RunnerReferenceFields.ShortSha
+	return &retval, nil
+}
 
 // JobFieldsExtraStageCiStage includes the requested fields of the GraphQL type CiStage.
 type JobFieldsExtraStageCiStage struct {
@@ -2689,6 +2789,155 @@ func (v *ProjectReferenceFields) GetId() string { return v.Id }
 // GetFullPath returns ProjectReferenceFields.FullPath, and is useful for accessing the field via an interface.
 func (v *ProjectReferenceFields) GetFullPath() string { return v.FullPath }
 
+// RunnerFieldsCore includes the GraphQL fields of CiRunner requested by the fragment RunnerFieldsCore.
+type RunnerFieldsCore struct {
+	// Description of the runner.
+	Description *string `json:"description"`
+	// Type of the runner.
+	RunnerType CiRunnerType `json:"runnerType"`
+	// Tags associated with the runner.
+	TagList []string `json:"tagList"`
+	// Status of the runner.
+	Status CiRunnerStatus `json:"status"`
+	// Indicates the runner is allowed to receive jobs. Deprecated in GitLab 14.8: Use `paused`. This field is the inverse of `paused` and has no relationship to the runner's job execution status. For more details, see `jobExecutionStatus`.
+	Active bool `json:"active"`
+	// Indicates the runner is locked.
+	Locked *bool `json:"locked"`
+	// Indicates the runner is paused and not available to run jobs.
+	Paused bool `json:"paused"`
+	// Access level of the runner.
+	AccessLevel CiRunnerAccessLevel `json:"accessLevel"`
+	// Indicates the runner is able to run untagged jobs.
+	RunUntagged bool `json:"runUntagged"`
+	// Timestamp of last contact from the runner.
+	ContactedAt *time.Time `json:"contactedAt"`
+	// Timestamp of creation of the runner.
+	CreatedAt *time.Time `json:"createdAt"`
+	// User that created the runner.
+	CreatedBy *RunnerFieldsCoreCreatedByUserCore `json:"createdBy"`
+}
+
+// GetDescription returns RunnerFieldsCore.Description, and is useful for accessing the field via an interface.
+func (v *RunnerFieldsCore) GetDescription() *string { return v.Description }
+
+// GetRunnerType returns RunnerFieldsCore.RunnerType, and is useful for accessing the field via an interface.
+func (v *RunnerFieldsCore) GetRunnerType() CiRunnerType { return v.RunnerType }
+
+// GetTagList returns RunnerFieldsCore.TagList, and is useful for accessing the field via an interface.
+func (v *RunnerFieldsCore) GetTagList() []string { return v.TagList }
+
+// GetStatus returns RunnerFieldsCore.Status, and is useful for accessing the field via an interface.
+func (v *RunnerFieldsCore) GetStatus() CiRunnerStatus { return v.Status }
+
+// GetActive returns RunnerFieldsCore.Active, and is useful for accessing the field via an interface.
+func (v *RunnerFieldsCore) GetActive() bool { return v.Active }
+
+// GetLocked returns RunnerFieldsCore.Locked, and is useful for accessing the field via an interface.
+func (v *RunnerFieldsCore) GetLocked() *bool { return v.Locked }
+
+// GetPaused returns RunnerFieldsCore.Paused, and is useful for accessing the field via an interface.
+func (v *RunnerFieldsCore) GetPaused() bool { return v.Paused }
+
+// GetAccessLevel returns RunnerFieldsCore.AccessLevel, and is useful for accessing the field via an interface.
+func (v *RunnerFieldsCore) GetAccessLevel() CiRunnerAccessLevel { return v.AccessLevel }
+
+// GetRunUntagged returns RunnerFieldsCore.RunUntagged, and is useful for accessing the field via an interface.
+func (v *RunnerFieldsCore) GetRunUntagged() bool { return v.RunUntagged }
+
+// GetContactedAt returns RunnerFieldsCore.ContactedAt, and is useful for accessing the field via an interface.
+func (v *RunnerFieldsCore) GetContactedAt() *time.Time { return v.ContactedAt }
+
+// GetCreatedAt returns RunnerFieldsCore.CreatedAt, and is useful for accessing the field via an interface.
+func (v *RunnerFieldsCore) GetCreatedAt() *time.Time { return v.CreatedAt }
+
+// GetCreatedBy returns RunnerFieldsCore.CreatedBy, and is useful for accessing the field via an interface.
+func (v *RunnerFieldsCore) GetCreatedBy() *RunnerFieldsCoreCreatedByUserCore { return v.CreatedBy }
+
+// RunnerFieldsCoreCreatedByUserCore includes the requested fields of the GraphQL type UserCore.
+// The GraphQL type's documentation follows.
+//
+// Core representation of a GitLab user.
+type RunnerFieldsCoreCreatedByUserCore struct {
+	UserReferenceFieldsUserCore `json:"-"`
+}
+
+// GetId returns RunnerFieldsCoreCreatedByUserCore.Id, and is useful for accessing the field via an interface.
+func (v *RunnerFieldsCoreCreatedByUserCore) GetId() string { return v.UserReferenceFieldsUserCore.Id }
+
+// GetUsername returns RunnerFieldsCoreCreatedByUserCore.Username, and is useful for accessing the field via an interface.
+func (v *RunnerFieldsCoreCreatedByUserCore) GetUsername() string {
+	return v.UserReferenceFieldsUserCore.Username
+}
+
+// GetName returns RunnerFieldsCoreCreatedByUserCore.Name, and is useful for accessing the field via an interface.
+func (v *RunnerFieldsCoreCreatedByUserCore) GetName() string {
+	return v.UserReferenceFieldsUserCore.Name
+}
+
+func (v *RunnerFieldsCoreCreatedByUserCore) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*RunnerFieldsCoreCreatedByUserCore
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.RunnerFieldsCoreCreatedByUserCore = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.UserReferenceFieldsUserCore)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalRunnerFieldsCoreCreatedByUserCore struct {
+	Id string `json:"id"`
+
+	Username string `json:"username"`
+
+	Name string `json:"name"`
+}
+
+func (v *RunnerFieldsCoreCreatedByUserCore) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *RunnerFieldsCoreCreatedByUserCore) __premarshalJSON() (*__premarshalRunnerFieldsCoreCreatedByUserCore, error) {
+	var retval __premarshalRunnerFieldsCoreCreatedByUserCore
+
+	retval.Id = v.UserReferenceFieldsUserCore.Id
+	retval.Username = v.UserReferenceFieldsUserCore.Username
+	retval.Name = v.UserReferenceFieldsUserCore.Name
+	return &retval, nil
+}
+
+// RunnerReferenceFields includes the GraphQL fields of CiRunner requested by the fragment RunnerReferenceFields.
+type RunnerReferenceFields struct {
+	// ID of the runner.
+	Id string `json:"id"`
+	// First eight characters of the runner's token used to authenticate new job requests. Used as the runner's unique ID.
+	ShortSha *string `json:"shortSha"`
+}
+
+// GetId returns RunnerReferenceFields.Id, and is useful for accessing the field via an interface.
+func (v *RunnerReferenceFields) GetId() string { return v.Id }
+
+// GetShortSha returns RunnerReferenceFields.ShortSha, and is useful for accessing the field via an interface.
+func (v *RunnerReferenceFields) GetShortSha() *string { return v.ShortSha }
+
 // TestReportSummaryFields includes the GraphQL fields of TestReportTotal requested by the fragment TestReportSummaryFields.
 // The GraphQL type's documentation follows.
 //
@@ -3579,6 +3828,14 @@ func (v *__getProjectsPipelinesTestReportSummaryInput) GetSource() *string { ret
 
 // GetEndCursor returns __getProjectsPipelinesTestReportSummaryInput.EndCursor, and is useful for accessing the field via an interface.
 func (v *__getProjectsPipelinesTestReportSummaryInput) GetEndCursor() *string { return v.EndCursor }
+
+// __getRunnersInput is used internally by genqlient
+type __getRunnersInput struct {
+	EndCursor *string `json:"endCursor"`
+}
+
+// GetEndCursor returns __getRunnersInput.EndCursor, and is useful for accessing the field via an interface.
+func (v *__getRunnersInput) GetEndCursor() *string { return v.EndCursor }
 
 // getProjectIssuesProject includes the requested fields of the GraphQL type Project.
 type getProjectIssuesProject struct {
@@ -12440,6 +12697,265 @@ type getProjectsResponse struct {
 // GetProjects returns getProjectsResponse.Projects, and is useful for accessing the field via an interface.
 func (v *getProjectsResponse) GetProjects() *getProjectsProjectsProjectConnection { return v.Projects }
 
+// getRunnersResponse is returned by getRunners on success.
+type getRunnersResponse struct {
+	// Get all runners in the GitLab instance (project and shared). Access is restricted to users with administrator access.
+	Runners *getRunnersRunnersCiRunnerConnection `json:"runners"`
+}
+
+// GetRunners returns getRunnersResponse.Runners, and is useful for accessing the field via an interface.
+func (v *getRunnersResponse) GetRunners() *getRunnersRunnersCiRunnerConnection { return v.Runners }
+
+// getRunnersRunnersCiRunnerConnection includes the requested fields of the GraphQL type CiRunnerConnection.
+// The GraphQL type's documentation follows.
+//
+// The connection type for CiRunner.
+type getRunnersRunnersCiRunnerConnection struct {
+	// A list of nodes.
+	Nodes []*getRunnersRunnersCiRunnerConnectionNodesCiRunner `json:"nodes"`
+	// Information to aid in pagination.
+	PageInfo getRunnersRunnersCiRunnerConnectionPageInfo `json:"pageInfo"`
+}
+
+// GetNodes returns getRunnersRunnersCiRunnerConnection.Nodes, and is useful for accessing the field via an interface.
+func (v *getRunnersRunnersCiRunnerConnection) GetNodes() []*getRunnersRunnersCiRunnerConnectionNodesCiRunner {
+	return v.Nodes
+}
+
+// GetPageInfo returns getRunnersRunnersCiRunnerConnection.PageInfo, and is useful for accessing the field via an interface.
+func (v *getRunnersRunnersCiRunnerConnection) GetPageInfo() getRunnersRunnersCiRunnerConnectionPageInfo {
+	return v.PageInfo
+}
+
+// getRunnersRunnersCiRunnerConnectionNodesCiRunner includes the requested fields of the GraphQL type CiRunner.
+type getRunnersRunnersCiRunnerConnectionNodesCiRunner struct {
+	RunnerReferenceFields `json:"-"`
+	RunnerFieldsCore      `json:"-"`
+}
+
+// GetId returns getRunnersRunnersCiRunnerConnectionNodesCiRunner.Id, and is useful for accessing the field via an interface.
+func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) GetId() string {
+	return v.RunnerReferenceFields.Id
+}
+
+// GetShortSha returns getRunnersRunnersCiRunnerConnectionNodesCiRunner.ShortSha, and is useful for accessing the field via an interface.
+func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) GetShortSha() *string {
+	return v.RunnerReferenceFields.ShortSha
+}
+
+// GetDescription returns getRunnersRunnersCiRunnerConnectionNodesCiRunner.Description, and is useful for accessing the field via an interface.
+func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) GetDescription() *string {
+	return v.RunnerFieldsCore.Description
+}
+
+// GetRunnerType returns getRunnersRunnersCiRunnerConnectionNodesCiRunner.RunnerType, and is useful for accessing the field via an interface.
+func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) GetRunnerType() CiRunnerType {
+	return v.RunnerFieldsCore.RunnerType
+}
+
+// GetTagList returns getRunnersRunnersCiRunnerConnectionNodesCiRunner.TagList, and is useful for accessing the field via an interface.
+func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) GetTagList() []string {
+	return v.RunnerFieldsCore.TagList
+}
+
+// GetStatus returns getRunnersRunnersCiRunnerConnectionNodesCiRunner.Status, and is useful for accessing the field via an interface.
+func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) GetStatus() CiRunnerStatus {
+	return v.RunnerFieldsCore.Status
+}
+
+// GetActive returns getRunnersRunnersCiRunnerConnectionNodesCiRunner.Active, and is useful for accessing the field via an interface.
+func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) GetActive() bool {
+	return v.RunnerFieldsCore.Active
+}
+
+// GetLocked returns getRunnersRunnersCiRunnerConnectionNodesCiRunner.Locked, and is useful for accessing the field via an interface.
+func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) GetLocked() *bool {
+	return v.RunnerFieldsCore.Locked
+}
+
+// GetPaused returns getRunnersRunnersCiRunnerConnectionNodesCiRunner.Paused, and is useful for accessing the field via an interface.
+func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) GetPaused() bool {
+	return v.RunnerFieldsCore.Paused
+}
+
+// GetAccessLevel returns getRunnersRunnersCiRunnerConnectionNodesCiRunner.AccessLevel, and is useful for accessing the field via an interface.
+func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) GetAccessLevel() CiRunnerAccessLevel {
+	return v.RunnerFieldsCore.AccessLevel
+}
+
+// GetRunUntagged returns getRunnersRunnersCiRunnerConnectionNodesCiRunner.RunUntagged, and is useful for accessing the field via an interface.
+func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) GetRunUntagged() bool {
+	return v.RunnerFieldsCore.RunUntagged
+}
+
+// GetContactedAt returns getRunnersRunnersCiRunnerConnectionNodesCiRunner.ContactedAt, and is useful for accessing the field via an interface.
+func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) GetContactedAt() *time.Time {
+	return v.RunnerFieldsCore.ContactedAt
+}
+
+// GetCreatedAt returns getRunnersRunnersCiRunnerConnectionNodesCiRunner.CreatedAt, and is useful for accessing the field via an interface.
+func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) GetCreatedAt() *time.Time {
+	return v.RunnerFieldsCore.CreatedAt
+}
+
+// GetCreatedBy returns getRunnersRunnersCiRunnerConnectionNodesCiRunner.CreatedBy, and is useful for accessing the field via an interface.
+func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) GetCreatedBy() *RunnerFieldsCoreCreatedByUserCore {
+	return v.RunnerFieldsCore.CreatedBy
+}
+
+func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getRunnersRunnersCiRunnerConnectionNodesCiRunner
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getRunnersRunnersCiRunnerConnectionNodesCiRunner = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.RunnerReferenceFields)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(
+		b, &v.RunnerFieldsCore)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetRunnersRunnersCiRunnerConnectionNodesCiRunner struct {
+	Id string `json:"id"`
+
+	ShortSha *string `json:"shortSha"`
+
+	Description *string `json:"description"`
+
+	RunnerType CiRunnerType `json:"runnerType"`
+
+	TagList []string `json:"tagList"`
+
+	Status CiRunnerStatus `json:"status"`
+
+	Active bool `json:"active"`
+
+	Locked *bool `json:"locked"`
+
+	Paused bool `json:"paused"`
+
+	AccessLevel CiRunnerAccessLevel `json:"accessLevel"`
+
+	RunUntagged bool `json:"runUntagged"`
+
+	ContactedAt *time.Time `json:"contactedAt"`
+
+	CreatedAt *time.Time `json:"createdAt"`
+
+	CreatedBy *RunnerFieldsCoreCreatedByUserCore `json:"createdBy"`
+}
+
+func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) __premarshalJSON() (*__premarshalgetRunnersRunnersCiRunnerConnectionNodesCiRunner, error) {
+	var retval __premarshalgetRunnersRunnersCiRunnerConnectionNodesCiRunner
+
+	retval.Id = v.RunnerReferenceFields.Id
+	retval.ShortSha = v.RunnerReferenceFields.ShortSha
+	retval.Description = v.RunnerFieldsCore.Description
+	retval.RunnerType = v.RunnerFieldsCore.RunnerType
+	retval.TagList = v.RunnerFieldsCore.TagList
+	retval.Status = v.RunnerFieldsCore.Status
+	retval.Active = v.RunnerFieldsCore.Active
+	retval.Locked = v.RunnerFieldsCore.Locked
+	retval.Paused = v.RunnerFieldsCore.Paused
+	retval.AccessLevel = v.RunnerFieldsCore.AccessLevel
+	retval.RunUntagged = v.RunnerFieldsCore.RunUntagged
+	retval.ContactedAt = v.RunnerFieldsCore.ContactedAt
+	retval.CreatedAt = v.RunnerFieldsCore.CreatedAt
+	retval.CreatedBy = v.RunnerFieldsCore.CreatedBy
+	return &retval, nil
+}
+
+// getRunnersRunnersCiRunnerConnectionPageInfo includes the requested fields of the GraphQL type PageInfo.
+// The GraphQL type's documentation follows.
+//
+// Information about pagination in a connection.
+type getRunnersRunnersCiRunnerConnectionPageInfo struct {
+	pageFields `json:"-"`
+}
+
+// GetHasNextPage returns getRunnersRunnersCiRunnerConnectionPageInfo.HasNextPage, and is useful for accessing the field via an interface.
+func (v *getRunnersRunnersCiRunnerConnectionPageInfo) GetHasNextPage() bool {
+	return v.pageFields.HasNextPage
+}
+
+// GetEndCursor returns getRunnersRunnersCiRunnerConnectionPageInfo.EndCursor, and is useful for accessing the field via an interface.
+func (v *getRunnersRunnersCiRunnerConnectionPageInfo) GetEndCursor() *string {
+	return v.pageFields.EndCursor
+}
+
+func (v *getRunnersRunnersCiRunnerConnectionPageInfo) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getRunnersRunnersCiRunnerConnectionPageInfo
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getRunnersRunnersCiRunnerConnectionPageInfo = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.pageFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetRunnersRunnersCiRunnerConnectionPageInfo struct {
+	HasNextPage bool `json:"hasNextPage"`
+
+	EndCursor *string `json:"endCursor"`
+}
+
+func (v *getRunnersRunnersCiRunnerConnectionPageInfo) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getRunnersRunnersCiRunnerConnectionPageInfo) __premarshalJSON() (*__premarshalgetRunnersRunnersCiRunnerConnectionPageInfo, error) {
+	var retval __premarshalgetRunnersRunnersCiRunnerConnectionPageInfo
+
+	retval.HasNextPage = v.pageFields.HasNextPage
+	retval.EndCursor = v.pageFields.EndCursor
+	return &retval, nil
+}
+
 // pageFields includes the GraphQL fields of PageInfo requested by the fragment pageFields.
 // The GraphQL type's documentation follows.
 //
@@ -13170,12 +13686,16 @@ fragment JobFieldsExtra on CiJob {
 		}
 	}
 	runner {
-		id
+		... RunnerReferenceFields
 	}
 }
 fragment pageFields on PageInfo {
 	hasNextPage
 	endCursor
+}
+fragment RunnerReferenceFields on CiRunner {
+	id
+	shortSha
 }
 `
 
@@ -13483,12 +14003,16 @@ fragment JobFieldsExtra on CiJob {
 		}
 	}
 	runner {
-		id
+		... RunnerReferenceFields
 	}
 }
 fragment pageFields on PageInfo {
 	hasNextPage
 	endCursor
+}
+fragment RunnerReferenceFields on CiRunner {
+	id
+	shortSha
 }
 `
 
@@ -14251,12 +14775,16 @@ fragment JobFieldsExtra on CiJob {
 		}
 	}
 	runner {
-		id
+		... RunnerReferenceFields
 	}
 }
 fragment pageFields on PageInfo {
 	hasNextPage
 	endCursor
+}
+fragment RunnerReferenceFields on CiRunner {
+	id
+	shortSha
 }
 `
 
@@ -14385,6 +14913,75 @@ func getProjectsPipelinesTestReportSummary(
 	}
 
 	data_ = &getProjectsPipelinesTestReportSummaryResponse{}
+	resp_ := &graphql.Response{Data: data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return data_, err_
+}
+
+// The query executed by getRunners.
+const getRunners_Operation = `
+query getRunners ($endCursor: String) {
+	runners(after: $endCursor) {
+		nodes {
+			... RunnerReferenceFields
+			... RunnerFieldsCore
+		}
+		pageInfo {
+			... pageFields
+		}
+	}
+}
+fragment RunnerReferenceFields on CiRunner {
+	id
+	shortSha
+}
+fragment RunnerFieldsCore on CiRunner {
+	description
+	runnerType
+	tagList
+	status
+	active
+	locked
+	paused
+	accessLevel
+	runUntagged
+	contactedAt
+	createdAt
+	createdBy {
+		... UserReferenceFields
+	}
+}
+fragment pageFields on PageInfo {
+	hasNextPage
+	endCursor
+}
+fragment UserReferenceFields on User {
+	id
+	username
+	name
+}
+`
+
+func getRunners(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	endCursor *string,
+) (data_ *getRunnersResponse, err_ error) {
+	req_ := &graphql.Request{
+		OpName: "getRunners",
+		Query:  getRunners_Operation,
+		Variables: &__getRunnersInput{
+			EndCursor: endCursor,
+		},
+	}
+
+	data_ = &getRunnersResponse{}
 	resp_ := &graphql.Response{Data: data_}
 
 	err_ = client_.MakeRequest(
