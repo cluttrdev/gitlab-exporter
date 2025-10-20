@@ -40,7 +40,7 @@ fragment JobFieldsExtra on CiJob {
     }
 
     runner {
-        id
+      ...RunnerReferenceFields
     }
 }
 

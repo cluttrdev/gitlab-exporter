@@ -1,0 +1,13 @@
+query getRunners(
+  $endCursor: String
+) {
+  runners(after: $endCursor) {
+    nodes {
+        ...RunnerReferenceFields
+        ...RunnerFieldsCore
+    }
+    pageInfo {
+        ...pageFields
+    }
+  }
+}

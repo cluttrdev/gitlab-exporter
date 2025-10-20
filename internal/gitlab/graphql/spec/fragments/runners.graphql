@@ -1,0 +1,21 @@
+fragment RunnerFieldsCore on CiRunner {
+  description
+  runnerType
+  tagList
+
+  status
+
+  active
+  locked
+  paused
+
+  accessLevel
+  runUntagged
+
+  contactedAt
+  createdAt
+
+  createdBy {
+    ...UserReferenceFields
+  }
+}

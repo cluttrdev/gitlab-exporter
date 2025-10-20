@@ -32,3 +32,8 @@ fragment IssueReferenceFields on Issue {
     id
     iid
 }
+
+fragment RunnerReferenceFields on CiRunner {
+    id
+    shortSha
+}
