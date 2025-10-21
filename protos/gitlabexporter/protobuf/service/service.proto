@@ -13,6 +13,7 @@ import "gitlabexporter/protobuf/merge_request.proto";
 import "gitlabexporter/protobuf/metric.proto";
 import "gitlabexporter/protobuf/pipeline.proto";
 import "gitlabexporter/protobuf/project.proto";
+import "gitlabexporter/protobuf/runner.proto";
 import "gitlabexporter/protobuf/section.proto";
 import "gitlabexporter/protobuf/test_report.proto";
 import "gitlabexporter/protobuf/trace.proto";
@@ -31,6 +32,7 @@ service GitLabExporter {
     rpc RecordMetrics(RecordMetricsRequest) returns (RecordSummary) {}
     rpc RecordPipelines(RecordPipelinesRequest) returns (RecordSummary) {}
     rpc RecordProjects(RecordProjectsRequest) returns (RecordSummary) {}
+    rpc RecordRunners(RecordRunnersRequest) returns (RecordSummary) {}
     rpc RecordSections(RecordSectionsRequest) returns (RecordSummary) {}
     rpc RecordTestCases(RecordTestCasesRequest) returns (RecordSummary) {}
     rpc RecordTestReports(RecordTestReportsRequest) returns (RecordSummary) {}
@@ -92,6 +94,10 @@ message RecordPipelinesRequest {
 
 message RecordProjectsRequest {
     repeated gitlabexporter.protobuf.Project data = 1;
+}
+
+message RecordRunnersRequest {
+    repeated gitlabexporter.protobuf.Runner data = 1;
 }
 
 message RecordSectionsRequest {

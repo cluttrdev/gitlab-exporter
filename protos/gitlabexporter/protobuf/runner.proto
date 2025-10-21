@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+option go_package = "go.cluttr.dev/gitlab-exporter/protobuf/typespb";
+
+package gitlabexporter.protobuf;
+
+import "google/protobuf/timestamp.proto";
+
+import "gitlabexporter/protobuf/references.proto";
+
+enum RunnerType {
+    RUNNER_TYPE_UNSPECIFIED = 0;
+    RUNNER_TYPE_UNKNOWN = 1;
+    RUNNER_TYPE_INSTANCE = 2;
+    RUNNER_TYPE_GROUP = 3;
+    RUNNER_TYPE_PROJECT = 4;
+}
+
+enum RunnerStatus {
+    RUNNER_STATUS_UNSPECIFIED = 0;
+    RUNNER_STATUS_UNKNOWN = 1;
+    RUNNER_STATUS_ONLINE = 2;
+    RUNNER_STATUS_OFFLINE = 3;
+    RUNNER_STATUS_STALE = 4;
+    RUNNER_STATUS_NEVER_CONTACTED = 5;
+}
+
+message Runner {
+    int64 id = 1;
+    string short_sha = 2;
+    string description = 3;
+
+    RunnerType runner_type = 4;
+    repeated string tag_list = 5;
+    RunnerStatus status = 6;
+
+    RunnerFlags flags = 7;
+
+    RunnerTimestamps timestamps = 8;
+
+    UserReference created_by = 9;
+}
+
+message RunnerFlags {
+    bool active = 1;
+    bool locked = 2;
+    bool paused = 3;
+
+    bool run_protected = 8;
+    bool run_untagged = 9;
+}
+
+message RunnerTimestamps {
+    google.protobuf.Timestamp created_at = 1;
+    google.protobuf.Timestamp contacted_at = 2;
+}
