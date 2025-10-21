@@ -587,50 +587,6 @@ func (x *CoverageClassReference) GetPackage() *CoveragePackageReference {
 	return nil
 }
 
-type RunnerReference struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Id            string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
-}
-
-func (x *RunnerReference) Reset() {
-	*x = RunnerReference{}
-	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[9]
-	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-	ms.StoreMessageInfo(mi)
-}
-
-func (x *RunnerReference) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*RunnerReference) ProtoMessage() {}
-
-func (x *RunnerReference) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[9]
-	if x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use RunnerReference.ProtoReflect.Descriptor instead.
-func (*RunnerReference) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_references_proto_rawDescGZIP(), []int{9}
-}
-
-func (x *RunnerReference) GetId() string {
-	if x != nil {
-		return x.Id
-	}
-	return ""
-}
-
 type MergeRequestReference struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -642,7 +598,7 @@ type MergeRequestReference struct {
 
 func (x *MergeRequestReference) Reset() {
 	*x = MergeRequestReference{}
-	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[10]
+	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -654,7 +610,7 @@ func (x *MergeRequestReference) String() string {
 func (*MergeRequestReference) ProtoMessage() {}
 
 func (x *MergeRequestReference) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[10]
+	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -667,7 +623,7 @@ func (x *MergeRequestReference) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MergeRequestReference.ProtoReflect.Descriptor instead.
 func (*MergeRequestReference) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_references_proto_rawDescGZIP(), []int{10}
+	return file_gitlabexporter_protobuf_references_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *MergeRequestReference) GetId() int64 {
@@ -702,7 +658,7 @@ type MilestoneReference struct {
 
 func (x *MilestoneReference) Reset() {
 	*x = MilestoneReference{}
-	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[11]
+	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -714,7 +670,7 @@ func (x *MilestoneReference) String() string {
 func (*MilestoneReference) ProtoMessage() {}
 
 func (x *MilestoneReference) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[11]
+	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -727,7 +683,7 @@ func (x *MilestoneReference) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MilestoneReference.ProtoReflect.Descriptor instead.
 func (*MilestoneReference) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_references_proto_rawDescGZIP(), []int{11}
+	return file_gitlabexporter_protobuf_references_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *MilestoneReference) GetId() int64 {
@@ -762,7 +718,7 @@ type UserReference struct {
 
 func (x *UserReference) Reset() {
 	*x = UserReference{}
-	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[12]
+	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -774,7 +730,7 @@ func (x *UserReference) String() string {
 func (*UserReference) ProtoMessage() {}
 
 func (x *UserReference) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[12]
+	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -787,7 +743,7 @@ func (x *UserReference) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UserReference.ProtoReflect.Descriptor instead.
 func (*UserReference) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_references_proto_rawDescGZIP(), []int{12}
+	return file_gitlabexporter_protobuf_references_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *UserReference) GetId() int64 {
@@ -823,7 +779,7 @@ type EnvironmentReference struct {
 
 func (x *EnvironmentReference) Reset() {
 	*x = EnvironmentReference{}
-	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[13]
+	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -835,7 +791,7 @@ func (x *EnvironmentReference) String() string {
 func (*EnvironmentReference) ProtoMessage() {}
 
 func (x *EnvironmentReference) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[13]
+	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -848,7 +804,7 @@ func (x *EnvironmentReference) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use EnvironmentReference.ProtoReflect.Descriptor instead.
 func (*EnvironmentReference) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_references_proto_rawDescGZIP(), []int{13}
+	return file_gitlabexporter_protobuf_references_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *EnvironmentReference) GetId() int64 {
@@ -877,6 +833,58 @@ func (x *EnvironmentReference) GetProject() *ProjectReference {
 		return x.Project
 	}
 	return nil
+}
+
+type RunnerReference struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
+	ShortSha      string                 `protobuf:"bytes,2,opt,name=short_sha,json=shortSha,proto3" json:"short_sha,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RunnerReference) Reset() {
+	*x = RunnerReference{}
+	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[13]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RunnerReference) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RunnerReference) ProtoMessage() {}
+
+func (x *RunnerReference) ProtoReflect() protoreflect.Message {
+	mi := &file_gitlabexporter_protobuf_references_proto_msgTypes[13]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RunnerReference.ProtoReflect.Descriptor instead.
+func (*RunnerReference) Descriptor() ([]byte, []int) {
+	return file_gitlabexporter_protobuf_references_proto_rawDescGZIP(), []int{13}
+}
+
+func (x *RunnerReference) GetId() int64 {
+	if x != nil {
+		return x.Id
+	}
+	return 0
+}
+
+func (x *RunnerReference) GetShortSha() string {
+	if x != nil {
+		return x.ShortSha
+	}
+	return ""
 }
 
 var File_gitlabexporter_protobuf_references_proto protoreflect.FileDescriptor
@@ -916,9 +924,7 @@ const file_gitlabexporter_protobuf_references_proto_rawDesc = "" +
 	"\x16CoverageClassReference\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12K\n" +
-	"\apackage\x18\x03 \x01(\v21.gitlabexporter.protobuf.CoveragePackageReferenceR\apackage\"!\n" +
-	"\x0fRunnerReference\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"~\n" +
+	"\apackage\x18\x03 \x01(\v21.gitlabexporter.protobuf.CoveragePackageReferenceR\apackage\"~\n" +
 	"\x15MergeRequestReference\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x10\n" +
 	"\x03iid\x18\x02 \x01(\x03R\x03iid\x12C\n" +
@@ -935,7 +941,10 @@ const file_gitlabexporter_protobuf_references_proto_rawDesc = "" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x12\n" +
 	"\x04name\x18\x02 \x01(\tR\x04name\x12;\n" +
 	"\x04tier\x18\x03 \x01(\x0e2'.gitlabexporter.protobuf.DeploymentTierR\x04tier\x12C\n" +
-	"\aproject\x18\x04 \x01(\v2).gitlabexporter.protobuf.ProjectReferenceR\aproject*\xc7\x01\n" +
+	"\aproject\x18\x04 \x01(\v2).gitlabexporter.protobuf.ProjectReferenceR\aproject\">\n" +
+	"\x0fRunnerReference\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x1b\n" +
+	"\tshort_sha\x18\x02 \x01(\tR\bshortSha*\xc7\x01\n" +
 	"\x0eDeploymentTier\x12\x1f\n" +
 	"\x1bDEPLOYMENT_TIER_UNSPECIFIED\x10\x00\x12\x1e\n" +
 	"\x1aDEPLOYMENT_TIER_PRODUCTION\x10\x01\x12\x1b\n" +
@@ -969,11 +978,11 @@ var file_gitlabexporter_protobuf_references_proto_goTypes = []any{
 	(*CoverageReportReference)(nil),  // 7: gitlabexporter.protobuf.CoverageReportReference
 	(*CoveragePackageReference)(nil), // 8: gitlabexporter.protobuf.CoveragePackageReference
 	(*CoverageClassReference)(nil),   // 9: gitlabexporter.protobuf.CoverageClassReference
-	(*RunnerReference)(nil),          // 10: gitlabexporter.protobuf.RunnerReference
-	(*MergeRequestReference)(nil),    // 11: gitlabexporter.protobuf.MergeRequestReference
-	(*MilestoneReference)(nil),       // 12: gitlabexporter.protobuf.MilestoneReference
-	(*UserReference)(nil),            // 13: gitlabexporter.protobuf.UserReference
-	(*EnvironmentReference)(nil),     // 14: gitlabexporter.protobuf.EnvironmentReference
+	(*MergeRequestReference)(nil),    // 10: gitlabexporter.protobuf.MergeRequestReference
+	(*MilestoneReference)(nil),       // 11: gitlabexporter.protobuf.MilestoneReference
+	(*UserReference)(nil),            // 12: gitlabexporter.protobuf.UserReference
+	(*EnvironmentReference)(nil),     // 13: gitlabexporter.protobuf.EnvironmentReference
+	(*RunnerReference)(nil),          // 14: gitlabexporter.protobuf.RunnerReference
 }
 var file_gitlabexporter_protobuf_references_proto_depIdxs = []int32{
 	1,  // 0: gitlabexporter.protobuf.ProjectReference.namespace:type_name -> gitlabexporter.protobuf.NamespaceReference

@@ -32,6 +32,7 @@ const (
 	GitLabExporter_RecordMetrics_FullMethodName                = "/gitlabexporter.protobuf.service.GitLabExporter/RecordMetrics"
 	GitLabExporter_RecordPipelines_FullMethodName              = "/gitlabexporter.protobuf.service.GitLabExporter/RecordPipelines"
 	GitLabExporter_RecordProjects_FullMethodName               = "/gitlabexporter.protobuf.service.GitLabExporter/RecordProjects"
+	GitLabExporter_RecordRunners_FullMethodName                = "/gitlabexporter.protobuf.service.GitLabExporter/RecordRunners"
 	GitLabExporter_RecordSections_FullMethodName               = "/gitlabexporter.protobuf.service.GitLabExporter/RecordSections"
 	GitLabExporter_RecordTestCases_FullMethodName              = "/gitlabexporter.protobuf.service.GitLabExporter/RecordTestCases"
 	GitLabExporter_RecordTestReports_FullMethodName            = "/gitlabexporter.protobuf.service.GitLabExporter/RecordTestReports"
@@ -56,6 +57,7 @@ type GitLabExporterClient interface {
 	RecordMetrics(ctx context.Context, in *RecordMetricsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordPipelines(ctx context.Context, in *RecordPipelinesRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordProjects(ctx context.Context, in *RecordProjectsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
+	RecordRunners(ctx context.Context, in *RecordRunnersRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordSections(ctx context.Context, in *RecordSectionsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordTestCases(ctx context.Context, in *RecordTestCasesRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordTestReports(ctx context.Context, in *RecordTestReportsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
@@ -201,6 +203,16 @@ func (c *gitLabExporterClient) RecordProjects(ctx context.Context, in *RecordPro
 	return out, nil
 }
 
+func (c *gitLabExporterClient) RecordRunners(ctx context.Context, in *RecordRunnersRequest, opts ...grpc.CallOption) (*RecordSummary, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RecordSummary)
+	err := c.cc.Invoke(ctx, GitLabExporter_RecordRunners_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *gitLabExporterClient) RecordSections(ctx context.Context, in *RecordSectionsRequest, opts ...grpc.CallOption) (*RecordSummary, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RecordSummary)
@@ -268,6 +280,7 @@ type GitLabExporterServer interface {
 	RecordMetrics(context.Context, *RecordMetricsRequest) (*RecordSummary, error)
 	RecordPipelines(context.Context, *RecordPipelinesRequest) (*RecordSummary, error)
 	RecordProjects(context.Context, *RecordProjectsRequest) (*RecordSummary, error)
+	RecordRunners(context.Context, *RecordRunnersRequest) (*RecordSummary, error)
 	RecordSections(context.Context, *RecordSectionsRequest) (*RecordSummary, error)
 	RecordTestCases(context.Context, *RecordTestCasesRequest) (*RecordSummary, error)
 	RecordTestReports(context.Context, *RecordTestReportsRequest) (*RecordSummary, error)
@@ -321,6 +334,9 @@ func (UnimplementedGitLabExporterServer) RecordPipelines(context.Context, *Recor
 }
 func (UnimplementedGitLabExporterServer) RecordProjects(context.Context, *RecordProjectsRequest) (*RecordSummary, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecordProjects not implemented")
+}
+func (UnimplementedGitLabExporterServer) RecordRunners(context.Context, *RecordRunnersRequest) (*RecordSummary, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RecordRunners not implemented")
 }
 func (UnimplementedGitLabExporterServer) RecordSections(context.Context, *RecordSectionsRequest) (*RecordSummary, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecordSections not implemented")
@@ -592,6 +608,24 @@ func _GitLabExporter_RecordProjects_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _GitLabExporter_RecordRunners_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RecordRunnersRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GitLabExporterServer).RecordRunners(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GitLabExporter_RecordRunners_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GitLabExporterServer).RecordRunners(ctx, req.(*RecordRunnersRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _GitLabExporter_RecordSections_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RecordSectionsRequest)
 	if err := dec(in); err != nil {
@@ -740,6 +774,10 @@ var GitLabExporter_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RecordProjects",
 			Handler:    _GitLabExporter_RecordProjects_Handler,
+		},
+		{
+			MethodName: "RecordRunners",
+			Handler:    _GitLabExporter_RecordRunners_Handler,
 		},
 		{
 			MethodName: "RecordSections",
