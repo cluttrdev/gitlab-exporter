@@ -26,6 +26,7 @@ const (
 	GlobalIdProjectPrefix      = GlobalIdPrefix + "Project/"
 	GlobalIdUserPrefix         = GlobalIdPrefix + "User/"
 	GlobalIdIssuePrefix        = GlobalIdPrefix + "Issue/"
+	GlobalIdRunnerPrefix       = GlobalIdPrefix + "Ci::Runner/"
 )
 
 func FormatId(id int64, prefix string) string {
