@@ -213,6 +213,11 @@ func (e *Exporter) ExportProjects(ctx context.Context, data []types.Project) err
 	return export(e, ctx, msgs, grpc_client.RecordProjects)
 }
 
+func (e *Exporter) ExportRunners(ctx context.Context, data []types.Runner) error {
+	msgs := convert(data, messages.NewRunner)
+	return export(e, ctx, msgs, grpc_client.RecordRunners)
+}
+
 func (e *Exporter) ExportSections(ctx context.Context, data []types.Section) error {
 	msgs := convert(data, messages.NewSection)
 	return export(e, ctx, msgs, grpc_client.RecordSections)

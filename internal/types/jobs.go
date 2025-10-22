@@ -53,7 +53,7 @@ type Job struct {
 	Kind               JobKind
 	DownstreamPipeline *PipelineReference
 
-	RunnerId string
+	Runner RunnerReference
 }
 
 type JobLogProperty struct {

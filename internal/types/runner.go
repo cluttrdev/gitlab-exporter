@@ -2,6 +2,11 @@ package types
 
 import "time"
 
+type RunnerReference struct {
+	Id       int64
+	ShortSha string
+}
+
 type Runner struct {
 	Id          int64
 	ShortSha    string

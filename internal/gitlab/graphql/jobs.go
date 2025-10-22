@@ -114,7 +114,7 @@ func ConvertJob(jf JobFields) (types.Job, error) {
 		Kind: convertJobKind(jf.Kind),
 		// DownstreamPipeline: nil
 
-		RunnerId: valOrZero(jf.Runner).Id,
+		// Runner: nil
 	}
 
 	if valOrZero(jf.Status) == CiJobStatusFailed {
@@ -132,6 +132,14 @@ func ConvertJob(jf JobFields) (types.Job, error) {
 				Id:       downstreamProjectId,
 				FullPath: jf.DownstreamPipeline.Project.FullPath,
 			},
+		}
+	}
+
+	if jf.Runner != nil {
+		runnerId, _ := ParseId(jf.Runner.Id, GlobalIdRunnerPrefix)
+		job.Runner = types.RunnerReference{
+			Id:       runnerId,
+			ShortSha: valOrZero(jf.Runner.ShortSha),
 		}
 	}
 

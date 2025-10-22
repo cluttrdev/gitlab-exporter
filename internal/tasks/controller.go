@@ -448,6 +448,15 @@ func (c *Controller) process(ctx context.Context, projectSettings []ProjectSetti
 		}
 	}()
 
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+
+		if err := c.processRunners(ctx); err != nil {
+			errChan <- fmt.Errorf("process runners: %w", err)
+		}
+	}()
+
 	done := make(chan struct{})
 	go func() {
 		wg.Wait()
@@ -512,6 +521,21 @@ func (c *Controller) getUpdatedProjects(ctx context.Context, projects []ProjectS
 
 func (s *Controller) processProjects(ctx context.Context, projects []types.Project) error {
 	return s.Exporter.ExportProjects(ctx, projects)
+}
+
+func (c *Controller) processRunners(ctx context.Context) error {
+	runners, err := FetchRunners(ctx, c.GitLab)
+	if errors.Is(err, context.Canceled) {
+		return err
+	} else if err != nil {
+		return fmt.Errorf("fetch runners: %w", err)
+	}
+
+	if err := c.Exporter.ExportRunners(ctx, runners); err != nil {
+		return fmt.Errorf("export runners: %w", err)
+	}
+
+	return nil
 }
 
 func (c *Controller) processProjectsIssues(ctx context.Context, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) error {

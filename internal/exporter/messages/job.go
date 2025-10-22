@@ -53,7 +53,8 @@ func NewJob(job types.Job) *typespb.Job {
 		// DownstreamPipeline: nil,
 
 		Runner: &typespb.RunnerReference{
-			Id: job.RunnerId,
+			Id:       job.Runner.Id,
+			ShortSha: job.Runner.ShortSha,
 		},
 	}
 

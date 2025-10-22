@@ -205,6 +205,18 @@ func RecordProjects(c *Client, ctx context.Context, data []*typespb.Project) err
 	return nil
 }
 
+func RecordRunners(c *Client, ctx context.Context, data []*typespb.Runner) error {
+	req := &servicepb.RecordRunnersRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordRunners(ctx, req /* opts ...grpc.CallOption */)
+	if err != nil {
+		return fmt.Errorf("record runners: %w", err)
+	}
+
+	return nil
+}
+
 func RecordSections(c *Client, ctx context.Context, data []*typespb.Section) error {
 	req := &servicepb.RecordSectionsRequest{
 		Data: data,
