@@ -97,3 +97,9 @@ func (r *Recorder) RecordTestCases(ctx context.Context, req *servicepb.RecordTes
 	var count int32 = int32(len(req.Data))
 	return &servicepb.RecordSummary{RecordedCount: count}, nil
 }
+
+func (r *Recorder) RecordRunners(ctx context.Context, req *servicepb.RecordRunnersRequest) (*servicepb.RecordSummary, error) {
+	r.datastore.runners = append(r.datastore.runners, req.Data...)
+	var count int32 = int32(len(req.Data))
+	return &servicepb.RecordSummary{RecordedCount: count}, nil
+}

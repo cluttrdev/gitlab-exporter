@@ -8,6 +8,9 @@ type Datastore interface {
 	ListProjects() []*typespb.Project
 	GetProject(id int64) *typespb.Project
 
+	ListRunners() []*typespb.Runner
+	GetRunner(id int64) *typespb.Runner
+
 	ListProjectPipelines(projectID int64) []*typespb.Pipeline
 	GetPipeline(id int64) *typespb.Pipeline
 
@@ -18,6 +21,7 @@ type Datastore interface {
 
 type datastore struct {
 	projects []*typespb.Project
+	runners  []*typespb.Runner
 
 	pipelines []*typespb.Pipeline
 	jobs      []*typespb.Job
@@ -39,6 +43,19 @@ func (d *datastore) GetProject(id int64) *typespb.Project {
 	for _, p := range d.projects {
 		if p.Id == id {
 			return p
+		}
+	}
+	return nil
+}
+
+func (d *datastore) ListRunners() []*typespb.Runner {
+	return d.runners
+}
+
+func (d *datastore) GetRunner(id int64) *typespb.Runner {
+	for _, r := range d.runners {
+		if r.Id == id {
+			return r
 		}
 	}
 	return nil

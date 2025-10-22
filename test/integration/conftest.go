@@ -53,7 +53,7 @@ func setupExporter(t *testing.T) (*exporter.Exporter, *recorder_mock.Recorder) {
 
 	exp, err := exporter.New([]exporter.EndpointConfig{
 		{
-			Address: "bufnet",
+			Address: "passthrough:///bufnet",
 			Options: []grpc.DialOption{
 				grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
 					return lis.Dial()
