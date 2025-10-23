@@ -11,6 +11,7 @@ import (
 	otlp_comonpb "go.opentelemetry.io/proto/otlp/common/v1"
 	otlp_tracepb "go.opentelemetry.io/proto/otlp/trace/v1"
 
+	"go.cluttr.dev/gitlab-exporter/protobuf/servicepb"
 	"go.cluttr.dev/gitlab-exporter/protobuf/typespb"
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -30,6 +31,7 @@ const (
 	MetricsTable                string = "metrics"
 	PipelinesTable              string = "pipelines"
 	ProjectsTable               string = "projects"
+	RunnersTable                string = "runners"
 	SectionsTable               string = "sections"
 	TestCasesTable              string = "testcases"
 	TestReportsTable            string = "testreports"
@@ -240,7 +242,7 @@ func InsertJobs(c *Client, ctx context.Context, jobs []*typespb.Job) (int, error
 			DownstreamPipelineIid:       j.DownstreamPipeline.GetIid(),
 			DownstreamPipelineProjectId: j.DownstreamPipeline.GetProject().GetId(),
 
-			RunnerId: j.Runner.GetId(),
+			RunnerId: fmt.Sprint(j.Runner.GetId()),
 
 			// deprecated
 			Pipeline: []any{
@@ -807,6 +809,79 @@ func InsertProjects(c *Client, ctx context.Context, projects []*typespb.Project)
 
 	n := batch.Rows()
 	slog.Debug("Recorded projects", "received", len(projects), "inserted", n)
+
+	return n, nil
+}
+
+func InsertRunners(c *Client, ctx context.Context, runners []*typespb.Runner, metadata *servicepb.RecordRequestMetadata) (int, error) {
+	if c == nil {
+		return 0, errors.New("nil client")
+	}
+	const query string = `INSERT INTO {db:Identifier}.{table:Identifier} SETTINGS async_insert=1`
+	var params = map[string]string{
+		"db":    c.dbName,
+		"table": RunnersTable + "_in",
+	}
+
+	type runner struct {
+		Runner
+
+		FetchedAt float64 `ch:"_fetched_at"`
+	}
+
+	ctx = WithParameters(ctx, params)
+
+	batch, err := c.PrepareBatch(ctx, query)
+	if err != nil {
+		return 0, fmt.Errorf("prepare batch: %w", err)
+	}
+
+	for _, r := range runners {
+		// Convert enums to strings (lowercase, without prefix)
+		runnerType := strings.ToLower(strings.TrimPrefix(r.RunnerType.String(), "RUNNER_TYPE_"))
+		runnerStatus := strings.ToLower(strings.TrimPrefix(r.Status.String(), "RUNNER_STATUS_"))
+
+		v := &runner{
+			Runner: Runner{
+				Id:          r.Id,
+				ShortSha:    r.ShortSha,
+				Description: r.Description,
+
+				RunnerType: runnerType,
+				TagList:    r.TagList,
+				Status:     runnerStatus,
+
+				Locked: r.Flags.GetLocked(),
+				Paused: r.Flags.GetPaused(),
+
+				RunProtected: r.Flags.GetRunProtected(),
+				RunUntagged:  r.Flags.GetRunUntagged(),
+
+				CreatedAt:   convertTimestamp(r.Timestamps.GetCreatedAt()),
+				ContactedAt: convertTimestamp(r.Timestamps.GetContactedAt()),
+
+				CreatedById:       r.CreatedBy.GetId(),
+				CreatedByUsername: r.CreatedBy.GetUsername(),
+				CreatedByName:     r.CreatedBy.GetName(),
+
+				// RequestMetadata: {},
+			},
+
+			FetchedAt: convertTimestamp(metadata.GetFetchedAt()),
+		}
+
+		err = batch.AppendStruct(v)
+		if err != nil {
+			return 0, fmt.Errorf("append batch: %w", err)
+		}
+	}
+
+	if err := batch.Send(); err != nil {
+		return -1, fmt.Errorf("send batch: %w", err)
+	}
+
+	n := batch.Rows()
+	slog.Debug("Recorded runners", "received", len(runners), "inserted", n)
 
 	return n, nil
 }

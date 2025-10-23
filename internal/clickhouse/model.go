@@ -409,3 +409,26 @@ type Deployment struct {
 	Ref    string `ch:"ref"`
 	Sha    string `ch:"sha"`
 }
+
+type Runner struct {
+	Id          int64  `ch:"id"`
+	ShortSha    string `ch:"short_sha"`
+	Description string `ch:"description"`
+
+	RunnerType string   `ch:"runner_type"`
+	TagList    []string `ch:"tag_list"`
+	Status     string   `ch:"status"`
+
+	Locked bool `ch:"locked"`
+	Paused bool `ch:"paused"`
+
+	RunProtected bool `ch:"run_protected"`
+	RunUntagged  bool `ch:"run_untagged"`
+
+	CreatedAt   float64 `ch:"created_at"`
+	ContactedAt float64 `ch:"contacted_at"`
+
+	CreatedById       int64  `ch:"created_by_id"`
+	CreatedByUsername string `ch:"created_by_username"`
+	CreatedByName     string `ch:"created_by_name"`
+}

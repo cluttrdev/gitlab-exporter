@@ -130,3 +130,19 @@ func (s *ClickHouseRecorder) RecordMetrics(ctx context.Context, r *servicepb.Rec
 func (s *ClickHouseRecorder) RecordTraces(ctx context.Context, r *servicepb.RecordTracesRequest) (*servicepb.RecordSummary, error) {
 	return record[typespb.Trace](s, ctx, r.Data, clickhouse.InsertTraces)
 }
+
+func (s *ClickHouseRecorder) RecordRunners(ctx context.Context, r *servicepb.RecordRunnersRequest) (*servicepb.RecordSummary, error) {
+	if len(r.Data) == 0 {
+		return &servicepb.RecordSummary{}, nil
+	}
+
+	n, err := clickhouse.InsertRunners(s.client, context.Background(), r.Data, r.Metadata)
+	if err != nil {
+		slog.Error("Failed to insert runners", "error", err)
+		return nil, err
+	}
+
+	return &servicepb.RecordSummary{
+		RecordedCount: int32(n),
+	}, nil
+}
