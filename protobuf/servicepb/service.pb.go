@@ -10,6 +10,7 @@ import (
 	typespb "go.cluttr.dev/gitlab-exporter/protobuf/typespb"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	timestamppb "google.golang.org/protobuf/types/known/timestamppb"
 	reflect "reflect"
 	sync "sync"
 	unsafe "unsafe"
@@ -66,6 +67,58 @@ func (x *RecordSummary) GetRecordedCount() int32 {
 	return 0
 }
 
+type RecordRequestMetadata struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	FetchedAt     *timestamppb.Timestamp `protobuf:"bytes,1,opt,name=fetched_at,json=fetchedAt,proto3" json:"fetched_at,omitempty"`
+	ExportedAt    *timestamppb.Timestamp `protobuf:"bytes,2,opt,name=exported_at,json=exportedAt,proto3" json:"exported_at,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *RecordRequestMetadata) Reset() {
+	*x = RecordRequestMetadata{}
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[1]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *RecordRequestMetadata) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*RecordRequestMetadata) ProtoMessage() {}
+
+func (x *RecordRequestMetadata) ProtoReflect() protoreflect.Message {
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[1]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use RecordRequestMetadata.ProtoReflect.Descriptor instead.
+func (*RecordRequestMetadata) Descriptor() ([]byte, []int) {
+	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{1}
+}
+
+func (x *RecordRequestMetadata) GetFetchedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.FetchedAt
+	}
+	return nil
+}
+
+func (x *RecordRequestMetadata) GetExportedAt() *timestamppb.Timestamp {
+	if x != nil {
+		return x.ExportedAt
+	}
+	return nil
+}
+
 type RecordCommitsRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Data          []*typespb.Commit      `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
@@ -75,7 +128,7 @@ type RecordCommitsRequest struct {
 
 func (x *RecordCommitsRequest) Reset() {
 	*x = RecordCommitsRequest{}
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[1]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -87,7 +140,7 @@ func (x *RecordCommitsRequest) String() string {
 func (*RecordCommitsRequest) ProtoMessage() {}
 
 func (x *RecordCommitsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[1]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -100,7 +153,7 @@ func (x *RecordCommitsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordCommitsRequest.ProtoReflect.Descriptor instead.
 func (*RecordCommitsRequest) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{1}
+	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *RecordCommitsRequest) GetData() []*typespb.Commit {
@@ -119,7 +172,7 @@ type RecordCoverageReportsRequest struct {
 
 func (x *RecordCoverageReportsRequest) Reset() {
 	*x = RecordCoverageReportsRequest{}
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[2]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -131,7 +184,7 @@ func (x *RecordCoverageReportsRequest) String() string {
 func (*RecordCoverageReportsRequest) ProtoMessage() {}
 
 func (x *RecordCoverageReportsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[2]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -144,7 +197,7 @@ func (x *RecordCoverageReportsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordCoverageReportsRequest.ProtoReflect.Descriptor instead.
 func (*RecordCoverageReportsRequest) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{2}
+	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *RecordCoverageReportsRequest) GetData() []*typespb.CoverageReport {
@@ -163,7 +216,7 @@ type RecordCoveragePackagesRequest struct {
 
 func (x *RecordCoveragePackagesRequest) Reset() {
 	*x = RecordCoveragePackagesRequest{}
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[3]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -175,7 +228,7 @@ func (x *RecordCoveragePackagesRequest) String() string {
 func (*RecordCoveragePackagesRequest) ProtoMessage() {}
 
 func (x *RecordCoveragePackagesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[3]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -188,7 +241,7 @@ func (x *RecordCoveragePackagesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordCoveragePackagesRequest.ProtoReflect.Descriptor instead.
 func (*RecordCoveragePackagesRequest) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{3}
+	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *RecordCoveragePackagesRequest) GetData() []*typespb.CoveragePackage {
@@ -207,7 +260,7 @@ type RecordCoverageClassesRequest struct {
 
 func (x *RecordCoverageClassesRequest) Reset() {
 	*x = RecordCoverageClassesRequest{}
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[4]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[5]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -219,7 +272,7 @@ func (x *RecordCoverageClassesRequest) String() string {
 func (*RecordCoverageClassesRequest) ProtoMessage() {}
 
 func (x *RecordCoverageClassesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[4]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[5]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -232,7 +285,7 @@ func (x *RecordCoverageClassesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordCoverageClassesRequest.ProtoReflect.Descriptor instead.
 func (*RecordCoverageClassesRequest) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{4}
+	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *RecordCoverageClassesRequest) GetData() []*typespb.CoverageClass {
@@ -251,7 +304,7 @@ type RecordCoverageMethodsRequest struct {
 
 func (x *RecordCoverageMethodsRequest) Reset() {
 	*x = RecordCoverageMethodsRequest{}
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[5]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[6]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -263,7 +316,7 @@ func (x *RecordCoverageMethodsRequest) String() string {
 func (*RecordCoverageMethodsRequest) ProtoMessage() {}
 
 func (x *RecordCoverageMethodsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[5]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[6]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -276,7 +329,7 @@ func (x *RecordCoverageMethodsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordCoverageMethodsRequest.ProtoReflect.Descriptor instead.
 func (*RecordCoverageMethodsRequest) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{5}
+	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *RecordCoverageMethodsRequest) GetData() []*typespb.CoverageMethod {
@@ -295,7 +348,7 @@ type RecordDeploymentsRequest struct {
 
 func (x *RecordDeploymentsRequest) Reset() {
 	*x = RecordDeploymentsRequest{}
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[6]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -307,7 +360,7 @@ func (x *RecordDeploymentsRequest) String() string {
 func (*RecordDeploymentsRequest) ProtoMessage() {}
 
 func (x *RecordDeploymentsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[6]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -320,7 +373,7 @@ func (x *RecordDeploymentsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordDeploymentsRequest.ProtoReflect.Descriptor instead.
 func (*RecordDeploymentsRequest) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{6}
+	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *RecordDeploymentsRequest) GetData() []*typespb.Deployment {
@@ -339,7 +392,7 @@ type RecordIssuesRequest struct {
 
 func (x *RecordIssuesRequest) Reset() {
 	*x = RecordIssuesRequest{}
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[7]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -351,7 +404,7 @@ func (x *RecordIssuesRequest) String() string {
 func (*RecordIssuesRequest) ProtoMessage() {}
 
 func (x *RecordIssuesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[7]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -364,7 +417,7 @@ func (x *RecordIssuesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordIssuesRequest.ProtoReflect.Descriptor instead.
 func (*RecordIssuesRequest) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{7}
+	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *RecordIssuesRequest) GetData() []*typespb.Issue {
@@ -383,7 +436,7 @@ type RecordJobsRequest struct {
 
 func (x *RecordJobsRequest) Reset() {
 	*x = RecordJobsRequest{}
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[8]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[9]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -395,7 +448,7 @@ func (x *RecordJobsRequest) String() string {
 func (*RecordJobsRequest) ProtoMessage() {}
 
 func (x *RecordJobsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[8]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[9]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -408,7 +461,7 @@ func (x *RecordJobsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordJobsRequest.ProtoReflect.Descriptor instead.
 func (*RecordJobsRequest) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{8}
+	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *RecordJobsRequest) GetData() []*typespb.Job {
@@ -427,7 +480,7 @@ type RecordMergeRequestsRequest struct {
 
 func (x *RecordMergeRequestsRequest) Reset() {
 	*x = RecordMergeRequestsRequest{}
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[9]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[10]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -439,7 +492,7 @@ func (x *RecordMergeRequestsRequest) String() string {
 func (*RecordMergeRequestsRequest) ProtoMessage() {}
 
 func (x *RecordMergeRequestsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[9]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[10]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -452,7 +505,7 @@ func (x *RecordMergeRequestsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordMergeRequestsRequest.ProtoReflect.Descriptor instead.
 func (*RecordMergeRequestsRequest) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{9}
+	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *RecordMergeRequestsRequest) GetData() []*typespb.MergeRequest {
@@ -471,7 +524,7 @@ type RecordMergeRequestNoteEventsRequest struct {
 
 func (x *RecordMergeRequestNoteEventsRequest) Reset() {
 	*x = RecordMergeRequestNoteEventsRequest{}
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[10]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[11]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -483,7 +536,7 @@ func (x *RecordMergeRequestNoteEventsRequest) String() string {
 func (*RecordMergeRequestNoteEventsRequest) ProtoMessage() {}
 
 func (x *RecordMergeRequestNoteEventsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[10]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[11]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -496,7 +549,7 @@ func (x *RecordMergeRequestNoteEventsRequest) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use RecordMergeRequestNoteEventsRequest.ProtoReflect.Descriptor instead.
 func (*RecordMergeRequestNoteEventsRequest) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{10}
+	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{11}
 }
 
 func (x *RecordMergeRequestNoteEventsRequest) GetData() []*typespb.MergeRequestNoteEvent {
@@ -515,7 +568,7 @@ type RecordMetricsRequest struct {
 
 func (x *RecordMetricsRequest) Reset() {
 	*x = RecordMetricsRequest{}
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[11]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[12]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -527,7 +580,7 @@ func (x *RecordMetricsRequest) String() string {
 func (*RecordMetricsRequest) ProtoMessage() {}
 
 func (x *RecordMetricsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[11]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[12]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -540,7 +593,7 @@ func (x *RecordMetricsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordMetricsRequest.ProtoReflect.Descriptor instead.
 func (*RecordMetricsRequest) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{11}
+	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *RecordMetricsRequest) GetData() []*typespb.Metric {
@@ -559,7 +612,7 @@ type RecordPipelinesRequest struct {
 
 func (x *RecordPipelinesRequest) Reset() {
 	*x = RecordPipelinesRequest{}
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[12]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[13]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -571,7 +624,7 @@ func (x *RecordPipelinesRequest) String() string {
 func (*RecordPipelinesRequest) ProtoMessage() {}
 
 func (x *RecordPipelinesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[12]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[13]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -584,7 +637,7 @@ func (x *RecordPipelinesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordPipelinesRequest.ProtoReflect.Descriptor instead.
 func (*RecordPipelinesRequest) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{12}
+	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *RecordPipelinesRequest) GetData() []*typespb.Pipeline {
@@ -603,7 +656,7 @@ type RecordProjectsRequest struct {
 
 func (x *RecordProjectsRequest) Reset() {
 	*x = RecordProjectsRequest{}
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[13]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[14]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -615,7 +668,7 @@ func (x *RecordProjectsRequest) String() string {
 func (*RecordProjectsRequest) ProtoMessage() {}
 
 func (x *RecordProjectsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[13]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[14]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -628,7 +681,7 @@ func (x *RecordProjectsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordProjectsRequest.ProtoReflect.Descriptor instead.
 func (*RecordProjectsRequest) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{13}
+	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *RecordProjectsRequest) GetData() []*typespb.Project {
@@ -641,13 +694,14 @@ func (x *RecordProjectsRequest) GetData() []*typespb.Project {
 type RecordRunnersRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Data          []*typespb.Runner      `protobuf:"bytes,1,rep,name=data,proto3" json:"data,omitempty"`
+	Metadata      *RecordRequestMetadata `protobuf:"bytes,2,opt,name=metadata,proto3" json:"metadata,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *RecordRunnersRequest) Reset() {
 	*x = RecordRunnersRequest{}
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[14]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[15]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -659,7 +713,7 @@ func (x *RecordRunnersRequest) String() string {
 func (*RecordRunnersRequest) ProtoMessage() {}
 
 func (x *RecordRunnersRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[14]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[15]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -672,12 +726,19 @@ func (x *RecordRunnersRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordRunnersRequest.ProtoReflect.Descriptor instead.
 func (*RecordRunnersRequest) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{14}
+	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *RecordRunnersRequest) GetData() []*typespb.Runner {
 	if x != nil {
 		return x.Data
+	}
+	return nil
+}
+
+func (x *RecordRunnersRequest) GetMetadata() *RecordRequestMetadata {
+	if x != nil {
+		return x.Metadata
 	}
 	return nil
 }
@@ -691,7 +752,7 @@ type RecordSectionsRequest struct {
 
 func (x *RecordSectionsRequest) Reset() {
 	*x = RecordSectionsRequest{}
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[15]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[16]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -703,7 +764,7 @@ func (x *RecordSectionsRequest) String() string {
 func (*RecordSectionsRequest) ProtoMessage() {}
 
 func (x *RecordSectionsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[15]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[16]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -716,7 +777,7 @@ func (x *RecordSectionsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordSectionsRequest.ProtoReflect.Descriptor instead.
 func (*RecordSectionsRequest) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{15}
+	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *RecordSectionsRequest) GetData() []*typespb.Section {
@@ -735,7 +796,7 @@ type RecordTestCasesRequest struct {
 
 func (x *RecordTestCasesRequest) Reset() {
 	*x = RecordTestCasesRequest{}
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[16]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[17]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -747,7 +808,7 @@ func (x *RecordTestCasesRequest) String() string {
 func (*RecordTestCasesRequest) ProtoMessage() {}
 
 func (x *RecordTestCasesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[16]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[17]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -760,7 +821,7 @@ func (x *RecordTestCasesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordTestCasesRequest.ProtoReflect.Descriptor instead.
 func (*RecordTestCasesRequest) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{16}
+	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *RecordTestCasesRequest) GetData() []*typespb.TestCase {
@@ -779,7 +840,7 @@ type RecordTestReportsRequest struct {
 
 func (x *RecordTestReportsRequest) Reset() {
 	*x = RecordTestReportsRequest{}
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[17]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[18]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -791,7 +852,7 @@ func (x *RecordTestReportsRequest) String() string {
 func (*RecordTestReportsRequest) ProtoMessage() {}
 
 func (x *RecordTestReportsRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[17]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[18]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -804,7 +865,7 @@ func (x *RecordTestReportsRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordTestReportsRequest.ProtoReflect.Descriptor instead.
 func (*RecordTestReportsRequest) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{17}
+	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *RecordTestReportsRequest) GetData() []*typespb.TestReport {
@@ -823,7 +884,7 @@ type RecordTestSuitesRequest struct {
 
 func (x *RecordTestSuitesRequest) Reset() {
 	*x = RecordTestSuitesRequest{}
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[18]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[19]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -835,7 +896,7 @@ func (x *RecordTestSuitesRequest) String() string {
 func (*RecordTestSuitesRequest) ProtoMessage() {}
 
 func (x *RecordTestSuitesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[18]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[19]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -848,7 +909,7 @@ func (x *RecordTestSuitesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordTestSuitesRequest.ProtoReflect.Descriptor instead.
 func (*RecordTestSuitesRequest) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{18}
+	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *RecordTestSuitesRequest) GetData() []*typespb.TestSuite {
@@ -867,7 +928,7 @@ type RecordTracesRequest struct {
 
 func (x *RecordTracesRequest) Reset() {
 	*x = RecordTracesRequest{}
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[19]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[20]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -879,7 +940,7 @@ func (x *RecordTracesRequest) String() string {
 func (*RecordTracesRequest) ProtoMessage() {}
 
 func (x *RecordTracesRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[19]
+	mi := &file_gitlabexporter_protobuf_service_service_proto_msgTypes[20]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -892,7 +953,7 @@ func (x *RecordTracesRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RecordTracesRequest.ProtoReflect.Descriptor instead.
 func (*RecordTracesRequest) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{19}
+	return file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *RecordTracesRequest) GetData() []*typespb.Trace {
@@ -906,9 +967,14 @@ var File_gitlabexporter_protobuf_service_service_proto protoreflect.FileDescript
 
 const file_gitlabexporter_protobuf_service_service_proto_rawDesc = "" +
 	"\n" +
-	"-gitlabexporter/protobuf/service/service.proto\x12\x1fgitlabexporter.protobuf.service\x1a$gitlabexporter/protobuf/commit.proto\x1a&gitlabexporter/protobuf/coverage.proto\x1a(gitlabexporter/protobuf/deployment.proto\x1a#gitlabexporter/protobuf/issue.proto\x1a!gitlabexporter/protobuf/job.proto\x1a+gitlabexporter/protobuf/merge_request.proto\x1a$gitlabexporter/protobuf/metric.proto\x1a&gitlabexporter/protobuf/pipeline.proto\x1a%gitlabexporter/protobuf/project.proto\x1a$gitlabexporter/protobuf/runner.proto\x1a%gitlabexporter/protobuf/section.proto\x1a)gitlabexporter/protobuf/test_report.proto\x1a#gitlabexporter/protobuf/trace.proto\"6\n" +
+	"-gitlabexporter/protobuf/service/service.proto\x12\x1fgitlabexporter.protobuf.service\x1a\x1fgoogle/protobuf/timestamp.proto\x1a$gitlabexporter/protobuf/commit.proto\x1a&gitlabexporter/protobuf/coverage.proto\x1a(gitlabexporter/protobuf/deployment.proto\x1a#gitlabexporter/protobuf/issue.proto\x1a!gitlabexporter/protobuf/job.proto\x1a+gitlabexporter/protobuf/merge_request.proto\x1a$gitlabexporter/protobuf/metric.proto\x1a&gitlabexporter/protobuf/pipeline.proto\x1a%gitlabexporter/protobuf/project.proto\x1a$gitlabexporter/protobuf/runner.proto\x1a%gitlabexporter/protobuf/section.proto\x1a)gitlabexporter/protobuf/test_report.proto\x1a#gitlabexporter/protobuf/trace.proto\"6\n" +
 	"\rRecordSummary\x12%\n" +
-	"\x0erecorded_count\x18\x01 \x01(\x05R\rrecordedCount\"K\n" +
+	"\x0erecorded_count\x18\x01 \x01(\x05R\rrecordedCount\"\x8f\x01\n" +
+	"\x15RecordRequestMetadata\x129\n" +
+	"\n" +
+	"fetched_at\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\tfetchedAt\x12;\n" +
+	"\vexported_at\x18\x02 \x01(\v2\x1a.google.protobuf.TimestampR\n" +
+	"exportedAt\"K\n" +
 	"\x14RecordCommitsRequest\x123\n" +
 	"\x04data\x18\x01 \x03(\v2\x1f.gitlabexporter.protobuf.CommitR\x04data\"[\n" +
 	"\x1cRecordCoverageReportsRequest\x12;\n" +
@@ -934,9 +1000,10 @@ const file_gitlabexporter_protobuf_service_service_proto_rawDesc = "" +
 	"\x16RecordPipelinesRequest\x125\n" +
 	"\x04data\x18\x01 \x03(\v2!.gitlabexporter.protobuf.PipelineR\x04data\"M\n" +
 	"\x15RecordProjectsRequest\x124\n" +
-	"\x04data\x18\x01 \x03(\v2 .gitlabexporter.protobuf.ProjectR\x04data\"K\n" +
+	"\x04data\x18\x01 \x03(\v2 .gitlabexporter.protobuf.ProjectR\x04data\"\x9f\x01\n" +
 	"\x14RecordRunnersRequest\x123\n" +
-	"\x04data\x18\x01 \x03(\v2\x1f.gitlabexporter.protobuf.RunnerR\x04data\"M\n" +
+	"\x04data\x18\x01 \x03(\v2\x1f.gitlabexporter.protobuf.RunnerR\x04data\x12R\n" +
+	"\bmetadata\x18\x02 \x01(\v26.gitlabexporter.protobuf.service.RecordRequestMetadataR\bmetadata\"M\n" +
 	"\x15RecordSectionsRequest\x124\n" +
 	"\x04data\x18\x01 \x03(\v2 .gitlabexporter.protobuf.SectionR\x04data\"O\n" +
 	"\x16RecordTestCasesRequest\x125\n" +
@@ -981,111 +1048,116 @@ func file_gitlabexporter_protobuf_service_service_proto_rawDescGZIP() []byte {
 	return file_gitlabexporter_protobuf_service_service_proto_rawDescData
 }
 
-var file_gitlabexporter_protobuf_service_service_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
+var file_gitlabexporter_protobuf_service_service_proto_msgTypes = make([]protoimpl.MessageInfo, 21)
 var file_gitlabexporter_protobuf_service_service_proto_goTypes = []any{
 	(*RecordSummary)(nil),                       // 0: gitlabexporter.protobuf.service.RecordSummary
-	(*RecordCommitsRequest)(nil),                // 1: gitlabexporter.protobuf.service.RecordCommitsRequest
-	(*RecordCoverageReportsRequest)(nil),        // 2: gitlabexporter.protobuf.service.RecordCoverageReportsRequest
-	(*RecordCoveragePackagesRequest)(nil),       // 3: gitlabexporter.protobuf.service.RecordCoveragePackagesRequest
-	(*RecordCoverageClassesRequest)(nil),        // 4: gitlabexporter.protobuf.service.RecordCoverageClassesRequest
-	(*RecordCoverageMethodsRequest)(nil),        // 5: gitlabexporter.protobuf.service.RecordCoverageMethodsRequest
-	(*RecordDeploymentsRequest)(nil),            // 6: gitlabexporter.protobuf.service.RecordDeploymentsRequest
-	(*RecordIssuesRequest)(nil),                 // 7: gitlabexporter.protobuf.service.RecordIssuesRequest
-	(*RecordJobsRequest)(nil),                   // 8: gitlabexporter.protobuf.service.RecordJobsRequest
-	(*RecordMergeRequestsRequest)(nil),          // 9: gitlabexporter.protobuf.service.RecordMergeRequestsRequest
-	(*RecordMergeRequestNoteEventsRequest)(nil), // 10: gitlabexporter.protobuf.service.RecordMergeRequestNoteEventsRequest
-	(*RecordMetricsRequest)(nil),                // 11: gitlabexporter.protobuf.service.RecordMetricsRequest
-	(*RecordPipelinesRequest)(nil),              // 12: gitlabexporter.protobuf.service.RecordPipelinesRequest
-	(*RecordProjectsRequest)(nil),               // 13: gitlabexporter.protobuf.service.RecordProjectsRequest
-	(*RecordRunnersRequest)(nil),                // 14: gitlabexporter.protobuf.service.RecordRunnersRequest
-	(*RecordSectionsRequest)(nil),               // 15: gitlabexporter.protobuf.service.RecordSectionsRequest
-	(*RecordTestCasesRequest)(nil),              // 16: gitlabexporter.protobuf.service.RecordTestCasesRequest
-	(*RecordTestReportsRequest)(nil),            // 17: gitlabexporter.protobuf.service.RecordTestReportsRequest
-	(*RecordTestSuitesRequest)(nil),             // 18: gitlabexporter.protobuf.service.RecordTestSuitesRequest
-	(*RecordTracesRequest)(nil),                 // 19: gitlabexporter.protobuf.service.RecordTracesRequest
-	(*typespb.Commit)(nil),                      // 20: gitlabexporter.protobuf.Commit
-	(*typespb.CoverageReport)(nil),              // 21: gitlabexporter.protobuf.CoverageReport
-	(*typespb.CoveragePackage)(nil),             // 22: gitlabexporter.protobuf.CoveragePackage
-	(*typespb.CoverageClass)(nil),               // 23: gitlabexporter.protobuf.CoverageClass
-	(*typespb.CoverageMethod)(nil),              // 24: gitlabexporter.protobuf.CoverageMethod
-	(*typespb.Deployment)(nil),                  // 25: gitlabexporter.protobuf.Deployment
-	(*typespb.Issue)(nil),                       // 26: gitlabexporter.protobuf.Issue
-	(*typespb.Job)(nil),                         // 27: gitlabexporter.protobuf.Job
-	(*typespb.MergeRequest)(nil),                // 28: gitlabexporter.protobuf.MergeRequest
-	(*typespb.MergeRequestNoteEvent)(nil),       // 29: gitlabexporter.protobuf.MergeRequestNoteEvent
-	(*typespb.Metric)(nil),                      // 30: gitlabexporter.protobuf.Metric
-	(*typespb.Pipeline)(nil),                    // 31: gitlabexporter.protobuf.Pipeline
-	(*typespb.Project)(nil),                     // 32: gitlabexporter.protobuf.Project
-	(*typespb.Runner)(nil),                      // 33: gitlabexporter.protobuf.Runner
-	(*typespb.Section)(nil),                     // 34: gitlabexporter.protobuf.Section
-	(*typespb.TestCase)(nil),                    // 35: gitlabexporter.protobuf.TestCase
-	(*typespb.TestReport)(nil),                  // 36: gitlabexporter.protobuf.TestReport
-	(*typespb.TestSuite)(nil),                   // 37: gitlabexporter.protobuf.TestSuite
-	(*typespb.Trace)(nil),                       // 38: gitlabexporter.protobuf.Trace
+	(*RecordRequestMetadata)(nil),               // 1: gitlabexporter.protobuf.service.RecordRequestMetadata
+	(*RecordCommitsRequest)(nil),                // 2: gitlabexporter.protobuf.service.RecordCommitsRequest
+	(*RecordCoverageReportsRequest)(nil),        // 3: gitlabexporter.protobuf.service.RecordCoverageReportsRequest
+	(*RecordCoveragePackagesRequest)(nil),       // 4: gitlabexporter.protobuf.service.RecordCoveragePackagesRequest
+	(*RecordCoverageClassesRequest)(nil),        // 5: gitlabexporter.protobuf.service.RecordCoverageClassesRequest
+	(*RecordCoverageMethodsRequest)(nil),        // 6: gitlabexporter.protobuf.service.RecordCoverageMethodsRequest
+	(*RecordDeploymentsRequest)(nil),            // 7: gitlabexporter.protobuf.service.RecordDeploymentsRequest
+	(*RecordIssuesRequest)(nil),                 // 8: gitlabexporter.protobuf.service.RecordIssuesRequest
+	(*RecordJobsRequest)(nil),                   // 9: gitlabexporter.protobuf.service.RecordJobsRequest
+	(*RecordMergeRequestsRequest)(nil),          // 10: gitlabexporter.protobuf.service.RecordMergeRequestsRequest
+	(*RecordMergeRequestNoteEventsRequest)(nil), // 11: gitlabexporter.protobuf.service.RecordMergeRequestNoteEventsRequest
+	(*RecordMetricsRequest)(nil),                // 12: gitlabexporter.protobuf.service.RecordMetricsRequest
+	(*RecordPipelinesRequest)(nil),              // 13: gitlabexporter.protobuf.service.RecordPipelinesRequest
+	(*RecordProjectsRequest)(nil),               // 14: gitlabexporter.protobuf.service.RecordProjectsRequest
+	(*RecordRunnersRequest)(nil),                // 15: gitlabexporter.protobuf.service.RecordRunnersRequest
+	(*RecordSectionsRequest)(nil),               // 16: gitlabexporter.protobuf.service.RecordSectionsRequest
+	(*RecordTestCasesRequest)(nil),              // 17: gitlabexporter.protobuf.service.RecordTestCasesRequest
+	(*RecordTestReportsRequest)(nil),            // 18: gitlabexporter.protobuf.service.RecordTestReportsRequest
+	(*RecordTestSuitesRequest)(nil),             // 19: gitlabexporter.protobuf.service.RecordTestSuitesRequest
+	(*RecordTracesRequest)(nil),                 // 20: gitlabexporter.protobuf.service.RecordTracesRequest
+	(*timestamppb.Timestamp)(nil),               // 21: google.protobuf.Timestamp
+	(*typespb.Commit)(nil),                      // 22: gitlabexporter.protobuf.Commit
+	(*typespb.CoverageReport)(nil),              // 23: gitlabexporter.protobuf.CoverageReport
+	(*typespb.CoveragePackage)(nil),             // 24: gitlabexporter.protobuf.CoveragePackage
+	(*typespb.CoverageClass)(nil),               // 25: gitlabexporter.protobuf.CoverageClass
+	(*typespb.CoverageMethod)(nil),              // 26: gitlabexporter.protobuf.CoverageMethod
+	(*typespb.Deployment)(nil),                  // 27: gitlabexporter.protobuf.Deployment
+	(*typespb.Issue)(nil),                       // 28: gitlabexporter.protobuf.Issue
+	(*typespb.Job)(nil),                         // 29: gitlabexporter.protobuf.Job
+	(*typespb.MergeRequest)(nil),                // 30: gitlabexporter.protobuf.MergeRequest
+	(*typespb.MergeRequestNoteEvent)(nil),       // 31: gitlabexporter.protobuf.MergeRequestNoteEvent
+	(*typespb.Metric)(nil),                      // 32: gitlabexporter.protobuf.Metric
+	(*typespb.Pipeline)(nil),                    // 33: gitlabexporter.protobuf.Pipeline
+	(*typespb.Project)(nil),                     // 34: gitlabexporter.protobuf.Project
+	(*typespb.Runner)(nil),                      // 35: gitlabexporter.protobuf.Runner
+	(*typespb.Section)(nil),                     // 36: gitlabexporter.protobuf.Section
+	(*typespb.TestCase)(nil),                    // 37: gitlabexporter.protobuf.TestCase
+	(*typespb.TestReport)(nil),                  // 38: gitlabexporter.protobuf.TestReport
+	(*typespb.TestSuite)(nil),                   // 39: gitlabexporter.protobuf.TestSuite
+	(*typespb.Trace)(nil),                       // 40: gitlabexporter.protobuf.Trace
 }
 var file_gitlabexporter_protobuf_service_service_proto_depIdxs = []int32{
-	20, // 0: gitlabexporter.protobuf.service.RecordCommitsRequest.data:type_name -> gitlabexporter.protobuf.Commit
-	21, // 1: gitlabexporter.protobuf.service.RecordCoverageReportsRequest.data:type_name -> gitlabexporter.protobuf.CoverageReport
-	22, // 2: gitlabexporter.protobuf.service.RecordCoveragePackagesRequest.data:type_name -> gitlabexporter.protobuf.CoveragePackage
-	23, // 3: gitlabexporter.protobuf.service.RecordCoverageClassesRequest.data:type_name -> gitlabexporter.protobuf.CoverageClass
-	24, // 4: gitlabexporter.protobuf.service.RecordCoverageMethodsRequest.data:type_name -> gitlabexporter.protobuf.CoverageMethod
-	25, // 5: gitlabexporter.protobuf.service.RecordDeploymentsRequest.data:type_name -> gitlabexporter.protobuf.Deployment
-	26, // 6: gitlabexporter.protobuf.service.RecordIssuesRequest.data:type_name -> gitlabexporter.protobuf.Issue
-	27, // 7: gitlabexporter.protobuf.service.RecordJobsRequest.data:type_name -> gitlabexporter.protobuf.Job
-	28, // 8: gitlabexporter.protobuf.service.RecordMergeRequestsRequest.data:type_name -> gitlabexporter.protobuf.MergeRequest
-	29, // 9: gitlabexporter.protobuf.service.RecordMergeRequestNoteEventsRequest.data:type_name -> gitlabexporter.protobuf.MergeRequestNoteEvent
-	30, // 10: gitlabexporter.protobuf.service.RecordMetricsRequest.data:type_name -> gitlabexporter.protobuf.Metric
-	31, // 11: gitlabexporter.protobuf.service.RecordPipelinesRequest.data:type_name -> gitlabexporter.protobuf.Pipeline
-	32, // 12: gitlabexporter.protobuf.service.RecordProjectsRequest.data:type_name -> gitlabexporter.protobuf.Project
-	33, // 13: gitlabexporter.protobuf.service.RecordRunnersRequest.data:type_name -> gitlabexporter.protobuf.Runner
-	34, // 14: gitlabexporter.protobuf.service.RecordSectionsRequest.data:type_name -> gitlabexporter.protobuf.Section
-	35, // 15: gitlabexporter.protobuf.service.RecordTestCasesRequest.data:type_name -> gitlabexporter.protobuf.TestCase
-	36, // 16: gitlabexporter.protobuf.service.RecordTestReportsRequest.data:type_name -> gitlabexporter.protobuf.TestReport
-	37, // 17: gitlabexporter.protobuf.service.RecordTestSuitesRequest.data:type_name -> gitlabexporter.protobuf.TestSuite
-	38, // 18: gitlabexporter.protobuf.service.RecordTracesRequest.data:type_name -> gitlabexporter.protobuf.Trace
-	1,  // 19: gitlabexporter.protobuf.service.GitLabExporter.RecordCommits:input_type -> gitlabexporter.protobuf.service.RecordCommitsRequest
-	2,  // 20: gitlabexporter.protobuf.service.GitLabExporter.RecordCoverageReports:input_type -> gitlabexporter.protobuf.service.RecordCoverageReportsRequest
-	3,  // 21: gitlabexporter.protobuf.service.GitLabExporter.RecordCoveragePackages:input_type -> gitlabexporter.protobuf.service.RecordCoveragePackagesRequest
-	4,  // 22: gitlabexporter.protobuf.service.GitLabExporter.RecordCoverageClasses:input_type -> gitlabexporter.protobuf.service.RecordCoverageClassesRequest
-	5,  // 23: gitlabexporter.protobuf.service.GitLabExporter.RecordCoverageMethods:input_type -> gitlabexporter.protobuf.service.RecordCoverageMethodsRequest
-	6,  // 24: gitlabexporter.protobuf.service.GitLabExporter.RecordDeployments:input_type -> gitlabexporter.protobuf.service.RecordDeploymentsRequest
-	7,  // 25: gitlabexporter.protobuf.service.GitLabExporter.RecordIssues:input_type -> gitlabexporter.protobuf.service.RecordIssuesRequest
-	8,  // 26: gitlabexporter.protobuf.service.GitLabExporter.RecordJobs:input_type -> gitlabexporter.protobuf.service.RecordJobsRequest
-	9,  // 27: gitlabexporter.protobuf.service.GitLabExporter.RecordMergeRequests:input_type -> gitlabexporter.protobuf.service.RecordMergeRequestsRequest
-	10, // 28: gitlabexporter.protobuf.service.GitLabExporter.RecordMergeRequestNoteEvents:input_type -> gitlabexporter.protobuf.service.RecordMergeRequestNoteEventsRequest
-	11, // 29: gitlabexporter.protobuf.service.GitLabExporter.RecordMetrics:input_type -> gitlabexporter.protobuf.service.RecordMetricsRequest
-	12, // 30: gitlabexporter.protobuf.service.GitLabExporter.RecordPipelines:input_type -> gitlabexporter.protobuf.service.RecordPipelinesRequest
-	13, // 31: gitlabexporter.protobuf.service.GitLabExporter.RecordProjects:input_type -> gitlabexporter.protobuf.service.RecordProjectsRequest
-	14, // 32: gitlabexporter.protobuf.service.GitLabExporter.RecordRunners:input_type -> gitlabexporter.protobuf.service.RecordRunnersRequest
-	15, // 33: gitlabexporter.protobuf.service.GitLabExporter.RecordSections:input_type -> gitlabexporter.protobuf.service.RecordSectionsRequest
-	16, // 34: gitlabexporter.protobuf.service.GitLabExporter.RecordTestCases:input_type -> gitlabexporter.protobuf.service.RecordTestCasesRequest
-	17, // 35: gitlabexporter.protobuf.service.GitLabExporter.RecordTestReports:input_type -> gitlabexporter.protobuf.service.RecordTestReportsRequest
-	18, // 36: gitlabexporter.protobuf.service.GitLabExporter.RecordTestSuites:input_type -> gitlabexporter.protobuf.service.RecordTestSuitesRequest
-	19, // 37: gitlabexporter.protobuf.service.GitLabExporter.RecordTraces:input_type -> gitlabexporter.protobuf.service.RecordTracesRequest
-	0,  // 38: gitlabexporter.protobuf.service.GitLabExporter.RecordCommits:output_type -> gitlabexporter.protobuf.service.RecordSummary
-	0,  // 39: gitlabexporter.protobuf.service.GitLabExporter.RecordCoverageReports:output_type -> gitlabexporter.protobuf.service.RecordSummary
-	0,  // 40: gitlabexporter.protobuf.service.GitLabExporter.RecordCoveragePackages:output_type -> gitlabexporter.protobuf.service.RecordSummary
-	0,  // 41: gitlabexporter.protobuf.service.GitLabExporter.RecordCoverageClasses:output_type -> gitlabexporter.protobuf.service.RecordSummary
-	0,  // 42: gitlabexporter.protobuf.service.GitLabExporter.RecordCoverageMethods:output_type -> gitlabexporter.protobuf.service.RecordSummary
-	0,  // 43: gitlabexporter.protobuf.service.GitLabExporter.RecordDeployments:output_type -> gitlabexporter.protobuf.service.RecordSummary
-	0,  // 44: gitlabexporter.protobuf.service.GitLabExporter.RecordIssues:output_type -> gitlabexporter.protobuf.service.RecordSummary
-	0,  // 45: gitlabexporter.protobuf.service.GitLabExporter.RecordJobs:output_type -> gitlabexporter.protobuf.service.RecordSummary
-	0,  // 46: gitlabexporter.protobuf.service.GitLabExporter.RecordMergeRequests:output_type -> gitlabexporter.protobuf.service.RecordSummary
-	0,  // 47: gitlabexporter.protobuf.service.GitLabExporter.RecordMergeRequestNoteEvents:output_type -> gitlabexporter.protobuf.service.RecordSummary
-	0,  // 48: gitlabexporter.protobuf.service.GitLabExporter.RecordMetrics:output_type -> gitlabexporter.protobuf.service.RecordSummary
-	0,  // 49: gitlabexporter.protobuf.service.GitLabExporter.RecordPipelines:output_type -> gitlabexporter.protobuf.service.RecordSummary
-	0,  // 50: gitlabexporter.protobuf.service.GitLabExporter.RecordProjects:output_type -> gitlabexporter.protobuf.service.RecordSummary
-	0,  // 51: gitlabexporter.protobuf.service.GitLabExporter.RecordRunners:output_type -> gitlabexporter.protobuf.service.RecordSummary
-	0,  // 52: gitlabexporter.protobuf.service.GitLabExporter.RecordSections:output_type -> gitlabexporter.protobuf.service.RecordSummary
-	0,  // 53: gitlabexporter.protobuf.service.GitLabExporter.RecordTestCases:output_type -> gitlabexporter.protobuf.service.RecordSummary
-	0,  // 54: gitlabexporter.protobuf.service.GitLabExporter.RecordTestReports:output_type -> gitlabexporter.protobuf.service.RecordSummary
-	0,  // 55: gitlabexporter.protobuf.service.GitLabExporter.RecordTestSuites:output_type -> gitlabexporter.protobuf.service.RecordSummary
-	0,  // 56: gitlabexporter.protobuf.service.GitLabExporter.RecordTraces:output_type -> gitlabexporter.protobuf.service.RecordSummary
-	38, // [38:57] is the sub-list for method output_type
-	19, // [19:38] is the sub-list for method input_type
-	19, // [19:19] is the sub-list for extension type_name
-	19, // [19:19] is the sub-list for extension extendee
-	0,  // [0:19] is the sub-list for field type_name
+	21, // 0: gitlabexporter.protobuf.service.RecordRequestMetadata.fetched_at:type_name -> google.protobuf.Timestamp
+	21, // 1: gitlabexporter.protobuf.service.RecordRequestMetadata.exported_at:type_name -> google.protobuf.Timestamp
+	22, // 2: gitlabexporter.protobuf.service.RecordCommitsRequest.data:type_name -> gitlabexporter.protobuf.Commit
+	23, // 3: gitlabexporter.protobuf.service.RecordCoverageReportsRequest.data:type_name -> gitlabexporter.protobuf.CoverageReport
+	24, // 4: gitlabexporter.protobuf.service.RecordCoveragePackagesRequest.data:type_name -> gitlabexporter.protobuf.CoveragePackage
+	25, // 5: gitlabexporter.protobuf.service.RecordCoverageClassesRequest.data:type_name -> gitlabexporter.protobuf.CoverageClass
+	26, // 6: gitlabexporter.protobuf.service.RecordCoverageMethodsRequest.data:type_name -> gitlabexporter.protobuf.CoverageMethod
+	27, // 7: gitlabexporter.protobuf.service.RecordDeploymentsRequest.data:type_name -> gitlabexporter.protobuf.Deployment
+	28, // 8: gitlabexporter.protobuf.service.RecordIssuesRequest.data:type_name -> gitlabexporter.protobuf.Issue
+	29, // 9: gitlabexporter.protobuf.service.RecordJobsRequest.data:type_name -> gitlabexporter.protobuf.Job
+	30, // 10: gitlabexporter.protobuf.service.RecordMergeRequestsRequest.data:type_name -> gitlabexporter.protobuf.MergeRequest
+	31, // 11: gitlabexporter.protobuf.service.RecordMergeRequestNoteEventsRequest.data:type_name -> gitlabexporter.protobuf.MergeRequestNoteEvent
+	32, // 12: gitlabexporter.protobuf.service.RecordMetricsRequest.data:type_name -> gitlabexporter.protobuf.Metric
+	33, // 13: gitlabexporter.protobuf.service.RecordPipelinesRequest.data:type_name -> gitlabexporter.protobuf.Pipeline
+	34, // 14: gitlabexporter.protobuf.service.RecordProjectsRequest.data:type_name -> gitlabexporter.protobuf.Project
+	35, // 15: gitlabexporter.protobuf.service.RecordRunnersRequest.data:type_name -> gitlabexporter.protobuf.Runner
+	1,  // 16: gitlabexporter.protobuf.service.RecordRunnersRequest.metadata:type_name -> gitlabexporter.protobuf.service.RecordRequestMetadata
+	36, // 17: gitlabexporter.protobuf.service.RecordSectionsRequest.data:type_name -> gitlabexporter.protobuf.Section
+	37, // 18: gitlabexporter.protobuf.service.RecordTestCasesRequest.data:type_name -> gitlabexporter.protobuf.TestCase
+	38, // 19: gitlabexporter.protobuf.service.RecordTestReportsRequest.data:type_name -> gitlabexporter.protobuf.TestReport
+	39, // 20: gitlabexporter.protobuf.service.RecordTestSuitesRequest.data:type_name -> gitlabexporter.protobuf.TestSuite
+	40, // 21: gitlabexporter.protobuf.service.RecordTracesRequest.data:type_name -> gitlabexporter.protobuf.Trace
+	2,  // 22: gitlabexporter.protobuf.service.GitLabExporter.RecordCommits:input_type -> gitlabexporter.protobuf.service.RecordCommitsRequest
+	3,  // 23: gitlabexporter.protobuf.service.GitLabExporter.RecordCoverageReports:input_type -> gitlabexporter.protobuf.service.RecordCoverageReportsRequest
+	4,  // 24: gitlabexporter.protobuf.service.GitLabExporter.RecordCoveragePackages:input_type -> gitlabexporter.protobuf.service.RecordCoveragePackagesRequest
+	5,  // 25: gitlabexporter.protobuf.service.GitLabExporter.RecordCoverageClasses:input_type -> gitlabexporter.protobuf.service.RecordCoverageClassesRequest
+	6,  // 26: gitlabexporter.protobuf.service.GitLabExporter.RecordCoverageMethods:input_type -> gitlabexporter.protobuf.service.RecordCoverageMethodsRequest
+	7,  // 27: gitlabexporter.protobuf.service.GitLabExporter.RecordDeployments:input_type -> gitlabexporter.protobuf.service.RecordDeploymentsRequest
+	8,  // 28: gitlabexporter.protobuf.service.GitLabExporter.RecordIssues:input_type -> gitlabexporter.protobuf.service.RecordIssuesRequest
+	9,  // 29: gitlabexporter.protobuf.service.GitLabExporter.RecordJobs:input_type -> gitlabexporter.protobuf.service.RecordJobsRequest
+	10, // 30: gitlabexporter.protobuf.service.GitLabExporter.RecordMergeRequests:input_type -> gitlabexporter.protobuf.service.RecordMergeRequestsRequest
+	11, // 31: gitlabexporter.protobuf.service.GitLabExporter.RecordMergeRequestNoteEvents:input_type -> gitlabexporter.protobuf.service.RecordMergeRequestNoteEventsRequest
+	12, // 32: gitlabexporter.protobuf.service.GitLabExporter.RecordMetrics:input_type -> gitlabexporter.protobuf.service.RecordMetricsRequest
+	13, // 33: gitlabexporter.protobuf.service.GitLabExporter.RecordPipelines:input_type -> gitlabexporter.protobuf.service.RecordPipelinesRequest
+	14, // 34: gitlabexporter.protobuf.service.GitLabExporter.RecordProjects:input_type -> gitlabexporter.protobuf.service.RecordProjectsRequest
+	15, // 35: gitlabexporter.protobuf.service.GitLabExporter.RecordRunners:input_type -> gitlabexporter.protobuf.service.RecordRunnersRequest
+	16, // 36: gitlabexporter.protobuf.service.GitLabExporter.RecordSections:input_type -> gitlabexporter.protobuf.service.RecordSectionsRequest
+	17, // 37: gitlabexporter.protobuf.service.GitLabExporter.RecordTestCases:input_type -> gitlabexporter.protobuf.service.RecordTestCasesRequest
+	18, // 38: gitlabexporter.protobuf.service.GitLabExporter.RecordTestReports:input_type -> gitlabexporter.protobuf.service.RecordTestReportsRequest
+	19, // 39: gitlabexporter.protobuf.service.GitLabExporter.RecordTestSuites:input_type -> gitlabexporter.protobuf.service.RecordTestSuitesRequest
+	20, // 40: gitlabexporter.protobuf.service.GitLabExporter.RecordTraces:input_type -> gitlabexporter.protobuf.service.RecordTracesRequest
+	0,  // 41: gitlabexporter.protobuf.service.GitLabExporter.RecordCommits:output_type -> gitlabexporter.protobuf.service.RecordSummary
+	0,  // 42: gitlabexporter.protobuf.service.GitLabExporter.RecordCoverageReports:output_type -> gitlabexporter.protobuf.service.RecordSummary
+	0,  // 43: gitlabexporter.protobuf.service.GitLabExporter.RecordCoveragePackages:output_type -> gitlabexporter.protobuf.service.RecordSummary
+	0,  // 44: gitlabexporter.protobuf.service.GitLabExporter.RecordCoverageClasses:output_type -> gitlabexporter.protobuf.service.RecordSummary
+	0,  // 45: gitlabexporter.protobuf.service.GitLabExporter.RecordCoverageMethods:output_type -> gitlabexporter.protobuf.service.RecordSummary
+	0,  // 46: gitlabexporter.protobuf.service.GitLabExporter.RecordDeployments:output_type -> gitlabexporter.protobuf.service.RecordSummary
+	0,  // 47: gitlabexporter.protobuf.service.GitLabExporter.RecordIssues:output_type -> gitlabexporter.protobuf.service.RecordSummary
+	0,  // 48: gitlabexporter.protobuf.service.GitLabExporter.RecordJobs:output_type -> gitlabexporter.protobuf.service.RecordSummary
+	0,  // 49: gitlabexporter.protobuf.service.GitLabExporter.RecordMergeRequests:output_type -> gitlabexporter.protobuf.service.RecordSummary
+	0,  // 50: gitlabexporter.protobuf.service.GitLabExporter.RecordMergeRequestNoteEvents:output_type -> gitlabexporter.protobuf.service.RecordSummary
+	0,  // 51: gitlabexporter.protobuf.service.GitLabExporter.RecordMetrics:output_type -> gitlabexporter.protobuf.service.RecordSummary
+	0,  // 52: gitlabexporter.protobuf.service.GitLabExporter.RecordPipelines:output_type -> gitlabexporter.protobuf.service.RecordSummary
+	0,  // 53: gitlabexporter.protobuf.service.GitLabExporter.RecordProjects:output_type -> gitlabexporter.protobuf.service.RecordSummary
+	0,  // 54: gitlabexporter.protobuf.service.GitLabExporter.RecordRunners:output_type -> gitlabexporter.protobuf.service.RecordSummary
+	0,  // 55: gitlabexporter.protobuf.service.GitLabExporter.RecordSections:output_type -> gitlabexporter.protobuf.service.RecordSummary
+	0,  // 56: gitlabexporter.protobuf.service.GitLabExporter.RecordTestCases:output_type -> gitlabexporter.protobuf.service.RecordSummary
+	0,  // 57: gitlabexporter.protobuf.service.GitLabExporter.RecordTestReports:output_type -> gitlabexporter.protobuf.service.RecordSummary
+	0,  // 58: gitlabexporter.protobuf.service.GitLabExporter.RecordTestSuites:output_type -> gitlabexporter.protobuf.service.RecordSummary
+	0,  // 59: gitlabexporter.protobuf.service.GitLabExporter.RecordTraces:output_type -> gitlabexporter.protobuf.service.RecordSummary
+	41, // [41:60] is the sub-list for method output_type
+	22, // [22:41] is the sub-list for method input_type
+	22, // [22:22] is the sub-list for extension type_name
+	22, // [22:22] is the sub-list for extension extendee
+	0,  // [0:22] is the sub-list for field type_name
 }
 
 func init() { file_gitlabexporter_protobuf_service_service_proto_init() }
@@ -1099,7 +1171,7 @@ func file_gitlabexporter_protobuf_service_service_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_gitlabexporter_protobuf_service_service_proto_rawDesc), len(file_gitlabexporter_protobuf_service_service_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   20,
+			NumMessages:   21,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

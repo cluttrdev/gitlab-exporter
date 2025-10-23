@@ -4,6 +4,8 @@ option go_package = "go.cluttr.dev/gitlab-exporter/protobuf/servicepb";
 
 package gitlabexporter.protobuf.service;
 
+import "google/protobuf/timestamp.proto";
+
 import "gitlabexporter/protobuf/commit.proto";
 import "gitlabexporter/protobuf/coverage.proto";
 import "gitlabexporter/protobuf/deployment.proto";
@@ -42,6 +44,11 @@ service GitLabExporter {
 
 message RecordSummary {
     int32 recorded_count = 1;
+}
+
+message RecordRequestMetadata {
+    google.protobuf.Timestamp fetched_at = 1;
+    google.protobuf.Timestamp exported_at = 2;
 }
 
 message RecordCommitsRequest {
@@ -98,6 +105,7 @@ message RecordProjectsRequest {
 
 message RecordRunnersRequest {
     repeated gitlabexporter.protobuf.Runner data = 1;
+    RecordRequestMetadata metadata = 2;
 }
 
 message RecordSectionsRequest {

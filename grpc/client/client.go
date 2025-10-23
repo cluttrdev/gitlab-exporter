@@ -3,10 +3,12 @@ package client
 import (
 	"context"
 	"fmt"
+	"time"
 
 	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	"github.com/prometheus/client_golang/prometheus"
 	"google.golang.org/grpc"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"go.cluttr.dev/gitlab-exporter/protobuf/servicepb"
 	"go.cluttr.dev/gitlab-exporter/protobuf/typespb"
@@ -205,9 +207,13 @@ func RecordProjects(c *Client, ctx context.Context, data []*typespb.Project) err
 	return nil
 }
 
-func RecordRunners(c *Client, ctx context.Context, data []*typespb.Runner) error {
+func RecordRunners(c *Client, ctx context.Context, data []*typespb.Runner, fetchedAt time.Time) error {
 	req := &servicepb.RecordRunnersRequest{
 		Data: data,
+		Metadata: &servicepb.RecordRequestMetadata{
+			FetchedAt:  timestamppb.New(fetchedAt),
+			ExportedAt: timestamppb.Now(),
+		},
 	}
 	_, err := c.stub.RecordRunners(ctx, req /* opts ...grpc.CallOption */)
 	if err != nil {

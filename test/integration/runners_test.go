@@ -103,6 +103,7 @@ func TestRunnersPipeline(t *testing.T) {
 	ctx := context.Background()
 
 	// Fetch runners
+	fetchedAt := time.Now().UTC()
 	runners, err := tasks.FetchRunners(ctx, glab)
 	if err != nil {
 		t.Fatalf("FetchRunners failed: %v", err)
@@ -153,7 +154,7 @@ func TestRunnersPipeline(t *testing.T) {
 	}
 
 	// Export runners
-	if err := exp.ExportRunners(ctx, runners); err != nil {
+	if err := exp.ExportRunners(ctx, runners, fetchedAt); err != nil {
 		t.Fatalf("ExportRunners failed: %v", err)
 	}
 
@@ -240,6 +241,7 @@ func TestRunnersPipeline_EmptyRunners(t *testing.T) {
 
 	ctx := context.Background()
 
+	fetchedAt := time.Now().UTC()
 	runners, err := tasks.FetchRunners(ctx, glab)
 	if err != nil {
 		t.Fatalf("FetchRunners failed: %v", err)
@@ -250,7 +252,7 @@ func TestRunnersPipeline_EmptyRunners(t *testing.T) {
 	}
 
 	// Export should succeed with empty list
-	if err := exp.ExportRunners(ctx, runners); err != nil {
+	if err := exp.ExportRunners(ctx, runners, fetchedAt); err != nil {
 		t.Fatalf("ExportRunners failed with empty list: %v", err)
 	}
 
@@ -362,6 +364,7 @@ func TestRunnersPipeline_Pagination(t *testing.T) {
 
 	ctx := context.Background()
 
+	fetchedAt := time.Now().UTC()
 	runners, err := tasks.FetchRunners(ctx, glab)
 	if err != nil {
 		t.Fatalf("FetchRunners failed: %v", err)
@@ -373,7 +376,7 @@ func TestRunnersPipeline_Pagination(t *testing.T) {
 	}
 
 	// Export all runners
-	if err := exp.ExportRunners(ctx, runners); err != nil {
+	if err := exp.ExportRunners(ctx, runners, fetchedAt); err != nil {
 		t.Fatalf("ExportRunners failed: %v", err)
 	}
 

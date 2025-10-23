@@ -524,6 +524,7 @@ func (s *Controller) processProjects(ctx context.Context, projects []types.Proje
 }
 
 func (c *Controller) processRunners(ctx context.Context) error {
+	fetchedAt := time.Now().UTC()
 	runners, err := FetchRunners(ctx, c.GitLab)
 	if errors.Is(err, context.Canceled) {
 		return err
@@ -531,7 +532,7 @@ func (c *Controller) processRunners(ctx context.Context) error {
 		return fmt.Errorf("fetch runners: %w", err)
 	}
 
-	if err := c.Exporter.ExportRunners(ctx, runners); err != nil {
+	if err := c.Exporter.ExportRunners(ctx, runners, fetchedAt); err != nil {
 		return fmt.Errorf("export runners: %w", err)
 	}
 

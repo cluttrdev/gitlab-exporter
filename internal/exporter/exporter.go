@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"sync"
+	"time"
 
 	tracepb_v1 "go.opentelemetry.io/proto/otlp/trace/v1"
 	"golang.org/x/sync/errgroup"
@@ -213,9 +214,12 @@ func (e *Exporter) ExportProjects(ctx context.Context, data []types.Project) err
 	return export(e, ctx, msgs, grpc_client.RecordProjects)
 }
 
-func (e *Exporter) ExportRunners(ctx context.Context, data []types.Runner) error {
+func (e *Exporter) ExportRunners(ctx context.Context, data []types.Runner, fetchedAt time.Time) error {
 	msgs := convert(data, messages.NewRunner)
-	return export(e, ctx, msgs, grpc_client.RecordRunners)
+	record := func(client *grpc_client.Client, ctx context.Context, data []*typespb.Runner) error {
+		return grpc_client.RecordRunners(client, ctx, data, fetchedAt)
+	}
+	return export(e, ctx, msgs, record)
 }
 
 func (e *Exporter) ExportSections(ctx context.Context, data []types.Section) error {
