@@ -31,6 +31,6 @@ CREATE TABLE IF NOT EXISTS deployments_in AS deployments ENGINE = Null;
 
 -- deployments_mv
 CREATE MATERIALIZED VIEW IF NOT EXISTS deployments_mv TO deployments AS
-    SELECT * FROM deployments_in LEFT OUTER JOIN deployments ON deployments_in.id = deployments.id
+    SELECT deployments_in.* FROM deployments_in LEFT OUTER JOIN deployments ON deployments_in.id = deployments.id
     WHERE deployments_in.updated_at > deployments.updated_at
 ;

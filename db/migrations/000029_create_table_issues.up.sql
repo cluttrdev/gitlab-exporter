@@ -24,6 +24,6 @@ CREATE TABLE IF NOT EXISTS issues_in AS issues ENGINE = Null;
 
 -- issues_mv
 CREATE MATERIALIZED VIEW IF NOT EXISTS issues_mv TO issues AS
-SELECT * FROM issues_in LEFT OUTER JOIN issues USING id
+SELECT issues_in.* FROM issues_in LEFT OUTER JOIN issues USING id
 WHERE issues_in.updated_at > issues.updated_at
 ;

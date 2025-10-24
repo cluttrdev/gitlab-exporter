@@ -27,6 +27,6 @@ CREATE TABLE IF NOT EXISTS mergerequest_noteevents_in AS mergerequest_noteevents
 -- deduplication view
 CREATE MATERIALIZED VIEW IF NOT EXISTS mergerequest_noteevents_mv
 TO mergerequest_noteevents
-AS SELECT * FROM mergerequest_noteevents_in LEFT OUTER JOIN mergerequest_noteevents USING (id)
+AS SELECT mergerequest_noteevents_in.* FROM mergerequest_noteevents_in LEFT OUTER JOIN mergerequest_noteevents USING (id)
     WHERE mergerequest_noteevents_in.updated_at > mergerequest_noteevents.updated_at
 ;
