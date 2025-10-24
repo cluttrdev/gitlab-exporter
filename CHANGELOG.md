@@ -1,5 +1,32 @@
 # Changelog
 
+## [0.22.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.21.1..v0.22.0)
+
+- d78bed5 docs(README): Fix gitlab-exporter-clickhouse-recorder link
+- a6da39c fix(deps): Update dependencies
+- aa35815 fix: Remove deprecated runner.active field (use paused instead)
+- c7ea0eb feat: Make runners export configurable
+- 4fb0a0e feat: Add fetch runners one-off command
+- 10c322f fix: Separate runner data export from projects related data
+- 051d63d feat: Add timestamps metadata to RecordRunnerRequest
+- 48e5f2a test: Add runners export tests
+- 5d66d0d feat: Implement runner data export
+- a559ce6 build(protobuf): Regenerate protobuf code
+- b1ba480 feat(protobuf): Add runner schema
+- 6879a02 feat: Implement fetching runner data
+- 8655ac5 build(graphql): Regenerate graphql code
+- 8e0fb87 feat(graphql): Add runners spec
+- 13b3859 test(httpclient): Add unit tests
+- a5a277e test(graphql): Add query complexity testing utility
+- fe508ef test(graphql): Add tests for pipeline split query implementation
+- f4cc53b refactor(graphql): Implement split query fetching for pipelines
+- a4eb3c6 build(graphql): Regenerate GraphQL client code
+- 077970f refactor(graphql): Add conditional field fetching to pipeline queries
+- c8553cd revert: ci: Remove github release sync
+- 03a73fb ci: Remove github release sync
+- fce76ae chore: Update default image repository in helm chart
+- 4cbfec4 docs: Update url in README.md, Makefile and CHANGELOG.md
+
 ## [0.21.1](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.21.0..v0.21.1)
 
 - 84e6c2e chore(release): v0.21.1
