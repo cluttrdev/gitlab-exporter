@@ -298,6 +298,8 @@ func (c *Controller) Run(ctx context.Context) error {
 			slog.Debug("[RUN] Processing projects...", "iteration", iteration, "after", after.Format(time.RFC3339), "before", before.Format(time.RFC3339))
 
 			var wg sync.WaitGroup
+
+			// fetch and export project related data
 			projectBatches := c.projectsSettings.GetBatches(maxRecordsPerPage, nil)
 			for i, batch := range projectBatches {
 				wg.Add(1)
@@ -317,6 +319,24 @@ func (c *Controller) Run(ctx context.Context) error {
 					}
 				}()
 			}
+
+			// fetch and export runners data
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+
+				if err := c.processRunners(ctx); err != nil {
+					slog.
+						With(
+							slog.String("error", err.Error()),
+							slog.Int("iteration", iteration),
+						).
+						With(metaerr.GetMetadata(err)...).
+						Error("[RUN] error processing runners")
+				}
+			}()
+
+			// wait for tasks processing to finish
 			wg.Wait()
 
 			slog.Debug("[RUN] Processing projects... done", "iteration", iteration)
@@ -445,15 +465,6 @@ func (c *Controller) process(ctx context.Context, projectSettings []ProjectSetti
 
 		if err := c.processProjectsDeployments(ctx, result.ProjectsWithUpdatedPipelines, updatedAfter, updatedBefore); err != nil {
 			errChan <- fmt.Errorf("process deployments: %w", err)
-		}
-	}()
-
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		if err := c.processRunners(ctx); err != nil {
-			errChan <- fmt.Errorf("process runners: %w", err)
 		}
 	}()
 
