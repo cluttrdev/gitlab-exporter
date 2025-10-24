@@ -17,7 +17,7 @@ flexibly stored in various storage backends.
 
 The following officially supported recorder implementations are currently available:
 
-- [gitlab-exporter-clickhouse-recorder](https://gitlab.com/gitlab-exporter/clickhouse-recorder)
+- [gitlab-exporter-clickhouse-recorder](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder)
 
 ### Screenshots
 
