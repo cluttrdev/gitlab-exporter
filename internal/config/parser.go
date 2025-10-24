@@ -17,6 +17,7 @@ func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 		ProjectDefaults ProjectSettings `yaml:"project_defaults"`
 		Projects        []yaml.Node     `yaml:"projects"`
 		Namespaces      []yaml.Node     `yaml:"namespaces"`
+		Export          Export          `yaml:"export"`
 		HTTP            HTTP            `yaml:"http"`
 		Log             Log             `yaml:"log"`
 	}
@@ -25,6 +26,7 @@ func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 	_cfg.GitLab = c.GitLab
 	_cfg.Endpoints = c.Endpoints
 	_cfg.ProjectDefaults = c.ProjectDefaults
+	_cfg.Export = c.Export
 	_cfg.HTTP = c.HTTP
 	_cfg.Log = c.Log
 
@@ -35,6 +37,7 @@ func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 	c.GitLab = _cfg.GitLab
 	c.Endpoints = _cfg.Endpoints
 	c.ProjectDefaults = _cfg.ProjectDefaults
+	c.Export = _cfg.Export
 	c.HTTP = _cfg.HTTP
 	c.Log = _cfg.Log
 

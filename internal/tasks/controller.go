@@ -229,6 +229,8 @@ type ControllerConfig struct {
 	Projects   []config.Project
 	Namespaces []config.Namespace
 
+	Export config.Export
+
 	ResolveInterval time.Duration
 	ExportInterval  time.Duration
 	CatchUpInterval time.Duration
@@ -321,20 +323,22 @@ func (c *Controller) Run(ctx context.Context) error {
 			}
 
 			// fetch and export runners data
-			wg.Add(1)
-			go func() {
-				defer wg.Done()
+			if c.config.Export.Runners.Enabled {
+				wg.Add(1)
+				go func() {
+					defer wg.Done()
 
-				if err := c.processRunners(ctx); err != nil {
-					slog.
-						With(
-							slog.String("error", err.Error()),
-							slog.Int("iteration", iteration),
-						).
-						With(metaerr.GetMetadata(err)...).
-						Error("[RUN] error processing runners")
-				}
-			}()
+					if err := c.processRunners(ctx); err != nil {
+						slog.
+							With(
+								slog.String("error", err.Error()),
+								slog.Int("iteration", iteration),
+							).
+							With(metaerr.GetMetadata(err)...).
+							Error("[RUN] error processing runners")
+					}
+				}()
+			}
 
 			// wait for tasks processing to finish
 			wg.Wait()

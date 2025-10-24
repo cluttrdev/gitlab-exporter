@@ -16,6 +16,8 @@ type Config struct {
 	Projects []Project `default:"[]" yaml:"projects"`
 	// List of namespaces of which to export projects
 	Namespaces []Namespace `default:"[]" yaml:"namespaces"`
+	// Non-project specific export options
+	Export Export `default:"{}" yaml:"export"`
 	// HTTP server settings
 	HTTP HTTP `default:"{}" yaml:"http"`
 	// Log configuration settings
@@ -138,6 +140,14 @@ type Namespace struct {
 	IncludeSubgroups bool   `default:"false" yaml:"include_subgroups"`
 
 	ExcludeProjects []string `default:"[]" yaml:"exclude_projects"`
+}
+
+type Export struct {
+	Runners ExportRunners `default:"{}" yaml:"runners"`
+}
+
+type ExportRunners struct {
+	Enabled bool `default:"false" yaml:"enabled"`
 }
 
 type HTTP struct {

@@ -150,6 +150,8 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 			Projects:   cfg.Projects,
 			Namespaces: cfg.Namespaces,
 
+			Export: cfg.Export,
+
 			ExportInterval:  5 * time.Minute,
 			CatchUpInterval: 24 * time.Hour,
 		})

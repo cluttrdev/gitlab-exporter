@@ -103,6 +103,8 @@ func (c *CatchUpConfig) Exec(ctx context.Context, args []string) error {
 			Projects:   cfg.Projects,
 			Namespaces: cfg.Namespaces,
 
+			Export: cfg.Export,
+
 			CatchUpInterval: 24 * time.Hour,
 		})
 

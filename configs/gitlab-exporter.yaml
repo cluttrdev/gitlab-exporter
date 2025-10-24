@@ -137,6 +137,12 @@ namespaces: []
   #   export: {}
   #   catch_up: {}
 
+# Top-level export configuration for non-project entities
+export:
+  # Exports data on all available runners. Requires admin access.
+  runners:
+    enabled: false
+
 # HTTP server settings
 http:
   # Whether to enable serving http endpoint (metrics, debug info)

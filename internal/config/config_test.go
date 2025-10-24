@@ -22,6 +22,8 @@ func defaultConfig() config.Config {
 	cfg.Projects = []config.Project{}
 	cfg.Namespaces = []config.Namespace{}
 
+	cfg.Export.Runners.Enabled = false
+
 	cfg.HTTP.Enabled = true
 	cfg.HTTP.Host = "127.0.0.1"
 	cfg.HTTP.Port = "9100"
@@ -624,4 +626,48 @@ func TestLoad_WithMetricsLogQueries(t *testing.T) {
 	}
 
 	checkConfig(t, expected, cfg)
+}
+
+func TestLoad_WithExportRunnersEnabled(t *testing.T) {
+	data := []byte(`
+    export:
+      runners:
+        enabled: true
+    `)
+
+	expected := defaultConfig()
+	expected.Export.Runners.Enabled = true
+
+	cfg := config.Default()
+	if err := config.Load(data, &cfg); err != nil {
+		t.Errorf("Expected no error, got: %v", err)
+	}
+
+	checkConfig(t, expected, cfg)
+}
+
+func TestLoad_WithExportRunnersDisabled(t *testing.T) {
+	data := []byte(`
+    export:
+      runners:
+        enabled: false
+    `)
+
+	expected := defaultConfig()
+	expected.Export.Runners.Enabled = false
+
+	cfg := config.Default()
+	if err := config.Load(data, &cfg); err != nil {
+		t.Errorf("Expected no error, got: %v", err)
+	}
+
+	checkConfig(t, expected, cfg)
+}
+
+func TestDefault_ExportRunnersDisabledByDefault(t *testing.T) {
+	cfg := config.Default()
+
+	if cfg.Export.Runners.Enabled {
+		t.Error("Expected export.runners.enabled to default to false, got true")
+	}
 }
