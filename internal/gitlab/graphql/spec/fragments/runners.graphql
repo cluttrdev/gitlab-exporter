@@ -5,7 +5,6 @@ fragment RunnerFieldsCore on CiRunner {
 
   status
 
-  active
   locked
   paused
 

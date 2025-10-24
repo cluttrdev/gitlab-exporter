@@ -31,7 +31,6 @@ func ConvertRunner(rf RunnerFields) (types.Runner, error) {
 
 		Status: convertRunnerStatus(rf.Status),
 
-		Active: rf.Active,
 		Locked: valOrZero(rf.Locked),
 		Paused: rf.Paused,
 

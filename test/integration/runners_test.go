@@ -35,7 +35,6 @@ func TestRunnersPipeline(t *testing.T) {
 							"runnerType":  "INSTANCE_TYPE",
 							"tagList":     []string{"docker", "linux", "test"},
 							"status":      "ONLINE",
-							"active":      true,
 							"locked":      false,
 							"paused":      false,
 							"accessLevel": "NOT_PROTECTED",
@@ -55,7 +54,6 @@ func TestRunnersPipeline(t *testing.T) {
 							"runnerType":  "PROJECT_TYPE",
 							"tagList":     []string{"kubernetes"},
 							"status":      "STALE",
-							"active":      true,
 							"locked":      true,
 							"paused":      false,
 							"accessLevel": "REF_PROTECTED",
@@ -71,7 +69,6 @@ func TestRunnersPipeline(t *testing.T) {
 							"runnerType":  "GROUP_TYPE",
 							"tagList":     []string{},
 							"status":      "NEVER_CONTACTED",
-							"active":      false,
 							"locked":      false,
 							"paused":      true,
 							"accessLevel": "NOT_PROTECTED",
@@ -183,7 +180,7 @@ func TestRunnersPipeline(t *testing.T) {
 	if len(runner100.TagList) != 3 {
 		t.Errorf("runner 100: expected 3 tags, got %d", len(runner100.TagList))
 	}
-	if !runner100.Flags.Active {
+	if runner100.Flags.Paused {
 		t.Error("runner 100: expected to be active")
 	}
 	if runner100.CreatedBy == nil {

@@ -17,7 +17,6 @@ type Runner struct {
 
 	Status RunnerStatus
 
-	Active bool
 	Locked bool
 	Paused bool
 

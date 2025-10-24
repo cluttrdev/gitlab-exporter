@@ -245,11 +245,10 @@ func (x *Runner) GetCreatedBy() *UserReference {
 
 type RunnerFlags struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Active        bool                   `protobuf:"varint,1,opt,name=active,proto3" json:"active,omitempty"`
-	Locked        bool                   `protobuf:"varint,2,opt,name=locked,proto3" json:"locked,omitempty"`
-	Paused        bool                   `protobuf:"varint,3,opt,name=paused,proto3" json:"paused,omitempty"`
-	RunProtected  bool                   `protobuf:"varint,8,opt,name=run_protected,json=runProtected,proto3" json:"run_protected,omitempty"`
-	RunUntagged   bool                   `protobuf:"varint,9,opt,name=run_untagged,json=runUntagged,proto3" json:"run_untagged,omitempty"`
+	Locked        bool                   `protobuf:"varint,1,opt,name=locked,proto3" json:"locked,omitempty"`
+	Paused        bool                   `protobuf:"varint,2,opt,name=paused,proto3" json:"paused,omitempty"`
+	RunProtected  bool                   `protobuf:"varint,9,opt,name=run_protected,json=runProtected,proto3" json:"run_protected,omitempty"`
+	RunUntagged   bool                   `protobuf:"varint,10,opt,name=run_untagged,json=runUntagged,proto3" json:"run_untagged,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -282,13 +281,6 @@ func (x *RunnerFlags) ProtoReflect() protoreflect.Message {
 // Deprecated: Use RunnerFlags.ProtoReflect.Descriptor instead.
 func (*RunnerFlags) Descriptor() ([]byte, []int) {
 	return file_gitlabexporter_protobuf_runner_proto_rawDescGZIP(), []int{1}
-}
-
-func (x *RunnerFlags) GetActive() bool {
-	if x != nil {
-		return x.Active
-	}
-	return false
 }
 
 func (x *RunnerFlags) GetLocked() bool {
@@ -389,13 +381,13 @@ const file_gitlabexporter_protobuf_runner_proto_rawDesc = "" +
 	"timestamps\x18\b \x01(\v2).gitlabexporter.protobuf.RunnerTimestampsR\n" +
 	"timestamps\x12E\n" +
 	"\n" +
-	"created_by\x18\t \x01(\v2&.gitlabexporter.protobuf.UserReferenceR\tcreatedBy\"\x9d\x01\n" +
+	"created_by\x18\t \x01(\v2&.gitlabexporter.protobuf.UserReferenceR\tcreatedBy\"\x85\x01\n" +
 	"\vRunnerFlags\x12\x16\n" +
-	"\x06active\x18\x01 \x01(\bR\x06active\x12\x16\n" +
-	"\x06locked\x18\x02 \x01(\bR\x06locked\x12\x16\n" +
-	"\x06paused\x18\x03 \x01(\bR\x06paused\x12#\n" +
-	"\rrun_protected\x18\b \x01(\bR\frunProtected\x12!\n" +
-	"\frun_untagged\x18\t \x01(\bR\vrunUntagged\"\x8c\x01\n" +
+	"\x06locked\x18\x01 \x01(\bR\x06locked\x12\x16\n" +
+	"\x06paused\x18\x02 \x01(\bR\x06paused\x12#\n" +
+	"\rrun_protected\x18\t \x01(\bR\frunProtected\x12!\n" +
+	"\frun_untagged\x18\n" +
+	" \x01(\bR\vrunUntagged\"\x8c\x01\n" +
 	"\x10RunnerTimestamps\x129\n" +
 	"\n" +
 	"created_at\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x12=\n" +

@@ -42,12 +42,11 @@ message Runner {
 }
 
 message RunnerFlags {
-    bool active = 1;
-    bool locked = 2;
-    bool paused = 3;
+    bool locked = 1;
+    bool paused = 2;
 
-    bool run_protected = 8;
-    bool run_untagged = 9;
+    bool run_protected = 9;
+    bool run_untagged = 10;
 }
 
 message RunnerTimestamps {

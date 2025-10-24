@@ -26,7 +26,6 @@ func NewRunner(runner types.Runner) *typespb.Runner {
 		Status: convertRunnerStatus(runner.Status),
 
 		Flags: &typespb.RunnerFlags{
-			Active: runner.Active,
 			Locked: runner.Locked,
 			Paused: runner.Paused,
 

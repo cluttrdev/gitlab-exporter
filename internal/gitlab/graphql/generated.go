@@ -2799,8 +2799,6 @@ type RunnerFieldsCore struct {
 	TagList []string `json:"tagList"`
 	// Status of the runner.
 	Status CiRunnerStatus `json:"status"`
-	// Indicates the runner is allowed to receive jobs. Deprecated in GitLab 14.8: Use `paused`. This field is the inverse of `paused` and has no relationship to the runner's job execution status. For more details, see `jobExecutionStatus`.
-	Active bool `json:"active"`
 	// Indicates the runner is locked.
 	Locked *bool `json:"locked"`
 	// Indicates the runner is paused and not available to run jobs.
@@ -2828,9 +2826,6 @@ func (v *RunnerFieldsCore) GetTagList() []string { return v.TagList }
 
 // GetStatus returns RunnerFieldsCore.Status, and is useful for accessing the field via an interface.
 func (v *RunnerFieldsCore) GetStatus() CiRunnerStatus { return v.Status }
-
-// GetActive returns RunnerFieldsCore.Active, and is useful for accessing the field via an interface.
-func (v *RunnerFieldsCore) GetActive() bool { return v.Active }
 
 // GetLocked returns RunnerFieldsCore.Locked, and is useful for accessing the field via an interface.
 func (v *RunnerFieldsCore) GetLocked() *bool { return v.Locked }
@@ -12763,11 +12758,6 @@ func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) GetStatus() CiRunnerS
 	return v.RunnerFieldsCore.Status
 }
 
-// GetActive returns getRunnersRunnersCiRunnerConnectionNodesCiRunner.Active, and is useful for accessing the field via an interface.
-func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) GetActive() bool {
-	return v.RunnerFieldsCore.Active
-}
-
 // GetLocked returns getRunnersRunnersCiRunnerConnectionNodesCiRunner.Locked, and is useful for accessing the field via an interface.
 func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) GetLocked() *bool {
 	return v.RunnerFieldsCore.Locked
@@ -12846,8 +12836,6 @@ type __premarshalgetRunnersRunnersCiRunnerConnectionNodesCiRunner struct {
 
 	Status CiRunnerStatus `json:"status"`
 
-	Active bool `json:"active"`
-
 	Locked *bool `json:"locked"`
 
 	Paused bool `json:"paused"`
@@ -12880,7 +12868,6 @@ func (v *getRunnersRunnersCiRunnerConnectionNodesCiRunner) __premarshalJSON() (*
 	retval.RunnerType = v.RunnerFieldsCore.RunnerType
 	retval.TagList = v.RunnerFieldsCore.TagList
 	retval.Status = v.RunnerFieldsCore.Status
-	retval.Active = v.RunnerFieldsCore.Active
 	retval.Locked = v.RunnerFieldsCore.Locked
 	retval.Paused = v.RunnerFieldsCore.Paused
 	retval.AccessLevel = v.RunnerFieldsCore.AccessLevel
@@ -14946,7 +14933,6 @@ fragment RunnerFieldsCore on CiRunner {
 	runnerType
 	tagList
 	status
-	active
 	locked
 	paused
 	accessLevel

@@ -112,9 +112,6 @@ func TestFetchRunners_Success(t *testing.T) {
 	if runners[0].Status != types.RunnerStatusOnline {
 		t.Errorf("expected Status ONLINE, got %s", runners[0].Status)
 	}
-	if !runners[0].Active {
-		t.Error("expected Active to be true")
-	}
 	if len(runners[0].TagList) != 2 {
 		t.Errorf("expected 2 tags, got %d", len(runners[0].TagList))
 	}
@@ -128,9 +125,6 @@ func TestFetchRunners_Success(t *testing.T) {
 	}
 	if runners[1].Status != types.RunnerStatusOffline {
 		t.Errorf("expected Status OFFLINE, got %s", runners[1].Status)
-	}
-	if runners[1].Active {
-		t.Error("expected Active to be false")
 	}
 	if !runners[1].Locked {
 		t.Error("expected Locked to be true")

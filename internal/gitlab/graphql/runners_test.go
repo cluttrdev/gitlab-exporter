@@ -26,7 +26,6 @@ func TestConvertRunner(t *testing.T) {
 					RunnerType:  CiRunnerTypeInstanceType,
 					TagList:     []string{"docker", "linux"},
 					Status:      CiRunnerStatusOnline,
-					Active:      true,
 					Locked:      ptr(false),
 					Paused:      false,
 					AccessLevel: CiRunnerAccessLevelNotProtected,
@@ -56,7 +55,6 @@ func TestConvertRunner(t *testing.T) {
 					RunnerType:  CiRunnerTypeProjectType,
 					TagList:     []string{},
 					Status:      CiRunnerStatusOffline,
-					Active:      false,
 					Locked:      nil,
 					Paused:      true,
 					AccessLevel: CiRunnerAccessLevelRefProtected,
@@ -80,7 +78,6 @@ func TestConvertRunner(t *testing.T) {
 					RunnerType:  CiRunnerTypeGroupType,
 					TagList:     []string{"kubernetes"},
 					Status:      CiRunnerStatusStale,
-					Active:      true,
 					Locked:      ptr(true),
 					Paused:      false,
 					AccessLevel: CiRunnerAccessLevelNotProtected,
@@ -104,7 +101,6 @@ func TestConvertRunner(t *testing.T) {
 					RunnerType:  CiRunnerTypeInstanceType,
 					TagList:     []string{},
 					Status:      CiRunnerStatusNeverContacted,
-					Active:      true,
 					Locked:      ptr(false),
 					Paused:      false,
 					AccessLevel: CiRunnerAccessLevelNotProtected,
@@ -126,7 +122,6 @@ func TestConvertRunner(t *testing.T) {
 				RunnerFieldsCore: RunnerFieldsCore{
 					RunnerType:  CiRunnerTypeInstanceType,
 					Status:      CiRunnerStatusOnline,
-					Active:      true,
 					AccessLevel: CiRunnerAccessLevelNotProtected,
 					RunUntagged: false,
 				},
@@ -143,7 +138,6 @@ func TestConvertRunner(t *testing.T) {
 				RunnerFieldsCore: RunnerFieldsCore{
 					RunnerType:  CiRunnerTypeInstanceType,
 					Status:      CiRunnerStatusOnline,
-					Active:      true,
 					AccessLevel: CiRunnerAccessLevelNotProtected,
 					RunUntagged: false,
 					CreatedBy: &RunnerFieldsCoreCreatedByUserCore{
@@ -214,10 +208,6 @@ func TestConvertRunner(t *testing.T) {
 				}
 			}
 
-			// Verify boolean fields
-			if result.Active != tt.input.Active {
-				t.Errorf("expected Active %v, got %v", tt.input.Active, result.Active)
-			}
 			if result.Paused != tt.input.Paused {
 				t.Errorf("expected Paused %v, got %v", tt.input.Paused, result.Paused)
 			}
