@@ -35,6 +35,7 @@ func NewFetchCmd(out io.Writer) *cli.Command {
 			NewFetchPipelineCmd(out),
 			NewFetchProjectsCommand(out),
 			NewFetchReportCmd(out),
+			NewFetchRunnerCmd(out),
 			NewFetchTestReportCmd(out),
 		},
 		Exec: cfg.Exec,
