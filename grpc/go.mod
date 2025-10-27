@@ -2,10 +2,6 @@ module go.cluttr.dev/gitlab-exporter/grpc
 
 go 1.24.3
 
-replace go.cluttr.dev/gitlab-exporter/protobuf v0.0.0 => ../protobuf
-
-exclude go.cluttr.dev/gitlab-exporter v0.22.0
-
 require (
 	github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus v1.1.0
 	github.com/oklog/run v1.2.0
