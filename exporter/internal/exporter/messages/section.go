@@ -4,8 +4,8 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"go.cluttr.dev/gitlab-exporter/internal/types"
-	"go.cluttr.dev/gitlab-exporter/protobuf/typespb"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
+	"go.cluttr.dev/gitlab-exporter/exporter/protobuf/typespb"
 )
 
 func NewSection(section types.Section) *typespb.Section {

@@ -7,7 +7,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"go.cluttr.dev/gitlab-exporter/internal/cobertura"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/cobertura"
 )
 
 func TestParse(t *testing.T) {

@@ -10,7 +10,7 @@ import (
 
 	"github.com/cluttrdev/cli"
 
-	"go.cluttr.dev/gitlab-exporter/internal/config"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/config"
 )
 
 type FetchTestReportConfig struct {

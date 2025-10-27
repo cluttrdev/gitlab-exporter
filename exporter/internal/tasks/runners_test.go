@@ -9,8 +9,8 @@ import (
 	"testing"
 	"time"
 
-	"go.cluttr.dev/gitlab-exporter/internal/gitlab"
-	"go.cluttr.dev/gitlab-exporter/internal/types"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
 )
 
 func TestFetchRunners_Success(t *testing.T) {

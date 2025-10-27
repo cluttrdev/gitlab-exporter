@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"go.cluttr.dev/gitlab-exporter/internal/tasks"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/tasks"
 )
 
 func TestRunnersPipeline(t *testing.T) {

@@ -10,10 +10,10 @@ import (
 
 	"go.cluttr.dev/junitxml"
 
-	"go.cluttr.dev/gitlab-exporter/internal/cobertura"
-	"go.cluttr.dev/gitlab-exporter/internal/gitlab"
-	"go.cluttr.dev/gitlab-exporter/internal/gitlab/graphql"
-	"go.cluttr.dev/gitlab-exporter/internal/types"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/cobertura"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab/graphql"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
 )
 
 // ############################################################################

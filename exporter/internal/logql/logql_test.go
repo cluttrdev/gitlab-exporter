@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"testing"
 
-	"go.cluttr.dev/gitlab-exporter/internal/logql"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/logql"
 )
 
 func TestCount(t *testing.T) {

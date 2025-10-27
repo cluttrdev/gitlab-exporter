@@ -7,9 +7,9 @@ import (
 	"log/slog"
 	"time"
 
-	"go.cluttr.dev/gitlab-exporter/internal/gitlab"
-	"go.cluttr.dev/gitlab-exporter/internal/gitlab/graphql"
-	"go.cluttr.dev/gitlab-exporter/internal/types"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab/graphql"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
 )
 
 func FetchProjectsMergeRequests(ctx context.Context, glab *gitlab.Client, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) ([]types.MergeRequest, error) {

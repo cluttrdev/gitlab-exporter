@@ -10,9 +10,9 @@ import (
 
 	"github.com/cluttrdev/cli"
 
-	"go.cluttr.dev/gitlab-exporter/internal/config"
-	"go.cluttr.dev/gitlab-exporter/internal/gitlab/rest"
-	"go.cluttr.dev/gitlab-exporter/internal/types"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/config"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab/rest"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
 )
 
 type FetchDeploymentsConfig struct {

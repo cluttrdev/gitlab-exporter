@@ -11,7 +11,7 @@ import (
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 
-	"go.cluttr.dev/gitlab-exporter/internal/types"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
 )
 
 type GitLabEnvironment struct {

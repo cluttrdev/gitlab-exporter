@@ -11,8 +11,8 @@ import (
 	"time"
 
 	"github.com/cluttrdev/cli"
-	"go.cluttr.dev/gitlab-exporter/internal/config"
-	"go.cluttr.dev/gitlab-exporter/internal/gitlab/graphql"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/config"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab/graphql"
 )
 
 type FetchProjectsConfig struct {

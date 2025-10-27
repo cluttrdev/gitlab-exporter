@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 
-	"go.cluttr.dev/gitlab-exporter/internal/types"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
 )
 
 type JobArtifactFields struct {

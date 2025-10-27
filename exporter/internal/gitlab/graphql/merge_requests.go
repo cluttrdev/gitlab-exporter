@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
-	"go.cluttr.dev/gitlab-exporter/internal/metaerr"
-	"go.cluttr.dev/gitlab-exporter/internal/types"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/metaerr"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
 )
 
 type MergeRequestFields struct {

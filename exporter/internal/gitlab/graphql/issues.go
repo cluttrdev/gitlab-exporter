@@ -6,7 +6,7 @@ import (
 	"log/slog"
 	"time"
 
-	"go.cluttr.dev/gitlab-exporter/internal/types"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
 )
 
 type IssueFields struct {

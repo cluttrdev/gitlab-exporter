@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"go.cluttr.dev/gitlab-exporter/cmd"
+	"go.cluttr.dev/gitlab-exporter/exporter/cmd"
 )
 
 var version string

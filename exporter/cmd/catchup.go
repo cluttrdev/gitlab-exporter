@@ -17,9 +17,9 @@ import (
 
 	"github.com/cluttrdev/cli"
 
-	"go.cluttr.dev/gitlab-exporter/internal/config"
-	"go.cluttr.dev/gitlab-exporter/internal/exporter"
-	"go.cluttr.dev/gitlab-exporter/internal/tasks"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/config"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/exporter"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/tasks"
 )
 
 type CatchUpConfig struct {

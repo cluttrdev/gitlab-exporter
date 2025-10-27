@@ -11,10 +11,10 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
 
-	grpc_client "go.cluttr.dev/gitlab-exporter/grpc/client"
-	"go.cluttr.dev/gitlab-exporter/protobuf/typespb"
+	grpc_client "go.cluttr.dev/gitlab-exporter/exporter/grpc/client"
+	"go.cluttr.dev/gitlab-exporter/exporter/protobuf/typespb"
 
-	grpc_mock "go.cluttr.dev/gitlab-exporter/test/mock/grpc"
+	grpc_mock "go.cluttr.dev/gitlab-exporter/exporter/test/mock/grpc"
 )
 
 const bufSize int = 1024 * 1024
