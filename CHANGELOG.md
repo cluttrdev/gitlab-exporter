@@ -1,7 +1,12 @@
 # Changelog
 
-## [Unreleased](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.15.0..HEAD)
+## [0.16.0](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.15.0..v0.16.0)
 
+- 5013208 feat(deps): Update dependencies
+- 5a31d77 test(integration): Use latest clickhouse-server
+- 6444e99 fix(db): Fix qualified column name issue
+- a4af615 feat: Record runners
+- d9c96ed chore: Change path back to gitlab-exporter-clickhouse-recorder
 - 287b3fd ci: Remove github release sync
 - 4f631b8 chore: Update default image repository in helm chart
 - 728ecde docs: Update releases url in README, Makefile and CHANGELOG.md
