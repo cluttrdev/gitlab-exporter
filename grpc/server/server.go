@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"log/slog"
 	"net"
+	"os"
+	"strings"
 
 	grpcprom "github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus"
 	"github.com/oklog/run"
@@ -13,7 +15,7 @@ import (
 	"google.golang.org/grpc/health"
 	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 
-	"go.cluttr.dev/gitlab-exporter/exporter/protobuf/servicepb"
+	"go.cluttr.dev/gitlab-exporter/protobuf/servicepb"
 )
 
 type Server struct {
@@ -44,6 +46,9 @@ func (s *Server) SetServingStatus(service string, status healthpb.HealthCheckRes
 }
 
 func (s *Server) ListenAndServe(ctx context.Context, addr string) error {
+	// Parse address to determine network type
+	network, address := parseAddress(addr)
+
 	// setup grpc server
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(s.metrics.UnaryServerInterceptor()),
@@ -59,14 +64,18 @@ func (s *Server) ListenAndServe(ctx context.Context, addr string) error {
 
 	{ // serve grpc
 		g.Add(func() error { // execute
-			listener, err := net.Listen("tcp", addr)
+			listener, err := net.Listen(network, address)
 			if err != nil {
 				return err
 			}
-			slog.Info(fmt.Sprintf("Listening on %s", listener.Addr().String()))
+			slog.Info(fmt.Sprintf("Listening on %s://%s", network, listener.Addr().String()))
 
 			return grpcServer.Serve(listener)
 		}, func(err error) { // interrupt
+			// Cleanup unix socket if needed
+			if network == "unix" {
+				os.Remove(address)
+			}
 			s.health.Shutdown()
 			grpcServer.GracefulStop()
 			grpcServer.Stop()
@@ -97,4 +106,18 @@ func (s *Server) ListenAndServe(ctx context.Context, addr string) error {
 	}
 
 	return g.Run()
+}
+
+// parseAddress parses the address string to determine network type and address
+func parseAddress(addr string) (network, address string) {
+	// Handle "unix:///path/to/socket"
+	if strings.HasPrefix(addr, "unix://") {
+		return "unix", strings.TrimPrefix(addr, "unix://")
+	}
+	// Handle bare unix socket path (starts with /)
+	if strings.HasPrefix(addr, "/") {
+		return "unix", addr
+	}
+	// Default to TCP for host:port format
+	return "tcp", addr
 }

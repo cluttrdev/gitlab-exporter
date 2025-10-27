@@ -10,8 +10,8 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"go.cluttr.dev/gitlab-exporter/exporter/protobuf/servicepb"
-	"go.cluttr.dev/gitlab-exporter/exporter/protobuf/typespb"
+	"go.cluttr.dev/gitlab-exporter/protobuf/servicepb"
+	"go.cluttr.dev/gitlab-exporter/protobuf/typespb"
 )
 
 type Client struct {

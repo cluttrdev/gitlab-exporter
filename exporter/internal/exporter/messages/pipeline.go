@@ -5,7 +5,7 @@ import (
 	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
-	"go.cluttr.dev/gitlab-exporter/exporter/protobuf/typespb"
+	"go.cluttr.dev/gitlab-exporter/protobuf/typespb"
 )
 
 func NewPipelineReference(pipeline types.PipelineReference) *typespb.PipelineReference {

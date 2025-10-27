@@ -13,10 +13,10 @@ import (
 	"google.golang.org/protobuf/proto"
 
 	"github.com/prometheus/client_golang/prometheus"
-	grpc_client "go.cluttr.dev/gitlab-exporter/exporter/grpc/client"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/exporter/messages"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
-	"go.cluttr.dev/gitlab-exporter/exporter/protobuf/typespb"
+	grpc_client "go.cluttr.dev/gitlab-exporter/grpc/client"
+	"go.cluttr.dev/gitlab-exporter/protobuf/typespb"
 )
 
 type Exporter struct {

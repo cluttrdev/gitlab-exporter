@@ -7,7 +7,7 @@
 package servicepb
 
 import (
-	typespb "go.cluttr.dev/gitlab-exporter/exporter/protobuf/typespb"
+	typespb "go.cluttr.dev/gitlab-exporter/protobuf/typespb"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
 	timestamppb "google.golang.org/protobuf/types/known/timestamppb"

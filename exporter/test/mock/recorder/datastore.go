@@ -1,7 +1,7 @@
 package recorder_mock
 
 import (
-	"go.cluttr.dev/gitlab-exporter/exporter/protobuf/typespb"
+	"go.cluttr.dev/gitlab-exporter/protobuf/typespb"
 )
 
 type Datastore interface {

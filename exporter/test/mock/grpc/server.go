@@ -10,8 +10,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"google.golang.org/grpc"
 
-	"go.cluttr.dev/gitlab-exporter/exporter/protobuf/servicepb"
-	"go.cluttr.dev/gitlab-exporter/exporter/protobuf/typespb"
+	"go.cluttr.dev/gitlab-exporter/protobuf/servicepb"
+	"go.cluttr.dev/gitlab-exporter/protobuf/typespb"
 )
 
 type MockExporterServer struct {

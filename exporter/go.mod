@@ -1,13 +1,12 @@
 module go.cluttr.dev/gitlab-exporter/exporter
 
-go 1.24.0
+go 1.24.3
 
 require (
 	github.com/Khan/genqlient v0.8.1
 	github.com/cluttrdev/cli v0.0.0-20250719095132-732c23cca50b
 	github.com/creasty/defaults v1.8.0
 	github.com/google/go-cmp v0.7.0
-	github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus v1.1.0
 	github.com/hashicorp/go-cleanhttp v0.5.2
 	github.com/hashicorp/go-retryablehttp v0.7.8
 	github.com/oklog/run v1.2.0
@@ -24,17 +23,20 @@ require (
 	gopkg.in/yaml.v3 v3.0.1
 )
 
+require github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus v1.1.0 // indirect
+
 require (
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.3.2 // indirect
-	github.com/kr/text v0.2.0 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.67.1 // indirect
 	github.com/prometheus/procfs v0.18.0 // indirect
+	go.cluttr.dev/gitlab-exporter/grpc v0.0.0
+	go.cluttr.dev/gitlab-exporter/protobuf v0.0.0
 	go.yaml.in/yaml/v2 v2.4.3 // indirect
 	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546 // indirect
 	golang.org/x/oauth2 v0.32.0 // indirect
@@ -42,3 +44,7 @@ require (
 	golang.org/x/text v0.30.0 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20251022142026-3a174f9686a8 // indirect
 )
+
+replace go.cluttr.dev/gitlab-exporter/protobuf v0.0.0 => ../protobuf
+
+replace go.cluttr.dev/gitlab-exporter/grpc v0.0.0 => ../grpc

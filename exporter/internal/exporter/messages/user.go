@@ -2,7 +2,7 @@ package messages
 
 import (
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
-	"go.cluttr.dev/gitlab-exporter/exporter/protobuf/typespb"
+	"go.cluttr.dev/gitlab-exporter/protobuf/typespb"
 )
 
 func NewUserReference(user types.UserReference) *typespb.UserReference {
