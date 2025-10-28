@@ -2,6 +2,11 @@ module go.cluttr.dev/gitlab-exporter/exporter
 
 go 1.24.3
 
+replace (
+	go.cluttr.dev/gitlab-exporter/grpc v0.0.0 => ../grpc
+	go.cluttr.dev/gitlab-exporter/protobuf v0.0.0 => ../protobuf
+)
+
 require (
 	github.com/Khan/genqlient v0.8.1
 	github.com/cluttrdev/cli v0.0.0-20250719095132-732c23cca50b

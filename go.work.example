@@ -1,0 +1,15 @@
+go 1.24.3
+
+use (
+	./exporter
+	./grpc
+	./protobuf
+	./recorders/recorder
+)
+
+replace (
+	go.cluttr.dev/gitlab-exporter/exporter v0.0.0 => ./exporter
+	go.cluttr.dev/gitlab-exporter/grpc v0.0.0 => ./grpc
+	go.cluttr.dev/gitlab-exporter/protobuf v0.0.0 => ./protobuf
+	go.cluttr.dev/gitlab-exporter/recorders/recorder v0.0.0 => ./recorders/recorder
+)
