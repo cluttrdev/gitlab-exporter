@@ -13,6 +13,7 @@ import (
 func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 	type _Config struct {
 		GitLab          GitLab          `yaml:"gitlab"`
+		Recorders       []Recorder      `yaml:"recorders"`
 		Endpoints       []Endpoint      `yaml:"endpoints"`
 		ProjectDefaults ProjectSettings `yaml:"project_defaults"`
 		Projects        []yaml.Node     `yaml:"projects"`
@@ -24,6 +25,7 @@ func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 
 	var _cfg _Config
 	_cfg.GitLab = c.GitLab
+	_cfg.Recorders = c.Recorders
 	_cfg.Endpoints = c.Endpoints
 	_cfg.ProjectDefaults = c.ProjectDefaults
 	_cfg.Export = c.Export
@@ -35,6 +37,7 @@ func (c *Config) UnmarshalYAML(v *yaml.Node) error {
 	}
 
 	c.GitLab = _cfg.GitLab
+	c.Recorders = _cfg.Recorders
 	c.Endpoints = _cfg.Endpoints
 	c.ProjectDefaults = _cfg.ProjectDefaults
 	c.Export = _cfg.Export

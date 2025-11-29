@@ -17,8 +17,26 @@ gitlab:
     rate:
       limit: 0.0
 
-# List of gRPC server endpoints to export to
-endpoints: []
+recorders: []
+  # - type: "sqlite"
+  #   # Mode: "subprocess" (default) - exporter spawns and manages the recorder
+  #   #       "external" - connect to an already-running recorder
+  #   mode: subprocess
+  #   # Address is auto-generated for subprocess mode, required for external mode
+  #   address: ""
+  #   enabled: true
+  #   settings:
+  #     path: ./gitlab-exporter.db
+  #
+  # - type: "clickhouse"
+  #   mode: external
+  #   address: "localhost:9000"
+  #   enabled: true
+  #   settings: {}
+
+# List of gRPC server endpoints to export to.
+# Deprecated: Use `recorders` instead.
+# endpoints: []
   # - address: "127.0.0.1:36275"
 
 # Default settings for projects

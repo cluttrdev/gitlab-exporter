@@ -1,6 +1,8 @@
 package config
 
 import (
+	"fmt"
+
 	"github.com/creasty/defaults"
 )
 
@@ -8,8 +10,8 @@ import (
 type Config struct {
 	// GitLab client settings
 	GitLab GitLab `default:"{}" yaml:"gitlab"`
-	// List of recorder endpoints to export to
-	Endpoints []Endpoint `default:"[]" yaml:"endpoints"`
+	// List of recorders to send data to
+	Recorders []Recorder `default:"[]" yaml:"recorders"`
 	// Default settings for projects
 	ProjectDefaults ProjectSettings `default:"{}" yaml:"project_defaults"`
 	// List of project to export
@@ -22,6 +24,10 @@ type Config struct {
 	HTTP HTTP `default:"{}" yaml:"http"`
 	// Log configuration settings
 	Log Log `default:"{}" yaml:"log"`
+
+	// List of recorder endpoints to export to.
+	// Deprecated: Use Recorders instead.
+	Endpoints []Endpoint `default:"[]" yaml:"endpoints"`
 }
 
 type GitLab struct {
@@ -36,6 +42,24 @@ type GitLab struct {
 			Limit float64 `default:"0.0" yaml:"limit"`
 		} `yaml:"rate"`
 	} `yaml:"client"`
+}
+
+// RecorderMode defines how the exporter interacts with a recorder
+type RecorderMode string
+
+const (
+	// RecorderModeSubprocess means the exporter spawns and manages the recorder process
+	RecorderModeSubprocess RecorderMode = "subprocess"
+	// RecorderModeExternal means the recorder is running externally and exporter connects to it
+	RecorderModeExternal RecorderMode = "external"
+)
+
+type Recorder struct {
+	Type     string         `default:"" yaml:"type"`
+	Address  string         `default:"" yaml:"address"`
+	Mode     RecorderMode   `default:"subprocess" yaml:"mode"`
+	Enabled  bool           `default:"true" yaml:"enabled"`
+	Settings map[string]any `default:"{}" yaml:"settings"`
 }
 
 type Endpoint struct {
@@ -176,6 +200,16 @@ func DefaultProjectSettings() ProjectSettings {
 	defaults.MustSet(&cfg)
 
 	return cfg
+}
+
+// ValidateRecorderMode checks if the given mode is valid
+func ValidateRecorderMode(mode RecorderMode) error {
+	switch mode {
+	case RecorderModeSubprocess, RecorderModeExternal, "":
+		return nil
+	default:
+		return fmt.Errorf("invalid recorder mode %q: must be %q or %q", mode, RecorderModeSubprocess, RecorderModeExternal)
+	}
 }
 
 func IsAuthedHTTPRequired(cfg Config) bool {

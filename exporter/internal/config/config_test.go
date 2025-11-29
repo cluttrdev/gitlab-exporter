@@ -15,6 +15,7 @@ func defaultConfig() config.Config {
 	cfg.GitLab.Token = ""
 	cfg.GitLab.Client.Rate.Limit = 0.0
 
+	cfg.Recorders = []config.Recorder{}
 	cfg.Endpoints = []config.Endpoint{}
 
 	cfg.ProjectDefaults = defaultProjectSettings()
@@ -108,6 +109,123 @@ func Test_NewDefaultProjectSettings(t *testing.T) {
 	cfg := config.DefaultProjectSettings()
 
 	checkConfig(t, expected, cfg)
+}
+
+func TestLoad_FullData(t *testing.T) {
+	data := []byte(`
+    gitlab:
+      url: https://git.example.com
+      token: glpat-xxxxxxxxxxxxxxxxxxxx
+      client:
+        rate:
+          limit: 30
+    
+    recorders:
+      - type: sqlite
+        enabled: true
+        address: unix://tmp/gitlab-exporter-sqlite.sock
+        mode: subprocess
+        settings:
+          path: ./gitlab-exporter-sqlite.db
+    
+    project_defaults:
+      export:
+        deployments:
+          enabled: true
+    
+        metrics:
+          enabled: true
+    
+          log_queries:
+            - name: ci_job_log_warning_total
+              line_filter: '!~ "^WARN" |= "msg_a" or "msg_b"'
+              label_add:
+                name: "value"
+    
+        mergerequests:
+          enabled: true
+    
+          note_events: true
+    
+        reports:
+          enabled: false
+    
+          junit:
+            enabled: true
+            paths:
+              - junit.xml
+    
+          coverage:
+            enabled: true
+            paths: [ coverage-cobertura.xml ]
+    
+        sections:
+          enabled: true
+    
+        jobs:
+          properties:
+          enabled: true
+    
+        testreports:
+          enabled: true
+    
+        traces:
+          enabled: true
+    
+      catch_up:
+        enabled: true
+        updated_after: "2025-11-17"
+        updated_before: ""
+    `)
+
+	expected := defaultConfig()
+	expected.GitLab.Url = "https://git.example.com"
+	expected.GitLab.Token = "glpat-xxxxxxxxxxxxxxxxxxxx"
+	expected.GitLab.Client.Rate.Limit = 30
+	expected.Recorders = []config.Recorder{
+		{
+			Type:     "sqlite",
+			Enabled:  true,
+			Address:  "unix://tmp/gitlab-exporter-sqlite.sock",
+			Mode: config.RecorderModeSubprocess,
+			Settings: map[string]any{
+				"path": "./gitlab-exporter-sqlite.db",
+			},
+		},
+	}
+	expected.ProjectDefaults.Export.Metrics.LogQueries = []config.ProjectExportMetricsLogQuery{
+		{
+			Name:       "ci_job_log_warning_total",
+			LineFilter: "!~ \"^WARN\" |= \"msg_a\" or \"msg_b\"",
+			LabelAdd: map[string]string{
+				"name": "value",
+			},
+		},
+	}
+	expected.ProjectDefaults.Export.Reports = config.ProjectExportReports{
+		Enabled: false,
+		Junit: config.ProjectExportReportsSettings{
+			Enabled: true,
+			Paths:   []string{"junit.xml"},
+		},
+		Coverage: config.ProjectExportReportsSettings{
+			Enabled: true,
+			Paths:   []string{"coverage-cobertura.xml"},
+		},
+	}
+	expected.ProjectDefaults.CatchUp = config.ProjectCatchUp{
+		Enabled:       true,
+		UpdatedAfter:  "2025-11-17",
+		UpdatedBefore: "",
+	}
+
+	var cfg config.Config
+	cfg = config.Default()
+	if err := config.Load(data, &cfg); err != nil {
+		t.Errorf("Expected no error when loading empty data, got: %v", err)
+	}
+
+	checkConfig(t, &expected, &cfg)
 }
 
 func TestLoad_EmptyData(t *testing.T) {
