@@ -9,6 +9,14 @@ ifneq "${VERBOSE}" "1"
 .SILENT:
 endif
 
+.PHONY: tidy
+tidy: ## Run go mod tidy on specified module or all modules
+ifdef MOD
+	go mod tidy -C ${MOD}
+else
+	find . -type f -name go.mod -exec sh -c 'go mod tidy -C $$(dirname {})' \;
+endif
+
 .PHONY: fmt
 fmt: ## Run go fmt on specified module or all modules
 ifdef MOD
@@ -28,7 +36,7 @@ endif
 .PHONY: lint
 lint: ## Run linter on specified module or all modules
 ifdef MOD
-	golangci-lint run ${MOD}/...
+	cd ${MOD} && golangci-lint run ./...
 else
 	find . -type f -name go.mod -exec sh -c 'cd $$(dirname {}) && golangci-lint run ./...' \;
 endif
