@@ -15,8 +15,9 @@ import (
 )
 
 type Client struct {
-	conn grpc.ClientConnInterface
-	stub servicepb.GitLabExporterClient
+	target string
+	conn   grpc.ClientConnInterface
+	stub   servicepb.GitLabExporterClient
 
 	metrics *grpcprom.ClientMetrics
 }
@@ -41,10 +42,15 @@ func NewCLient(target string, opts ...grpc.DialOption) (*Client, error) {
 	stub := servicepb.NewGitLabExporterClient(conn)
 
 	return &Client{
+		target:  target,
 		conn:    conn,
 		stub:    stub,
 		metrics: metrics,
 	}, nil
+}
+
+func (c *Client) Target() string {
+	return c.target
 }
 
 func (c *Client) MetricsCollector() prometheus.Collector {

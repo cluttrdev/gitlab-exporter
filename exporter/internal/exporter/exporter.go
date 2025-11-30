@@ -9,10 +9,8 @@ import (
 
 	tracepb_v1 "go.opentelemetry.io/proto/otlp/trace/v1"
 	"golang.org/x/sync/errgroup"
-	"google.golang.org/grpc"
 	"google.golang.org/protobuf/proto"
 
-	"github.com/prometheus/client_golang/prometheus"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/exporter/messages"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
 	grpc_client "go.cluttr.dev/gitlab-exporter/grpc/client"
@@ -23,32 +21,18 @@ type Exporter struct {
 	clients map[string]*grpc_client.Client
 }
 
-type EndpointConfig struct {
-	Address string
-	Options []grpc.DialOption
-}
-
-func New(endpoints []EndpointConfig) (*Exporter, error) {
-	clients := make(map[string]*grpc_client.Client, len(endpoints))
-	for _, cfg := range endpoints {
-		c, err := grpc_client.NewCLient(cfg.Address, cfg.Options...)
-		if err != nil {
-			return nil, err
-		}
-		clients[cfg.Address] = c
-	}
-
+func New() *Exporter {
 	return &Exporter{
-		clients: clients,
-	}, nil
+		clients: make(map[string]*grpc_client.Client),
+	}
 }
 
-func (e *Exporter) MetricsCollectorFor(endpoint string) prometheus.Collector {
-	c, ok := e.clients[endpoint]
-	if !ok {
-		return nil
+func (e *Exporter) AddClient(client *grpc_client.Client) error {
+	if _, exists := e.clients[client.Target()]; exists {
+		return fmt.Errorf("client already exists for target URI: %q", client.Target())
 	}
-	return c.MetricsCollector()
+	e.clients[client.Target()] = client
+	return nil
 }
 
 type convertFunc[T any, M proto.Message] func(data T) M

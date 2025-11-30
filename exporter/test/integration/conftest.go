@@ -15,6 +15,8 @@ import (
 	"google.golang.org/grpc/test/bufconn"
 
 	"go.cluttr.dev/gitlab-exporter/exporter/test/mock/recorder"
+
+	grpc_client "go.cluttr.dev/gitlab-exporter/grpc/client"
 )
 
 func setupGitLab(t *testing.T) (*http.ServeMux, *gitlab.Client) {
@@ -51,19 +53,21 @@ func setupExporter(t *testing.T) (*exporter.Exporter, *recorder_mock.Recorder) {
 		}
 	}()
 
-	exp, err := exporter.New([]exporter.EndpointConfig{
-		{
-			Address: "passthrough:///bufnet",
-			Options: []grpc.DialOption{
-				grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
-					return lis.Dial()
-				}),
-				grpc.WithTransportCredentials(insecure.NewCredentials()),
-			},
-		},
-	})
+	exp := exporter.New()
+
+	client, err := grpc_client.NewCLient(
+		"passthrough:///bufnet",
+		grpc.WithContextDialer(func(context.Context, string) (net.Conn, error) {
+			return lis.Dial()
+		}),
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+	)
 	if err != nil {
-		t.Fatalf("failed to create exporter: %v", err)
+		t.Fatalf("failed to create client: %v", err)
+	}
+
+	if err := exp.AddClient(client); err != nil {
+		t.Fatalf("failed to add client: %v", err)
 	}
 
 	return exp, rec

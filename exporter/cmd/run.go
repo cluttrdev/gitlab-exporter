@@ -20,6 +20,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/collectors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 
 	"github.com/cluttrdev/cli"
 
@@ -27,7 +29,9 @@ import (
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/exporter"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/healthz"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/subprocess"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/tasks"
+	grpc_client "go.cluttr.dev/gitlab-exporter/grpc/client"
 )
 
 type RunConfig struct {
@@ -135,11 +139,18 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 		return fmt.Errorf("create gitlab client: %w", err)
 	}
 
-	// create exporter
-	endpoints := exporter.CreateEndpointConfigs(cfg.Endpoints)
-	exp, err := exporter.New(endpoints)
+	// initialize grpc clients
+	clients, launchers, err := initGrpcClients(cfg)
 	if err != nil {
-		return err
+		return fmt.Errorf("initialize grpc clients: %w", err)
+	}
+
+	// setup exporter
+	exp := exporter.New()
+	for _, client := range clients {
+		if err := exp.AddClient(client); err != nil {
+			return fmt.Errorf("add grpc client: %w", err)
+		}
 	}
 
 	g := &run.Group{}
@@ -184,15 +195,37 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 		})
 	}
 
+	{ // recorders
+		ctx, cancel := context.WithCancel(context.Background())
+
+		g.Add(func() error { //execute
+			slog.Info("Starting recorder subprocesses...")
+			for _, launcher := range launchers {
+				if err := launcher.Start(ctx); err != nil {
+					return fmt.Errorf("start recorder subprocess: %w", err)
+				}
+			}
+			slog.Info("Starting recorder subprocesses... done")
+			return nil
+		}, func(err error) { // interrupt
+			slog.Info("Stopping recorder subprocesses...")
+			cancel()
+			for _, launcher := range launchers {
+				if err := launcher.Stop(ctx); err != nil {
+					slog.Error("error stopping subprocess recorder", "error", err)
+				}
+			}
+			slog.Info("Stopping recorder subprocesses... done")
+		})
+	}
+
 	if cfg.HTTP.Enabled {
 		colls := []prometheus.Collector{
 			collectors.NewGoCollector(),
 			collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
 		}
-		for _, endpoint := range cfg.Endpoints {
-			if mc := exp.MetricsCollectorFor(endpoint.Address); mc != nil {
-				colls = append(colls, mc)
-			}
+		for _, client := range clients {
+			colls = append(colls, client.MetricsCollector())
 		}
 		reg := prometheus.NewRegistry()
 		reg.MustRegister(colls...)
@@ -215,6 +248,85 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 	}
 
 	return g.Run()
+}
+
+func initGrpcClients(cfg config.Config) ([]*grpc_client.Client, []*subprocess.Launcher, error) {
+	var clients []*grpc_client.Client
+	var launchers []*subprocess.Launcher
+
+	// for backwards compatibility with deprecated endpoints config
+	var recorderConfigs []config.Recorder
+	for _, endpoint := range cfg.Endpoints {
+		recorderConfigs = append(recorderConfigs, config.Recorder{
+			Address: endpoint.Address,
+			Mode:    config.RecorderModeExternal,
+			Enabled: true,
+		})
+	}
+
+	recorderConfigs = append(recorderConfigs, cfg.Recorders...)
+
+	for _, rec := range recorderConfigs {
+		if !rec.Enabled {
+			continue
+		}
+
+		switch rec.Mode {
+		case config.RecorderModeExternal:
+			if rec.Address == "" {
+				return nil, nil, fmt.Errorf("external recorder %s: address is required", rec.Type)
+			}
+
+			client, err := grpc_client.NewCLient(rec.Address,
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
+			)
+			if err != nil {
+				return nil, nil, fmt.Errorf("connect to external recorder %s at %s: %w", rec.Type, rec.Address, err)
+			}
+
+			clients = append(clients, client)
+		case config.RecorderModeSubprocess:
+			// Extract settings for launcher configuration
+			var command string
+			var maxRestarts int = subprocess.DefaultMaxRestarts
+
+			if cmd, ok := rec.Settings["command"].(string); ok {
+				command = cmd
+			}
+			if mr, ok := rec.Settings["max_restarts"].(int); ok {
+				maxRestarts = mr
+			}
+
+			launcher, err := subprocess.NewLauncher(subprocess.LauncherConfig{
+				RecorderType: rec.Type,
+				Command:      command,
+				SocketPath:   rec.Address,
+				MaxRestarts:  maxRestarts,
+			})
+			if err != nil {
+				return nil, nil, fmt.Errorf("create launcher for %s: %w", rec.Type, err)
+			}
+
+			client, err := grpc_client.NewCLient("unix://"+launcher.SocketPath(),
+				grpc.WithTransportCredentials(insecure.NewCredentials()),
+			)
+			if err != nil {
+				return nil, nil, fmt.Errorf("create client: %w", err)
+			}
+
+			clients = append(clients, client)
+			launchers = append(launchers, launcher)
+
+		default:
+			return nil, nil, fmt.Errorf("recorder %s: invalid mode %q", rec.Type, rec.Mode)
+		}
+	}
+
+	return clients, launchers, nil
+}
+
+func (c *RunConfig) startRecorders(ctx context.Context, launchers []*subprocess.Launcher) error {
+	return nil
 }
 
 func serveHTTP(cfg config.HTTP, reg *prometheus.Registry) (func() error, func(error)) {

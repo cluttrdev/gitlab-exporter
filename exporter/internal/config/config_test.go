@@ -184,10 +184,10 @@ func TestLoad_FullData(t *testing.T) {
 	expected.GitLab.Client.Rate.Limit = 30
 	expected.Recorders = []config.Recorder{
 		{
-			Type:     "sqlite",
-			Enabled:  true,
-			Address:  "unix://tmp/gitlab-exporter-sqlite.sock",
-			Mode: config.RecorderModeSubprocess,
+			Type:    "sqlite",
+			Enabled: true,
+			Address: "unix://tmp/gitlab-exporter-sqlite.sock",
+			Mode:    config.RecorderModeSubprocess,
 			Settings: map[string]any{
 				"path": "./gitlab-exporter-sqlite.db",
 			},

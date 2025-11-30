@@ -2,9 +2,13 @@ module go.cluttr.dev/gitlab-exporter/recorders/recorder
 
 go 1.24.3
 
-replace go.cluttr.dev/gitlab-exporter/protobuf v0.0.0 => ../../protobuf
+replace (
+	go.cluttr.dev/gitlab-exporter/grpc v0.0.0 => ../../grpc
+	go.cluttr.dev/gitlab-exporter/protobuf v0.0.0 => ../../protobuf
+)
 
 require (
+	go.cluttr.dev/gitlab-exporter/grpc v0.0.0
 	go.cluttr.dev/gitlab-exporter/protobuf v0.0.0
 	gopkg.in/yaml.v3 v3.0.1
 )

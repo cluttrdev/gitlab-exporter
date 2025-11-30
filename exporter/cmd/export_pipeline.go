@@ -13,6 +13,10 @@ import (
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/exporter"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab/graphql"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
+
+	grpc_client "go.cluttr.dev/gitlab-exporter/grpc/client"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 type ExportPipelineConfig struct {
@@ -80,11 +84,45 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("create gitlab client: %w", err)
 	}
 
+	// initialize grpc clients (external only)
+	var recorderConfigs []config.Recorder
+	var clients []*grpc_client.Client
+	for _, endpoint := range cfg.Endpoints {
+		recorderConfigs = append(recorderConfigs, config.Recorder{
+			Address: endpoint.Address,
+			Mode:    config.RecorderModeExternal,
+			Enabled: true,
+		})
+	}
+	recorderConfigs = append(recorderConfigs, cfg.Recorders...)
+	for _, rec := range recorderConfigs {
+		if !rec.Enabled {
+			continue
+		}
+		if rec.Mode != config.RecorderModeExternal {
+			continue
+		}
+
+		if rec.Address == "" {
+			return fmt.Errorf("external recorder %s: address is required", rec.Type)
+		}
+
+		client, err := grpc_client.NewCLient(rec.Address,
+			grpc.WithTransportCredentials(insecure.NewCredentials()),
+		)
+		if err != nil {
+			return fmt.Errorf("connect to external recorder %s at %s: %w", rec.Type, rec.Address, err)
+		}
+
+		clients = append(clients, client)
+	}
+
 	// create exporter
-	endpoints := exporter.CreateEndpointConfigs(cfg.Endpoints)
-	exp, err := exporter.New(endpoints)
-	if err != nil {
-		return fmt.Errorf("error creating exporter: %w", err)
+	exp := exporter.New()
+	for _, client := range clients {
+		if err := exp.AddClient(client); err != nil {
+			return fmt.Errorf("add grpc client: %w", err)
+		}
 	}
 
 	projectGid := graphql.GlobalIdProjectPrefix + strconv.FormatInt(projectId, 10)

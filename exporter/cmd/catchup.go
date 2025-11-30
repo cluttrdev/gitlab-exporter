@@ -88,13 +88,19 @@ func (c *CatchUpConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("create gitlab client: %w", err)
 	}
 
-	// create exporter
-	endpoints := exporter.CreateEndpointConfigs(cfg.Endpoints)
-	exp, err := exporter.New(endpoints)
+	// initialize grpc clients
+	clients, launchers, err := initGrpcClients(cfg)
 	if err != nil {
-		return err
+		return fmt.Errorf("initialize grpc clients: %w", err)
 	}
 
+	// setup exporter
+	exp := exporter.New()
+	for _, client := range clients {
+		if err := exp.AddClient(client); err != nil {
+			return fmt.Errorf("add grpc client: %w", err)
+		}
+	}
 	g := &run.Group{}
 
 	{ // controller
@@ -128,15 +134,37 @@ func (c *CatchUpConfig) Exec(ctx context.Context, args []string) error {
 		})
 	}
 
+	{ // recorders
+		ctx, cancel := context.WithCancel(context.Background())
+
+		g.Add(func() error { //execute
+			slog.Info("Starting recorder subprocesses...")
+			for _, launcher := range launchers {
+				if err := launcher.Start(ctx); err != nil {
+					return fmt.Errorf("start recorder subprocess: %w", err)
+				}
+			}
+			slog.Info("Starting recorder subprocesses... done")
+			return nil
+		}, func(err error) { // interrupt
+			slog.Info("Stopping recorder subprocesses...")
+			cancel()
+			for _, launcher := range launchers {
+				if err := launcher.Stop(ctx); err != nil {
+					slog.Error("error stopping subprocess recorder", "error", err)
+				}
+			}
+			slog.Info("Stopping recorder subprocesses... done")
+		})
+	}
+
 	if cfg.HTTP.Enabled {
 		colls := []prometheus.Collector{
 			collectors.NewGoCollector(),
 			collectors.NewProcessCollector(collectors.ProcessCollectorOpts{}),
 		}
-		for _, endpoint := range cfg.Endpoints {
-			if mc := exp.MetricsCollectorFor(endpoint.Address); mc != nil {
-				colls = append(colls, mc)
-			}
+		for _, client := range clients {
+			colls = append(colls, client.MetricsCollector())
 		}
 		reg := prometheus.NewRegistry()
 		reg.MustRegister(colls...)
