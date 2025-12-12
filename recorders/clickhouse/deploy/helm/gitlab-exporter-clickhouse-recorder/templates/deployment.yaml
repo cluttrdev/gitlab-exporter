@@ -1,0 +1,80 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "gitlab-exporter-clickhouse-recorder.fullname" . }}
+  labels:
+    {{- include "gitlab-exporter-clickhouse-recorder.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      {{- include "gitlab-exporter-clickhouse-recorder.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "gitlab-exporter-clickhouse-recorder.selectorLabels" . | nindent 8 }}
+        {{- with .Values.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+
+    spec:
+      serviceAccountName: {{ include "gitlab-exporter-clickhouse-recorder.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.job.enabled }}
+      initContainers:
+        - name: {{ .Chart.Name }}-init
+          image: "docker.io/groundnuty/k8s-wait-for:no-root-v2.0"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          args:
+            - "job"
+            - "{{ include "gitlab-exporter-clickhouse-recorder.fullname" . }}-migrate-{{ .Release.Revision }}"
+          securityContext:
+              {{- toYaml .Values.securityContext | nindent 12 }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          securityContext:
+              {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          resources:
+              {{- toYaml .Values.resources | nindent 12 }}
+          volumeMounts:
+              - name: config
+                mountPath: /etc/gitlab-exporter-clickhouse-recorder/
+          ports:
+            - name: grpc
+              containerPort: {{ .Values.config.server.port }}
+              protocol: TCP
+            {{- if .Values.config.http.enabled }}
+            - name: http
+              containerPort: {{ .Values.config.http.port }}
+              protocol: TCP
+            {{- end }}
+          readinessProbe:
+            grpc:
+              port: {{ .Values.config.server.port }}
+          env:
+            {{- tpl (toYaml .Values.env) $ | nindent 12 }}
+          args: ["run", "--config", "/etc/gitlab-exporter-clickhouse-recorder/config.yaml"]
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "gitlab-exporter-clickhouse-recorder.fullname" . }}
+      {{- with .Values.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

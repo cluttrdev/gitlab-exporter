@@ -1,0 +1,35 @@
+{{- if .Values.job.enabled }}
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: {{ include "gitlab-exporter-clickhouse-recorder.fullname" . }}-migrate-{{ .Release.Revision }}
+  labels:
+    {{- include "gitlab-exporter-clickhouse-recorder.labels" . | nindent 4 }}
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      {{- with .Values.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "gitlab-exporter-clickhouse-recorder.selectorLabels" . | nindent 8 }}
+    spec:
+      serviceAccountName: {{ include "gitlab-exporter-clickhouse-recorder.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      restartPolicy: Never
+      containers:
+        - name: {{ .Chart.Name }}-migrate
+          securityContext:
+              {{- toYaml .Values.securityContext | nindent 12 }}
+          image: "{{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          resources:
+              {{- toYaml .Values.job.resources | nindent 12 }}
+          env:
+            {{- tpl (toYaml .Values.job.env) $ | nindent 12 }}
+          args: ["migrate"]
+{{- end }}

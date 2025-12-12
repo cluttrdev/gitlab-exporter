@@ -1,0 +1,3 @@
+[submodule "examples/demo/grafana/dashboards"]
+	path = examples/demo/grafana/dashboards
+	url = git@gitlab.com:gitlab-exporter/grafana-dashboards.git

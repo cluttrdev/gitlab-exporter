@@ -1,0 +1,40 @@
+# ClickHouse client configuration options.
+clickhouse:
+  # The ClickHouse server, you can use either the name or the IPv4 or IPv6 address.
+  host: "127.0.0.1"
+  # The port of the native interface to connect to.
+  port: "9000"
+  # The current default database to connect to.
+  database: "default"
+  # The username to connect with.
+  user: "default"
+  # The user's password.
+  password: ""
+
+# gRPC server settings
+server:
+  # The network hostname or IP address to listen on.
+  host: "0.0.0.0"
+  # The port number or service name to listen on.
+  # If the port is empty or "0", a port number is automatically chosen.
+  port: "0"
+
+# HTTP probes server settings.
+http:
+  enabled: true
+  # The listen host.
+  host: "127.0.0.1"
+  # The listen port.
+  port: "9100"
+  # Whether to enable debug probe endpoints
+  debug: false
+
+# Log configuration
+log:
+  # The logging level
+  # allowed values: debug, info, warning, error
+  level: info
+
+  # The logging format
+  # allowed values: text or json
+  format: text

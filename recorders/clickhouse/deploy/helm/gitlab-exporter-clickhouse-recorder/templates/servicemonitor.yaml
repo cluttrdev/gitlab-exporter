@@ -1,0 +1,21 @@
+{{- if (and .Values.monitoring.enabled .Values.config.http.enabled) }}
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ include "gitlab-exporter-clickhouse-recorder.fullname" . }}
+  labels:
+    {{- include "gitlab-exporter-clickhouse-recorder.labels" . | nindent 4 }}
+spec:
+  selector:
+    matchLabels:
+      {{- include "gitlab-exporter-clickhouse-recorder.selectorLabels" . | nindent 6 }}
+  namespaceSelector:
+    matchNames:
+      - {{ .Release.Namespace }}
+  endpoints:
+    - port: http
+      path: {{ .Values.monitoring.path | quote }}
+      interval: {{ .Values.monitoring.interval | quote }} 
+
+{{- end }}

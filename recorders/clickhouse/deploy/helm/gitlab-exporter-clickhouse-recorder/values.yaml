@@ -1,0 +1,91 @@
+# Default values for gitlab-exporter-clickhouse-recorder.
+
+nameOverride: ""
+fullnameOverride: ""
+
+image:
+  registry: registry.gitlab.com
+  repository: gitlab-exporter/gitlab-exporter-clickhouse-recorder
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: ""
+  pullPolicy: Always
+
+podAnnotations: {}
+podLabels: {}
+
+podSecurityContext:
+  seccompProfile:
+    type: RuntimeDefault
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop: [ALL]
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1000
+  runAsGroup: 1000
+
+resources: {}
+#  requests:
+#    cpu: 100m
+#    memory: 128Mi
+#  limits:
+#    cpu: 200m
+#    memory: 256Mi
+
+service:
+  type: ClusterIP
+  ports:
+    grpc: 80
+    http: 9100
+
+monitoring:
+  enabled: true
+  path: /metrics
+  interval: 1m
+
+serviceAccount:
+  # Specifies whether a service account should be created
+  create: true
+  # Annotations to add to the service account
+  annotations: {}
+  # The name of the service account to use.
+  # If not set and create is true, a name is generated using the fullname template
+  name: ""
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+env: []
+
+# config options for db migrations job
+job:
+  enabled: true
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+  env: []
+
+# ---
+
+# See here for all available configuration options and their default values:
+# https://gitlab.com/akun73/gitlab-exporter-clickhouse-recorder/-/blob/main/configs/gitlab-exporter-clickhouse-recorder.yaml
+config:
+  server:
+    host: 0.0.0.0
+    port: 36275
+
+  http:
+    enabled: true
+    host: 0.0.0.0
+    port: 9100
