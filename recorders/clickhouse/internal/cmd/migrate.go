@@ -10,8 +10,8 @@ import (
 	"log/slog"
 
 	"github.com/cluttrdev/cli"
-	"go.cluttr.dev/gitlab-exporter-clickhouse-recorder/internal/clickhouse"
-	"go.cluttr.dev/gitlab-exporter-clickhouse-recorder/internal/config"
+	"go.cluttr.dev/gitlab-exporter/recorders/clickhouse/internal/clickhouse"
+	"go.cluttr.dev/gitlab-exporter/recorders/clickhouse/internal/config"
 )
 
 var (

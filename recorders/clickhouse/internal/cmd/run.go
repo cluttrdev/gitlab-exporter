@@ -21,9 +21,9 @@ import (
 
 	"go.cluttr.dev/gitlab-exporter/grpc/server"
 
-	"go.cluttr.dev/gitlab-exporter-clickhouse-recorder/internal/clickhouse"
-	"go.cluttr.dev/gitlab-exporter-clickhouse-recorder/internal/config"
-	"go.cluttr.dev/gitlab-exporter-clickhouse-recorder/internal/recorder"
+	"go.cluttr.dev/gitlab-exporter/recorders/clickhouse/internal/clickhouse"
+	"go.cluttr.dev/gitlab-exporter/recorders/clickhouse/internal/config"
+	"go.cluttr.dev/gitlab-exporter/recorders/clickhouse/internal/recorder"
 )
 
 type RunConfig struct {

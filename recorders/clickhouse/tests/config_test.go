@@ -5,7 +5,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 
-	"go.cluttr.dev/gitlab-exporter-clickhouse-recorder/internal/config"
+	"go.cluttr.dev/gitlab-exporter/recorders/clickhouse/internal/config"
 )
 
 func defaultConfig() config.Config {

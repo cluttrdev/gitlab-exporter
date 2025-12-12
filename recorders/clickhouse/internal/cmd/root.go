@@ -12,7 +12,7 @@ import (
 	"strconv"
 
 	"github.com/cluttrdev/cli"
-	"go.cluttr.dev/gitlab-exporter-clickhouse-recorder/internal/config"
+	"go.cluttr.dev/gitlab-exporter/recorders/clickhouse/internal/config"
 )
 
 func NewRootCmd(out io.Writer) *cli.Command {

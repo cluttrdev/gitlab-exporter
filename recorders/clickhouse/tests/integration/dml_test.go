@@ -9,7 +9,7 @@ import (
 	"google.golang.org/protobuf/types/known/durationpb"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	"go.cluttr.dev/gitlab-exporter-clickhouse-recorder/internal/clickhouse"
+	"go.cluttr.dev/gitlab-exporter/recorders/clickhouse/internal/clickhouse"
 )
 
 func TestIntegration_InsertPipelines(t *testing.T) {
