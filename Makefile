@@ -1,5 +1,6 @@
-.DEFAULT_GOAL := help
+REPO_ROOT := $$(git rev-parse --show-toplevel)
 
+.DEFAULT_GOAL := help
 
 .PHONY: help
 help: ## Display this help page
@@ -48,6 +49,26 @@ ifdef MOD
 else
 	find . -type f -name go.mod -exec sh -c 'go test -C $$(dirname {}) ./...' \;
 endif
+
+.PHONY: build
+build:  ## Create application binary
+	if [ -z "${MOD}" ]; then echo "Please specify module path of which to build package!"; exit 1; fi; \
+	if [ -z "${pkg}" ]; then pkg='.'; else pkg="${pkg}"; fi; \
+	if [ -z "${os}" ]; then goos=$$(go env GOOS); else goos="${os}"; fi; \
+	if [ -z "${arch}" ]; then goarch=$$(go env GOARCH); else goarch="${arch}"; fi; \
+	if [ -z "${output}" ]; then output="${REPO_ROOT}/bin/${APP}"; else output="${output}"; fi; \
+	export version=$$(make --no-print-directory version); \
+	GOOS="$${goos}" GOARCH="$${goarch}" \
+	go build \
+		-C ${MOD} \
+		-ldflags "-s -w -X 'main.version=$${version}'" \
+		-o "$${output}" \
+		${pkg}
+
+build-exporter:
+	$(MAKE) --no-print-directory build MOD="${REPO_ROOT}/cmd/gitlab-exporter"
+build-clickhouse-recorder:
+	$(MAKE) --no-print-directory build MOD="${REPO_ROOT}/cmd/gitlab-exporter-clickhouse-recorder"
 
 .PHONY: changes
 changes: ## Get commits since last release
