@@ -6,17 +6,12 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/fs"
 	"log/slog"
 
 	"github.com/cluttrdev/cli"
+	"go.cluttr.dev/gitlab-exporter/recorders/clickhouse/db/migrations"
 	"go.cluttr.dev/gitlab-exporter/recorders/clickhouse/internal/clickhouse"
 	"go.cluttr.dev/gitlab-exporter/recorders/clickhouse/internal/config"
-)
-
-var (
-	MigrationsFileSystem fs.FS
-	MigrationsPath       string
 )
 
 type MigrateConfig struct {
@@ -72,8 +67,8 @@ func (c *MigrateConfig) Exec(ctx context.Context, args []string) error {
 			Password: cfg.ClickHouse.Password,
 		},
 
-		FileSystem: MigrationsFileSystem,
-		Path:       MigrationsPath,
+		FileSystem: migrations.FS,
+		Path:       migrations.Path,
 	}
 	if err := clickhouse.MigrateUp(opts); err != nil {
 		if errors.Is(err, clickhouse.ErrMigrateNoChange) {

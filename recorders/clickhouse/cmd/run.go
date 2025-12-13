@@ -21,6 +21,7 @@ import (
 
 	"go.cluttr.dev/gitlab-exporter/grpc/server"
 
+	"go.cluttr.dev/gitlab-exporter/recorders/clickhouse/db/migrations"
 	"go.cluttr.dev/gitlab-exporter/recorders/clickhouse/internal/clickhouse"
 	"go.cluttr.dev/gitlab-exporter/recorders/clickhouse/internal/config"
 	"go.cluttr.dev/gitlab-exporter/recorders/clickhouse/internal/recorder"
@@ -213,8 +214,8 @@ func (c *RunConfig) checkSchemaVersion(ctx context.Context, ch *clickhouse.Clien
 		return fmt.Errorf("database schema is dirty")
 	}
 
-	fsys := MigrationsFileSystem
-	path := MigrationsPath
+	fsys := migrations.FS
+	path := migrations.Path
 	migrationsVersion, err := clickhouse.GetLatestMigrationVersion(fsys, path)
 	if err != nil {
 		return fmt.Errorf("error getting migrations version: %w", err)
