@@ -1,4 +1,5 @@
 REPO_ROOT := $$(git rev-parse --show-toplevel)
+BIN_DIR=${REPO_ROOT}/bin
 
 .DEFAULT_GOAL := help
 
@@ -51,24 +52,39 @@ else
 endif
 
 .PHONY: build
-build:  ## Create application binary
-	if [ -z "${MOD}" ]; then echo "Please specify module path of which to build package!"; exit 1; fi; \
+build:  ## Build application binary
+	if [ -z "${app}" ]; then echo "Specify target application!"; exit 1; fi; \
 	if [ -z "${pkg}" ]; then pkg='.'; else pkg="${pkg}"; fi; \
 	if [ -z "${os}" ]; then goos=$$(go env GOOS); else goos="${os}"; fi; \
 	if [ -z "${arch}" ]; then goarch=$$(go env GOARCH); else goarch="${arch}"; fi; \
-	if [ -z "${output}" ]; then output="${REPO_ROOT}/bin/${APP}"; else output="${output}"; fi; \
+	if [ -z "${output}" ]; then output="${BIN_DIR}/$${goos}-$${goarch}/${app}"; else output="${output}"; fi; \
 	export version=$$(make --no-print-directory version); \
-	GOOS="$${goos}" GOARCH="$${goarch}" \
+	CGO_ENABLED=0 GOOS="$${goos}" GOARCH="$${goarch}" \
 	go build \
-		-C ${MOD} \
+		-C ${REPO_ROOT}/cmd/${app} \
 		-ldflags "-s -w -X 'main.version=$${version}'" \
 		-o "$${output}" \
 		${pkg}
 
-build-exporter:
-	$(MAKE) --no-print-directory build MOD="${REPO_ROOT}/cmd/gitlab-exporter"
-build-clickhouse-recorder:
-	$(MAKE) --no-print-directory build MOD="${REPO_ROOT}/cmd/gitlab-exporter-clickhouse-recorder"
+build-all:
+	$(MAKE) --no-print-directory build app="gitlab-exporter"
+	$(MAKE) --no-print-directory build app="gitlab-exporter-clickhouse-recorder"
+
+.PHONY: build-image
+build-image: ## Build application container image
+	if [ -z "${app}" ]; then echo "Specify target application!"; exit 1; fi; \
+	if [ -z "${os}" ]; then goos=$$(go env GOOS); else goos="${os}"; fi; \
+	if [ -z "${arch}" ]; then goarch=$$(go env GOARCH); else goarch="${arch}"; fi; \
+	if ! [ -f "${BIN_DIR}/$${goos}-$${goarch}/${app}" ]; then echo "Binary $${goos}-$${goarch}/${app} not found! Run 'make build app=${app} os=$${goos} arch=$${goarch}' first."; exit 1; fi; \
+	if [ -n "${tag}" ]; then tag="${tag}"; else tag="$$(make --no-print-directory version | tr '+' '-')" ; fi; \
+	tmpdir=$$(mktemp -d); \
+	trap "rm -rf $${tmpdir}" EXIT; \
+	cp --target-directory="$${tmpdir}/" ${REPO_ROOT}/deploy/docker/* "${BIN_DIR}/$${goos}-$${goarch}/${app}"; \
+	docker buildx build \
+		--platform "$${goos}/$${goarch}" \
+		--target "${app}" \
+		--tag "${app}:$${tag}" \
+		"$${tmpdir}"
 
 .PHONY: changes
 changes: ## Get commits since last release

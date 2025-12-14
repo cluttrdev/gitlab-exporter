@@ -1,7 +1,3 @@
-
-PKG ?= .
-APP := gitlab-exporter
-
 ifneq "${VERBOSE}" "1"
 .SILENT:
 endif
@@ -19,13 +15,3 @@ graphql-schema: ## Generate the GitLab GraphQL schema
 .PHONY: graphql
 graphql: ## Generate the GitLab GraphQL API client code
 	go tool -modfile go.tool.mod genqlient internal/gitlab/graphql/genqlient.yaml
-
-.PHONY: build-image
-build-image: ## Build container image
-	export version=$$(make --no-print-directory version); \
-	if [ -n "${tag}" ]; then tag="${tag}"; else tag=$$(echo -n $$version | sed 's/+/-/') ; fi; \
-	docker build \
-		--file Dockerfile \
-		--build-arg VERSION=$${version} \
-		--tag "${APP}:$${tag}" \
-		.
