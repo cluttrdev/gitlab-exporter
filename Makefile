@@ -58,75 +58,28 @@ else
 endif
 
 .PHONY: build
-build:  ## Build application binary
-	if [ -z "${app}" ]; then echo "Specify target application!"; exit 1; fi; \
-	if [ -z "${platform}" ]; then platform="$$(go env GOOS)/$$(go env GOARCH)"; else platform="${platform}"; fi; \
-	if [ -z "${pkg}" ]; then pkg='.'; else pkg="${pkg}"; fi; \
-	export version=$$(make --no-print-directory version); \
-	goos="$${platform%/*}"; \
-	goarch="$${platform#*/}"; \
-	CGO_ENABLED=0 GOOS="$${goos}" GOARCH="$${goarch}" \
-	go build \
-		-C ${REPO_ROOT}/cmd/${app} \
-		-ldflags "-s -w -X 'main.version=$${version}'" \
-		-o "${BIN_DIR}/$${goos}_$${goarch}/" \
-		${pkg}
+build: ## Build application binary
+	./scripts/build.sh -a "${app}" -p "${platform}" binary
 
 .PHONY: build-all
 build-all: ## Build all application binaries for all platforms
-	for app in ${APPS}; do \
-		for platform in ${PLATFORMS}; do \
-			echo "Building $${app} for $${platform}..."; \
-			$(MAKE) --no-print-directory build app="$${app}" platform="$${platform}"; \
-		done; \
-	done
+	./scripts/build.sh --all binary
 
 .PHONY: build-image
 build-image: ## Build application container image
-	if [ -z "${app}" ]; then echo "Specify target application!"; exit 1; fi; \
-	if [ -z "${platform}" ]; then platform="$$(go env GOOS)/$$(go env GOARCH)"; else platform="${platform}"; fi; \
-	if [ -n "${tag}" ]; then tag="${tag}"; else tag="$$(make --silent --no-print-directory version | tr '+' '-')" ; fi; \
-	os="$${platform%/*}"; arch="$${platform#*/}"; \
-	if ! [ -f "${BIN_DIR}/$${os}_$${arch}/${app}" ]; then echo "Binary $${os}_$${arch}/${app} not found! Run 'make build app=${app} platform=$${os}/$${arch}' first."; exit 1; fi; \
-	docker build \
-		--file "${REPO_ROOT}/Dockerfile" \
-		--platform "$${platform}" \
-		--build-arg APP="${app}" \
-		--tag "${app}:$${tag}" \
-		"${BIN_DIR}"
+	./scripts/build.sh -a "${app}" -p "${platform}" -t "${tag}" image
 
 .PHONY: build-image-all
 build-image-all: ## Build container image for each application
-	if [ -z "${platform}" ]; then platform="$$(go env GOOS)/$$(go env GOARCH)"; else platform="${platform}"; fi; \
-	for app in ${APPS}; do \
-		echo "Building $${app} for $${platforms}..."; \
-		$(MAKE) --no-print-directory build-image app="$${app}" platform="$${platforms}"; \
-	done
+	./scripts/build.sh --all -p "${platform}" -t "${tag}" image
 
 .PHONY: build-image-multiplatform
 build-image-multiplatform: ## Build multiplatform application container image
-	if [ -z "${app}" ]; then echo "Specify target application!"; exit 1; fi; \
-	if [ -n "${tag}" ]; then tag="${tag}"; else tag="$$(make --silent --no-print-directory version | tr '+' '-')" ; fi; \
-	for plat in $$(echo "$${platform}" | tr ',' ' '); do \
-		os="$${plat%/*}"; arch="$${plat#*/}"; \
-		if ! [ -f "${BIN_DIR}/$${os}_$${arch}/${app}" ]; then echo "Binary $${os}_$${arch}/${app} not found! Run 'make build app=${app} os=$${os} arch=$${arch}' first."; exit 1; fi; \
-	done; \
-	image="${app}:$${tag}"; \
-	# docker buildx create --name multiarch --driver docker-container --use --bootstrap
-	docker buildx build \
-		--file "${REPO_ROOT}/Dockerfile" \
-		--platform "$${platform}" \
-		--build-arg APP="${app}" \
-		--output type=image,\"name=$${image}\",push=false \
-		"${BIN_DIR}"
+	./scripts/build.sh -a "${app}" -p "${platform}" -t "${tag}" --multiplatform image
 
 .PHONY: build-image-multiplatform-all
 build-image-multiplatform-all: ## Build multiplatform container image for each application
-	platform="linux/amd64,linux/arm64"; \
-	for app in ${APPS}; do \
-		echo "Building $${app} for $${platform}..."; \
-		$(MAKE) --no-print-directory build-image-multiplatform app="$${app}" platform="$${platform}" tag="${tag}"; \
-	done
+	./scripts/build.sh --all -t "${tag}" --multiplatform image
 
 .PHONY: dist
 dist: ## Build release distribution artifacts
@@ -138,9 +91,10 @@ dist: ## Build release distribution artifacts
 		for platform in $${platforms}; do \
 			echo "Building $${app} for $${platform}..."; \
 			$(MAKE) --no-print-directory build app="$${app}" platform="$${platform}"; \
-			binary="${BIN_DIR}/$${os}-$${arch}/$${app}"; \
-			archive="$${app}_$${version}_$${os}_$${arch}.tar.gz"; \
-			tar -czf "${DIST_DIR}/$${archive}" -C "${BIN_DIR}/$${os}_$${arch}" "$${app}"; \
+			os_arch="$$(echo $${platform} | tr '/' '_')"; \
+			binary="${BIN_DIR}/$${os_arch}/$${app}"; \
+			archive="$${app}_$${version}_$${os_arch}.tar.gz"; \
+			tar -czf "${DIST_DIR}/$${archive}" -C "${BIN_DIR}/$${os_arch}" "$${app}"; \
 			(cd ${DIST_DIR} && sha256sum "$${archive}" > "$${archive}.sha256"); \
 		done; \
 	done; \
