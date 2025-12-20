@@ -2,9 +2,6 @@ REPO_ROOT := $$(git rev-parse --show-toplevel)
 BIN_DIR=${REPO_ROOT}/bin
 DIST_DIR=${REPO_ROOT}/dist
 
-APPS=$$(ls cmd/)
-PLATFORMS=linux/amd64 linux/arm64 darwin/amd64 darwin/arm64
-
 .ONESHELL:
 
 ifneq "${VERBOSE}" "1"
@@ -59,45 +56,31 @@ endif
 
 .PHONY: build
 build: ## Build application binary
-	./scripts/build.sh -a "${app}" -p "${platform}" binary
+	./scripts/build.sh binary -a "${app}" -p "${platform}"
 
 .PHONY: build-all
 build-all: ## Build all application binaries for all platforms
-	./scripts/build.sh --all binary
+	./scripts/build.sh binary --all
 
 .PHONY: build-image
 build-image: ## Build application container image
-	./scripts/build.sh -a "${app}" -p "${platform}" -t "${tag}" image
+	./scripts/build.sh image -a "${app}" -p "${platform}" -t "${tag}"
 
 .PHONY: build-image-all
 build-image-all: ## Build container image for each application
-	./scripts/build.sh --all -p "${platform}" -t "${tag}" image
+	./scripts/build.sh image --all -p "${platform}" -t "${tag}"
 
 .PHONY: build-image-multiplatform
 build-image-multiplatform: ## Build multiplatform application container image
-	./scripts/build.sh -a "${app}" -p "${platform}" -t "${tag}" --multiplatform image
+	./scripts/build.sh image -a "${app}" -p "${platform}" -t "${tag}" --multiplatform
 
-.PHONY: build-image-multiplatform-all
-build-image-multiplatform-all: ## Build multiplatform container image for each application
-	./scripts/build.sh --all -t "${tag}" --multiplatform image
+.PHONY: build-image-all-multiplatform
+build-image-all-multiplatform: ## Build multiplatform container image for each application
+	./scripts/build.sh image --all -t "${tag}" --multiplatform
 
 .PHONY: dist
 dist: ## Build release distribution artifacts
-	if [ -z "${app}" ]; then apps="${APPS}"; else apps="${app}"; fi; \
-	if [ -z "${platform}" ]; then platforms="${PLATFORMS}"; else platforms="${platform}"; fi; \
-	mkdir -p ${DIST_DIR}; \
-	version=$$(make --no-print-directory version | tr '+' '+'); \
-	for app in $${apps}; do \
-		for platform in $${platforms}; do \
-			echo "Building $${app} for $${platform}..."; \
-			$(MAKE) --no-print-directory build app="$${app}" platform="$${platform}"; \
-			os_arch="$$(echo $${platform} | tr '/' '_')"; \
-			binary="${BIN_DIR}/$${os_arch}/$${app}"; \
-			archive="$${app}_$${version}_$${os_arch}.tar.gz"; \
-			tar -czf "${DIST_DIR}/$${archive}" -C "${BIN_DIR}/$${os_arch}" "$${app}"; \
-			(cd ${DIST_DIR} && sha256sum "$${archive}" > "$${archive}.sha256"); \
-		done; \
-	done; \
+	./scripts/build.sh binary --all --dist
 
 .PHONY: clean
 clean: ## Remove built binaries and distribution artifacts

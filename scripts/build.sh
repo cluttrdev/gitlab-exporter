@@ -3,6 +3,7 @@ set -eu
 
 REPO_ROOT="$(git rev-parse --show-toplevel)"
 BIN_DIR="${REPO_ROOT}/bin"
+DIST_DIR="${REPO_ROOT}/dist"
 APPS=$(ls "${REPO_ROOT}/cmd/")
 DEFAULT_PLATFORMS="linux/amd64 linux/arm64 darwin/amd64 darwin/arm64"
 
@@ -12,6 +13,7 @@ platform=""
 tag=""
 multiplatform=false
 all=false
+dist=false
 
 usage() {
     cat <<EOF
@@ -25,13 +27,14 @@ Options:
   -a, --app APP         Target application
   -p, --platform PLAT   Target platform (default: current os/arch)
   -t, --tag TAG         Image tag (default: version from git)
-  --multiplatform       Use docker buildx for multi-arch images
   --all                 Build for all apps and platforms
+  --dist                Create distribution archives (binary only)
+  --multiplatform       Use docker buildx for multi-arch images
   -h, --help            Show this help
 
 Examples:
   $(basename "$0") binary -a gitlab-exporter
-  $(basename "$0") binary --all
+  $(basename "$0") binary --all --dist
   $(basename "$0") image -a gitlab-exporter
   $(basename "$0") image -a gitlab-exporter -p linux/amd64,linux/arm64 --multiplatform
 EOF
@@ -121,6 +124,32 @@ build_image_multiplatform() {
         "${BIN_DIR}"
 }
 
+# Create distribution archive for specified app and platform.
+# Args: app, platform (os/arch)
+create_dist() {
+    _app="$1"
+    _platform="$2"
+
+    _os_arch=$(echo "${_platform}" | tr '/' '_')
+    _ver="$(version)"
+
+    mkdir -p "${DIST_DIR}"
+    _archive="${_app}_${_ver}_${_os_arch}.tar.gz"
+
+    echo "Creating ${_archive}..."
+    tar -czf "${DIST_DIR}/${_archive}" -C "${BIN_DIR}/${_os_arch}" "${_app}"
+    (cd "${DIST_DIR}" && sha256sum "${_archive}" > "${_archive}.sha256")
+}
+
+# Command is required
+command="$1"
+shift
+if [ -z "${command}" ]; then
+    echo "Error: command required" >&2
+    usage >&2
+    exit 1
+fi
+
 # Parse arguments
 while [ $# -gt 0 ]; do
     case "$1" in
@@ -144,6 +173,10 @@ while [ $# -gt 0 ]; do
             all=true
             shift
             ;;
+        --dist)
+            dist=true
+            shift
+            ;;
         -h|--help)
             usage
             exit 0
@@ -159,16 +192,6 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-# Command is required
-if [ $# -eq 0 ]; then
-    echo "Error: command required" >&2
-    usage >&2
-    exit 1
-fi
-
-command="$1"
-shift
-
 # Set default platform if not specified
 if [ -z "${platform}" ]; then
     platform="$(go env GOOS)/$(go env GOARCH)"
@@ -180,6 +203,9 @@ case "${command}" in
             for a in ${APPS}; do
                 for p in ${DEFAULT_PLATFORMS}; do
                     build_binary "${a}" "${p}"
+                    if [ "${dist}" = true ]; then
+                        create_dist "${a}" "${p}"
+                    fi
                 done
             done
         else
@@ -188,6 +214,9 @@ case "${command}" in
                 exit 1
             fi
             build_binary "${app}" "${platform}"
+            if [ "${dist}" = true ]; then
+                create_dist "${app}" "${platform}"
+            fi
         fi
         ;;
     image)
