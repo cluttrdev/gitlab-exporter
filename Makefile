@@ -1,6 +1,7 @@
 REPO_ROOT := $$(git rev-parse --show-toplevel)
 BIN_DIR=${REPO_ROOT}/bin
 DIST_DIR=${REPO_ROOT}/dist
+REPORTS_DIR=${REPO_ROOT}/reports
 
 .ONESHELL:
 
@@ -48,11 +49,14 @@ endif
 
 .PHONY: test
 test: ## Run tests on specified module or all modules
+	ARGS=
 ifdef MOD
-	go test -C ${MOD} ./...
-else
-	find . -type f -name go.mod -exec sh -c 'mod=$$(dirname {}); echo "Testing $$mod/..."; go test -C $$mod ./...' \;
+	ARGS="$${ARGS} -m ${MOD}"
 endif
+ifeq ("${REPORTS}","1")
+	ARGS="$${ARGS} --reports"
+endif
+	./scripts/test.sh $${ARGS}
 
 .PHONY: build
 build: ## Build application binary
@@ -83,7 +87,8 @@ dist: ## Build release distribution artifacts
 	./scripts/build.sh binary --all --dist
 
 .PHONY: clean
-clean: ## Remove built binaries and distribution artifacts
+clean: ## Remove test reports, built binaries and distribution artifacts
+	rm -rf ${REPORTS_DIR}/*
 	rm -rf ${BIN_DIR}/*
 	rm -rf ${DIST_DIR}/*
 
