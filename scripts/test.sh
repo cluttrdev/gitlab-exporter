@@ -29,7 +29,7 @@ EOF
 
 # Find all modules in the repository
 find_modules() {
-    find . -type f -name go.mod -exec dirname {} \;
+    find . -not -path '*/.*' -type f -name go.mod -exec dirname {} \;
 }
 
 # Run tests for a single module

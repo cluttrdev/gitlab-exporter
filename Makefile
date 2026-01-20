@@ -20,7 +20,7 @@ tidy: ## Run go mod tidy on specified module or all modules
 ifdef MOD
 	go mod tidy -C ${MOD}
 else
-	find . -type f -name go.mod -exec sh -c 'mod=$$(dirname {}); echo "Tidying $$mod/..."; go mod tidy -C $$mod' \;
+	find . -not -path '*/.*' -type f -name go.mod -exec sh -c 'mod=$$(dirname {}); echo "Tidying $$mod/..."; go mod tidy -C $$mod' \;
 endif
 
 .PHONY: fmt
@@ -28,7 +28,7 @@ fmt: ## Run go fmt on specified module or all modules
 ifdef MOD
 	go fmt -C ${MOD} ./...
 else
-	find . -type f -name go.mod -exec sh -c 'mod=$$(dirname {}); echo "Formatting $$mod/..."; go fmt -C $$mod ./...' \;
+	find . -not -path '*/.*' -type f -name go.mod -exec sh -c 'mod=$$(dirname {}); echo "Formatting $$mod/..."; go fmt -C $$mod ./...' \;
 endif
 
 .PHONY: vet
@@ -36,7 +36,7 @@ vet: ## Run go vet on specified module or all modules
 ifdef MOD
 	go vet -C ${MOD} ./...
 else
-	find . -type f -name go.mod -exec sh -c 'mod=$$(dirname {}); echo "Vetting $$mod/..."; go vet -C $$mod ./...' \;
+	find . -not -path '*/.*' -type f -name go.mod -exec sh -c 'mod=$$(dirname {}); echo "Vetting $$mod/..."; go vet -C $$mod ./...' \;
 endif
 
 .PHONY: lint
@@ -44,7 +44,7 @@ lint: ## Run golangci-lint on specified module or all modules
 ifdef MOD
 	cd ${MOD} && golangci-lint run ./...
 else
-	find . -type f -name go.mod -exec sh -c 'mod=$$(dirname {}); echo "Linting $$mod/..."; (cd $$mod && golangci-lint run ./...)' \;
+	find . -not -path '*/.*' -type f -name go.mod -exec sh -c 'mod=$$(dirname {}); echo "Linting $$mod/..."; (cd $$mod && golangci-lint run ./...)' \;
 endif
 
 .PHONY: test
