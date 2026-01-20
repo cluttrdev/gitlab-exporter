@@ -119,6 +119,33 @@ build-image:
       - buildctl-trace.json
     when: always
 
+build-chart:
+  stage: build
+  needs:
+    - job: build-image
+      artifacts: false
+  image: quay.io/helmpack/chart-testing:v3.12.0
+  parallel:
+    matrix:
+      - APP:
+          - gitlab-exporter
+          - gitlab-exporter-clickhouse-recorder
+  variables:
+    HELM_REGISTRY: registry.gitlab.com
+    HELM_REGISTRY_PROJECT: gitlab-exporter/helm-charts
+    # HELM_REGISTRY_USER:
+    # HELM_REGISTRY_PASSWORD:
+    HELM_CHART_DIR: deploy/helm/$APP
+
+    HELM_PUSH: "0"
+  script:
+    - helm package "${HELM_CHART_DIR}" --destination .charts
+    - |
+      if [ "${HELM_PUSH}" == "1" ]; then
+        echo "${HELM_REGISTRY_PASSWORD}" | helm registry login ${HELM_REGISTRY} --username ${HELM_REGISTRY_USER} --password-stdin
+        helm push .charts/*.tgz oci://${HELM_REGISTRY}/${HELM_REGISTRY_PROJECT}
+      fi
+
 test:
   stage: test
   cache:
@@ -138,6 +165,7 @@ test:
 
 release:
   stage: release
+  dependencies: []
   rules:
     - if: $CI_COMMIT_TAG != null
   cache:
@@ -156,7 +184,8 @@ release-image:
     - if: $CI_COMMIT_TAG != null
   extends: build-image
   needs:
-    - release
+    - job: release
+      artifacts: true
   variables:
     VERSION: $CI_COMMIT_TAG
 
@@ -164,25 +193,15 @@ release-image:
     BUILDKIT_PUSH: "true"
 
 release-chart:
+  extends: build-chart
   stage: release
   rules:
     - if: $CI_COMMIT_TAG != null
       changes:
-        - deploy/helm/gitlab-exporter/Chart.yaml
+        - deploy/helm/${APP}/Chart.yaml
   needs:
-    - release-image
-  image: quay.io/helmpack/chart-testing:v3.12.0
-  variables:
-    HELM_REGISTRY: registry.gitlab.com
-    HELM_REGISTRY_PROJECT: gitlab-exporter/helm-charts
-    # HELM_REGISTRY_USER:
-    # HELM_REGISTRY_PASSWORD:
-    HELM_CHART_DIR: deploy/helm/gitlab-exporter
-  before_script:
-    - echo "${HELM_REGISTRY_PASSWORD}" | helm registry login ${HELM_REGISTRY} --username ${HELM_REGISTRY_USER} --password-stdin
-  script:
-    - helm package "${HELM_CHART_DIR}" --destination .charts
-    - helm push .charts/*.tgz oci://${HELM_REGISTRY}/${HELM_REGISTRY_PROJECT}
+    - job: release-image
+      artifacts: false
   artifacts:
     paths:
       - .charts/*.tgz
@@ -192,7 +211,8 @@ release-sync:
   rules:
     - if: $CI_COMMIT_TAG != null
   needs:
-    - release
+    - job: release
+      artifacts: false
   variables:
     GITHUB_OWNER: cluttrdev
     GITHUB_REPO: gitlab-exporter
