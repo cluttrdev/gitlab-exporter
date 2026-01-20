@@ -3,13 +3,15 @@
 `gitlab-exporter` can help you build an observability and analytics solution to
 gain insights into your CI pipelines.
 
-It fetches data from the [GitLab API][gitlab-api] and sends it to one or more
-_recorders_. These recorders then can store it in a datastore of their choosing.
+It fetches data from the [GitLab API](https://docs.gitlab.com/ee/api/rest/) and
+sends it to one or more _recorders_. These recorders then can store it in a
+datastore of their choosing.
 
-The communication between the exporter and recorders is defined as a [gRPC]
-service using [protocol buffers][protobuf] where the exporter acts as a client
-and the recorders implement the server interface. This allows the data to be
-flexibly stored in various storage backends.
+The communication between the exporter and recorders is defined as a
+[gRPC](https://grpc.io) service using [protocol buffers](https://protobuf.dev/)
+where the exporter acts as a client and the recorders implement the server
+interface. This allows the data to be flexibly stored in various storage
+backends.
 
 <img src="./assets/dataflow.png" />
 
@@ -17,7 +19,7 @@ flexibly stored in various storage backends.
 
 The following officially supported recorder implementations are currently available:
 
-- [gitlab-exporter-clickhouse-recorder](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder)
+- [gitlab-exporter-clickhouse-recorder](./recorders/clickhouse/README.md)
 
 ### Screenshots
 
@@ -68,13 +70,16 @@ project which provides a `docker compose` based setup to help you get started.
 ### Binaries
 
 To install `gitlab-exporter` you can download a 
-[prebuilt binary][prebuilt-binaries] that matches your system, e.g.
+[prebuilt binary](https://gitlab-exporter.gitlab.io/packages)
+that matches your system, e.g.
 
 ```shell
 # download latest release archive
 RELEASES_URL=https://gitlab.com/api/v4/projects/gitlab-exporter%2Fgitlab-exporter/releases
 RELEASE_TAG=$(curl -sSfL ${RELEASES_URL} | jq -r '.[0].tag_name')
-curl -sSfL ${RELEASES_URL}/${RELEASE_TAG}/downloads/gitlab-exporter_${RELEASE_TAG}_linux_amd64.tar.gz \
+
+PACKAGES_URL=https://gitlab.com/api/v4/projects/gitlab-exporter%2Fgitlab-exporter/packages/generic/gitlab-exporter
+curl -sSfL ${PACKAGES_URL}/${RELEASE_TAG}/gitlab-exporter_${RELEASE_TAG}_linux_amd64.tar.gz \
     -o /tmp/gitlab-exporter.tar.gz
 
 # extract executable binary into install dir (must exist)
@@ -154,8 +159,3 @@ This project was inspired by Maxime Visonneau's
 ## License
 
 This project is licensed under the [MIT License](./LICENSE).
-
-[protobuf]: https://protobuf.dev/
-[grpc]: https://grpc.io/
-[gitlab-api]: https://docs.gitlab.com/ee/api/rest/
-[prebuilt-binaries]: https://gitlab.com/gitlab-exporter/gitlab-exporter/-/releases
