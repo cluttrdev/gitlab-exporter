@@ -6,9 +6,6 @@ RELEASE_TAG=${CI_COMMIT_TAG:-$(make version)}
 
 set -euo pipefail
 
-printf "Creating binary distribution archives...\n"
-make dist
-
 printf "Uploading release assets...\n"
 package_url="${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/packages/generic"
 assets=$(find dist/ -type f -regextype posix-extended -regex ".*/gitlab-exporter(-.*)?_${RELEASE_TAG/+/\\+}_.*(\.tar\.gz|\.zip)(\.sha256)?" | sort)
