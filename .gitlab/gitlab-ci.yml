@@ -148,6 +148,9 @@ build-chart:
 
 test:
   stage: test
+  needs:
+    - job: build
+      artifacts: false
   cache:
     - <<: *cache-defaults
   script:
