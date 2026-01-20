@@ -5,6 +5,8 @@ stages:
   - release
 
 variables:
+  GIT_DEPTH: 0
+
   CACHE_DIR: ${CI_PROJECT_DIR}/.cache
   GOPATH: ${CI_PROJECT_DIR}/.go
   GOCACHE: ${CACHE_DIR}/go-build
