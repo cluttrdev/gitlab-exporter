@@ -119,10 +119,11 @@ type spanLinkData struct {
 
 func newSpan(span spanData) *tracepb.Span {
 	var startTime, endTime uint64
-	if span.StartTime != nil {
+	// Note: the result of calling UnixNano on the zero Time is undefined.
+	if span.StartTime != nil && !span.StartTime.IsZero() {
 		startTime = uint64(span.StartTime.UnixNano())
 	}
-	if span.EndTime != nil {
+	if span.EndTime != nil && !span.EndTime.IsZero() {
 		endTime = uint64(span.EndTime.UnixNano())
 	}
 
