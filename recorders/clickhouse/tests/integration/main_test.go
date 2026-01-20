@@ -9,15 +9,43 @@ import (
 	"testing"
 
 	ch "github.com/ClickHouse/clickhouse-go/v2"
+	"github.com/testcontainers/testcontainers-go"
 
 	"go.cluttr.dev/gitlab-exporter/recorders/clickhouse/internal/clickhouse"
 )
 
 const testSet string = "native"
 
+// isDockerAvailable checks if Docker is running and accessible for testcontainers.
+// Returns true if Docker is available, false otherwise.
+func isDockerAvailable() (available bool) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Fprintf(os.Stderr, "Docker is not available: %v\n", r)
+			available = false
+		}
+	}()
+
+	ctx := context.Background()
+
+	provider, err := testcontainers.ProviderDocker.GetProvider()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Docker is not available: %v\n", err)
+		return false
+	}
+
+	if err := provider.Health(ctx); err != nil {
+		fmt.Fprintf(os.Stderr, "Docker health check failed: %v\n", err)
+		return false
+	}
+
+	return true
+}
+
 func TestMain(m *testing.M) {
-	if os.Getenv("SKIP_INTEGRATION_TESTS") == "true" {
-		fmt.Fprintln(os.Stderr, "Skipping integration tests")
+	// Check if Docker is available before attempting to create test environment
+	if !isDockerAvailable() {
+		fmt.Fprintln(os.Stderr, "Skipping integration tests: Docker not available")
 		os.Exit(0)
 	}
 
