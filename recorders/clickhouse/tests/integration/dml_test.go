@@ -4,6 +4,10 @@ import (
 	"context"
 	"testing"
 
+	v1 "go.opentelemetry.io/proto/otlp/common/v1"
+	resourcev1 "go.opentelemetry.io/proto/otlp/resource/v1"
+	tracev1 "go.opentelemetry.io/proto/otlp/trace/v1"
+
 	"go.cluttr.dev/gitlab-exporter/protobuf/servicepb"
 	"go.cluttr.dev/gitlab-exporter/protobuf/typespb"
 	"google.golang.org/protobuf/types/known/durationpb"
@@ -164,6 +168,49 @@ func TestIntegration_InsertTestCases(t *testing.T) {
 
 	if n != 10 {
 		t.Errorf("Inserted %d testcases, expected: %d", n, 10)
+	}
+}
+
+func TestIntegration_InsertTraces(t *testing.T) {
+	client, err := GetTestClient(testSet)
+	if err != nil {
+		t.Error(err)
+	}
+
+	// var ts int64 = (4294967295 + 1) * 1e9 // uint32 overflow
+	var ts int64 = (4294967295 + 0) * 1e9
+
+	data := []*typespb.Trace{
+		{
+			Data: &tracev1.TracesData{
+				ResourceSpans: []*tracev1.ResourceSpans{
+					{
+						Resource: &resourcev1.Resource{},
+						ScopeSpans: []*tracev1.ScopeSpans{
+							{
+								Scope: &v1.InstrumentationScope{},
+								Spans: []*tracev1.Span{
+									{
+										StartTimeUnixNano: uint64(ts),
+										EndTimeUnixNano:   uint64(ts) + 1,
+										Status:            &tracev1.Status{},
+									},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	n, err := clickhouse.InsertTraces(client, context.Background(), data)
+	if err != nil {
+		t.Error(err)
+	}
+
+	if n != len(data) {
+		t.Errorf("Inserted %d traces, expected: %d", n, len(data))
 	}
 }
 
