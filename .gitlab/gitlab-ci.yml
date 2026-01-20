@@ -152,13 +152,14 @@ test:
     - <<: *cache-defaults
   script:
     - make test REPORTS=1
+  after_script:
+    - find reports/ -type f -name junit.xml | xargs go run go.cluttr.dev/junitxml/cmd/junitxml@latest merge -o reports/junit.xml
   artifacts:
     when: always
     paths:
-      - junit.xml
-      - cobertura-coverage.xml
+      - reports/
     reports:
-      junit: junit.xml
+      junit: reports/junit.xml
       coverage_report:
         coverage_format: cobertura
         path: cobertura-coverage.xml

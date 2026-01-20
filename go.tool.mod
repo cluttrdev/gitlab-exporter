@@ -4,16 +4,19 @@ go 1.24.3
 
 tool (
 	github.com/boumenot/gocover-cobertura
+	go.cluttr.dev/junitxml/cmd/junitxml
 	gotest.tools/gotestsum
 )
 
 require (
-	gotest.tools/gotestsum v1.13.0 // indirect
 	github.com/boumenot/gocover-cobertura v1.4.0 // indirect
+	go.cluttr.dev/junitxml v0.2.0 // indirect
+	gotest.tools/gotestsum v1.13.0 // indirect
 )
 
 require (
 	github.com/bitfield/gotestdox v0.2.2 // indirect
+	github.com/cluttrdev/cli v0.0.0-20250719095132-732c23cca50b // indirect
 	github.com/dnephin/pflag v1.0.7 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/fsnotify/fsnotify v1.9.0 // indirect
