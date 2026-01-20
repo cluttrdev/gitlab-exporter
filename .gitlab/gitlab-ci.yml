@@ -104,9 +104,9 @@ build-image:
       buildctl-daemonless.sh build \
         --trace ${CI_PROJECT_DIR}/buildctl-trace.json \
         --frontend dockerfile.v0 \
-        --platform=${PLATFORM} \
-        --local dockerfile=${CI_PROJECT_DIR}/ \
-        --local context=${CI_PROJECT_DIR}/bin/ \
+        --local dockerfile="${CI_PROJECT_DIR}" \
+        --local context="${CI_PROJECT_DIR}/bin" \
+        --opt platform="${PLATFORM}" \
         --opt build-arg:APP="${APP}" \
         --output type=image,\"name=${BUILDKIT_IMAGE}\",push=${BUILDKIT_PUSH}
   artifacts:
