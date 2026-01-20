@@ -206,7 +206,8 @@ func (c *RunConfig) Exec(ctx context.Context, _ []string) error {
 				}
 			}
 			slog.Info("Starting recorder subprocesses... done")
-			return nil
+			<-ctx.Done()
+			return ctx.Err()
 		}, func(err error) { // interrupt
 			slog.Info("Stopping recorder subprocesses...")
 			cancel()
