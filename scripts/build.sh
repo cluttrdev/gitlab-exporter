@@ -5,7 +5,8 @@ REPO_ROOT="$(git rev-parse --show-toplevel)"
 BIN_DIR="${REPO_ROOT}/bin"
 DIST_DIR="${REPO_ROOT}/dist"
 APPS=$(ls "${REPO_ROOT}/cmd/")
-DEFAULT_PLATFORMS="linux/amd64 linux/arm64 darwin/amd64 darwin/arm64"
+DEFAULT_BINARY_PLATFORMS="linux/amd64 linux/arm64 darwin/amd64 darwin/arm64"
+DEFAULT_IMAGE_PLATFORMS="linux/amd64 linux/arm64"
 
 # Defaults
 app=""
@@ -201,7 +202,7 @@ case "${command}" in
             if [ -n "${platform}" ]; then
                 _platforms=$(echo "${platform}" | tr ',' ' ')
             else
-                _platforms="${DEFAULT_PLATFORMS}"
+                _platforms="${DEFAULT_BINARY_PLATFORMS}"
             fi
             for a in ${APPS}; do
                 for p in ${_platforms}; do
@@ -231,7 +232,7 @@ case "${command}" in
                 if [ -n "${platform}" ]; then
                     _platform="${platform}"
                 else
-                    _platform=$(echo "${DEFAULT_PLATFORMS}" | tr ' ' ',')
+                    _platform=$(echo "${DEFAULT_IMAGE_PLATFORMS}" | tr ' ' ',')
                 fi
                 for a in ${APPS}; do
                     build_image_multiplatform "${a}" "${_platform}" "${tag}"
@@ -240,7 +241,7 @@ case "${command}" in
                 if [ -n "${platform}" ]; then
                     _platforms=$(echo "${platform}" | tr ',' ' ')
                 else
-                    _platforms="${DEFAULT_PLATFORMS}"
+                    _platforms="${DEFAULT_IMAGE_PLATFORMS}"
                 fi
                 for a in ${APPS}; do
                     for p in ${_platforms}; do
