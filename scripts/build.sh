@@ -25,7 +25,7 @@ Commands:
 
 Options:
   -a, --app APP         Target application
-  -p, --platform PLAT   Target platform (default: current os/arch)
+  -p, --platform PLAT   Target platform(s) - comma-separated os/arch pairs
   -t, --tag TAG         Image tag (default: version from git)
   --all                 Build for all apps and platforms
   --dist                Create distribution archives (binary only)
@@ -35,8 +35,11 @@ Options:
 Examples:
   $(basename "$0") binary -a gitlab-exporter
   $(basename "$0") binary --all --dist
+  $(basename "$0") binary --all -p linux/amd64,linux/arm64
   $(basename "$0") image -a gitlab-exporter
   $(basename "$0") image -a gitlab-exporter -p linux/amd64,linux/arm64 --multiplatform
+  $(basename "$0") image --all -p linux/amd64,darwin/arm64
+  $(basename "$0") image --all --multiplatform -p linux/amd64,linux/arm64
 EOF
 }
 
@@ -192,16 +195,16 @@ while [ $# -gt 0 ]; do
     esac
 done
 
-# Set default platform if not specified
-if [ -z "${platform}" ]; then
-    platform="$(go env GOOS)/$(go env GOARCH)"
-fi
-
 case "${command}" in
     binary)
         if [ "${all}" = true ]; then
+            if [ -n "${platform}" ]; then
+                _platforms=$(echo "${platform}" | tr ',' ' ')
+            else
+                _platforms="${DEFAULT_PLATFORMS}"
+            fi
             for a in ${APPS}; do
-                for p in ${DEFAULT_PLATFORMS}; do
+                for p in ${_platforms}; do
                     build_binary "${a}" "${p}"
                     if [ "${dist}" = true ]; then
                         create_dist "${a}" "${p}"
@@ -213,6 +216,9 @@ case "${command}" in
                 echo "Error: --app required for single binary build" >&2
                 exit 1
             fi
+            if [ -z "${platform}" ]; then
+                platform="$(go env GOOS)/$(go env GOARCH)"
+            fi
             build_binary "${app}" "${platform}"
             if [ "${dist}" = true ]; then
                 create_dist "${app}" "${platform}"
@@ -222,24 +228,33 @@ case "${command}" in
     image)
         if [ "${all}" = true ]; then
             if [ "${multiplatform}" = true ]; then
-                _platform=$(echo "${platform}" | tr ' ' ',')
-                # If single platform specified, use default multi-platform set
-                case "${_platform}" in
-                    *,*) ;;  # already has comma, keep it
-                    *)   _platform="linux/amd64,linux/arm64" ;;
-                esac
+                if [ -n "${platform}" ]; then
+                    _platform="${platform}"
+                else
+                    _platform=$(echo "${DEFAULT_PLATFORMS}" | tr ' ' ',')
+                fi
                 for a in ${APPS}; do
                     build_image_multiplatform "${a}" "${_platform}" "${tag}"
                 done
             else
+                if [ -n "${platform}" ]; then
+                    _platforms=$(echo "${platform}" | tr ',' ' ')
+                else
+                    _platforms="${DEFAULT_PLATFORMS}"
+                fi
                 for a in ${APPS}; do
-                    build_image "${a}" "${platform}" "${tag}"
+                    for p in ${_platforms}; do
+                        build_image "${a}" "${p}" "${tag}"
+                    done
                 done
             fi
         else
             if [ -z "${app}" ]; then
                 echo "Error: --app required for single image build" >&2
                 exit 1
+            fi
+            if [ -z "${platform}" ]; then
+                platform="$(go env GOOS)/$(go env GOARCH)"
             fi
             if [ "${multiplatform}" = true ]; then
                 build_image_multiplatform "${app}" "${platform}" "${tag}"

@@ -64,7 +64,7 @@ build: ## Build application binary
 
 .PHONY: build-all
 build-all: ## Build all application binaries for all platforms
-	./scripts/build.sh binary --all
+	./scripts/build.sh binary --all -p "${platform}"
 
 .PHONY: build-image
 build-image: ## Build application container image
@@ -80,11 +80,11 @@ build-image-multiplatform: ## Build multiplatform application container image
 
 .PHONY: build-image-all-multiplatform
 build-image-all-multiplatform: ## Build multiplatform container image for each application
-	./scripts/build.sh image --all -t "${tag}" --multiplatform
+	./scripts/build.sh image --all -p "${platform}" -t "${tag}" --multiplatform
 
 .PHONY: dist
 dist: ## Build release distribution artifacts
-	./scripts/build.sh binary --all --dist
+	./scripts/build.sh binary --all -p "${platform}" --dist
 
 .PHONY: clean
 clean: ## Remove test reports, built binaries and distribution artifacts
