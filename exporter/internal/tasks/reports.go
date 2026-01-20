@@ -309,6 +309,12 @@ func FetchProjectPipelineCoberturaReports(ctx context.Context, glab *gitlab.Clie
 				if errors.Is(err, gitlab.ErrNotFound) {
 					continue
 				} else if err != nil {
+					if !errors.Is(err, context.Canceled) {
+						slog.Error("error fetching cobertura report",
+							slog.String("downloadPath", path),
+							slog.String("error", err.Error()),
+						)
+					}
 					return nil, nil, nil, nil, err
 				}
 				cr, cp, cc, cm := cobertura.ConvertCoverageReport(reportCounter, report, jobRef)
@@ -322,6 +328,12 @@ func FetchProjectPipelineCoberturaReports(ctx context.Context, glab *gitlab.Clie
 		} else if artifact.DownloadPath != nil {
 			report, err = fetchProjectJobCoberturaReportHTTP(ctx, glab, *artifact.DownloadPath)
 			if err != nil {
+				if !errors.Is(err, context.Canceled) {
+					slog.Error("error fetching cobertura report",
+						slog.String("downloadPath", *artifact.DownloadPath),
+						slog.String("error", err.Error()),
+					)
+				}
 				return nil, nil, nil, nil, err
 			}
 			cr, cp, cc, cm := cobertura.ConvertCoverageReport(0, report, jobRef)
