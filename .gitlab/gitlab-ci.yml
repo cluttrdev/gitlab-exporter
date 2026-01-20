@@ -31,44 +31,34 @@ default:
         printf 'PROPERTY_%s="%s"\n' "ci_runner_revision" "${CI_RUNNER_REVISION}"
         printf 'PROPERTY_%s="%s"\n' "ci_runner_hostname" "${HOSTNAME}"
 
-download:
-  stage: .pre
-  script:
-    - |
-      start=$(date +%s%N)
-      go mod download
-      end=$(date +%s%N)
-      duration=$(printf %.6f "$(( end-start ))e-9")
-      timestamp=$(( end/1000000 ))
-      module=$(head -n 1 go.mod | cut -d ' ' -f 2)
-      echo "METRIC_go_mod_download_time{module=\"${module}\", commit_ref=\"${CI_COMMIT_REF_NAME}\"} ${duration} ${timestamp}"
-  cache: &cache-defaults
-    key: ${CI_COMMIT_REF_SLUG}
-    paths:
-      - ${CACHE_DIR}
-      - ${GOPATH}
-    policy: pull-push
+.cache: &cache-defaults
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - ${CACHE_DIR}
+    - ${GOPATH}
+  policy: pull-push
 
 lint:
   stage: lint
   cache:
     - <<: *cache-defaults
   variables:
-    GOLANGCI_LINT_VERSION: v1.64.6
+    GOLANGCI_LINT_VERSION: v2.6.2
     GOLANGCI_LINT_CACHE: ${CACHE_DIR}/golangci-lint
   before_script:
+    - |
+      # Print some job properties
+      printf 'PROPERTY_%s="%s"\n' "golangci_lint_version" "${GOLANGCI_LINT_VERSION}"
     - |
       # Download golangci-lint binary
       echo -e "\e[0Ksection_start:$(date +%s):script_step_before\r\e[0KRunning script_step_before"
       curl -sSfL https://github.com/golangci/golangci-lint/releases/download/${GOLANGCI_LINT_VERSION}/golangci-lint-${GOLANGCI_LINT_VERSION#v}-linux-amd64.tar.gz -o /tmp/golangci-lint.tar.gz
       mkdir -p ${GOPATH}/bin
       tar -C ${GOPATH}/bin/ -zxof /tmp/golangci-lint.tar.gz --strip-components=1 golangci-lint-${GOLANGCI_LINT_VERSION#v}-linux-amd64/golangci-lint
+      export PATH=${GOPATH}/bin:$PATH
       echo -e "\e[0Ksection_end:$(date +%s):script_step_before\r\e[0K"
   script:
-    - |
-      # Print some job properties
-      printf 'PROPERTY_%s="%s"\n' "golangci_lint_version" "${GOLANGCI_LINT_VERSION}"
-    - ${GOPATH}/bin/golangci-lint run --verbose ./...
+    - make lint
   allow_failure: true
 
 build:
@@ -76,23 +66,26 @@ build:
   cache:
     - <<: *cache-defaults
   script:
-    - |
-      start=$(date +%s%N)
-      make build
-      end=$(date +%s%N)
-      duration=$(printf %.6f "$(( end-start ))e-9")
-      timestamp=$(( end/1000000 ))
-      echo "METRIC_go_build_time{package=\"$(go list .)\"} ${duration} ${timestamp}"
+    - make build-all
 
 build-image:
   stage: build
+  needs:
+    - build
   image:
     name: docker.io/moby/buildkit:rootless
     entrypoint: ["sh", "-c"]
+  parallel:
+    matrix:
+      - APP:
+          - gitlab-exporter
+          - gitlab-exporter-clickhouse-recorder
   variables:
+    IMAGE: gitlab-exporter/$APP
     VERSION: $CI_COMMIT_SHA
+    PLATFORM: linux/amd64,linux/arm64
 
-    BUILDKIT_IMAGE: "$CI_REGISTRY_IMAGE:$VERSION"
+    BUILDKIT_IMAGE: "$CI_REGISTRY/$IMAGE:$VERSION"
     BUILDKIT_PUSH: "false"
 
     BUILDKITD_FLAGS: --oci-worker-no-process-sandbox
@@ -111,10 +104,10 @@ build-image:
       buildctl-daemonless.sh build \
         --trace ${CI_PROJECT_DIR}/buildctl-trace.json \
         --frontend dockerfile.v0 \
-        --local context=${CI_PROJECT_DIR} \
-        --local dockerfile=${CI_PROJECT_DIR} \
-        --opt build-arg:GOVERSION="${GOVERSION}" \
-        --opt build-arg:VERSION="${VERSION}" \
+        --platform=${PLATFORM} \
+        --local dockerfile=${CI_PROJECT_DIR}/ \
+        --local context=${CI_PROJECT_DIR}/bin/ \
+        --opt build-arg:APP="${APP}" \
         --output type=image,\"name=${BUILDKIT_IMAGE}\",push=${BUILDKIT_PUSH}
   artifacts:
     paths:
@@ -125,38 +118,8 @@ test:
   stage: test
   cache:
     - <<: *cache-defaults
-  variables:
-    GOTESTSUM_VERSION: v1.12.0
-    GOCOVER_COBERTURA_VERSION: v1.3.0
-  before_script:
-    - |
-      # Print some job properties
-      printf 'PROPERTY_%s="%s"\n' "gotestsum_version" "${GOTESTSUM_VERSION}"
-      printf 'PROPERTY_%s="%s"\n' "gocover_cobertura_version" "${GOCOVER_COBERTURA_VERSION}"
-    - echo -e "\e[0Ksection_start:$(date +%s):script_step_before\r\e[0KRunning script_step_before"
-    - |
-      # Download gotestsum binary
-      curl -sSfL https://github.com/gotestyourself/gotestsum/releases/download/${GOTESTSUM_VERSION}/gotestsum_${GOTESTSUM_VERSION#v}_linux_amd64.tar.gz -o /tmp/gotestsum.tar.gz
-      mkdir -p ${GOPATH}/bin
-      tar -C ${GOPATH}/bin/ -zxof /tmp/gotestsum.tar.gz gotestsum
-    - |
-      # Install gocover-cobertura
-      go install github.com/boumenot/gocover-cobertura@${GOCOVER_COBERTURA_VERSION}
-    - echo -e "\e[0Ksection_end:$(date +%s):script_step_before\r\e[0K"
   script:
-    - |
-      # Run tests
-      echo -e "\e[0Ksection_start:$(date +%s):script_step_run\r\e[0KRunning script_step_run"
-      ${GOPATH}/bin/gotestsum \
-        --junitfile=junit.xml --format=testname \
-        -- \
-        -coverprofile=cover.out -covermode=atomic \
-        ./...
-      echo -e "\e[0Ksection_end:$(date +%s):script_step_run\r\e[0K"
-  after_script:
-    - echo -e "\e[0Ksection_start:$(date +%s):script_step_after\r\e[0KRunning script_step_after"
-    - ${GOPATH}/bin/gocover-cobertura < cover.out > cobertura-coverage.xml
-    - echo -e "\e[0Ksection_end:$(date +%s):script_step_after\r\e[0K"
+    - make test REPORTS=1
   artifacts:
     when: always
     paths:
@@ -174,37 +137,8 @@ release:
     - if: $CI_COMMIT_TAG != null
   cache:
     - <<: *cache-defaults
-  variables:
-    ARCHIVER_VERSION: v3.5.0
-  before_script:
-    - |
-      # Print some job properties
-      printf 'PROPERTY_%s="%s"\n' "archiver_version" "${ARCHIVER_VERSION}"
-    - |
-      # Download archiver binary (for windows .zip support)
-      curl -sSL --fail-with-body https://github.com/mholt/archiver/releases/download/${ARCHIVER_VERSION}/arc_${ARCHIVER_VERSION#v}_linux_amd64 -o /tmp/arc
-      mkdir -p ${GOPATH}/bin
-      install -t ${GOPATH}/bin /tmp/arc
   script:
     - .gitlab/release.sh
-
-release-sync:
-  stage: release
-  rules:
-    - if: $CI_COMMIT_TAG != null
-  needs:
-    - release
-  variables:
-    GITHUB_OWNER: cluttrdev
-    GITHUB_REPO: gitlab-exporter
-  script:
-    - | # Trigger GitHub release sync workflow
-      curl \
-        -sSL --fail-with-body \
-        --header "Accept: application/vnd.github.v3+json" \
-        --header "Authorization: Bearer ${GITHUB_TOKEN}" \
-        --data "{\"ref\":\"${CI_COMMIT_TAG}\"}" \
-        "https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/actions/workflows/release.yml/dispatches"
 
 release-image:
   stage: release
@@ -216,7 +150,7 @@ release-image:
   variables:
     VERSION: $CI_COMMIT_TAG
 
-    BUILDKIT_IMAGE: "${CI_REGISTRY_IMAGE}:${VERSION},${CI_REGISTRY_IMAGE}:latest"
+    BUILDKIT_IMAGE: "$CI_REGISTRY/$IMAGE:$VERSION,$CI_REGISTRY/$IMAGE:latest"
     BUILDKIT_PUSH: "true"
 
 release-chart:
@@ -242,3 +176,22 @@ release-chart:
   artifacts:
     paths:
       - .charts/*.tgz
+
+release-sync:
+  stage: release
+  rules:
+    - if: $CI_COMMIT_TAG != null
+  needs:
+    - release
+  variables:
+    GITHUB_OWNER: cluttrdev
+    GITHUB_REPO: gitlab-exporter
+  script:
+    - | # Trigger GitHub release sync workflow
+      curl \
+        -sSL --fail-with-body \
+        --header "Accept: application/vnd.github.v3+json" \
+        --header "Authorization: Bearer ${GITHUB_TOKEN}" \
+        --data "{\"ref\":\"${CI_COMMIT_TAG}\"}" \
+        "https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/actions/workflows/release.yml/dispatches"
+

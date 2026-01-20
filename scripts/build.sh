@@ -42,7 +42,7 @@ EOF
 
 # Get version from git tags
 version() {
-    git describe --exact-match 2>/dev/null || \
+    git describe --tags --exact-match 2>/dev/null || \
         echo "$(git describe --tags --abbrev=0)-dev.$(git rev-list --count "$(git describe --tags --abbrev=0)"..HEAD)+$(git rev-parse --short=8 HEAD)"
 }
 

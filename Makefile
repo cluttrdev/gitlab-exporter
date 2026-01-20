@@ -99,9 +99,9 @@ changes: ## Get commits since last release
 	from=$$(git describe --tags --abbrev=0 "$${to}^" 2>/dev/null); \
 	if [ -n "${from}" ]; then from="${from}"; fi; \
 	if [ -n "$${from}" ]; then \
-		git log --oneline --no-decorate $${from}..$${to}; \
+		git log --oneline --no-decorate --first-parent $${from}..$${to}; \
 	else \
-		git log --oneline --no-decorate $${to}; \
+		git log --oneline --no-decorate --first-parent $${to}; \
 	fi
 
 .PHONY: changelog
@@ -130,4 +130,4 @@ release-notes: ## Generate release notes
 
 .PHONY: version
 version: ## Generate version from git tag and commit information
-	git describe --exact-match 2>/dev/null || echo $$(git describe --tags --abbrev=0)-dev.$$(git rev-list --count $$(git describe --tags --abbrev=0)..HEAD)+$$(git rev-parse --short=8 HEAD)
+	git describe --tags --exact-match 2>/dev/null || echo $$(git describe --tags --abbrev=0)-dev.$$(git rev-list --count $$(git describe --tags --abbrev=0)..HEAD)+$$(git rev-parse --short=8 HEAD)
