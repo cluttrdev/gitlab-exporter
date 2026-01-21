@@ -83,15 +83,17 @@ func ParseJobLog(trace *bytes.Reader) (JobLogData, error) {
 	)
 
 	scanner := bufio.NewScanner(trace)
+outer:
 	for scanner.Scan() {
 		line := scanner.Bytes()
 
-		if bytes.HasPrefix(line, []byte(METRIC_MARKER)) {
-			metric, err := parser.LineToMetric(line[len(METRIC_MARKER):])
+		if j := bytes.Index(line, []byte(METRIC_MARKER)); j >= 0 {
+			offset := j + len(METRIC_MARKER)
+			metric, err := parser.LineToMetric(line[offset:])
 			if err != nil || metric == nil {
 				// we ignore parsing errors here
 				// TODO: should we handle them somehow?
-				continue
+				continue outer
 			}
 
 			data.Metrics = append(data.Metrics, MetricData{
@@ -101,8 +103,10 @@ func ParseJobLog(trace *bytes.Reader) (JobLogData, error) {
 				Timestamp: metric.TimestampMs,
 			})
 		}
-		if bytes.HasPrefix(line, []byte(PROPERTY_MARKER)) {
-			property, err := propertyParser.LineToProperty(line[len(PROPERTY_MARKER):])
+
+		if j := bytes.Index(line, []byte(PROPERTY_MARKER)); j >= 0 {
+			offset := j + len(PROPERTY_MARKER)
+			property, err := propertyParser.LineToProperty(line[offset:])
 			if err != nil || property == nil {
 				// we ignore parsing errors here
 				// TODO: should we handle them somehow?

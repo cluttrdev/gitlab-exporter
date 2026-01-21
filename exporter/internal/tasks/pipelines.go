@@ -156,11 +156,10 @@ loop:
 		case r := <-results:
 			if r.err != nil {
 				errs = errors.Join(errs, r.err)
-			} else {
-				sections = append(sections, r.sections...)
-				metrics = append(metrics, r.metrics...)
-				properties[r.jobId] = append(properties[r.jobId], r.properties...)
 			}
+			sections = append(sections, r.sections...)
+			metrics = append(metrics, r.metrics...)
+			properties[r.jobId] = append(properties[r.jobId], r.properties...)
 		}
 	}
 
