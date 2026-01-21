@@ -8,7 +8,6 @@ import (
 	"time"
 
 	tracepb_v1 "go.opentelemetry.io/proto/otlp/trace/v1"
-	"golang.org/x/sync/errgroup"
 	"google.golang.org/protobuf/proto"
 
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/exporter/messages"
@@ -73,17 +72,17 @@ func filterNil[T any](data []*T) []*T {
 type recordFunc[T proto.Message] func(client *grpc_client.Client, ctx context.Context, data []T) error
 
 func export[T proto.Message](exp *Exporter, ctx context.Context, data []T, record recordFunc[T]) error {
-	if len(data) == 0 {
+	if len(data) == 0 { // noop
 		return nil
 	}
 
 	// split data into batches to keep max message size
 	batches, err := createBatches(data)
 	if err != nil {
-		return err
+		return fmt.Errorf("create baches: %w", err)
 	}
 
-	// for each client, export batches concurrently in an error group
+	// for each client, export batches concurrently
 	var wg sync.WaitGroup
 	errChan := make(chan error)
 	for _, client := range exp.clients {
@@ -91,19 +90,29 @@ func export[T proto.Message](exp *Exporter, ctx context.Context, data []T, recor
 		go func() {
 			defer wg.Done()
 
-			// set up context aware error group and limit number of
-			// active goroutines to send too much data at once
-			eg, ctx := errgroup.WithContext(ctx)
-			eg.SetLimit(100) // max 200 MiB is sent at once
-
+			// semaphore to limit number of concurrent goroutines
+			sem := make(chan struct{}, 10)
+			var eg sync.WaitGroup
 			for _, batch := range batches {
-				eg.Go(func() error {
-					return record(client, ctx, batch)
-				})
+				// acquire semaphore
+				sem <- struct{}{}
+
+				eg.Add(1)
+				go func() {
+					defer func() {
+						// release semaphore
+						<-sem
+
+						eg.Done()
+					}()
+					// send batch
+					if err := record(client, ctx, batch); err != nil {
+						errChan <- err
+					}
+				}()
 			}
-			if err := eg.Wait(); err != nil {
-				errChan <- err
-			}
+			// wait for all batch goroutines to finish
+			eg.Wait()
 		}()
 	}
 
