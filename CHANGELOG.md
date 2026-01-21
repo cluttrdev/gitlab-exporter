@@ -1,7 +1,59 @@
 # Changelog
 
+## [0.23.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.22.0..v0.23.0)
+
+- 21ff68e fix(exporter): Do not fail export if one batch fails
+- 79de3b9 fix(exporter): Add logs for failed cobertura report download
+- 818ea87 test(clickhouse-recorder): Add test for traces toUnixTimestamp overflow
+- fb17ec1 fix(exporter): Return nil span message if start or end are invalid
+- 030803d fix(exporter): Filter nil messages before export
+- aee004a fix(exporter): Do not call UnixNano on zero Time when creating span message
+- c67a599 docs: Update README.md
+- a740b11 fix(exporter): Wait for recorder subprocess context
+- 45ec268 build: Differ between default binary and image platforms
+- 0a96da0 ci: Add test.needs
+- 6c0bdba ci: Merge and upload junit.xml reports
+- 1394e9c test(clickhouse): Check testcontainers docker availability in integration tests
+- 24c4c70 ci: Add build-chart job
+- 82125d1 chore: Remove go.work.example
+- 90dfa6b chore: Remove repo root go.mod
+- a58e258 build: Ignore hidden paths when finding go.mod files
+- e85d938 ci: Update build and release
+- 124d9b1 build: Use platform arg with --all
+- e1f802d ci: Set GIT_DEPTH=0
+- 539d054 ci: Fix buildctl platform option
+- f64c44a build: Update release script and ci config
+- d708c0f build: Move test logic to script
+- 2e7fc5a build: Move dist logic to build script
+- 2a5727f build: Move build logic to script
+- 48dd13c build: Update Makefile
+- 162adee chore(clickhouse-recorder): Clean up some files
+- 73380e6 build: Add build-image makefile target
+- 723b070 build: Add top-level make build targets
+- 8ab0e4d refactor(clickhouse-recorder): Move app main package to separate module
+- 4672539 refactor(exporter): Move app main package to separate module
+- 2531faf chore(clickhouse-recorder): Remove demo project example
+- 39007df chore(clickhouse-recorder): Move helm chart to top level dir
+- f102d00 build(clickhouse-recorder): Remove redundant targets from Makefile
+- 93be5d8 chore(clickhouse-recorder): Fix import paths
+- 401f147 feat: Add clickhouse recorder implementation repo as subtree
+- b6c8997 refactor: Remove recorder framework
+- 7ac6138 feat: Implement recorder subprocess launcher
+- 5c2490e build: Add go mod tidy make target
+- a5b9de2 feat(exporter): Add recorders config, deprecating endpoints
+- 1478088 feat: Implement sqlite recorder
+- d137ae5 chore: Add top-level go.mod again
+- 7938149 build: Add top-level Makefile
+- 1eb29d1 build: Do not check in go.work
+- c070db5 feat: Add recorder interface and framework
+- 74451ba feat: Extract protobuf and grpc modules
+- 2d1f712 build: Add go.work file
+- 8a6a1ee fix: Update exporter import paths
+- 360161d refactor: Prepare repo restructuring for multi-module workspace
+
 ## [0.22.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.21.1..v0.22.0)
 
+- 876dc97 chore(release): v0.22.0
 - d78bed5 docs(README): Fix gitlab-exporter-clickhouse-recorder link
 - a6da39c fix(deps): Update dependencies
 - aa35815 fix: Remove deprecated runner.active field (use paused instead)
@@ -111,7 +163,6 @@
 - 6943e60 chore(release): v0.17.1
 - e1a88d9 ci(github): Link to gitlab release assets instead of uploading to github
 - 7c2f7a3 chore: Merge branch 'pipelines-downstream' into 'main'
-- f8c232c patch!: Export pipeline downstream references
 - d9574f2 ci: Fix release artifacts builds
 - c82d7bc build: Fix build target os/arch usage
 - 94805aa ci: Add default job properties output
@@ -122,12 +173,6 @@
 - 88d0ee3 patch: Make job log properties export configurable
 - c080f93 chore: Fix README dashboards link
 - b75273a Merge branch 'job-properties' into 'main'
-- 45f2a46 chore: Update README screenshots
-- 18fc625 fix: Update dependencies
-- 3696aa9 feat: Export job log properties
-- 46ade2c ci: Print some job properties to test their export
-- ed49d92 feat: Add job log property parser
-- 85a7b9c chore: Remove commented obsolete code
 - 40492e5 chore: Fix binary install instructions in README
 - ca15f22 ci: Fix release-chart job
 - e345f04 ci: Fix chart release job image
@@ -430,22 +475,6 @@
 - 91360cb Remove obsolete default clickhouse db name constant
 - 0e8fc41 Let golangci-lint be more verbose
 - 1bf1a3a Merge branch 'log_embedded_metrics' into 'main'
-- ba94c3c Add job log parsing to public interface
-- 47f61db Fix parsing job log sections
-- ca4277c Add build cache dir to ci cache
-- aa3f9b3 Set GOMAXPROCS in ci
-- 607c81f Add some log embedded metrics to ci jobs
-- 1f798d9 Add tool to turn junit test report results into log embedded metrics
-- 4f39e5e Set default ci tags and non-root writable cache locations
-- 9c1a4c7 Update CHANGELOG.md
-- 4a21cba Enable job embedded metrics export
-- 8066536 Fix expfmt text parse test constant quotes
-- ed39f8c Add datastore job metrics insert interface and clickhouse implementation
-- f7b15d6 Add clickhouse job metrics ddl and dml
-- cf31730 Add job embedded metrics model
-- cb35f3e Add fetching and parsing job logs for sections and metrics
-- 8655f94 Refactor job section parsing
-- 42fb459 Add embedded metrics text parser
 - 3c53000 Fix gitlab-ci config file name
 - 9743fab Fix server block in example config
 - 9a30cc8 Extend README dev environment section
