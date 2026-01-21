@@ -186,7 +186,7 @@ func FetchProjectJobLogData(ctx context.Context, glab *gitlab.Client, job types.
 
 	log, err := glab.Rest.GetJobLog(ctx, job.Pipeline.Project.Id, job.Id)
 	if err != nil || log == nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, fmt.Errorf("get job log: %w", err)
 	}
 
 	logData, err := rest.ParseJobLog(log)
@@ -194,8 +194,8 @@ func FetchProjectJobLogData(ctx context.Context, glab *gitlab.Client, job types.
 		return nil, nil, nil, fmt.Errorf("parse job log: %w", err)
 	}
 
-	var jobFinishedAtUnix int64
-	if job.FinishedAt != nil {
+	var jobFinishedAtUnix int64 = 0
+	if job.FinishedAt != nil && !job.FinishedAt.IsZero() {
 		jobFinishedAtUnix = job.FinishedAt.Unix()
 	}
 	for secnum, secdat := range logData.Sections {
@@ -236,12 +236,14 @@ func FetchProjectJobLogData(ctx context.Context, glab *gitlab.Client, job types.
 		})
 	}
 
-	_, _ = log.Seek(0, 0)
+	if _, err := log.Seek(0, 0); err != nil {
+		return sections, metrics, properties, fmt.Errorf("rewind job log: %w", err)
+	}
 	logqlMetrics, err := queryJobLogQLMetrics(log, opts.Queries, jobRef, int64(len(logData.Metrics)))
 	if err != nil {
 		return sections, metrics, properties, fmt.Errorf("query job logql metrics: %w", err)
 	}
-	if job.FinishedAt != nil {
+	if job.FinishedAt != nil && !job.FinishedAt.IsZero() {
 		for i := range len(logqlMetrics) {
 			logqlMetrics[i].Timestamp = job.FinishedAt.UnixMilli()
 		}
@@ -277,6 +279,7 @@ func queryJobLogQLMetrics(log *bytes.Reader, queries []logql.MetricQuery, job ty
 			Name:   query.Name,
 			Labels: query.LabelAdd,
 			Value:  float64(counts[i]),
+			// Timestamp: 0,
 		})
 	}
 
