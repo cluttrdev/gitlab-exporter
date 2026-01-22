@@ -208,6 +208,8 @@ release-chart:
   needs:
     - job: release-image
       artifacts: false
+  variables:
+    HELM_PUSH: "1"
   artifacts:
     paths:
       - .charts/*.tgz
