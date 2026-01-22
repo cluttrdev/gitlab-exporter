@@ -1,7 +1,15 @@
 # Changelog
 
+## [Unreleased](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.23.0..HEAD)
+
+- 314cd1a ci: Fix release-chart job
+- 9732526 fix(exporter): Make section timestamp conversion more robust
+- 28fa707 fix(exporter): Fix job log parsing
+- b685441 fix(exporter): Check for zero time in job sections
+
 ## [0.23.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.22.0..v0.23.0)
 
+- 9833c92 chore(release): v0.23.0
 - 21ff68e fix(exporter): Do not fail export if one batch fails
 - 79de3b9 fix(exporter): Add logs for failed cobertura report download
 - 818ea87 test(clickhouse-recorder): Add test for traces toUnixTimestamp overflow

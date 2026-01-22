@@ -4,5 +4,5 @@ name: gitlab-exporter-clickhouse-recorder
 description: A gRPC endpoint for gitlab-exporter that records data in ClickHouse.
 type: application
 
-version: 1.17.0
-appVersion: "v0.23.0"
+version: 1.17.1
+appVersion: "v0.23.1"
