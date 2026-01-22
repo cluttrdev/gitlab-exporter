@@ -1,7 +1,12 @@
 # Changelog
 
-## [Unreleased](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.23.0..HEAD)
+## [0.23.2](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.23.1..v0.23.2)
 
+- 71b6996 fix(exporter): Wait for recorder subprocess context in catchup cmd
+
+## [0.23.1](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.23.0..v0.23.1)
+
+- d1c1efe chore(release): v0.23.1
 - 314cd1a ci: Fix release-chart job
 - 9732526 fix(exporter): Make section timestamp conversion more robust
 - 28fa707 fix(exporter): Fix job log parsing
