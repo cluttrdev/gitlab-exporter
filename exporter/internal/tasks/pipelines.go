@@ -184,8 +184,10 @@ func FetchProjectJobLogData(ctx context.Context, glab *gitlab.Client, job types.
 	}
 
 	log, err := glab.Rest.GetJobLog(ctx, job.Pipeline.Project.Id, job.Id)
-	if err != nil || log == nil {
+	if err != nil {
 		return nil, nil, nil, fmt.Errorf("get job log: %w", err)
+	} else if log == nil {
+		return nil, nil, nil, nil
 	}
 
 	logData, err := rest.ParseJobLog(log)
@@ -207,8 +209,8 @@ func FetchProjectJobLogData(ctx context.Context, glab *gitlab.Client, job types.
 			Job: jobRef,
 
 			Name:       secdat.Name,
-			StartedAt:  gitlab.Ptr(time.Unix(secdat.Start, 0)),
-			FinishedAt: gitlab.Ptr(time.Unix(secdat.End, 0)),
+			StartedAt:  gitlab.Ptr(convertSectionTimestamp(secdat.Start)),
+			FinishedAt: gitlab.Ptr(convertSectionTimestamp(secdat.End)),
 			Duration:   time.Duration((secdat.End - secdat.Start) * int64(time.Second)),
 		}
 
@@ -254,6 +256,43 @@ func FetchProjectJobLogData(ctx context.Context, glab *gitlab.Client, job types.
 	}
 
 	return sections, metrics, properties, nil
+}
+
+// convertSectionTimestamp converts a timestamp from a job log section to time.Time.
+//
+// The Unix timestamp for the job log sections is generated using the awk command:
+//
+//	$(awk 'BEGIN{srand(); print srand()}')
+//
+// When srand() is called without arguments, it seeds the random number generator
+// using the current time and returns the previous seed value.
+// So in `{srand(); print srand()}` the first srand() seeds with the current time,
+// then the second srand() re-seeds and returns the previous seed.
+//
+// Depending on the awk implementation used in the jobs shell environment, the
+// time unit used for seeding can differ, e.g.
+// - GNU awk (gawk) typically uses time() which returns seconds since epoch
+// - mawk uses a higher-precision timer for seeding, returning nanoseconds since epoch
+func convertSectionTimestamp(ts int64) time.Time {
+	const maxReasonableSeconds = 4294967295 // 2106-02-07T06:28:15.000Z, uint32_max
+
+	// Try as seconds first
+	if ts < maxReasonableSeconds {
+		return time.Unix(ts, 0)
+	}
+
+	// Try as milliseconds (13 digits for current era)
+	if ms := ts / 1000; ms < maxReasonableSeconds {
+		return time.Unix(ms, (ts%1000)*1_000_000)
+	}
+
+	// Try as microseconds (16 digits)
+	if us := ts / 1_000_000; us < maxReasonableSeconds {
+		return time.Unix(us, (ts%1_000_000)*1000)
+	}
+
+	// Must be nanoseconds
+	return time.Unix(0, ts)
 }
 
 func queryJobLogQLMetrics(log *bytes.Reader, queries []logql.MetricQuery, job types.JobReference, startIid int64) ([]types.Metric, error) {
