@@ -250,8 +250,11 @@ type TestCase struct {
 	StackTrace    string                 `protobuf:"bytes,10,opt,name=stack_trace,json=stackTrace,proto3" json:"stack_trace,omitempty"`
 	AttachmentUrl string                 `protobuf:"bytes,11,opt,name=attachment_url,json=attachmentUrl,proto3" json:"attachment_url,omitempty"`
 	Properties    []*TestProperty        `protobuf:"bytes,12,rep,name=properties,proto3" json:"properties,omitempty"`
-	unknownFields protoimpl.UnknownFields
-	sizeCache     protoimpl.SizeCache
+	// ReportCreatedAt is the unix timestamp of when the test case's report was created/uploaded.
+	// This usually is the report's job or pipeline finished_at time.
+	ReportCreatedAt uint32 `protobuf:"varint,13,opt,name=report_created_at,json=reportCreatedAt,proto3" json:"report_created_at,omitempty"`
+	unknownFields   protoimpl.UnknownFields
+	sizeCache       protoimpl.SizeCache
 }
 
 func (x *TestCase) Reset() {
@@ -361,6 +364,13 @@ func (x *TestCase) GetProperties() []*TestProperty {
 	return nil
 }
 
+func (x *TestCase) GetReportCreatedAt() uint32 {
+	if x != nil {
+		return x.ReportCreatedAt
+	}
+	return 0
+}
+
 type TestProperty struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Name          string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -448,7 +458,7 @@ const file_gitlabexporter_protobuf_test_report_proto_rawDesc = "" +
 	"\n" +
 	"properties\x18\n" +
 	" \x03(\v2%.gitlabexporter.protobuf.TestPropertyR\n" +
-	"properties\"\x9f\x03\n" +
+	"properties\"\xcb\x03\n" +
 	"\bTestCase\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\tR\x02id\x12J\n" +
 	"\n" +
@@ -465,7 +475,8 @@ const file_gitlabexporter_protobuf_test_report_proto_rawDesc = "" +
 	"\x0eattachment_url\x18\v \x01(\tR\rattachmentUrl\x12E\n" +
 	"\n" +
 	"properties\x18\f \x03(\v2%.gitlabexporter.protobuf.TestPropertyR\n" +
-	"properties\"8\n" +
+	"properties\x12*\n" +
+	"\x11report_created_at\x18\r \x01(\rR\x0freportCreatedAt\"8\n" +
 	"\fTestProperty\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x14\n" +
 	"\x05value\x18\x02 \x01(\tR\x05valueB0Z.go.cluttr.dev/gitlab-exporter/protobuf/typespbb\x06proto3"

@@ -47,6 +47,10 @@ message TestCase {
     string attachment_url = 11;
 
     repeated TestProperty properties = 12;
+
+    // ReportCreatedAt is the unix timestamp of when the test case's report was created/uploaded.
+    // This usually is the report's job or pipeline finished_at time.
+    uint32 report_created_at = 13;
 }
 
 message TestProperty {
