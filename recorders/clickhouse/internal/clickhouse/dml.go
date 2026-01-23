@@ -519,6 +519,8 @@ func InsertTestCases(c *Client, ctx context.Context, cases []*typespb.TestCase) 
 			AttachmentUrl: tc.AttachmentUrl,
 
 			Properties: convertTestProperties(tc.Properties),
+
+			ReportCreatedAt: tc.ReportCreatedAt,
 		})
 		if err != nil {
 			return 0, fmt.Errorf("append batch: %w", err)

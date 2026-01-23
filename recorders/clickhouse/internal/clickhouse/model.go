@@ -211,6 +211,8 @@ type TestCase struct {
 	AttachmentUrl string  `ch:"attachment_url"`
 
 	Properties [][]string `ch:"properties"`
+
+	ReportCreatedAt uint32 `ch:"report_created_at"`
 }
 
 type Metric struct {
