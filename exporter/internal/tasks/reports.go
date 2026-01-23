@@ -121,6 +121,7 @@ func FetchProjectPipelineJunitReports(ctx context.Context, glab *gitlab.Client, 
 			)
 			continue
 		}
+		jobFinishedAt := artifact.JobFinishedAt
 
 		var reports []junitxml.TestReport
 		if len(artifactPaths) > 0 {
@@ -142,6 +143,10 @@ func FetchProjectPipelineJunitReports(ctx context.Context, glab *gitlab.Client, 
 
 		for _, report := range reports {
 			tr, ts, tc := types.ConvertTestReport(report, jobRef)
+			// set testcase's report_created_at to job.finished_at
+			for i := range len(tc) {
+				tc[i].ReportCreatedAt = jobFinishedAt
+			}
 
 			testReports = append(testReports, tr)
 			testSuites = append(testSuites, ts...)

@@ -59,6 +59,8 @@ type TestCase struct {
 	AttachmentUrl string
 
 	Properties []TestProperty
+
+	ReportCreatedAt *time.Time
 }
 
 type TestCaseStatus string

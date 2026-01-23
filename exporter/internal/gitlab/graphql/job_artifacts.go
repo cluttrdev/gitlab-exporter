@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
 )
@@ -14,6 +15,9 @@ type JobArtifactFields struct {
 	Project  ProjectReferenceFields
 
 	JobArtifactFieldsCore
+
+	// to set report_created_at on testcases
+	JobFinishedAt *time.Time
 }
 
 func ConvertJobArtifact(jaf JobArtifactFields) (types.JobArtifact, error) {
@@ -47,6 +51,8 @@ func ConvertJobArtifact(jaf JobArtifactFields) (types.JobArtifact, error) {
 				},
 			},
 		},
+		JobFinishedAt: jaf.JobFinishedAt,
+		// TODO: add missing job artifact fields core... ?!
 	}, nil
 }
 
@@ -106,6 +112,8 @@ func (c *Client) getProjectPipelineJobsArtifacts(ctx context.Context, projectPat
 					Project:  project_.ProjectReferenceFields,
 
 					JobArtifactFieldsCore: artifact_.JobArtifactFieldsCore,
+
+					JobFinishedAt: job_.FinishedAt,
 				}
 
 				jobArtifacts = append(jobArtifacts, jobArtifact)
@@ -188,6 +196,8 @@ func (c *Client) getProjectPipelineJobArtifacts(ctx context.Context, projectPath
 				Project:  project_.ProjectReferenceFields,
 
 				JobArtifactFieldsCore: artifact_.JobArtifactFieldsCore,
+
+				JobFinishedAt: job_.FinishedAt,
 			}
 
 			jobArtifacts = append(jobArtifacts, jobArtifact)

@@ -126,6 +126,7 @@ query getProjectPipelineJobsArtifacts(
             jobs(after: $endCursor) {
                 nodes {
                     ...JobReferenceFields
+                    finishedAt # to set report_created_at on testcases
 
                     artifacts {
                         nodes {
@@ -158,6 +159,7 @@ query getProjectPipelineJobArtifacts(
 
             job(id: $jobId) {
                 ...JobReferenceFields
+                finishedAt # to set report_created_at on testcases
 
                 artifacts(after: $endCursor) {
                     nodes {

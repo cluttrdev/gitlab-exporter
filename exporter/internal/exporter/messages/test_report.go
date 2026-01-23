@@ -70,6 +70,9 @@ func NewTestCase(testCase types.TestCase) *typespb.TestCase {
 		StackTrace:    testCase.StackTrace,
 		SystemOutput:  testCase.SystemOutput,
 		AttachmentUrl: testCase.AttachmentUrl,
+		// Properties:    nil,
+
+		// ReportCreatedAt: 0,
 	}
 
 	for _, p := range testCase.Properties {
@@ -77,6 +80,13 @@ func NewTestCase(testCase types.TestCase) *typespb.TestCase {
 			Name:  p.Name,
 			Value: p.Value,
 		})
+	}
+
+	if testCase.ReportCreatedAt != nil && !testCase.ReportCreatedAt.IsZero() {
+		reportCreatedAt := testCase.ReportCreatedAt.Unix()
+		if 0 < reportCreatedAt && reportCreatedAt <= 0xFFFFFFFF {
+			tc.ReportCreatedAt = uint32(reportCreatedAt)
+		}
 	}
 
 	return tc

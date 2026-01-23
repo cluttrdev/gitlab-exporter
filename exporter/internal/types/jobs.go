@@ -62,7 +62,8 @@ type JobLogProperty struct {
 }
 
 type JobArtifact struct {
-	Job JobReference
+	Job           JobReference
+	JobFinishedAt *time.Time
 
 	FileType     string
 	Name         string

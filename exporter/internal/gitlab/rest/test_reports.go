@@ -152,6 +152,8 @@ func ConvertTestReport(report *gitlab.PipelineTestReport, summary *PipelineTestR
 				StackTrace:    tc.StackTrace,
 				SystemOutput:  fmt.Sprint(tc.SystemOutput),
 				AttachmentUrl: tc.AttachmentURL,
+
+				ReportCreatedAt: pipeline.FinishedAt,
 			})
 		}
 
