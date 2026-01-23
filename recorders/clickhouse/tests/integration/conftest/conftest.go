@@ -1,4 +1,4 @@
-package integration_tests
+package conftest
 
 // DISCLAIMER:
 //
@@ -208,4 +208,39 @@ func CreateDatabase(testSet string) error {
 		return err
 	}
 	return conn.Exec(context.Background(), fmt.Sprintf("CREATE DATABASE `%s`", env.Database))
+}
+
+// IsDockerAvailable checks if Docker is running and accessible for testcontainers.
+// Returns true if Docker is available, false otherwise.
+func IsDockerAvailable() (available bool) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Fprintf(os.Stderr, "Docker is not available: %v\n", r)
+			available = false
+		}
+	}()
+
+	ctx := context.Background()
+
+	provider, err := testcontainers.ProviderDocker.GetProvider()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "Docker is not available: %v\n", err)
+		return false
+	}
+
+	if err := provider.Health(ctx); err != nil {
+		fmt.Fprintf(os.Stderr, "Docker health check failed: %v\n", err)
+		return false
+	}
+
+	return true
+}
+
+func GetTestClientOptions(testSet string) (ch.Options, error) {
+	te, err := GetTestEnvironment(testSet)
+	if err != nil {
+		return ch.Options{}, err
+	}
+
+	return ClientOptionsFromEnv(te, ch.Settings{}), nil
 }

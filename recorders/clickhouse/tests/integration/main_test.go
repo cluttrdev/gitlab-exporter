@@ -8,48 +8,20 @@ import (
 	"path/filepath"
 	"testing"
 
-	ch "github.com/ClickHouse/clickhouse-go/v2"
-	"github.com/testcontainers/testcontainers-go"
-
 	"go.cluttr.dev/gitlab-exporter/recorders/clickhouse/internal/clickhouse"
+	"go.cluttr.dev/gitlab-exporter/recorders/clickhouse/tests/integration/conftest"
 )
 
 const testSet string = "native"
 
-// isDockerAvailable checks if Docker is running and accessible for testcontainers.
-// Returns true if Docker is available, false otherwise.
-func isDockerAvailable() (available bool) {
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Fprintf(os.Stderr, "Docker is not available: %v\n", r)
-			available = false
-		}
-	}()
-
-	ctx := context.Background()
-
-	provider, err := testcontainers.ProviderDocker.GetProvider()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Docker is not available: %v\n", err)
-		return false
-	}
-
-	if err := provider.Health(ctx); err != nil {
-		fmt.Fprintf(os.Stderr, "Docker health check failed: %v\n", err)
-		return false
-	}
-
-	return true
-}
-
 func TestMain(m *testing.M) {
 	// Check if Docker is available before attempting to create test environment
-	if !isDockerAvailable() {
+	if !conftest.IsDockerAvailable() {
 		fmt.Fprintln(os.Stderr, "Skipping integration tests: Docker not available")
 		os.Exit(0)
 	}
 
-	env, err := CreateClickHouseTestEnvironment(testSet)
+	env, err := conftest.CreateClickHouseTestEnvironment(testSet)
 	if err != nil {
 		panic(err)
 	}
@@ -57,9 +29,9 @@ func TestMain(m *testing.M) {
 		_ = env.Container.Terminate(context.Background())
 	}()
 
-	SetTestEnvironment(testSet, env)
+	conftest.SetTestEnvironment(testSet, env)
 
-	if err := CreateDatabase(testSet); err != nil {
+	if err := conftest.CreateDatabase(testSet); err != nil {
 		panic(err)
 	}
 
@@ -71,12 +43,10 @@ func TestMain(m *testing.M) {
 }
 
 func GetTestClient(testSet string) (*clickhouse.Client, error) {
-	te, err := GetTestEnvironment(testSet)
+	opts, err := conftest.GetTestClientOptions(testSet)
 	if err != nil {
 		return nil, err
 	}
-
-	opts := ClientOptionsFromEnv(te, ch.Settings{})
 	opts.MaxOpenConns = 1
 
 	conn, err := clickhouse.Connect(&opts)
@@ -84,7 +54,7 @@ func GetTestClient(testSet string) (*clickhouse.Client, error) {
 		return nil, err
 	}
 
-	return clickhouse.NewClient(conn, te.Database), nil
+	return clickhouse.NewClient(conn, opts.Auth.Database), nil
 }
 
 type OSPathFS struct {
@@ -96,7 +66,7 @@ func (fsys *OSPathFS) Open(name string) (fs.File, error) {
 }
 
 func RunSchemaMigrations(testSet string) error {
-	env, err := GetTestEnvironment(testSet)
+	env, err := conftest.GetTestEnvironment(testSet)
 	if err != nil {
 		return err
 	}
