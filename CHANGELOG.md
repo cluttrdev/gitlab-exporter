@@ -1,7 +1,16 @@
 # Changelog
 
+## [0.24.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.23.2..v0.24.0)
+
+- c549b45 feat(clickhouse-recorder): Add testcases table migration and tests
+- f9ebca4 feat(clickhouse-recorder): Support testcase's ReportCreatedAt field
+- dd8ac4b feat(exporter): Set RecordCreatedAt on testcases
+- 5a3875b feat(proto): Add record_created_at field to testcase message
+- 12f6042 test(clickhouse-recorder): Move integration/conftest.go to separate package
+
 ## [0.23.2](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.23.1..v0.23.2)
 
+- 8a63d49 chore(release): v0.23.2
 - 71b6996 fix(exporter): Wait for recorder subprocess context in catchup cmd
 
 ## [0.23.1](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.23.0..v0.23.1)
