@@ -1,5 +1,8 @@
 # Changelog
 
+This document lists the changes made to the gitlab-exporter-clickhouse-recorder
+before its codebase was merged into the gitlab-exporter repository.
+
 ## [0.16.0](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/compare/v0.15.0..v0.16.0)
 
 - 5013208 feat(deps): Update dependencies
