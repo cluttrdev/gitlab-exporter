@@ -556,8 +556,8 @@ func InsertMergeRequests(c *Client, ctx context.Context, mrs []*typespb.MergeReq
 
 	for _, mr := range mrs {
 		assignees_id, assignees_username, assignees_name := convertUserReferences(mr.Participants.GetAssignees())
-		reviewers_id, reviewers_username, reviewers_name := convertUserReferences(mr.Participants.GetAssignees())
-		approvers_id, approvers_username, approvers_name := convertUserReferences(mr.Participants.GetAssignees())
+		reviewers_id, reviewers_username, reviewers_name := convertUserReferences(mr.Participants.GetReviewers())
+		approvers_id, approvers_username, approvers_name := convertUserReferences(mr.Participants.GetApprovers())
 
 		err = batch.AppendStruct(&MergeRequest{
 			Id:        mr.Id,
