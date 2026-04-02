@@ -1,6 +1,6 @@
 module go.cluttr.dev/gitlab-exporter/exporter
 
-go 1.24.3
+go 1.25.0
 
 tool (
 	github.com/Khan/genqlient
@@ -15,8 +15,8 @@ require (
 	github.com/bmatcuk/doublestar/v4 v4.6.1 // indirect
 	github.com/suessflorian/gqlfetch v0.7.0 // indirect
 	github.com/vektah/gqlparser/v2 v2.5.19 // indirect
-	golang.org/x/mod v0.20.0 // indirect
-	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/tools v0.24.0 // indirect
+	golang.org/x/mod v0.34.0 // indirect
+	golang.org/x/sync v0.20.0 // indirect
+	golang.org/x/tools v0.43.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
