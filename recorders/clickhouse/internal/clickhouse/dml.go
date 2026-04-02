@@ -26,6 +26,7 @@ const (
 	DeploymentsTable            string = "deployments"
 	IssuesTable                 string = "issues"
 	JobsTable                   string = "jobs"
+	MergeRequestCommitsTable    string = "mergerequest_commits"
 	MergeRequestNoteEventsTable string = "mergerequest_noteevents"
 	MergeRequestsTable          string = "mergerequests"
 	MetricsTable                string = "metrics"
@@ -38,6 +39,14 @@ const (
 	TestSuitesTable             string = "testsuites"
 	TraceSpansTable             string = "traces"
 )
+
+func valOrZero[T any](p *T) T {
+	var v T
+	if p != nil {
+		v = *p
+	}
+	return v
+}
 
 func convertTimestamp(ts *timestamppb.Timestamp) float64 {
 	return float64(ts.GetSeconds()) + float64(ts.GetNanos())*1.0e-09
@@ -594,6 +603,8 @@ func InsertMergeRequests(c *Client, ctx context.Context, mrs []*typespb.MergeReq
 			MergeCommitSha:  mr.DiffRefs.GetMergeCommitSha(),
 			RebaseCommitSha: mr.DiffRefs.GetRebaseCommitSha(),
 
+			CommitShas: mr.CommitShas,
+
 			AuthorId:          mr.Participants.GetAuthor().GetId(),
 			AuthorUsername:    mr.Participants.GetAuthor().GetUsername(),
 			AuthorName:        mr.Participants.GetAuthor().GetName(),
@@ -630,6 +641,62 @@ func InsertMergeRequests(c *Client, ctx context.Context, mrs []*typespb.MergeReq
 
 	n := batch.Rows()
 	slog.Debug("Recorded mergerequests", "received", len(mrs), "inserted", n)
+
+	return n, nil
+}
+
+func InsertMergeRequestCommits(c *Client, ctx context.Context, commits []*typespb.MergeRequestCommit) (int, error) {
+	if c == nil {
+		return 0, errors.New("nil client")
+	}
+	const query string = `INSERT INTO {db:Identifier}.{table:Identifier} SETTINGS async_insert=1`
+	var params = map[string]string{
+		"db":    c.dbName,
+		"table": MergeRequestCommitsTable + "_in",
+	}
+
+	ctx = WithParameters(ctx, params)
+
+	batch, err := c.PrepareBatch(ctx, query)
+	if err != nil {
+		return 0, fmt.Errorf("prepare batch: %w", err)
+	}
+
+	for _, commit := range commits {
+		err = batch.AppendStruct(&MergeRequestCommit{
+			Id:              commit.GetId(),
+			MergeRequestId:  commit.GetMergeRequest().GetId(),
+			MergeRequestIid: commit.GetMergeRequest().GetIid(),
+			ProjectId:       commit.GetMergeRequest().GetProject().GetId(),
+
+			Sha: commit.Sha,
+
+			Title:    commit.GetTitle(),
+			Message:  commit.GetMessage(),
+			Trailers: convertCommitTrailers(commit.Trailers),
+
+			AuthorId:       commit.GetAuthor().GetId(),
+			AuthorUsername: commit.GetAuthor().GetUsername(),
+
+			AuthoredDate:  commit.GetAuthoredDate().AsTime(),
+			CommittedDate: commit.GetCommittedDate().AsTime(),
+
+			AuthorName:     commit.GetAuthorName(),
+			AuthorEmail:    commit.GetAuthorEmail(),
+			CommitterName:  commit.GetCommitterName(),
+			CommitterEmail: commit.GetCommitterEmail(),
+		})
+		if err != nil {
+			return 0, fmt.Errorf("append batch: %w", err)
+		}
+	}
+
+	if err := batch.Send(); err != nil {
+		return -1, fmt.Errorf("send batch: %w", err)
+	}
+
+	n := batch.Rows()
+	slog.Debug("Recorded mergerequest_commits", "received", len(commits), "inserted", n)
 
 	return n, nil
 }
@@ -1351,4 +1418,15 @@ func convertTestProperties(properties []*typespb.TestProperty) [][]string {
 		ps = append(ps, []string{p.Name, p.Value})
 	}
 	return ps
+}
+
+func convertCommitTrailers(trailers []*typespb.CommitTrailer) [][]string {
+	ts := make([][]string, 0, len(trailers))
+	for _, t := range trailers {
+		if t.Key == "" {
+			continue
+		}
+		ts = append(ts, []string{t.Key, t.Value})
+	}
+	return ts
 }
