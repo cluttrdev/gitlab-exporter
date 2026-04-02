@@ -12,7 +12,7 @@ import (
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
 )
 
-func FetchProjectsMergeRequests(ctx context.Context, glab *gitlab.Client, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) ([]types.MergeRequest, error) {
+func FetchProjectsMergeRequests(ctx context.Context, glab *gitlab.Client, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) ([]types.MergeRequest, []types.MergeRequestCommit, error) {
 	gids := make([]string, 0, len(projectIds))
 	for _, id := range projectIds {
 		gids = append(gids, graphql.FormatId(id, graphql.GlobalIdProjectPrefix))
@@ -25,12 +25,13 @@ func FetchProjectsMergeRequests(ctx context.Context, glab *gitlab.Client, projec
 
 	mergeRequestsFields, err := glab.GraphQL.GetProjectsMergeRequests(ctx, gids, opts)
 	if errors.Is(err, context.Canceled) {
-		return nil, err
+		return nil, nil, err
 	} else if err != nil {
 		err = fmt.Errorf("get projects merge requests: %w", err)
 	}
 
 	mergeRequests := make([]types.MergeRequest, 0, len(mergeRequestsFields))
+	mergeRequestCommits := []types.MergeRequestCommit{}
 	for _, mrf := range mergeRequestsFields {
 		mr, err := graphql.ConvertMergeRequest(mrf)
 		if err != nil {
@@ -42,9 +43,30 @@ func FetchProjectsMergeRequests(ctx context.Context, glab *gitlab.Client, projec
 			continue
 		}
 		mergeRequests = append(mergeRequests, mr)
+
+		if len(mrf.Commits) > 0 {
+			mrRef := types.MergeRequestReference{
+				Id:      mr.Id,
+				Iid:     mr.Iid,
+				Project: mr.Project,
+			}
+			for _, cf := range mrf.Commits {
+				mrc, err := graphql.ConvertMergeRequestCommit(mrRef, cf)
+				if err != nil {
+					slog.Error("error converting merge request commit fields",
+						slog.String("commit.sha", cf.Sha),
+						slog.String("merge_request.iid", mrf.Iid),
+						slog.String("merge_request.project.id", mrf.Project.Id),
+						slog.String("error", err.Error()),
+					)
+					continue
+				}
+				mergeRequestCommits = append(mergeRequestCommits, mrc)
+			}
+		}
 	}
 
-	return mergeRequests, err
+	return mergeRequests, mergeRequestCommits, err
 }
 
 func FetchProjectsMergeRequestsNotes(ctx context.Context, glab *gitlab.Client, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) ([]types.MergeRequestNoteEvent, error) {

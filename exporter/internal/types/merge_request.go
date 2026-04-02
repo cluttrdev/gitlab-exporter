@@ -38,7 +38,7 @@ type MergeRequest struct {
 	DiffRefs     MergeRequestDiffRefs
 	Participants MergeRequestParticipants
 
-	Commits []MergeRequestCommit
+	CommitShas []string
 
 	Approved  bool
 	Conflicts bool
@@ -82,7 +82,9 @@ type MilestoneReference struct {
 }
 
 type MergeRequestCommit struct {
-	Id  string
+	Id           string
+	MergeRequest MergeRequestReference
+
 	Sha string
 
 	Title    string

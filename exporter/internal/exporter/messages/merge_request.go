@@ -66,6 +66,8 @@ func NewMergeRequest(mr types.MergeRequest) *typespb.MergeRequest {
 			MergeUser: NewUserReference(mr.Participants.MergeUser),
 		},
 
+		// CommitShas: nil,
+
 		Flags: &typespb.MergeRequestFlags{
 			Approved:  mr.Approved,
 			Conflicts: mr.Conflicts,
@@ -76,6 +78,14 @@ func NewMergeRequest(mr types.MergeRequest) *typespb.MergeRequest {
 		// Milestone: nil,
 	}
 
+	// CommitShas
+	if len(mr.CommitShas) > 0 {
+		for _, sha := range mr.CommitShas {
+			pbMr.CommitShas = append(pbMr.CommitShas, sha)
+		}
+	}
+
+	// Milestone
 	if mr.Milestone != nil {
 		pbMr.Milestone = &typespb.MilestoneReference{
 			Id:      mr.Milestone.Id,
@@ -85,6 +95,42 @@ func NewMergeRequest(mr types.MergeRequest) *typespb.MergeRequest {
 	}
 
 	return pbMr
+}
+
+func NewMergeRequestCommit(commit types.MergeRequestCommit) *typespb.MergeRequestCommit {
+	mrc := &typespb.MergeRequestCommit{
+		Id:           commit.Id,
+		MergeRequest: NewMergeRequestReference(commit.MergeRequest),
+
+		Sha: commit.Sha,
+
+		Title:   commit.Title,
+		Message: commit.Message,
+		// Trailers: nil,
+
+		Author: NewUserReference(commit.Author),
+
+		AuthoredDate:  timestamppb.New(valOrZero(commit.AuthoredDate)),
+		CommittedDate: timestamppb.New(valOrZero(commit.CommittedDate)),
+
+		AuthorName:     commit.AuthorName,
+		AuthorEmail:    commit.AuthorEmail,
+		CommitterName:  commit.CommitterName,
+		CommitterEmail: commit.CommitterEmail,
+	}
+
+	// Trailers
+	if len(commit.Trailers) > 0 {
+		mrc.Trailers = make([]*typespb.CommitTrailer, 0, len(mrc.Trailers))
+		for _, trailer := range commit.Trailers {
+			mrc.Trailers = append(mrc.Trailers, &typespb.CommitTrailer{
+				Key:   trailer.Key,
+				Value: trailer.Value,
+			})
+		}
+	}
+
+	return mrc
 }
 
 func NewMergeRequestNoteEvent(event types.MergeRequestNoteEvent) *typespb.MergeRequestNoteEvent {

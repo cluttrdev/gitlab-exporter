@@ -82,7 +82,7 @@ func ConvertMergeRequest(mrf MergeRequestFields) (types.MergeRequest, error) {
 
 		Participants: types.MergeRequestParticipants{},
 
-		// Commits: nil,
+		// CommitShas: nil,
 
 		Approved:  mrf.Approved,
 		Conflicts: mrf.Conflicts,
@@ -156,41 +156,11 @@ func ConvertMergeRequest(mrf MergeRequestFields) (types.MergeRequest, error) {
 		mr.Participants.MergeUser = mergeUser
 	}
 
-	// Commits
-	for _, cf := range mrf.Commits {
-		var commitId string
-		if commitId, err = ParseIdString(cf.Id, GlobalIdCommitPrefix); err != nil {
-			return types.MergeRequest{}, fmt.Errorf("parse commit id: %w", err)
+	// CommitShas
+	if len(mrf.Commits) > 0 {
+		for _, cf := range mrf.Commits {
+			mr.CommitShas = append(mr.CommitShas, cf.Sha)
 		}
-
-		commit := types.MergeRequestCommit{
-			Id:  commitId,
-			Sha: cf.Sha,
-
-			Title:   valOrZero(cf.Title),
-			Message: valOrZero(cf.Message),
-			// Trailers: nil,
-
-			// Author: {},
-
-			AuthoredDate: cf.AuthoredDate,
-			AuthorName:   valOrZero(cf.AuthorName),
-			AuthorEmail:  valOrZero(cf.AuthorEmail),
-
-			CommittedDate:  cf.CommittedDate,
-			CommitterName:  valOrZero(cf.CommitterName),
-			CommitterEmail: valOrZero(cf.CommitterEmail),
-		}
-
-		if mrf.Author != nil {
-			author, err := convertUserReference(cf.Author)
-			if err != nil {
-				return types.MergeRequest{}, fmt.Errorf("convert merge request commit author: %w", err)
-			}
-			commit.Author = author
-		}
-
-		mr.Commits = append(mr.Commits, commit)
 	}
 
 	// Milestone
@@ -221,6 +191,44 @@ func ConvertMergeRequest(mrf MergeRequestFields) (types.MergeRequest, error) {
 	}
 
 	return mr, nil
+}
+
+func ConvertMergeRequestCommit(mr types.MergeRequestReference, cf MergeRequestCommitsFields) (types.MergeRequestCommit, error) {
+	commitId, err := ParseIdString(cf.Id, GlobalIdCommitPrefix)
+	if err != nil {
+		return types.MergeRequestCommit{}, fmt.Errorf("parse commit id: %w", err)
+	}
+
+	mrc := types.MergeRequestCommit{
+		Id:           commitId,
+		MergeRequest: mr,
+
+		Sha: cf.Sha,
+
+		Title:   valOrZero(cf.Title),
+		Message: valOrZero(cf.Message),
+		// Trailers: nil,
+
+		// Author: {},
+
+		AuthoredDate: cf.AuthoredDate,
+		AuthorName:   valOrZero(cf.AuthorName),
+		AuthorEmail:  valOrZero(cf.AuthorEmail),
+
+		CommittedDate:  cf.CommittedDate,
+		CommitterName:  valOrZero(cf.CommitterName),
+		CommitterEmail: valOrZero(cf.CommitterEmail),
+	}
+
+	if cf.Author != nil {
+		author, err := convertUserReference(cf.Author)
+		if err != nil {
+			return types.MergeRequestCommit{}, fmt.Errorf("convert merge request commit author: %w", err)
+		}
+		mrc.Author = author
+	}
+
+	return mrc, nil
 }
 
 func convertUserReference(user UserReferenceFields) (types.UserReference, error) {
