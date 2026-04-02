@@ -51,6 +51,7 @@ type MergeRequest struct {
 	DiffStats    *MergeRequestDiffStats    `protobuf:"bytes,15,opt,name=diff_stats,json=diffStats,proto3" json:"diff_stats,omitempty"`
 	DiffRefs     *MergeRequestDiffRefs     `protobuf:"bytes,16,opt,name=diff_refs,json=diffRefs,proto3" json:"diff_refs,omitempty"`
 	Participants *MergeRequestParticipants `protobuf:"bytes,17,opt,name=participants,proto3" json:"participants,omitempty"`
+	CommitShas   []string                  `protobuf:"bytes,20,rep,name=commit_shas,json=commitShas,proto3" json:"commit_shas,omitempty"`
 	Flags        *MergeRequestFlags        `protobuf:"bytes,18,opt,name=flags,proto3" json:"flags,omitempty"`
 	// Milestone of the merge request.
 	Milestone     *MilestoneReference `protobuf:"bytes,19,opt,name=milestone,proto3" json:"milestone,omitempty"`
@@ -203,6 +204,13 @@ func (x *MergeRequest) GetDiffRefs() *MergeRequestDiffRefs {
 func (x *MergeRequest) GetParticipants() *MergeRequestParticipants {
 	if x != nil {
 		return x.Participants
+	}
+	return nil
+}
+
+func (x *MergeRequest) GetCommitShas() []string {
+	if x != nil {
+		return x.CommitShas
 	}
 	return nil
 }
@@ -589,6 +597,146 @@ func (x *MergeRequestFlags) GetMergeable() bool {
 	return false
 }
 
+type MergeRequestCommit struct {
+	state          protoimpl.MessageState `protogen:"open.v1"`
+	Id             string                 `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	MergeRequest   *MergeRequestReference `protobuf:"bytes,2,opt,name=merge_request,json=mergeRequest,proto3" json:"merge_request,omitempty"`
+	Sha            string                 `protobuf:"bytes,3,opt,name=sha,proto3" json:"sha,omitempty"`
+	Title          string                 `protobuf:"bytes,4,opt,name=title,proto3" json:"title,omitempty"`
+	Message        string                 `protobuf:"bytes,5,opt,name=message,proto3" json:"message,omitempty"`
+	Trailers       []*CommitTrailer       `protobuf:"bytes,6,rep,name=trailers,proto3" json:"trailers,omitempty"`
+	Author         *UserReference         `protobuf:"bytes,7,opt,name=author,proto3" json:"author,omitempty"`
+	AuthoredDate   *timestamppb.Timestamp `protobuf:"bytes,8,opt,name=authored_date,json=authoredDate,proto3" json:"authored_date,omitempty"`
+	CommittedDate  *timestamppb.Timestamp `protobuf:"bytes,9,opt,name=committed_date,json=committedDate,proto3" json:"committed_date,omitempty"`
+	AuthorName     string                 `protobuf:"bytes,10,opt,name=author_name,json=authorName,proto3" json:"author_name,omitempty"`
+	AuthorEmail    string                 `protobuf:"bytes,11,opt,name=author_email,json=authorEmail,proto3" json:"author_email,omitempty"`
+	CommitterName  string                 `protobuf:"bytes,12,opt,name=committer_name,json=committerName,proto3" json:"committer_name,omitempty"`
+	CommitterEmail string                 `protobuf:"bytes,13,opt,name=committer_email,json=committerEmail,proto3" json:"committer_email,omitempty"`
+	unknownFields  protoimpl.UnknownFields
+	sizeCache      protoimpl.SizeCache
+}
+
+func (x *MergeRequestCommit) Reset() {
+	*x = MergeRequestCommit{}
+	mi := &file_gitlabexporter_protobuf_merge_request_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *MergeRequestCommit) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*MergeRequestCommit) ProtoMessage() {}
+
+func (x *MergeRequestCommit) ProtoReflect() protoreflect.Message {
+	mi := &file_gitlabexporter_protobuf_merge_request_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use MergeRequestCommit.ProtoReflect.Descriptor instead.
+func (*MergeRequestCommit) Descriptor() ([]byte, []int) {
+	return file_gitlabexporter_protobuf_merge_request_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *MergeRequestCommit) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *MergeRequestCommit) GetMergeRequest() *MergeRequestReference {
+	if x != nil {
+		return x.MergeRequest
+	}
+	return nil
+}
+
+func (x *MergeRequestCommit) GetSha() string {
+	if x != nil {
+		return x.Sha
+	}
+	return ""
+}
+
+func (x *MergeRequestCommit) GetTitle() string {
+	if x != nil {
+		return x.Title
+	}
+	return ""
+}
+
+func (x *MergeRequestCommit) GetMessage() string {
+	if x != nil {
+		return x.Message
+	}
+	return ""
+}
+
+func (x *MergeRequestCommit) GetTrailers() []*CommitTrailer {
+	if x != nil {
+		return x.Trailers
+	}
+	return nil
+}
+
+func (x *MergeRequestCommit) GetAuthor() *UserReference {
+	if x != nil {
+		return x.Author
+	}
+	return nil
+}
+
+func (x *MergeRequestCommit) GetAuthoredDate() *timestamppb.Timestamp {
+	if x != nil {
+		return x.AuthoredDate
+	}
+	return nil
+}
+
+func (x *MergeRequestCommit) GetCommittedDate() *timestamppb.Timestamp {
+	if x != nil {
+		return x.CommittedDate
+	}
+	return nil
+}
+
+func (x *MergeRequestCommit) GetAuthorName() string {
+	if x != nil {
+		return x.AuthorName
+	}
+	return ""
+}
+
+func (x *MergeRequestCommit) GetAuthorEmail() string {
+	if x != nil {
+		return x.AuthorEmail
+	}
+	return ""
+}
+
+func (x *MergeRequestCommit) GetCommitterName() string {
+	if x != nil {
+		return x.CommitterName
+	}
+	return ""
+}
+
+func (x *MergeRequestCommit) GetCommitterEmail() string {
+	if x != nil {
+		return x.CommitterEmail
+	}
+	return ""
+}
+
 type MergeRequestNoteEvent struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Id            int64                  `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
@@ -609,7 +757,7 @@ type MergeRequestNoteEvent struct {
 
 func (x *MergeRequestNoteEvent) Reset() {
 	*x = MergeRequestNoteEvent{}
-	mi := &file_gitlabexporter_protobuf_merge_request_proto_msgTypes[6]
+	mi := &file_gitlabexporter_protobuf_merge_request_proto_msgTypes[7]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -621,7 +769,7 @@ func (x *MergeRequestNoteEvent) String() string {
 func (*MergeRequestNoteEvent) ProtoMessage() {}
 
 func (x *MergeRequestNoteEvent) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_merge_request_proto_msgTypes[6]
+	mi := &file_gitlabexporter_protobuf_merge_request_proto_msgTypes[7]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -634,7 +782,7 @@ func (x *MergeRequestNoteEvent) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use MergeRequestNoteEvent.ProtoReflect.Descriptor instead.
 func (*MergeRequestNoteEvent) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_merge_request_proto_rawDescGZIP(), []int{6}
+	return file_gitlabexporter_protobuf_merge_request_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *MergeRequestNoteEvent) GetId() int64 {
@@ -741,7 +889,7 @@ type Milestone struct {
 
 func (x *Milestone) Reset() {
 	*x = Milestone{}
-	mi := &file_gitlabexporter_protobuf_merge_request_proto_msgTypes[7]
+	mi := &file_gitlabexporter_protobuf_merge_request_proto_msgTypes[8]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -753,7 +901,7 @@ func (x *Milestone) String() string {
 func (*Milestone) ProtoMessage() {}
 
 func (x *Milestone) ProtoReflect() protoreflect.Message {
-	mi := &file_gitlabexporter_protobuf_merge_request_proto_msgTypes[7]
+	mi := &file_gitlabexporter_protobuf_merge_request_proto_msgTypes[8]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -766,7 +914,7 @@ func (x *Milestone) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use Milestone.ProtoReflect.Descriptor instead.
 func (*Milestone) Descriptor() ([]byte, []int) {
-	return file_gitlabexporter_protobuf_merge_request_proto_rawDescGZIP(), []int{7}
+	return file_gitlabexporter_protobuf_merge_request_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *Milestone) GetId() int64 {
@@ -857,7 +1005,7 @@ var File_gitlabexporter_protobuf_merge_request_proto protoreflect.FileDescriptor
 
 const file_gitlabexporter_protobuf_merge_request_proto_rawDesc = "" +
 	"\n" +
-	"+gitlabexporter/protobuf/merge_request.proto\x12\x17gitlabexporter.protobuf\x1a\x1fgoogle/protobuf/timestamp.proto\x1a(gitlabexporter/protobuf/references.proto\"\x83\a\n" +
+	"+gitlabexporter/protobuf/merge_request.proto\x12\x17gitlabexporter.protobuf\x1a\x1fgoogle/protobuf/timestamp.proto\x1a(gitlabexporter/protobuf/references.proto\x1a$gitlabexporter/protobuf/commit.proto\"\xa4\a\n" +
 	"\fMergeRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x10\n" +
 	"\x03iid\x18\x02 \x01(\x03R\x03iid\x12C\n" +
@@ -880,7 +1028,9 @@ const file_gitlabexporter_protobuf_merge_request_proto_rawDesc = "" +
 	"\n" +
 	"diff_stats\x18\x0f \x01(\v2..gitlabexporter.protobuf.MergeRequestDiffStatsR\tdiffStats\x12J\n" +
 	"\tdiff_refs\x18\x10 \x01(\v2-.gitlabexporter.protobuf.MergeRequestDiffRefsR\bdiffRefs\x12U\n" +
-	"\fparticipants\x18\x11 \x01(\v21.gitlabexporter.protobuf.MergeRequestParticipantsR\fparticipants\x12@\n" +
+	"\fparticipants\x18\x11 \x01(\v21.gitlabexporter.protobuf.MergeRequestParticipantsR\fparticipants\x12\x1f\n" +
+	"\vcommit_shas\x18\x14 \x03(\tR\n" +
+	"commitShas\x12@\n" +
 	"\x05flags\x18\x12 \x01(\v2*.gitlabexporter.protobuf.MergeRequestFlagsR\x05flags\x12I\n" +
 	"\tmilestone\x18\x13 \x01(\v2+.gitlabexporter.protobuf.MilestoneReferenceR\tmilestone\"\x80\x02\n" +
 	"\x16MergeRequestTimestamps\x129\n" +
@@ -914,7 +1064,23 @@ const file_gitlabexporter_protobuf_merge_request_proto_rawDesc = "" +
 	"\bapproved\x18\x01 \x01(\bR\bapproved\x12\x1c\n" +
 	"\tconflicts\x18\x02 \x01(\bR\tconflicts\x12\x14\n" +
 	"\x05draft\x18\x03 \x01(\bR\x05draft\x12\x1c\n" +
-	"\tmergeable\x18\x04 \x01(\bR\tmergeable\"\xb9\x04\n" +
+	"\tmergeable\x18\x04 \x01(\bR\tmergeable\"\xd7\x04\n" +
+	"\x12MergeRequestCommit\x12\x0e\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\x12S\n" +
+	"\rmerge_request\x18\x02 \x01(\v2..gitlabexporter.protobuf.MergeRequestReferenceR\fmergeRequest\x12\x10\n" +
+	"\x03sha\x18\x03 \x01(\tR\x03sha\x12\x14\n" +
+	"\x05title\x18\x04 \x01(\tR\x05title\x12\x18\n" +
+	"\amessage\x18\x05 \x01(\tR\amessage\x12B\n" +
+	"\btrailers\x18\x06 \x03(\v2&.gitlabexporter.protobuf.CommitTrailerR\btrailers\x12>\n" +
+	"\x06author\x18\a \x01(\v2&.gitlabexporter.protobuf.UserReferenceR\x06author\x12?\n" +
+	"\rauthored_date\x18\b \x01(\v2\x1a.google.protobuf.TimestampR\fauthoredDate\x12A\n" +
+	"\x0ecommitted_date\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\rcommittedDate\x12\x1f\n" +
+	"\vauthor_name\x18\n" +
+	" \x01(\tR\n" +
+	"authorName\x12!\n" +
+	"\fauthor_email\x18\v \x01(\tR\vauthorEmail\x12%\n" +
+	"\x0ecommitter_name\x18\f \x01(\tR\rcommitterName\x12'\n" +
+	"\x0fcommitter_email\x18\r \x01(\tR\x0ecommitterEmail\"\xb9\x04\n" +
 	"\x15MergeRequestNoteEvent\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12S\n" +
 	"\rmerge_request\x18\x02 \x01(\v2..gitlabexporter.protobuf.MergeRequestReferenceR\fmergeRequest\x129\n" +
@@ -963,7 +1129,7 @@ func file_gitlabexporter_protobuf_merge_request_proto_rawDescGZIP() []byte {
 	return file_gitlabexporter_protobuf_merge_request_proto_rawDescData
 }
 
-var file_gitlabexporter_protobuf_merge_request_proto_msgTypes = make([]protoimpl.MessageInfo, 8)
+var file_gitlabexporter_protobuf_merge_request_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
 var file_gitlabexporter_protobuf_merge_request_proto_goTypes = []any{
 	(*MergeRequest)(nil),             // 0: gitlabexporter.protobuf.MergeRequest
 	(*MergeRequestTimestamps)(nil),   // 1: gitlabexporter.protobuf.MergeRequestTimestamps
@@ -971,46 +1137,53 @@ var file_gitlabexporter_protobuf_merge_request_proto_goTypes = []any{
 	(*MergeRequestDiffRefs)(nil),     // 3: gitlabexporter.protobuf.MergeRequestDiffRefs
 	(*MergeRequestParticipants)(nil), // 4: gitlabexporter.protobuf.MergeRequestParticipants
 	(*MergeRequestFlags)(nil),        // 5: gitlabexporter.protobuf.MergeRequestFlags
-	(*MergeRequestNoteEvent)(nil),    // 6: gitlabexporter.protobuf.MergeRequestNoteEvent
-	(*Milestone)(nil),                // 7: gitlabexporter.protobuf.Milestone
-	(*ProjectReference)(nil),         // 8: gitlabexporter.protobuf.ProjectReference
-	(*MilestoneReference)(nil),       // 9: gitlabexporter.protobuf.MilestoneReference
-	(*timestamppb.Timestamp)(nil),    // 10: google.protobuf.Timestamp
-	(*UserReference)(nil),            // 11: gitlabexporter.protobuf.UserReference
-	(*MergeRequestReference)(nil),    // 12: gitlabexporter.protobuf.MergeRequestReference
+	(*MergeRequestCommit)(nil),       // 6: gitlabexporter.protobuf.MergeRequestCommit
+	(*MergeRequestNoteEvent)(nil),    // 7: gitlabexporter.protobuf.MergeRequestNoteEvent
+	(*Milestone)(nil),                // 8: gitlabexporter.protobuf.Milestone
+	(*ProjectReference)(nil),         // 9: gitlabexporter.protobuf.ProjectReference
+	(*MilestoneReference)(nil),       // 10: gitlabexporter.protobuf.MilestoneReference
+	(*timestamppb.Timestamp)(nil),    // 11: google.protobuf.Timestamp
+	(*UserReference)(nil),            // 12: gitlabexporter.protobuf.UserReference
+	(*MergeRequestReference)(nil),    // 13: gitlabexporter.protobuf.MergeRequestReference
+	(*CommitTrailer)(nil),            // 14: gitlabexporter.protobuf.CommitTrailer
 }
 var file_gitlabexporter_protobuf_merge_request_proto_depIdxs = []int32{
-	8,  // 0: gitlabexporter.protobuf.MergeRequest.project:type_name -> gitlabexporter.protobuf.ProjectReference
+	9,  // 0: gitlabexporter.protobuf.MergeRequest.project:type_name -> gitlabexporter.protobuf.ProjectReference
 	1,  // 1: gitlabexporter.protobuf.MergeRequest.timestamps:type_name -> gitlabexporter.protobuf.MergeRequestTimestamps
 	2,  // 2: gitlabexporter.protobuf.MergeRequest.diff_stats:type_name -> gitlabexporter.protobuf.MergeRequestDiffStats
 	3,  // 3: gitlabexporter.protobuf.MergeRequest.diff_refs:type_name -> gitlabexporter.protobuf.MergeRequestDiffRefs
 	4,  // 4: gitlabexporter.protobuf.MergeRequest.participants:type_name -> gitlabexporter.protobuf.MergeRequestParticipants
 	5,  // 5: gitlabexporter.protobuf.MergeRequest.flags:type_name -> gitlabexporter.protobuf.MergeRequestFlags
-	9,  // 6: gitlabexporter.protobuf.MergeRequest.milestone:type_name -> gitlabexporter.protobuf.MilestoneReference
-	10, // 7: gitlabexporter.protobuf.MergeRequestTimestamps.created_at:type_name -> google.protobuf.Timestamp
-	10, // 8: gitlabexporter.protobuf.MergeRequestTimestamps.updated_at:type_name -> google.protobuf.Timestamp
-	10, // 9: gitlabexporter.protobuf.MergeRequestTimestamps.merged_at:type_name -> google.protobuf.Timestamp
-	10, // 10: gitlabexporter.protobuf.MergeRequestTimestamps.closed_at:type_name -> google.protobuf.Timestamp
-	11, // 11: gitlabexporter.protobuf.MergeRequestParticipants.author:type_name -> gitlabexporter.protobuf.UserReference
-	11, // 12: gitlabexporter.protobuf.MergeRequestParticipants.assignees:type_name -> gitlabexporter.protobuf.UserReference
-	11, // 13: gitlabexporter.protobuf.MergeRequestParticipants.reviewers:type_name -> gitlabexporter.protobuf.UserReference
-	11, // 14: gitlabexporter.protobuf.MergeRequestParticipants.approvers:type_name -> gitlabexporter.protobuf.UserReference
-	11, // 15: gitlabexporter.protobuf.MergeRequestParticipants.merge_user:type_name -> gitlabexporter.protobuf.UserReference
-	12, // 16: gitlabexporter.protobuf.MergeRequestNoteEvent.merge_request:type_name -> gitlabexporter.protobuf.MergeRequestReference
-	10, // 17: gitlabexporter.protobuf.MergeRequestNoteEvent.created_at:type_name -> google.protobuf.Timestamp
-	10, // 18: gitlabexporter.protobuf.MergeRequestNoteEvent.updated_at:type_name -> google.protobuf.Timestamp
-	10, // 19: gitlabexporter.protobuf.MergeRequestNoteEvent.resolved_at:type_name -> google.protobuf.Timestamp
-	11, // 20: gitlabexporter.protobuf.MergeRequestNoteEvent.author:type_name -> gitlabexporter.protobuf.UserReference
-	11, // 21: gitlabexporter.protobuf.MergeRequestNoteEvent.resolver:type_name -> gitlabexporter.protobuf.UserReference
-	10, // 22: gitlabexporter.protobuf.Milestone.created_at:type_name -> google.protobuf.Timestamp
-	10, // 23: gitlabexporter.protobuf.Milestone.updated_at:type_name -> google.protobuf.Timestamp
-	10, // 24: gitlabexporter.protobuf.Milestone.start_date:type_name -> google.protobuf.Timestamp
-	10, // 25: gitlabexporter.protobuf.Milestone.due_date:type_name -> google.protobuf.Timestamp
-	26, // [26:26] is the sub-list for method output_type
-	26, // [26:26] is the sub-list for method input_type
-	26, // [26:26] is the sub-list for extension type_name
-	26, // [26:26] is the sub-list for extension extendee
-	0,  // [0:26] is the sub-list for field type_name
+	10, // 6: gitlabexporter.protobuf.MergeRequest.milestone:type_name -> gitlabexporter.protobuf.MilestoneReference
+	11, // 7: gitlabexporter.protobuf.MergeRequestTimestamps.created_at:type_name -> google.protobuf.Timestamp
+	11, // 8: gitlabexporter.protobuf.MergeRequestTimestamps.updated_at:type_name -> google.protobuf.Timestamp
+	11, // 9: gitlabexporter.protobuf.MergeRequestTimestamps.merged_at:type_name -> google.protobuf.Timestamp
+	11, // 10: gitlabexporter.protobuf.MergeRequestTimestamps.closed_at:type_name -> google.protobuf.Timestamp
+	12, // 11: gitlabexporter.protobuf.MergeRequestParticipants.author:type_name -> gitlabexporter.protobuf.UserReference
+	12, // 12: gitlabexporter.protobuf.MergeRequestParticipants.assignees:type_name -> gitlabexporter.protobuf.UserReference
+	12, // 13: gitlabexporter.protobuf.MergeRequestParticipants.reviewers:type_name -> gitlabexporter.protobuf.UserReference
+	12, // 14: gitlabexporter.protobuf.MergeRequestParticipants.approvers:type_name -> gitlabexporter.protobuf.UserReference
+	12, // 15: gitlabexporter.protobuf.MergeRequestParticipants.merge_user:type_name -> gitlabexporter.protobuf.UserReference
+	13, // 16: gitlabexporter.protobuf.MergeRequestCommit.merge_request:type_name -> gitlabexporter.protobuf.MergeRequestReference
+	14, // 17: gitlabexporter.protobuf.MergeRequestCommit.trailers:type_name -> gitlabexporter.protobuf.CommitTrailer
+	12, // 18: gitlabexporter.protobuf.MergeRequestCommit.author:type_name -> gitlabexporter.protobuf.UserReference
+	11, // 19: gitlabexporter.protobuf.MergeRequestCommit.authored_date:type_name -> google.protobuf.Timestamp
+	11, // 20: gitlabexporter.protobuf.MergeRequestCommit.committed_date:type_name -> google.protobuf.Timestamp
+	13, // 21: gitlabexporter.protobuf.MergeRequestNoteEvent.merge_request:type_name -> gitlabexporter.protobuf.MergeRequestReference
+	11, // 22: gitlabexporter.protobuf.MergeRequestNoteEvent.created_at:type_name -> google.protobuf.Timestamp
+	11, // 23: gitlabexporter.protobuf.MergeRequestNoteEvent.updated_at:type_name -> google.protobuf.Timestamp
+	11, // 24: gitlabexporter.protobuf.MergeRequestNoteEvent.resolved_at:type_name -> google.protobuf.Timestamp
+	12, // 25: gitlabexporter.protobuf.MergeRequestNoteEvent.author:type_name -> gitlabexporter.protobuf.UserReference
+	12, // 26: gitlabexporter.protobuf.MergeRequestNoteEvent.resolver:type_name -> gitlabexporter.protobuf.UserReference
+	11, // 27: gitlabexporter.protobuf.Milestone.created_at:type_name -> google.protobuf.Timestamp
+	11, // 28: gitlabexporter.protobuf.Milestone.updated_at:type_name -> google.protobuf.Timestamp
+	11, // 29: gitlabexporter.protobuf.Milestone.start_date:type_name -> google.protobuf.Timestamp
+	11, // 30: gitlabexporter.protobuf.Milestone.due_date:type_name -> google.protobuf.Timestamp
+	31, // [31:31] is the sub-list for method output_type
+	31, // [31:31] is the sub-list for method input_type
+	31, // [31:31] is the sub-list for extension type_name
+	31, // [31:31] is the sub-list for extension extendee
+	0,  // [0:31] is the sub-list for field type_name
 }
 
 func init() { file_gitlabexporter_protobuf_merge_request_proto_init() }
@@ -1019,13 +1192,14 @@ func file_gitlabexporter_protobuf_merge_request_proto_init() {
 		return
 	}
 	file_gitlabexporter_protobuf_references_proto_init()
+	file_gitlabexporter_protobuf_commit_proto_init()
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_gitlabexporter_protobuf_merge_request_proto_rawDesc), len(file_gitlabexporter_protobuf_merge_request_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   8,
+			NumMessages:   9,
 			NumExtensions: 0,
 			NumServices:   0,
 		},
