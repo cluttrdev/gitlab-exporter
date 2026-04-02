@@ -79,6 +79,26 @@ fragment MergeRequestFieldsParticipants on MergeRequest {
     }
 }
 
+fragment MergeRequestCommitsFields on Commit {
+    id
+    sha
+
+    title
+    message
+
+    author {
+      ...UserReferenceFields
+    }
+
+    authoredDate
+    authorName
+    authorEmail
+
+    committedDate
+    committerName
+    committerEmail
+}
+
 fragment MergeRequestNotesFieldsCore on Note {
     id
 

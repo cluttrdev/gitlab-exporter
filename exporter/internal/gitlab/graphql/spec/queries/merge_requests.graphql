@@ -7,6 +7,7 @@ query getProjectsMergeRequests(
     $_core: Boolean = false
     $_extra: Boolean = false
     $_participants: Boolean = false
+    $_commits: Boolean = false
 ) {
     projects(ids: $projectIds, after: $endCursor) {
         nodes {
@@ -19,6 +20,15 @@ query getProjectsMergeRequests(
                     ...MergeRequestFieldsCore @include(if: $_core)
                     ...MergeRequestFieldsExtra @include(if: $_extra)
                     ...MergeRequestFieldsParticipants @include(if: $_participants)
+
+                    commits @include(if: $_commits) {
+                        nodes {
+                            ...MergeRequestCommitsFields
+                        }
+                        pageInfo {
+                            ...pageFields
+                        }
+                    }
                 }
                 pageInfo {
                     ...pageFields
@@ -40,6 +50,7 @@ query getProjectMergeRequests(
     $_core: Boolean = false
     $_extra: Boolean = false
     $_participants: Boolean = false
+    $_commits: Boolean = false
 ) {
     project(fullPath: $projectPath) {
         ...ProjectReferenceFields
@@ -51,9 +62,41 @@ query getProjectMergeRequests(
                 ...MergeRequestFieldsCore @include(if: $_core)
                 ...MergeRequestFieldsExtra @include(if: $_extra)
                 ...MergeRequestFieldsParticipants @include(if: $_participants)
+
+                commits @include(if: $_commits) {
+                    nodes {
+                        ...MergeRequestCommitsFields
+                    }
+                    pageInfo {
+                        ...pageFields
+                    }
+                }
             }
             pageInfo {
                 ...pageFields
+            }
+        }
+    }
+}
+
+query getProjectMergeRequestCommits(
+    $projectPath: ID!
+    $mergeRequestIid: String!
+    $endCursor: String
+) {
+    project(fullPath: $projectPath) {
+        ...ProjectReferenceFields
+
+        mergeRequest(iid: $mergeRequestIid) {
+            ...MergeRequestReferenceFields
+
+            commits(after: $endCursor) {
+                nodes {
+                    ...MergeRequestCommitsFields
+                }
+                pageInfo {
+                    ...pageFields
+                }
             }
         }
     }

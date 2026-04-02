@@ -266,6 +266,7 @@ type getMergeRequestsOptions struct {
 	includeCore         bool
 	includeExtra        bool
 	includeParticipants bool
+	includeCommits      bool
 }
 
 func (c *Client) getProjectsMergeRequests(ctx context.Context, ids []string, opts getMergeRequestsOptions) ([]MergeRequestFields, error) {
@@ -289,6 +290,7 @@ outerLoop:
 			&opts.includeCore,
 			&opts.includeExtra,
 			&opts.includeParticipants,
+			&opts.includeCommits,
 		)
 		err = handleError(err, "getProjectsMergeRequests",
 			slog.Any("projectIds", ids),
@@ -365,6 +367,7 @@ func (c *Client) getProjectMergeRequests(ctx context.Context, projectPath string
 			&opts.includeCore,
 			&opts.includeExtra,
 			&opts.includeParticipants,
+			&opts.includeCommits,
 		)
 		err = handleError(err, "getProjectsMergeRequests",
 			slog.String("projectPath", projectPath),
