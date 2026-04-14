@@ -79,6 +79,37 @@ query getProjectMergeRequests(
     }
 }
 
+query getProjectMergeRequest(
+    $projectPath: ID!
+    $mergeRequestIid: String!
+    # fragments to include
+    $_core: Boolean = false
+    $_extra: Boolean = false
+    $_participants: Boolean = false
+    $_commits: Boolean = false
+) {
+    project(fullPath: $projectPath) {
+        ...ProjectReferenceFields
+
+        mergeRequest(iid: $mergeRequestIid) {
+            ...MergeRequestReferenceFields
+
+            ...MergeRequestFieldsCore @include(if: $_core)
+            ...MergeRequestFieldsExtra @include(if: $_extra)
+            ...MergeRequestFieldsParticipants @include(if: $_participants)
+
+            commits @include(if: $_commits) {
+                nodes {
+                    ...MergeRequestCommitsFields
+                }
+                pageInfo {
+                    ...pageFields
+                }
+            }
+        }
+    }
+}
+
 query getProjectMergeRequestCommits(
     $projectPath: ID!
     $mergeRequestIid: String!

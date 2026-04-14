@@ -3534,6 +3534,34 @@ func (v *__getProjectMergeRequestCommitsInput) GetMergeRequestIid() string { ret
 // GetEndCursor returns __getProjectMergeRequestCommitsInput.EndCursor, and is useful for accessing the field via an interface.
 func (v *__getProjectMergeRequestCommitsInput) GetEndCursor() *string { return v.EndCursor }
 
+// __getProjectMergeRequestInput is used internally by genqlient
+type __getProjectMergeRequestInput struct {
+	ProjectPath     string `json:"projectPath"`
+	MergeRequestIid string `json:"mergeRequestIid"`
+	Core            *bool  `json:"_core"`
+	Extra           *bool  `json:"_extra"`
+	Participants    *bool  `json:"_participants"`
+	Commits         *bool  `json:"_commits"`
+}
+
+// GetProjectPath returns __getProjectMergeRequestInput.ProjectPath, and is useful for accessing the field via an interface.
+func (v *__getProjectMergeRequestInput) GetProjectPath() string { return v.ProjectPath }
+
+// GetMergeRequestIid returns __getProjectMergeRequestInput.MergeRequestIid, and is useful for accessing the field via an interface.
+func (v *__getProjectMergeRequestInput) GetMergeRequestIid() string { return v.MergeRequestIid }
+
+// GetCore returns __getProjectMergeRequestInput.Core, and is useful for accessing the field via an interface.
+func (v *__getProjectMergeRequestInput) GetCore() *bool { return v.Core }
+
+// GetExtra returns __getProjectMergeRequestInput.Extra, and is useful for accessing the field via an interface.
+func (v *__getProjectMergeRequestInput) GetExtra() *bool { return v.Extra }
+
+// GetParticipants returns __getProjectMergeRequestInput.Participants, and is useful for accessing the field via an interface.
+func (v *__getProjectMergeRequestInput) GetParticipants() *bool { return v.Participants }
+
+// GetCommits returns __getProjectMergeRequestInput.Commits, and is useful for accessing the field via an interface.
+func (v *__getProjectMergeRequestInput) GetCommits() *bool { return v.Commits }
+
 // __getProjectMergeRequestNotesInput is used internally by genqlient
 type __getProjectMergeRequestNotesInput struct {
 	ProjectPath     string  `json:"projectPath"`
@@ -5028,6 +5056,637 @@ type getProjectMergeRequestNotesResponse struct {
 
 // GetProject returns getProjectMergeRequestNotesResponse.Project, and is useful for accessing the field via an interface.
 func (v *getProjectMergeRequestNotesResponse) GetProject() *getProjectMergeRequestNotesProject {
+	return v.Project
+}
+
+// getProjectMergeRequestProject includes the requested fields of the GraphQL type Project.
+type getProjectMergeRequestProject struct {
+	ProjectReferenceFields `json:"-"`
+	// A single merge request of the project.
+	MergeRequest *getProjectMergeRequestProjectMergeRequest `json:"mergeRequest"`
+}
+
+// GetMergeRequest returns getProjectMergeRequestProject.MergeRequest, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProject) GetMergeRequest() *getProjectMergeRequestProjectMergeRequest {
+	return v.MergeRequest
+}
+
+// GetId returns getProjectMergeRequestProject.Id, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProject) GetId() string { return v.ProjectReferenceFields.Id }
+
+// GetFullPath returns getProjectMergeRequestProject.FullPath, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProject) GetFullPath() string {
+	return v.ProjectReferenceFields.FullPath
+}
+
+func (v *getProjectMergeRequestProject) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectMergeRequestProject
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectMergeRequestProject = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.ProjectReferenceFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectMergeRequestProject struct {
+	MergeRequest *getProjectMergeRequestProjectMergeRequest `json:"mergeRequest"`
+
+	Id string `json:"id"`
+
+	FullPath string `json:"fullPath"`
+}
+
+func (v *getProjectMergeRequestProject) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectMergeRequestProject) __premarshalJSON() (*__premarshalgetProjectMergeRequestProject, error) {
+	var retval __premarshalgetProjectMergeRequestProject
+
+	retval.MergeRequest = v.MergeRequest
+	retval.Id = v.ProjectReferenceFields.Id
+	retval.FullPath = v.ProjectReferenceFields.FullPath
+	return &retval, nil
+}
+
+// getProjectMergeRequestProjectMergeRequest includes the requested fields of the GraphQL type MergeRequest.
+type getProjectMergeRequestProjectMergeRequest struct {
+	MergeRequestReferenceFields    `json:"-"`
+	MergeRequestFieldsCore         `json:"-"`
+	MergeRequestFieldsExtra        `json:"-"`
+	MergeRequestFieldsParticipants `json:"-"`
+	// Merge request commits.
+	Commits *getProjectMergeRequestProjectMergeRequestCommitsCommitConnection `json:"commits"`
+}
+
+// GetCommits returns getProjectMergeRequestProjectMergeRequest.Commits, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetCommits() *getProjectMergeRequestProjectMergeRequestCommitsCommitConnection {
+	return v.Commits
+}
+
+// GetId returns getProjectMergeRequestProjectMergeRequest.Id, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetId() string {
+	return v.MergeRequestReferenceFields.Id
+}
+
+// GetIid returns getProjectMergeRequestProjectMergeRequest.Iid, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetIid() string {
+	return v.MergeRequestReferenceFields.Iid
+}
+
+// GetCreatedAt returns getProjectMergeRequestProjectMergeRequest.CreatedAt, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetCreatedAt() time.Time {
+	return v.MergeRequestFieldsCore.CreatedAt
+}
+
+// GetUpdatedAt returns getProjectMergeRequestProjectMergeRequest.UpdatedAt, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetUpdatedAt() time.Time {
+	return v.MergeRequestFieldsCore.UpdatedAt
+}
+
+// GetMergedAt returns getProjectMergeRequestProjectMergeRequest.MergedAt, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetMergedAt() *time.Time {
+	return v.MergeRequestFieldsCore.MergedAt
+}
+
+// GetClosedAt returns getProjectMergeRequestProjectMergeRequest.ClosedAt, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetClosedAt() *time.Time {
+	return v.MergeRequestFieldsCore.ClosedAt
+}
+
+// GetName returns getProjectMergeRequestProjectMergeRequest.Name, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetName() *string {
+	return v.MergeRequestFieldsCore.Name
+}
+
+// GetTitle returns getProjectMergeRequestProjectMergeRequest.Title, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetTitle() string {
+	return v.MergeRequestFieldsCore.Title
+}
+
+// GetLabels returns getProjectMergeRequestProjectMergeRequest.Labels, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetLabels() *MergeRequestFieldsCoreLabelsLabelConnection {
+	return v.MergeRequestFieldsCore.Labels
+}
+
+// GetState returns getProjectMergeRequestProjectMergeRequest.State, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetState() MergeRequestState {
+	return v.MergeRequestFieldsCore.State
+}
+
+// GetDetailedMergeStatus returns getProjectMergeRequestProjectMergeRequest.DetailedMergeStatus, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetDetailedMergeStatus() *DetailedMergeStatus {
+	return v.MergeRequestFieldsCore.DetailedMergeStatus
+}
+
+// GetMergeError returns getProjectMergeRequestProjectMergeRequest.MergeError, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetMergeError() *string {
+	return v.MergeRequestFieldsCore.MergeError
+}
+
+// GetApproved returns getProjectMergeRequestProjectMergeRequest.Approved, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetApproved() bool {
+	return v.MergeRequestFieldsCore.Approved
+}
+
+// GetConflicts returns getProjectMergeRequestProjectMergeRequest.Conflicts, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetConflicts() bool {
+	return v.MergeRequestFieldsCore.Conflicts
+}
+
+// GetDraft returns getProjectMergeRequestProjectMergeRequest.Draft, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetDraft() bool {
+	return v.MergeRequestFieldsCore.Draft
+}
+
+// GetMergeable returns getProjectMergeRequestProjectMergeRequest.Mergeable, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetMergeable() bool {
+	return v.MergeRequestFieldsCore.Mergeable
+}
+
+// GetSourceProjectId returns getProjectMergeRequestProjectMergeRequest.SourceProjectId, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetSourceProjectId() *int {
+	return v.MergeRequestFieldsExtra.SourceProjectId
+}
+
+// GetTargetProjectId returns getProjectMergeRequestProjectMergeRequest.TargetProjectId, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetTargetProjectId() int {
+	return v.MergeRequestFieldsExtra.TargetProjectId
+}
+
+// GetSourceBranch returns getProjectMergeRequestProjectMergeRequest.SourceBranch, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetSourceBranch() string {
+	return v.MergeRequestFieldsExtra.SourceBranch
+}
+
+// GetTargetBranch returns getProjectMergeRequestProjectMergeRequest.TargetBranch, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetTargetBranch() string {
+	return v.MergeRequestFieldsExtra.TargetBranch
+}
+
+// GetMergeCommitSha returns getProjectMergeRequestProjectMergeRequest.MergeCommitSha, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetMergeCommitSha() *string {
+	return v.MergeRequestFieldsExtra.MergeCommitSha
+}
+
+// GetRebaseCommitSha returns getProjectMergeRequestProjectMergeRequest.RebaseCommitSha, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetRebaseCommitSha() *string {
+	return v.MergeRequestFieldsExtra.RebaseCommitSha
+}
+
+// GetDiffRefs returns getProjectMergeRequestProjectMergeRequest.DiffRefs, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetDiffRefs() *MergeRequestFieldsExtraDiffRefs {
+	return v.MergeRequestFieldsExtra.DiffRefs
+}
+
+// GetDiffStatsSummary returns getProjectMergeRequestProjectMergeRequest.DiffStatsSummary, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetDiffStatsSummary() *MergeRequestFieldsExtraDiffStatsSummary {
+	return v.MergeRequestFieldsExtra.DiffStatsSummary
+}
+
+// GetCommitCount returns getProjectMergeRequestProjectMergeRequest.CommitCount, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetCommitCount() *int {
+	return v.MergeRequestFieldsExtra.CommitCount
+}
+
+// GetUserNotesCount returns getProjectMergeRequestProjectMergeRequest.UserNotesCount, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetUserNotesCount() *int {
+	return v.MergeRequestFieldsExtra.UserNotesCount
+}
+
+// GetMilestone returns getProjectMergeRequestProjectMergeRequest.Milestone, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetMilestone() *MergeRequestFieldsExtraMilestone {
+	return v.MergeRequestFieldsExtra.Milestone
+}
+
+// GetAuthor returns getProjectMergeRequestProjectMergeRequest.Author, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetAuthor() *MergeRequestFieldsParticipantsAuthorMergeRequestAuthor {
+	return v.MergeRequestFieldsParticipants.Author
+}
+
+// GetAssignees returns getProjectMergeRequestProjectMergeRequest.Assignees, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetAssignees() *MergeRequestFieldsParticipantsAssigneesMergeRequestAssigneeConnection {
+	return v.MergeRequestFieldsParticipants.Assignees
+}
+
+// GetReviewers returns getProjectMergeRequestProjectMergeRequest.Reviewers, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetReviewers() *MergeRequestFieldsParticipantsReviewersMergeRequestReviewerConnection {
+	return v.MergeRequestFieldsParticipants.Reviewers
+}
+
+// GetApprovedBy returns getProjectMergeRequestProjectMergeRequest.ApprovedBy, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetApprovedBy() *MergeRequestFieldsParticipantsApprovedByUserCoreConnection {
+	return v.MergeRequestFieldsParticipants.ApprovedBy
+}
+
+// GetMergeUser returns getProjectMergeRequestProjectMergeRequest.MergeUser, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetMergeUser() *MergeRequestFieldsParticipantsMergeUserUserCore {
+	return v.MergeRequestFieldsParticipants.MergeUser
+}
+
+func (v *getProjectMergeRequestProjectMergeRequest) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectMergeRequestProjectMergeRequest
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectMergeRequestProjectMergeRequest = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.MergeRequestReferenceFields)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(
+		b, &v.MergeRequestFieldsCore)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(
+		b, &v.MergeRequestFieldsExtra)
+	if err != nil {
+		return err
+	}
+	err = json.Unmarshal(
+		b, &v.MergeRequestFieldsParticipants)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectMergeRequestProjectMergeRequest struct {
+	Commits *getProjectMergeRequestProjectMergeRequestCommitsCommitConnection `json:"commits"`
+
+	Id string `json:"id"`
+
+	Iid string `json:"iid"`
+
+	CreatedAt time.Time `json:"createdAt"`
+
+	UpdatedAt time.Time `json:"updatedAt"`
+
+	MergedAt *time.Time `json:"mergedAt"`
+
+	ClosedAt *time.Time `json:"closedAt"`
+
+	Name *string `json:"name"`
+
+	Title string `json:"title"`
+
+	Labels *MergeRequestFieldsCoreLabelsLabelConnection `json:"labels"`
+
+	State MergeRequestState `json:"state"`
+
+	DetailedMergeStatus *DetailedMergeStatus `json:"detailedMergeStatus"`
+
+	MergeError *string `json:"mergeError"`
+
+	Approved bool `json:"approved"`
+
+	Conflicts bool `json:"conflicts"`
+
+	Draft bool `json:"draft"`
+
+	Mergeable bool `json:"mergeable"`
+
+	SourceProjectId *int `json:"sourceProjectId"`
+
+	TargetProjectId int `json:"targetProjectId"`
+
+	SourceBranch string `json:"sourceBranch"`
+
+	TargetBranch string `json:"targetBranch"`
+
+	MergeCommitSha *string `json:"mergeCommitSha"`
+
+	RebaseCommitSha *string `json:"rebaseCommitSha"`
+
+	DiffRefs *MergeRequestFieldsExtraDiffRefs `json:"diffRefs"`
+
+	DiffStatsSummary *MergeRequestFieldsExtraDiffStatsSummary `json:"diffStatsSummary"`
+
+	CommitCount *int `json:"commitCount"`
+
+	UserNotesCount *int `json:"userNotesCount"`
+
+	Milestone *MergeRequestFieldsExtraMilestone `json:"milestone"`
+
+	Author *MergeRequestFieldsParticipantsAuthorMergeRequestAuthor `json:"author"`
+
+	Assignees *MergeRequestFieldsParticipantsAssigneesMergeRequestAssigneeConnection `json:"assignees"`
+
+	Reviewers *MergeRequestFieldsParticipantsReviewersMergeRequestReviewerConnection `json:"reviewers"`
+
+	ApprovedBy *MergeRequestFieldsParticipantsApprovedByUserCoreConnection `json:"approvedBy"`
+
+	MergeUser *MergeRequestFieldsParticipantsMergeUserUserCore `json:"mergeUser"`
+}
+
+func (v *getProjectMergeRequestProjectMergeRequest) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectMergeRequestProjectMergeRequest) __premarshalJSON() (*__premarshalgetProjectMergeRequestProjectMergeRequest, error) {
+	var retval __premarshalgetProjectMergeRequestProjectMergeRequest
+
+	retval.Commits = v.Commits
+	retval.Id = v.MergeRequestReferenceFields.Id
+	retval.Iid = v.MergeRequestReferenceFields.Iid
+	retval.CreatedAt = v.MergeRequestFieldsCore.CreatedAt
+	retval.UpdatedAt = v.MergeRequestFieldsCore.UpdatedAt
+	retval.MergedAt = v.MergeRequestFieldsCore.MergedAt
+	retval.ClosedAt = v.MergeRequestFieldsCore.ClosedAt
+	retval.Name = v.MergeRequestFieldsCore.Name
+	retval.Title = v.MergeRequestFieldsCore.Title
+	retval.Labels = v.MergeRequestFieldsCore.Labels
+	retval.State = v.MergeRequestFieldsCore.State
+	retval.DetailedMergeStatus = v.MergeRequestFieldsCore.DetailedMergeStatus
+	retval.MergeError = v.MergeRequestFieldsCore.MergeError
+	retval.Approved = v.MergeRequestFieldsCore.Approved
+	retval.Conflicts = v.MergeRequestFieldsCore.Conflicts
+	retval.Draft = v.MergeRequestFieldsCore.Draft
+	retval.Mergeable = v.MergeRequestFieldsCore.Mergeable
+	retval.SourceProjectId = v.MergeRequestFieldsExtra.SourceProjectId
+	retval.TargetProjectId = v.MergeRequestFieldsExtra.TargetProjectId
+	retval.SourceBranch = v.MergeRequestFieldsExtra.SourceBranch
+	retval.TargetBranch = v.MergeRequestFieldsExtra.TargetBranch
+	retval.MergeCommitSha = v.MergeRequestFieldsExtra.MergeCommitSha
+	retval.RebaseCommitSha = v.MergeRequestFieldsExtra.RebaseCommitSha
+	retval.DiffRefs = v.MergeRequestFieldsExtra.DiffRefs
+	retval.DiffStatsSummary = v.MergeRequestFieldsExtra.DiffStatsSummary
+	retval.CommitCount = v.MergeRequestFieldsExtra.CommitCount
+	retval.UserNotesCount = v.MergeRequestFieldsExtra.UserNotesCount
+	retval.Milestone = v.MergeRequestFieldsExtra.Milestone
+	retval.Author = v.MergeRequestFieldsParticipants.Author
+	retval.Assignees = v.MergeRequestFieldsParticipants.Assignees
+	retval.Reviewers = v.MergeRequestFieldsParticipants.Reviewers
+	retval.ApprovedBy = v.MergeRequestFieldsParticipants.ApprovedBy
+	retval.MergeUser = v.MergeRequestFieldsParticipants.MergeUser
+	return &retval, nil
+}
+
+// getProjectMergeRequestProjectMergeRequestCommitsCommitConnection includes the requested fields of the GraphQL type CommitConnection.
+// The GraphQL type's documentation follows.
+//
+// The connection type for Commit.
+type getProjectMergeRequestProjectMergeRequestCommitsCommitConnection struct {
+	// A list of nodes.
+	Nodes []*getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit `json:"nodes"`
+	// Information to aid in pagination.
+	PageInfo getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionPageInfo `json:"pageInfo"`
+}
+
+// GetNodes returns getProjectMergeRequestProjectMergeRequestCommitsCommitConnection.Nodes, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnection) GetNodes() []*getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit {
+	return v.Nodes
+}
+
+// GetPageInfo returns getProjectMergeRequestProjectMergeRequestCommitsCommitConnection.PageInfo, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnection) GetPageInfo() getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionPageInfo {
+	return v.PageInfo
+}
+
+// getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit includes the requested fields of the GraphQL type Commit.
+type getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit struct {
+	MergeRequestCommitsFields `json:"-"`
+}
+
+// GetId returns getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit.Id, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit) GetId() string {
+	return v.MergeRequestCommitsFields.Id
+}
+
+// GetSha returns getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit.Sha, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit) GetSha() string {
+	return v.MergeRequestCommitsFields.Sha
+}
+
+// GetTitle returns getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit.Title, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit) GetTitle() *string {
+	return v.MergeRequestCommitsFields.Title
+}
+
+// GetMessage returns getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit.Message, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit) GetMessage() *string {
+	return v.MergeRequestCommitsFields.Message
+}
+
+// GetAuthor returns getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit.Author, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit) GetAuthor() *MergeRequestCommitsFieldsAuthorUserCore {
+	return v.MergeRequestCommitsFields.Author
+}
+
+// GetAuthoredDate returns getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit.AuthoredDate, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit) GetAuthoredDate() *time.Time {
+	return v.MergeRequestCommitsFields.AuthoredDate
+}
+
+// GetAuthorName returns getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit.AuthorName, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit) GetAuthorName() *string {
+	return v.MergeRequestCommitsFields.AuthorName
+}
+
+// GetAuthorEmail returns getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit.AuthorEmail, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit) GetAuthorEmail() *string {
+	return v.MergeRequestCommitsFields.AuthorEmail
+}
+
+// GetCommittedDate returns getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit.CommittedDate, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit) GetCommittedDate() *time.Time {
+	return v.MergeRequestCommitsFields.CommittedDate
+}
+
+// GetCommitterName returns getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit.CommitterName, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit) GetCommitterName() *string {
+	return v.MergeRequestCommitsFields.CommitterName
+}
+
+// GetCommitterEmail returns getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit.CommitterEmail, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit) GetCommitterEmail() *string {
+	return v.MergeRequestCommitsFields.CommitterEmail
+}
+
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.MergeRequestCommitsFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit struct {
+	Id string `json:"id"`
+
+	Sha string `json:"sha"`
+
+	Title *string `json:"title"`
+
+	Message *string `json:"message"`
+
+	Author *MergeRequestCommitsFieldsAuthorUserCore `json:"author"`
+
+	AuthoredDate *time.Time `json:"authoredDate"`
+
+	AuthorName *string `json:"authorName"`
+
+	AuthorEmail *string `json:"authorEmail"`
+
+	CommittedDate *time.Time `json:"committedDate"`
+
+	CommitterName *string `json:"committerName"`
+
+	CommitterEmail *string `json:"committerEmail"`
+}
+
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit) __premarshalJSON() (*__premarshalgetProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit, error) {
+	var retval __premarshalgetProjectMergeRequestProjectMergeRequestCommitsCommitConnectionNodesCommit
+
+	retval.Id = v.MergeRequestCommitsFields.Id
+	retval.Sha = v.MergeRequestCommitsFields.Sha
+	retval.Title = v.MergeRequestCommitsFields.Title
+	retval.Message = v.MergeRequestCommitsFields.Message
+	retval.Author = v.MergeRequestCommitsFields.Author
+	retval.AuthoredDate = v.MergeRequestCommitsFields.AuthoredDate
+	retval.AuthorName = v.MergeRequestCommitsFields.AuthorName
+	retval.AuthorEmail = v.MergeRequestCommitsFields.AuthorEmail
+	retval.CommittedDate = v.MergeRequestCommitsFields.CommittedDate
+	retval.CommitterName = v.MergeRequestCommitsFields.CommitterName
+	retval.CommitterEmail = v.MergeRequestCommitsFields.CommitterEmail
+	return &retval, nil
+}
+
+// getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionPageInfo includes the requested fields of the GraphQL type PageInfo.
+// The GraphQL type's documentation follows.
+//
+// Information about pagination in a connection.
+type getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionPageInfo struct {
+	pageFields `json:"-"`
+}
+
+// GetHasNextPage returns getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionPageInfo.HasNextPage, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionPageInfo) GetHasNextPage() bool {
+	return v.pageFields.HasNextPage
+}
+
+// GetEndCursor returns getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionPageInfo.EndCursor, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionPageInfo) GetEndCursor() *string {
+	return v.pageFields.EndCursor
+}
+
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionPageInfo) UnmarshalJSON(b []byte) error {
+
+	if string(b) == "null" {
+		return nil
+	}
+
+	var firstPass struct {
+		*getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionPageInfo
+		graphql.NoUnmarshalJSON
+	}
+	firstPass.getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionPageInfo = v
+
+	err := json.Unmarshal(b, &firstPass)
+	if err != nil {
+		return err
+	}
+
+	err = json.Unmarshal(
+		b, &v.pageFields)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+type __premarshalgetProjectMergeRequestProjectMergeRequestCommitsCommitConnectionPageInfo struct {
+	HasNextPage bool `json:"hasNextPage"`
+
+	EndCursor *string `json:"endCursor"`
+}
+
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionPageInfo) MarshalJSON() ([]byte, error) {
+	premarshaled, err := v.__premarshalJSON()
+	if err != nil {
+		return nil, err
+	}
+	return json.Marshal(premarshaled)
+}
+
+func (v *getProjectMergeRequestProjectMergeRequestCommitsCommitConnectionPageInfo) __premarshalJSON() (*__premarshalgetProjectMergeRequestProjectMergeRequestCommitsCommitConnectionPageInfo, error) {
+	var retval __premarshalgetProjectMergeRequestProjectMergeRequestCommitsCommitConnectionPageInfo
+
+	retval.HasNextPage = v.pageFields.HasNextPage
+	retval.EndCursor = v.pageFields.EndCursor
+	return &retval, nil
+}
+
+// getProjectMergeRequestResponse is returned by getProjectMergeRequest on success.
+type getProjectMergeRequestResponse struct {
+	// Find a project.
+	Project *getProjectMergeRequestProject `json:"project"`
+}
+
+// GetProject returns getProjectMergeRequestResponse.Project, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestResponse) GetProject() *getProjectMergeRequestProject {
 	return v.Project
 }
 
@@ -14038,6 +14697,167 @@ func getProjectIssues(
 	}
 
 	data_ = &getProjectIssuesResponse{}
+	resp_ := &graphql.Response{Data: data_}
+
+	err_ = client_.MakeRequest(
+		ctx_,
+		req_,
+		resp_,
+	)
+
+	return data_, err_
+}
+
+// The query executed by getProjectMergeRequest.
+const getProjectMergeRequest_Operation = `
+query getProjectMergeRequest ($projectPath: ID!, $mergeRequestIid: String!, $_core: Boolean = false, $_extra: Boolean = false, $_participants: Boolean = false, $_commits: Boolean = false) {
+	project(fullPath: $projectPath) {
+		... ProjectReferenceFields
+		mergeRequest(iid: $mergeRequestIid) {
+			... MergeRequestReferenceFields
+			... MergeRequestFieldsCore @include(if: $_core)
+			... MergeRequestFieldsExtra @include(if: $_extra)
+			... MergeRequestFieldsParticipants @include(if: $_participants)
+			commits @include(if: $_commits) {
+				nodes {
+					... MergeRequestCommitsFields
+				}
+				pageInfo {
+					... pageFields
+				}
+			}
+		}
+	}
+}
+fragment ProjectReferenceFields on Project {
+	id
+	fullPath
+}
+fragment MergeRequestReferenceFields on MergeRequest {
+	id
+	iid
+}
+fragment MergeRequestFieldsCore on MergeRequest {
+	createdAt
+	updatedAt
+	mergedAt
+	closedAt
+	name
+	title
+	labels {
+		nodes {
+			title
+		}
+	}
+	state
+	detailedMergeStatus
+	mergeError
+	approved
+	conflicts
+	draft
+	mergeable
+}
+fragment MergeRequestFieldsExtra on MergeRequest {
+	sourceProjectId
+	targetProjectId
+	sourceBranch
+	targetBranch
+	mergeCommitSha
+	rebaseCommitSha
+	diffRefs {
+		baseSha
+		headSha
+		startSha
+	}
+	diffStatsSummary {
+		additions
+		changes
+		deletions
+		fileCount
+	}
+	commitCount
+	userNotesCount
+	milestone {
+		id
+		iid
+		project {
+			... ProjectReferenceFields
+		}
+	}
+}
+fragment MergeRequestFieldsParticipants on MergeRequest {
+	author {
+		... UserReferenceFields
+	}
+	assignees {
+		nodes {
+			... UserReferenceFields
+		}
+	}
+	reviewers {
+		nodes {
+			... UserReferenceFields
+		}
+	}
+	approvedBy {
+		nodes {
+			... UserReferenceFields
+		}
+	}
+	mergeUser {
+		... UserReferenceFields
+	}
+}
+fragment MergeRequestCommitsFields on Commit {
+	id
+	sha
+	title
+	message
+	author {
+		... UserReferenceFields
+	}
+	authoredDate
+	authorName
+	authorEmail
+	committedDate
+	committerName
+	committerEmail
+}
+fragment pageFields on PageInfo {
+	hasNextPage
+	endCursor
+}
+fragment UserReferenceFields on User {
+	id
+	username
+	name
+}
+`
+
+func getProjectMergeRequest(
+	ctx_ context.Context,
+	client_ graphql.Client,
+	projectPath string,
+	mergeRequestIid string,
+	_core *bool,
+	_extra *bool,
+	_participants *bool,
+	_commits *bool,
+) (data_ *getProjectMergeRequestResponse, err_ error) {
+	req_ := &graphql.Request{
+		OpName: "getProjectMergeRequest",
+		Query:  getProjectMergeRequest_Operation,
+		Variables: &__getProjectMergeRequestInput{
+			ProjectPath:     projectPath,
+			MergeRequestIid: mergeRequestIid,
+			Core:            _core,
+			Extra:           _extra,
+			Participants:    _participants,
+			Commits:         _commits,
+		},
+	}
+
+	data_ = &getProjectMergeRequestResponse{}
 	resp_ := &graphql.Response{Data: data_}
 
 	err_ = client_.MakeRequest(
