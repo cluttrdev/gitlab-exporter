@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/git/trailerparser"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/metaerr"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
 )
@@ -220,6 +221,20 @@ func ConvertMergeRequestCommit(mr types.MergeRequestReference, cf MergeRequestCo
 		CommitterEmail: valOrZero(cf.CommitterEmail),
 	}
 
+	// Trailers
+	if lines := trailerparser.ExtractPotentialTrailerLines([]byte(valOrZero(cf.Message))); len(lines) > 0 {
+		for _, line := range lines {
+			trailers := trailerparser.Parse(line)
+			for _, trailer := range trailers {
+				mrc.Trailers = append(mrc.Trailers, types.CommitTrailer{
+					Key:   string(trailer.Key),
+					Value: string(trailer.Value),
+				})
+			}
+		}
+	}
+
+	// Author
 	if cf.Author != nil {
 		author, err := convertUserReference(cf.Author)
 		if err != nil {
