@@ -28,9 +28,10 @@ func NewMergeRequest(mr types.MergeRequest) *typespb.MergeRequest {
 			ClosedAt:  timestamppb.New(valOrZero(mr.ClosedAt)),
 		},
 
-		Name:   mr.Name,
-		Title:  mr.Title,
-		Labels: mr.Labels,
+		Name:        mr.Name,
+		Title:       mr.Title,
+		Description: mr.Description,
+		Labels:      mr.Labels,
 
 		State:       mr.State,
 		MergeStatus: mr.MergeStatus,

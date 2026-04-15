@@ -240,9 +240,10 @@ type MergeRequest struct {
 	MergedAt  float64 `ch:"merged_at"`
 	ClosedAt  float64 `ch:"closed_at"`
 
-	Name   string   `ch:"name"`
-	Title  string   `ch:"title"`
-	Labels []string `ch:"labels"`
+	Name        string   `ch:"name"`
+	Title       string   `ch:"title"`
+	Description string   `ch:"description"`
+	Labels      []string `ch:"labels"`
 
 	State       string `ch:"state"`
 	MergeStatus string `ch:"merge_status"`

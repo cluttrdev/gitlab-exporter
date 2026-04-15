@@ -58,9 +58,10 @@ func ConvertMergeRequest(mrf MergeRequestFields) (types.MergeRequest, error) {
 		MergedAt:  mrf.MergedAt,
 		ClosedAt:  mrf.ClosedAt,
 
-		Name:   valOrZero(mrf.Name),
-		Title:  mrf.Title,
-		Labels: labels,
+		Name:        valOrZero(mrf.Name),
+		Title:       mrf.Title,
+		Description: valOrZero(mrf.Description),
+		Labels:      labels,
 
 		State:       string(mrf.State),
 		MergeStatus: strings.ToLower(string(valOrZero(mrf.DetailedMergeStatus))),

@@ -21,9 +21,10 @@ type MergeRequest struct {
 	MergedAt  *time.Time
 	ClosedAt  *time.Time
 
-	Name   string
-	Title  string
-	Labels []string
+	Name        string
+	Title       string
+	Description string
+	Labels      []string
 
 	State       string
 	MergeStatus string

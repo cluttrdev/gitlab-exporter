@@ -32,29 +32,32 @@ type MergeRequest struct {
 	Timestamps *MergeRequestTimestamps `protobuf:"bytes,4,opt,name=timestamps,proto3" json:"timestamps,omitempty"`
 	Name       string                  `protobuf:"bytes,5,opt,name=name,proto3" json:"name,omitempty"`
 	// Title of the merge request.
-	Title  string   `protobuf:"bytes,6,opt,name=title,proto3" json:"title,omitempty"`
-	Labels []string `protobuf:"bytes,7,rep,name=labels,proto3" json:"labels,omitempty"`
+	Title string `protobuf:"bytes,6,opt,name=title,proto3" json:"title,omitempty"`
+	// Description of the merge request.
+	Description string `protobuf:"bytes,7,opt,name=description,proto3" json:"description,omitempty"`
+	// Labels attached to the merge request.
+	Labels []string `protobuf:"bytes,8,rep,name=labels,proto3" json:"labels,omitempty"`
 	// State of the merge request. Can be opened, closed, merged or locked.
-	State string `protobuf:"bytes,8,opt,name=state,proto3" json:"state,omitempty"`
+	State string `protobuf:"bytes,9,opt,name=state,proto3" json:"state,omitempty"`
 	// Detailed merge status of the merge request.
-	MergeStatus string `protobuf:"bytes,9,opt,name=merge_status,json=mergeStatus,proto3" json:"merge_status,omitempty"`
+	MergeStatus string `protobuf:"bytes,10,opt,name=merge_status,json=mergeStatus,proto3" json:"merge_status,omitempty"`
 	// Error message shown when a merge has failed.
-	MergeError string `protobuf:"bytes,10,opt,name=merge_error,json=mergeError,proto3" json:"merge_error,omitempty"`
+	MergeError string `protobuf:"bytes,11,opt,name=merge_error,json=mergeError,proto3" json:"merge_error,omitempty"`
 	// ID of the merge request source project.
-	SourceProjectId int64 `protobuf:"varint,11,opt,name=source_project_id,json=sourceProjectId,proto3" json:"source_project_id,omitempty"`
+	SourceProjectId int64 `protobuf:"varint,12,opt,name=source_project_id,json=sourceProjectId,proto3" json:"source_project_id,omitempty"`
 	// Source branch of the merge request.
-	SourceBranch string `protobuf:"bytes,12,opt,name=source_branch,json=sourceBranch,proto3" json:"source_branch,omitempty"`
+	SourceBranch string `protobuf:"bytes,13,opt,name=source_branch,json=sourceBranch,proto3" json:"source_branch,omitempty"`
 	// ID of the merge request target project.
-	TargetProjectId int64 `protobuf:"varint,13,opt,name=target_project_id,json=targetProjectId,proto3" json:"target_project_id,omitempty"`
+	TargetProjectId int64 `protobuf:"varint,14,opt,name=target_project_id,json=targetProjectId,proto3" json:"target_project_id,omitempty"`
 	// Target branch of the merge request.
-	TargetBranch string                    `protobuf:"bytes,14,opt,name=target_branch,json=targetBranch,proto3" json:"target_branch,omitempty"`
-	DiffStats    *MergeRequestDiffStats    `protobuf:"bytes,15,opt,name=diff_stats,json=diffStats,proto3" json:"diff_stats,omitempty"`
-	DiffRefs     *MergeRequestDiffRefs     `protobuf:"bytes,16,opt,name=diff_refs,json=diffRefs,proto3" json:"diff_refs,omitempty"`
-	Participants *MergeRequestParticipants `protobuf:"bytes,17,opt,name=participants,proto3" json:"participants,omitempty"`
-	CommitShas   []string                  `protobuf:"bytes,20,rep,name=commit_shas,json=commitShas,proto3" json:"commit_shas,omitempty"`
-	Flags        *MergeRequestFlags        `protobuf:"bytes,18,opt,name=flags,proto3" json:"flags,omitempty"`
+	TargetBranch string                    `protobuf:"bytes,15,opt,name=target_branch,json=targetBranch,proto3" json:"target_branch,omitempty"`
+	DiffStats    *MergeRequestDiffStats    `protobuf:"bytes,16,opt,name=diff_stats,json=diffStats,proto3" json:"diff_stats,omitempty"`
+	DiffRefs     *MergeRequestDiffRefs     `protobuf:"bytes,17,opt,name=diff_refs,json=diffRefs,proto3" json:"diff_refs,omitempty"`
+	Participants *MergeRequestParticipants `protobuf:"bytes,18,opt,name=participants,proto3" json:"participants,omitempty"`
+	CommitShas   []string                  `protobuf:"bytes,21,rep,name=commit_shas,json=commitShas,proto3" json:"commit_shas,omitempty"`
+	Flags        *MergeRequestFlags        `protobuf:"bytes,19,opt,name=flags,proto3" json:"flags,omitempty"`
 	// Milestone of the merge request.
-	Milestone     *MilestoneReference `protobuf:"bytes,19,opt,name=milestone,proto3" json:"milestone,omitempty"`
+	Milestone     *MilestoneReference `protobuf:"bytes,20,opt,name=milestone,proto3" json:"milestone,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -127,6 +130,13 @@ func (x *MergeRequest) GetName() string {
 func (x *MergeRequest) GetTitle() string {
 	if x != nil {
 		return x.Title
+	}
+	return ""
+}
+
+func (x *MergeRequest) GetDescription() string {
+	if x != nil {
+		return x.Description
 	}
 	return ""
 }
@@ -1005,7 +1015,7 @@ var File_gitlabexporter_protobuf_merge_request_proto protoreflect.FileDescriptor
 
 const file_gitlabexporter_protobuf_merge_request_proto_rawDesc = "" +
 	"\n" +
-	"+gitlabexporter/protobuf/merge_request.proto\x12\x17gitlabexporter.protobuf\x1a\x1fgoogle/protobuf/timestamp.proto\x1a(gitlabexporter/protobuf/references.proto\x1a$gitlabexporter/protobuf/commit.proto\"\xa4\a\n" +
+	"+gitlabexporter/protobuf/merge_request.proto\x12\x17gitlabexporter.protobuf\x1a\x1fgoogle/protobuf/timestamp.proto\x1a(gitlabexporter/protobuf/references.proto\x1a$gitlabexporter/protobuf/commit.proto\"\xc6\a\n" +
 	"\fMergeRequest\x12\x0e\n" +
 	"\x02id\x18\x01 \x01(\x03R\x02id\x12\x10\n" +
 	"\x03iid\x18\x02 \x01(\x03R\x03iid\x12C\n" +
@@ -1014,25 +1024,26 @@ const file_gitlabexporter_protobuf_merge_request_proto_rawDesc = "" +
 	"timestamps\x18\x04 \x01(\v2/.gitlabexporter.protobuf.MergeRequestTimestampsR\n" +
 	"timestamps\x12\x12\n" +
 	"\x04name\x18\x05 \x01(\tR\x04name\x12\x14\n" +
-	"\x05title\x18\x06 \x01(\tR\x05title\x12\x16\n" +
-	"\x06labels\x18\a \x03(\tR\x06labels\x12\x14\n" +
-	"\x05state\x18\b \x01(\tR\x05state\x12!\n" +
-	"\fmerge_status\x18\t \x01(\tR\vmergeStatus\x12\x1f\n" +
-	"\vmerge_error\x18\n" +
-	" \x01(\tR\n" +
+	"\x05title\x18\x06 \x01(\tR\x05title\x12 \n" +
+	"\vdescription\x18\a \x01(\tR\vdescription\x12\x16\n" +
+	"\x06labels\x18\b \x03(\tR\x06labels\x12\x14\n" +
+	"\x05state\x18\t \x01(\tR\x05state\x12!\n" +
+	"\fmerge_status\x18\n" +
+	" \x01(\tR\vmergeStatus\x12\x1f\n" +
+	"\vmerge_error\x18\v \x01(\tR\n" +
 	"mergeError\x12*\n" +
-	"\x11source_project_id\x18\v \x01(\x03R\x0fsourceProjectId\x12#\n" +
-	"\rsource_branch\x18\f \x01(\tR\fsourceBranch\x12*\n" +
-	"\x11target_project_id\x18\r \x01(\x03R\x0ftargetProjectId\x12#\n" +
-	"\rtarget_branch\x18\x0e \x01(\tR\ftargetBranch\x12M\n" +
+	"\x11source_project_id\x18\f \x01(\x03R\x0fsourceProjectId\x12#\n" +
+	"\rsource_branch\x18\r \x01(\tR\fsourceBranch\x12*\n" +
+	"\x11target_project_id\x18\x0e \x01(\x03R\x0ftargetProjectId\x12#\n" +
+	"\rtarget_branch\x18\x0f \x01(\tR\ftargetBranch\x12M\n" +
 	"\n" +
-	"diff_stats\x18\x0f \x01(\v2..gitlabexporter.protobuf.MergeRequestDiffStatsR\tdiffStats\x12J\n" +
-	"\tdiff_refs\x18\x10 \x01(\v2-.gitlabexporter.protobuf.MergeRequestDiffRefsR\bdiffRefs\x12U\n" +
-	"\fparticipants\x18\x11 \x01(\v21.gitlabexporter.protobuf.MergeRequestParticipantsR\fparticipants\x12\x1f\n" +
-	"\vcommit_shas\x18\x14 \x03(\tR\n" +
+	"diff_stats\x18\x10 \x01(\v2..gitlabexporter.protobuf.MergeRequestDiffStatsR\tdiffStats\x12J\n" +
+	"\tdiff_refs\x18\x11 \x01(\v2-.gitlabexporter.protobuf.MergeRequestDiffRefsR\bdiffRefs\x12U\n" +
+	"\fparticipants\x18\x12 \x01(\v21.gitlabexporter.protobuf.MergeRequestParticipantsR\fparticipants\x12\x1f\n" +
+	"\vcommit_shas\x18\x15 \x03(\tR\n" +
 	"commitShas\x12@\n" +
-	"\x05flags\x18\x12 \x01(\v2*.gitlabexporter.protobuf.MergeRequestFlagsR\x05flags\x12I\n" +
-	"\tmilestone\x18\x13 \x01(\v2+.gitlabexporter.protobuf.MilestoneReferenceR\tmilestone\"\x80\x02\n" +
+	"\x05flags\x18\x13 \x01(\v2*.gitlabexporter.protobuf.MergeRequestFlagsR\x05flags\x12I\n" +
+	"\tmilestone\x18\x14 \x01(\v2+.gitlabexporter.protobuf.MilestoneReferenceR\tmilestone\"\x80\x02\n" +
 	"\x16MergeRequestTimestamps\x129\n" +
 	"\n" +
 	"created_at\x18\x01 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
