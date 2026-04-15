@@ -19,6 +19,7 @@ type TimeRangeOptions struct {
 
 const (
 	GlobalIdPrefix             = "gid://gitlab/"
+	GlobalIdCommitPrefix       = GlobalIdPrefix + "Commit/"
 	GlobalIdMergeRequestPrefix = GlobalIdPrefix + "MergeRequest/"
 	GlobalIdMilestonePrefix    = GlobalIdPrefix + "Milestone/"
 	GlobalIdNotePrefix         = GlobalIdPrefix + "Note/"
@@ -35,6 +36,13 @@ func FormatId(id int64, prefix string) string {
 
 func ParseId(s string, prefix string) (int64, error) {
 	return strconv.ParseInt(strings.TrimPrefix(s, prefix), 10, 64)
+}
+
+func ParseIdString(s string, prefix string) (string, error) {
+	if !strings.HasPrefix(s, prefix) {
+		return "", fmt.Errorf("prefix mismatch")
+	}
+	return strings.TrimPrefix(s, prefix), nil
 }
 
 func parseNamespaceId(s string) (int64, error) {

@@ -809,7 +809,7 @@ func (c *Controller) exportReports(ctx context.Context, pipelines []types.Pipeli
 func (c *Controller) processProjectMergeRequests(ctx context.Context, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) error {
 	var errs []error
 
-	mergeRequests, err := FetchProjectsMergeRequests(ctx, c.GitLab, projectIds, updatedAfter, updatedBefore)
+	mergeRequests, mergeRequestCommits, err := FetchProjectsMergeRequests(ctx, c.GitLab, projectIds, updatedAfter, updatedBefore)
 	if err != nil {
 		errs = append(errs, fmt.Errorf("fetch merge requests: %w", err))
 	}
@@ -821,6 +821,10 @@ func (c *Controller) processProjectMergeRequests(ctx context.Context, projectIds
 
 	if err := c.Exporter.ExportMergeRequests(ctx, mergeRequests); err != nil {
 		errs = append(errs, fmt.Errorf("export merge requests: %w", err))
+	}
+
+	if err := c.Exporter.ExportMergeRequestCommits(ctx, mergeRequestCommits); err != nil {
+		errs = append(errs, fmt.Errorf("export merge request commits: %w", err))
 	}
 
 	if err := c.Exporter.ExportMergeRequestNoteEvents(ctx, mergeRequestNoteEvents); err != nil {

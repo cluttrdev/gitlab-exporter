@@ -38,6 +38,8 @@ type MergeRequest struct {
 	DiffRefs     MergeRequestDiffRefs
 	Participants MergeRequestParticipants
 
+	CommitShas []string
+
 	Approved  bool
 	Conflicts bool
 	Draft     bool
@@ -77,6 +79,27 @@ type MilestoneReference struct {
 	Id      int64
 	Iid     int64
 	Project ProjectReference
+}
+
+type MergeRequestCommit struct {
+	Id           string
+	MergeRequest MergeRequestReference
+
+	Sha string
+
+	Title    string
+	Message  string
+	Trailers []CommitTrailer
+
+	Author UserReference
+
+	AuthoredDate *time.Time
+	AuthorName   string
+	AuthorEmail  string
+
+	CommittedDate  *time.Time
+	CommitterName  string
+	CommitterEmail string
 }
 
 type MergeRequestNoteEvent struct {

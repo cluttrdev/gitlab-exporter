@@ -41,6 +41,7 @@ var tables = []string{
 	"deployments",
 	"issues",
 	"jobs",
+	"mergerequest_commits",
 	"mergerequest_noteevents",
 	"mergerequests",
 	"metrics",

@@ -36,3 +36,7 @@ message CommitStats {
     int64 total = 3;
 }
 
+message CommitTrailer {
+    string key = 1;
+    string value = 2;
+}

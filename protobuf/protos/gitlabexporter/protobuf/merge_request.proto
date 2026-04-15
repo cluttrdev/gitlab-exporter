@@ -7,6 +7,7 @@ package gitlabexporter.protobuf;
 import "google/protobuf/timestamp.proto";
 
 import "gitlabexporter/protobuf/references.proto";
+import "gitlabexporter/protobuf/commit.proto";
 
 message MergeRequest {
     // ID of the merge request.
@@ -44,6 +45,8 @@ message MergeRequest {
     MergeRequestDiffRefs diff_refs = 16;
 
     MergeRequestParticipants participants = 17;
+
+    repeated string commit_shas = 20;
 
     MergeRequestFlags flags = 18;
 
@@ -92,6 +95,27 @@ message MergeRequestFlags {
     bool conflicts = 2;
     bool draft = 3;
     bool mergeable = 4;
+}
+
+message MergeRequestCommit {
+    string id = 1;
+    MergeRequestReference merge_request = 2;
+
+    string sha = 3;
+
+    string title = 4;
+    string message = 5;
+    repeated CommitTrailer trailers = 6;
+
+    UserReference author = 7;
+
+    google.protobuf.Timestamp authored_date = 8;
+    google.protobuf.Timestamp committed_date = 9;
+
+    string author_name = 10;
+    string author_email = 11;
+    string committer_name = 12;
+    string committer_email = 13;
 }
 
 message MergeRequestNoteEvent {

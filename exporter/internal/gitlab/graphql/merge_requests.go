@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/git/trailerparser"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/metaerr"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
 )
@@ -20,6 +21,8 @@ type MergeRequestFields struct {
 	MergeRequestFieldsCore
 	MergeRequestFieldsExtra
 	MergeRequestFieldsParticipants
+
+	Commits []MergeRequestCommitsFields
 }
 
 func ConvertMergeRequest(mrf MergeRequestFields) (types.MergeRequest, error) {
@@ -79,6 +82,8 @@ func ConvertMergeRequest(mrf MergeRequestFields) (types.MergeRequest, error) {
 		},
 
 		Participants: types.MergeRequestParticipants{},
+
+		// CommitShas: nil,
 
 		Approved:  mrf.Approved,
 		Conflicts: mrf.Conflicts,
@@ -152,6 +157,13 @@ func ConvertMergeRequest(mrf MergeRequestFields) (types.MergeRequest, error) {
 		mr.Participants.MergeUser = mergeUser
 	}
 
+	// CommitShas
+	if len(mrf.Commits) > 0 {
+		for _, cf := range mrf.Commits {
+			mr.CommitShas = append(mr.CommitShas, cf.Sha)
+		}
+	}
+
 	// Milestone
 	if mrf.Milestone != nil {
 		var (
@@ -180,6 +192,58 @@ func ConvertMergeRequest(mrf MergeRequestFields) (types.MergeRequest, error) {
 	}
 
 	return mr, nil
+}
+
+func ConvertMergeRequestCommit(mr types.MergeRequestReference, cf MergeRequestCommitsFields) (types.MergeRequestCommit, error) {
+	commitId, err := ParseIdString(cf.Id, GlobalIdCommitPrefix)
+	if err != nil {
+		return types.MergeRequestCommit{}, fmt.Errorf("parse commit id: %w", err)
+	}
+
+	mrc := types.MergeRequestCommit{
+		Id:           commitId,
+		MergeRequest: mr,
+
+		Sha: cf.Sha,
+
+		Title:   valOrZero(cf.Title),
+		Message: valOrZero(cf.Message),
+		// Trailers: nil,
+
+		// Author: {},
+
+		AuthoredDate: cf.AuthoredDate,
+		AuthorName:   valOrZero(cf.AuthorName),
+		AuthorEmail:  valOrZero(cf.AuthorEmail),
+
+		CommittedDate:  cf.CommittedDate,
+		CommitterName:  valOrZero(cf.CommitterName),
+		CommitterEmail: valOrZero(cf.CommitterEmail),
+	}
+
+	// Trailers
+	if lines := trailerparser.ExtractPotentialTrailerLines([]byte(valOrZero(cf.Message))); len(lines) > 0 {
+		for _, line := range lines {
+			trailers := trailerparser.Parse(line)
+			for _, trailer := range trailers {
+				mrc.Trailers = append(mrc.Trailers, types.CommitTrailer{
+					Key:   string(trailer.Key),
+					Value: string(trailer.Value),
+				})
+			}
+		}
+	}
+
+	// Author
+	if cf.Author != nil {
+		author, err := convertUserReference(cf.Author)
+		if err != nil {
+			return types.MergeRequestCommit{}, fmt.Errorf("convert merge request commit author: %w", err)
+		}
+		mrc.Author = author
+	}
+
+	return mrc, nil
 }
 
 func convertUserReference(user UserReferenceFields) (types.UserReference, error) {
@@ -251,11 +315,64 @@ func (c *Client) GetProjectsMergeRequests(ctx context.Context, ids []string, opt
 		mergeRequestsMap[mr.Id] = mr_
 	}
 
+	mrsCommits, err := c.getProjectsMergeRequests(ctx, ids, getMergeRequestsOptions{
+		GetMergeRequestsOptions: opts,
+		includeCommits:          true,
+	})
+	for _, mr := range mrsCommits {
+		mr_, ok := mergeRequestsMap[mr.Id]
+		if !ok {
+			// TODO: what?
+			continue
+		}
+		mr_.Commits = mr.Commits
+		mergeRequestsMap[mr.Id] = mr_
+	}
+
 	mergeRequests := make([]MergeRequestFields, 0, len(mergeRequestsMap))
 	for _, v := range mergeRequestsMap {
 		mergeRequests = append(mergeRequests, v)
 	}
 	return mergeRequests, nil
+}
+
+func (c *Client) GetProjectMergeRequest(ctx context.Context, projectPath string, mergeRequestIid int64) (MergeRequestFields, error) {
+	mrIid := strconv.FormatInt(mergeRequestIid, 10)
+	mrfCore, err := c.getProjectMergeRequest(ctx, projectPath, mrIid, getMergeRequestOptions{
+		includeCore: true,
+	})
+	if err != nil {
+		return MergeRequestFields{}, err
+	}
+
+	mrfExtra, err := c.getProjectMergeRequest(ctx, projectPath, mrIid, getMergeRequestOptions{
+		includeExtra: true,
+	})
+	if err != nil {
+		return MergeRequestFields{}, err
+	}
+
+	mrsParticipants, err := c.getProjectMergeRequest(ctx, projectPath, mrIid, getMergeRequestOptions{
+		includeParticipants: true,
+	})
+	if err != nil {
+		return MergeRequestFields{}, err
+	}
+
+	mrsCommits, err := c.getProjectMergeRequest(ctx, projectPath, mrIid, getMergeRequestOptions{
+		includeCommits: true,
+	})
+
+	return MergeRequestFields{
+		MergeRequestReferenceFields: mrfCore.MergeRequestReferenceFields,
+		Project:                     mrfCore.Project,
+
+		MergeRequestFieldsCore:         mrfCore.MergeRequestFieldsCore,
+		MergeRequestFieldsExtra:        mrfExtra.MergeRequestFieldsExtra,
+		MergeRequestFieldsParticipants: mrsParticipants.MergeRequestFieldsParticipants,
+
+		Commits: mrsCommits.Commits,
+	}, nil
 }
 
 type getMergeRequestsOptions struct {
@@ -266,6 +383,7 @@ type getMergeRequestsOptions struct {
 	includeCore         bool
 	includeExtra        bool
 	includeParticipants bool
+	includeCommits      bool
 }
 
 func (c *Client) getProjectsMergeRequests(ctx context.Context, ids []string, opts getMergeRequestsOptions) ([]MergeRequestFields, error) {
@@ -289,6 +407,7 @@ outerLoop:
 			&opts.includeCore,
 			&opts.includeExtra,
 			&opts.includeParticipants,
+			&opts.includeCommits,
 		)
 		err = handleError(err, "getProjectsMergeRequests",
 			slog.Any("projectIds", ids),
@@ -319,6 +438,19 @@ outerLoop:
 				}
 				if opts.includeParticipants {
 					mergeRequest.MergeRequestFieldsParticipants = mergeRequest_.MergeRequestFieldsParticipants
+				}
+				if opts.includeCommits {
+					for _, node := range mergeRequest_.GetCommits().GetNodes() {
+						mergeRequest.Commits = append(mergeRequest.Commits, node.MergeRequestCommitsFields)
+					}
+					if pageInfo := mergeRequest_.GetCommits().GetPageInfo(); pageInfo.HasNextPage {
+						mergeRequestCommits_, err_ := c.getProjectMergeRequestCommits(ctx, project_.FullPath, mergeRequest_.Iid, pageInfo.EndCursor)
+						if err_ != nil {
+							err = err_
+							break outerLoop
+						}
+						mergeRequest.Commits = append(mergeRequest.Commits, mergeRequestCommits_...)
+					}
 				}
 				mergeRequests = append(mergeRequests, mergeRequest)
 			}
@@ -353,6 +485,7 @@ func (c *Client) getProjectMergeRequests(ctx context.Context, projectPath string
 		err  error
 	)
 
+outerLoop:
 	for {
 		data, err = getProjectMergeRequests(
 			ctx,
@@ -365,6 +498,7 @@ func (c *Client) getProjectMergeRequests(ctx context.Context, projectPath string
 			&opts.includeCore,
 			&opts.includeExtra,
 			&opts.includeParticipants,
+			&opts.includeCommits,
 		)
 		err = handleError(err, "getProjectsMergeRequests",
 			slog.String("projectPath", projectPath),
@@ -398,6 +532,20 @@ func (c *Client) getProjectMergeRequests(ctx context.Context, projectPath string
 			if opts.includeParticipants {
 				mergeRequest.MergeRequestFieldsParticipants = mergeRequest_.MergeRequestFieldsParticipants
 			}
+			if opts.includeCommits {
+				for _, node := range mergeRequest_.GetCommits().GetNodes() {
+					mergeRequest.Commits = append(mergeRequest.Commits, node.MergeRequestCommitsFields)
+				}
+				if pageInfo := mergeRequest_.GetCommits().GetPageInfo(); pageInfo.HasNextPage {
+					mergeRequestCommits_, err_ := c.getProjectMergeRequestCommits(ctx, project_.FullPath, mergeRequest_.Iid, pageInfo.EndCursor)
+					if err_ != nil {
+						err = err_
+						break outerLoop
+					}
+					mergeRequest.Commits = append(mergeRequest.Commits, mergeRequestCommits_...)
+				}
+			}
+
 			mergeRequests = append(mergeRequests, mergeRequest)
 		}
 
@@ -409,6 +557,121 @@ func (c *Client) getProjectMergeRequests(ctx context.Context, projectPath string
 	}
 
 	return mergeRequests, err
+}
+
+type getMergeRequestOptions struct {
+	includeCore         bool
+	includeExtra        bool
+	includeParticipants bool
+	includeCommits      bool
+}
+
+func (c *Client) getProjectMergeRequest(ctx context.Context, projectPath string, mergeRequestIid string, opts getMergeRequestOptions) (MergeRequestFields, error) {
+	var (
+		mergeRequest MergeRequestFields
+
+		data *getProjectMergeRequestResponse
+		err  error
+	)
+
+	data, err = getProjectMergeRequest(
+		ctx,
+		c.client,
+		projectPath,
+		mergeRequestIid,
+		//
+		&opts.includeCore,
+		&opts.includeExtra,
+		&opts.includeParticipants,
+		&opts.includeCommits,
+	)
+	err = handleError(err, "getProjectMergeRequest",
+		slog.String("projectPath", projectPath),
+		slog.String("mergeRequestIid", mergeRequestIid),
+	)
+	if err != nil {
+		return MergeRequestFields{}, err
+	}
+
+	project_ := data.Project
+	if project_ == nil {
+		return MergeRequestFields{}, fmt.Errorf("project not found: %v", projectPath)
+	}
+	mergeRequest_ := project_.GetMergeRequest()
+	if mergeRequest_ == nil {
+		return MergeRequestFields{}, fmt.Errorf("merge request not found: %v/%v", projectPath, mergeRequestIid)
+	}
+
+	mergeRequest = MergeRequestFields{
+		MergeRequestReferenceFields: mergeRequest_.MergeRequestReferenceFields,
+		Project:                     project_.ProjectReferenceFields,
+	}
+	if opts.includeCore {
+		mergeRequest.MergeRequestFieldsCore = mergeRequest_.MergeRequestFieldsCore
+	}
+	if opts.includeExtra {
+		mergeRequest.MergeRequestFieldsExtra = mergeRequest_.MergeRequestFieldsExtra
+	}
+	if opts.includeParticipants {
+		mergeRequest.MergeRequestFieldsParticipants = mergeRequest_.MergeRequestFieldsParticipants
+	}
+	if opts.includeCommits {
+		for _, node := range mergeRequest_.GetCommits().GetNodes() {
+			mergeRequest.Commits = append(mergeRequest.Commits, node.MergeRequestCommitsFields)
+		}
+		if pageInfo := mergeRequest_.GetCommits().GetPageInfo(); pageInfo.HasNextPage {
+			mergeRequestCommits_, err_ := c.getProjectMergeRequestCommits(ctx, project_.FullPath, mergeRequest_.Iid, pageInfo.EndCursor)
+			if err_ != nil {
+				return MergeRequestFields{}, err
+			}
+			mergeRequest.Commits = append(mergeRequest.Commits, mergeRequestCommits_...)
+		}
+	}
+
+	return mergeRequest, nil
+}
+
+func (c *Client) getProjectMergeRequestCommits(ctx context.Context, projectPath string, mergeRequestIid string, endCursor *string) ([]MergeRequestCommitsFields, error) {
+	var (
+		commits []MergeRequestCommitsFields
+
+		data *getProjectMergeRequestCommitsResponse
+		err  error
+	)
+
+	for {
+		data, err = getProjectMergeRequestCommits(ctx, c.client, projectPath, mergeRequestIid, endCursor)
+		err = handleError(err, "getProjectMergeRequestCommits",
+			slog.String("projectPath", projectPath),
+			slog.String("mergeRequestIid", mergeRequestIid),
+		)
+		if err != nil {
+			return nil, err
+		}
+
+		project_ := data.Project
+		if project_ == nil {
+			err = fmt.Errorf("project not found: %v", projectPath)
+			break
+		}
+		mergeRequest_ := project_.MergeRequest
+		if mergeRequest_ == nil {
+			err = fmt.Errorf("project merge request not found: %v/%v", projectPath, mergeRequestIid)
+			break
+		}
+		commits_ := mergeRequest_.GetCommits()
+		for _, commit_ := range commits_.GetNodes() {
+			commits = append(commits, commit_.MergeRequestCommitsFields)
+		}
+
+		if !commits_.GetPageInfo().HasNextPage {
+			break
+		}
+
+		endCursor = commits_.GetPageInfo().EndCursor
+	}
+
+	return commits, nil
 }
 
 type MergeRequestNoteFields struct {

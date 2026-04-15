@@ -4,31 +4,6 @@
 from a [gitlab-exporter](https://gitlab.com/gitlab-exporter/gitlab-exporter) and records it
 in a [ClickHouse](https://clickhouse.com) database.
 
-## Dashboards
-
-For some Grafana dashboards and screenshots see [here](https://gitlab.com/gitlab-exporter/grafana-dashboards).
-
-## Installation
-
-To install `gitlab-exporter-clickhouse-recorder` you can download a 
-[prebuilt binary](https://gitlab.com/gitlab-exporter/gitlab-exporter-clickhouse-recorder/-/releases)
-that matches your system, e.g.
-
-```shell
-# download latest release archive
-RELEASES_URL=https://gitlab.com/api/v4/projects/gitlab-exporter%2Fgitlab-exporter-clickhouse-recorder/releases
-RELEASE_TAG=$(curl -sSfL ${RELEASES_URL} | jq -r '.[0].tag_name')
-curl -sSfL ${RELEASES_URL}/${RELEASE_TAG}/downloads/gitlab-exporter-clickhouse-recorder_${RELEASE_TAG}_linux_amd64.tar.gz \
-    -o /tmp/gitlab-exporter-clickhouse-recorder.tar.gz
-
-# extract executable binary into install dir (must exist)
-INSTALL_DIR=$HOME/.local/bin
-tar -C ${INSTALL_DIR} -zxof /tmp/gitlab-exporter-clickhouse-recorder.tar.gz gitlab-exporter-clickhouse-recorder
-
-# check
-${INSTALL_DIR}/gitlab-exporter-clickhouse-recorder version
-```
-
 ## Usage
 
 `gitlab-exporter-clickhouse-recorder` can either run in server mode or execute one-off
@@ -78,13 +53,3 @@ variables, where flags take precedence.
 | --server-port         | `GLCHR_SERVER_PORT`         | `"0"`         |
 | --log-level           | `GLCHR_LOG_LEVEL`           | `"info"`      |
 | --log-format          | `GLCHR_LOG_FORMAT`          | `"text"`      |
-
-## Getting Started
-
-To get up and running, have a look at the [demo](./examples/demo/README.md)
-example which contains a `docker compose` setup to provision a ClickHouse server
-and a Grafana instance that includes predefined dashboards.
-
-## License
-
-This project is licensed under the [MIT License](./LICENSE).

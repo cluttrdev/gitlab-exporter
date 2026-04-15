@@ -58,7 +58,15 @@ func NewMergeRequest(mr types.MergeRequest) *typespb.MergeRequest {
 			RebaseCommitSha: mr.DiffRefs.RebaseCommitSha,
 		},
 
-		Participants: convertMergeRequestParticipants(mr.Participants),
+		Participants: &typespb.MergeRequestParticipants{
+			Author:    NewUserReference(mr.Participants.Author),
+			Assignees: NewUserReferences(mr.Participants.Assignees),
+			Reviewers: NewUserReferences(mr.Participants.Reviewers),
+			Approvers: NewUserReferences(mr.Participants.Approvers),
+			MergeUser: NewUserReference(mr.Participants.MergeUser),
+		},
+
+		// CommitShas: nil,
 
 		Flags: &typespb.MergeRequestFlags{
 			Approved:  mr.Approved,
@@ -70,6 +78,14 @@ func NewMergeRequest(mr types.MergeRequest) *typespb.MergeRequest {
 		// Milestone: nil,
 	}
 
+	// CommitShas
+	if len(mr.CommitShas) > 0 {
+		for _, sha := range mr.CommitShas {
+			pbMr.CommitShas = append(pbMr.CommitShas, sha)
+		}
+	}
+
+	// Milestone
 	if mr.Milestone != nil {
 		pbMr.Milestone = &typespb.MilestoneReference{
 			Id:      mr.Milestone.Id,
@@ -81,31 +97,40 @@ func NewMergeRequest(mr types.MergeRequest) *typespb.MergeRequest {
 	return pbMr
 }
 
-func convertMergeRequestParticipants(p types.MergeRequestParticipants) *typespb.MergeRequestParticipants {
-	pbp := &typespb.MergeRequestParticipants{
-		Author: NewUserReference(p.Author),
-		// Assignees: nil,
-		// Reviewers: nil,
-		// Approvers: nil,
-		MergeUser: NewUserReference(p.MergeUser),
+func NewMergeRequestCommit(commit types.MergeRequestCommit) *typespb.MergeRequestCommit {
+	mrc := &typespb.MergeRequestCommit{
+		Id:           commit.Id,
+		MergeRequest: NewMergeRequestReference(commit.MergeRequest),
+
+		Sha: commit.Sha,
+
+		Title:   commit.Title,
+		Message: commit.Message,
+		// Trailers: nil,
+
+		Author: NewUserReference(commit.Author),
+
+		AuthoredDate:  timestamppb.New(valOrZero(commit.AuthoredDate)),
+		CommittedDate: timestamppb.New(valOrZero(commit.CommittedDate)),
+
+		AuthorName:     commit.AuthorName,
+		AuthorEmail:    commit.AuthorEmail,
+		CommitterName:  commit.CommitterName,
+		CommitterEmail: commit.CommitterEmail,
 	}
 
-	if l := len(p.Assignees); l > 0 {
-		assignees := make([]*typespb.UserReference, 0, l)
-		for _, assignee := range p.Assignees {
-			assignees = append(assignees, NewUserReference(assignee))
+	// Trailers
+	if len(commit.Trailers) > 0 {
+		mrc.Trailers = make([]*typespb.CommitTrailer, 0, len(mrc.Trailers))
+		for _, trailer := range commit.Trailers {
+			mrc.Trailers = append(mrc.Trailers, &typespb.CommitTrailer{
+				Key:   trailer.Key,
+				Value: trailer.Value,
+			})
 		}
-		pbp.Assignees = assignees
-	}
-	if l := len(p.Reviewers); l > 0 {
-		reviewers := make([]*typespb.UserReference, 0, l)
-		for _, reviewer := range p.Reviewers {
-			reviewers = append(reviewers, NewUserReference(reviewer))
-		}
-		pbp.Reviewers = reviewers
 	}
 
-	return pbp
+	return mrc
 }
 
 func NewMergeRequestNoteEvent(event types.MergeRequestNoteEvent) *typespb.MergeRequestNoteEvent {

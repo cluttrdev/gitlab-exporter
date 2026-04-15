@@ -254,6 +254,58 @@ func (x *CommitStats) GetTotal() int64 {
 	return 0
 }
 
+type CommitTrailer struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Key           string                 `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
+	Value         string                 `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *CommitTrailer) Reset() {
+	*x = CommitTrailer{}
+	mi := &file_gitlabexporter_protobuf_commit_proto_msgTypes[2]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *CommitTrailer) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommitTrailer) ProtoMessage() {}
+
+func (x *CommitTrailer) ProtoReflect() protoreflect.Message {
+	mi := &file_gitlabexporter_protobuf_commit_proto_msgTypes[2]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommitTrailer.ProtoReflect.Descriptor instead.
+func (*CommitTrailer) Descriptor() ([]byte, []int) {
+	return file_gitlabexporter_protobuf_commit_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *CommitTrailer) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *CommitTrailer) GetValue() string {
+	if x != nil {
+		return x.Value
+	}
+	return ""
+}
+
 var File_gitlabexporter_protobuf_commit_proto protoreflect.FileDescriptor
 
 const file_gitlabexporter_protobuf_commit_proto_rawDesc = "" +
@@ -288,7 +340,10 @@ const file_gitlabexporter_protobuf_commit_proto_rawDesc = "" +
 	"\vCommitStats\x12\x1c\n" +
 	"\tadditions\x18\x01 \x01(\x03R\tadditions\x12\x1c\n" +
 	"\tdeletions\x18\x02 \x01(\x03R\tdeletions\x12\x14\n" +
-	"\x05total\x18\x03 \x01(\x03R\x05totalB0Z.go.cluttr.dev/gitlab-exporter/protobuf/typespbb\x06proto3"
+	"\x05total\x18\x03 \x01(\x03R\x05total\"7\n" +
+	"\rCommitTrailer\x12\x10\n" +
+	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
+	"\x05value\x18\x02 \x01(\tR\x05valueB0Z.go.cluttr.dev/gitlab-exporter/protobuf/typespbb\x06proto3"
 
 var (
 	file_gitlabexporter_protobuf_commit_proto_rawDescOnce sync.Once
@@ -302,18 +357,19 @@ func file_gitlabexporter_protobuf_commit_proto_rawDescGZIP() []byte {
 	return file_gitlabexporter_protobuf_commit_proto_rawDescData
 }
 
-var file_gitlabexporter_protobuf_commit_proto_msgTypes = make([]protoimpl.MessageInfo, 3)
+var file_gitlabexporter_protobuf_commit_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_gitlabexporter_protobuf_commit_proto_goTypes = []any{
 	(*Commit)(nil),                // 0: gitlabexporter.protobuf.Commit
 	(*CommitStats)(nil),           // 1: gitlabexporter.protobuf.CommitStats
-	nil,                           // 2: gitlabexporter.protobuf.Commit.TrailersEntry
-	(*timestamppb.Timestamp)(nil), // 3: google.protobuf.Timestamp
+	(*CommitTrailer)(nil),         // 2: gitlabexporter.protobuf.CommitTrailer
+	nil,                           // 3: gitlabexporter.protobuf.Commit.TrailersEntry
+	(*timestamppb.Timestamp)(nil), // 4: google.protobuf.Timestamp
 }
 var file_gitlabexporter_protobuf_commit_proto_depIdxs = []int32{
-	3, // 0: gitlabexporter.protobuf.Commit.authored_date:type_name -> google.protobuf.Timestamp
-	3, // 1: gitlabexporter.protobuf.Commit.committed_date:type_name -> google.protobuf.Timestamp
-	3, // 2: gitlabexporter.protobuf.Commit.created_at:type_name -> google.protobuf.Timestamp
-	2, // 3: gitlabexporter.protobuf.Commit.trailers:type_name -> gitlabexporter.protobuf.Commit.TrailersEntry
+	4, // 0: gitlabexporter.protobuf.Commit.authored_date:type_name -> google.protobuf.Timestamp
+	4, // 1: gitlabexporter.protobuf.Commit.committed_date:type_name -> google.protobuf.Timestamp
+	4, // 2: gitlabexporter.protobuf.Commit.created_at:type_name -> google.protobuf.Timestamp
+	3, // 3: gitlabexporter.protobuf.Commit.trailers:type_name -> gitlabexporter.protobuf.Commit.TrailersEntry
 	1, // 4: gitlabexporter.protobuf.Commit.stats:type_name -> gitlabexporter.protobuf.CommitStats
 	5, // [5:5] is the sub-list for method output_type
 	5, // [5:5] is the sub-list for method input_type
@@ -333,7 +389,7 @@ func file_gitlabexporter_protobuf_commit_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_gitlabexporter_protobuf_commit_proto_rawDesc), len(file_gitlabexporter_protobuf_commit_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   3,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

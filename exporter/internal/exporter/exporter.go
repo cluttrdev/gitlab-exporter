@@ -220,6 +220,12 @@ func (e *Exporter) ExportMergeRequests(ctx context.Context, data []types.MergeRe
 	return export(e, ctx, msgs, grpc_client.RecordMergeRequests)
 }
 
+func (e *Exporter) ExportMergeRequestCommits(ctx context.Context, data []types.MergeRequestCommit) error {
+	msgs := convert(data, messages.NewMergeRequestCommit)
+	msgs = filterNil(msgs)
+	return export(e, ctx, msgs, grpc_client.RecordMergeRequestCommits)
+}
+
 func (e *Exporter) ExportMergeRequestNoteEvents(ctx context.Context, data []types.MergeRequestNoteEvent) error {
 	msgs := convert(data, messages.NewMergeRequestNoteEvent)
 	msgs = filterNil(msgs)

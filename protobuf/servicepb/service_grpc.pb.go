@@ -28,6 +28,7 @@ const (
 	GitLabExporter_RecordIssues_FullMethodName                 = "/gitlabexporter.protobuf.service.GitLabExporter/RecordIssues"
 	GitLabExporter_RecordJobs_FullMethodName                   = "/gitlabexporter.protobuf.service.GitLabExporter/RecordJobs"
 	GitLabExporter_RecordMergeRequests_FullMethodName          = "/gitlabexporter.protobuf.service.GitLabExporter/RecordMergeRequests"
+	GitLabExporter_RecordMergeRequestCommits_FullMethodName    = "/gitlabexporter.protobuf.service.GitLabExporter/RecordMergeRequestCommits"
 	GitLabExporter_RecordMergeRequestNoteEvents_FullMethodName = "/gitlabexporter.protobuf.service.GitLabExporter/RecordMergeRequestNoteEvents"
 	GitLabExporter_RecordMetrics_FullMethodName                = "/gitlabexporter.protobuf.service.GitLabExporter/RecordMetrics"
 	GitLabExporter_RecordPipelines_FullMethodName              = "/gitlabexporter.protobuf.service.GitLabExporter/RecordPipelines"
@@ -53,6 +54,7 @@ type GitLabExporterClient interface {
 	RecordIssues(ctx context.Context, in *RecordIssuesRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordJobs(ctx context.Context, in *RecordJobsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordMergeRequests(ctx context.Context, in *RecordMergeRequestsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
+	RecordMergeRequestCommits(ctx context.Context, in *RecordMergeRequestCommitsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordMergeRequestNoteEvents(ctx context.Context, in *RecordMergeRequestNoteEventsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordMetrics(ctx context.Context, in *RecordMetricsRequest, opts ...grpc.CallOption) (*RecordSummary, error)
 	RecordPipelines(ctx context.Context, in *RecordPipelinesRequest, opts ...grpc.CallOption) (*RecordSummary, error)
@@ -157,6 +159,16 @@ func (c *gitLabExporterClient) RecordMergeRequests(ctx context.Context, in *Reco
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(RecordSummary)
 	err := c.cc.Invoke(ctx, GitLabExporter_RecordMergeRequests_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *gitLabExporterClient) RecordMergeRequestCommits(ctx context.Context, in *RecordMergeRequestCommitsRequest, opts ...grpc.CallOption) (*RecordSummary, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(RecordSummary)
+	err := c.cc.Invoke(ctx, GitLabExporter_RecordMergeRequestCommits_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -276,6 +288,7 @@ type GitLabExporterServer interface {
 	RecordIssues(context.Context, *RecordIssuesRequest) (*RecordSummary, error)
 	RecordJobs(context.Context, *RecordJobsRequest) (*RecordSummary, error)
 	RecordMergeRequests(context.Context, *RecordMergeRequestsRequest) (*RecordSummary, error)
+	RecordMergeRequestCommits(context.Context, *RecordMergeRequestCommitsRequest) (*RecordSummary, error)
 	RecordMergeRequestNoteEvents(context.Context, *RecordMergeRequestNoteEventsRequest) (*RecordSummary, error)
 	RecordMetrics(context.Context, *RecordMetricsRequest) (*RecordSummary, error)
 	RecordPipelines(context.Context, *RecordPipelinesRequest) (*RecordSummary, error)
@@ -322,6 +335,9 @@ func (UnimplementedGitLabExporterServer) RecordJobs(context.Context, *RecordJobs
 }
 func (UnimplementedGitLabExporterServer) RecordMergeRequests(context.Context, *RecordMergeRequestsRequest) (*RecordSummary, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecordMergeRequests not implemented")
+}
+func (UnimplementedGitLabExporterServer) RecordMergeRequestCommits(context.Context, *RecordMergeRequestCommitsRequest) (*RecordSummary, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RecordMergeRequestCommits not implemented")
 }
 func (UnimplementedGitLabExporterServer) RecordMergeRequestNoteEvents(context.Context, *RecordMergeRequestNoteEventsRequest) (*RecordSummary, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RecordMergeRequestNoteEvents not implemented")
@@ -532,6 +548,24 @@ func _GitLabExporter_RecordMergeRequests_Handler(srv interface{}, ctx context.Co
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(GitLabExporterServer).RecordMergeRequests(ctx, req.(*RecordMergeRequestsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _GitLabExporter_RecordMergeRequestCommits_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RecordMergeRequestCommitsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GitLabExporterServer).RecordMergeRequestCommits(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: GitLabExporter_RecordMergeRequestCommits_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GitLabExporterServer).RecordMergeRequestCommits(ctx, req.(*RecordMergeRequestCommitsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -758,6 +792,10 @@ var GitLabExporter_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "RecordMergeRequests",
 			Handler:    _GitLabExporter_RecordMergeRequests_Handler,
+		},
+		{
+			MethodName: "RecordMergeRequestCommits",
+			Handler:    _GitLabExporter_RecordMergeRequestCommits_Handler,
 		},
 		{
 			MethodName: "RecordMergeRequestNoteEvents",

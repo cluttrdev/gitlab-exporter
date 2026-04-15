@@ -165,6 +165,18 @@ func RecordMergeRequests(c *Client, ctx context.Context, data []*typespb.MergeRe
 	return nil
 }
 
+func RecordMergeRequestCommits(c *Client, ctx context.Context, data []*typespb.MergeRequestCommit) error {
+	req := &servicepb.RecordMergeRequestCommitsRequest{
+		Data: data,
+	}
+	_, err := c.stub.RecordMergeRequestCommits(ctx, req /* opts ...grpc.CallOption */)
+	if err != nil {
+		return fmt.Errorf("record mergerequest commits: %w", err)
+	}
+
+	return nil
+}
+
 func RecordMergeRequestNoteEvents(c *Client, ctx context.Context, data []*typespb.MergeRequestNoteEvent) error {
 	req := &servicepb.RecordMergeRequestNoteEventsRequest{
 		Data: data,

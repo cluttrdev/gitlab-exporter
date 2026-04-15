@@ -1,5 +1,7 @@
 package clickhouse
 
+import "time"
+
 type Project struct {
 	Id          int64 `ch:"id"`
 	NamespaceId int64 `ch:"namespace_id"`
@@ -279,6 +281,8 @@ type MergeRequest struct {
 	MergeUserUsername string   `ch:"merge_user_username"`
 	MergeUserName     string   `ch:"merge_user_name"`
 
+	CommitShas []string `ch:"commit_shas"`
+
 	Approved  bool `ch:"approved"`
 	Conflicts bool `ch:"conflicts"`
 	Draft     bool `ch:"draft"`
@@ -287,6 +291,30 @@ type MergeRequest struct {
 	MilestoneId        int64 `ch:"milestone_id"`
 	MilestoneIid       int64 `ch:"milestone_iid"`
 	MilestoneProjectId int64 `ch:"milestone_project_id"`
+}
+
+type MergeRequestCommit struct {
+	Id              string `ch:"id"`
+	MergeRequestId  int64  `ch:"mergerequest_id"`
+	MergeRequestIid int64  `ch:"mergerequest_iid"`
+	ProjectId       int64  `ch:"project_id"`
+
+	Sha string `ch:"sha"`
+
+	Title    string     `ch:"title"`
+	Message  string     `ch:"message"`
+	Trailers [][]string `ch:"trailers"`
+
+	AuthorId       int64  `ch:"author_id"`
+	AuthorUsername string `ch:"author_username"`
+
+	AuthoredDate  time.Time `ch:"authored_date"`
+	CommittedDate time.Time `ch:"committed_date"`
+
+	AuthorName     string `ch:"author_name"`
+	AuthorEmail    string `ch:"author_email"`
+	CommitterName  string `ch:"committer_name"`
+	CommitterEmail string `ch:"committer_email"`
 }
 
 type MergeRequestNoteEvent struct {

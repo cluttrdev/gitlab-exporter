@@ -32,6 +32,7 @@ func NewFetchCmd(out io.Writer) *cli.Command {
 			NewFetchArtifactsCmd(out),
 			NewFetchDeploymentsCmd(out),
 			NewFetchJobLogCmd(out),
+			NewFetchMergeRequestCmd(out),
 			NewFetchPipelineCmd(out),
 			NewFetchProjectsCommand(out),
 			NewFetchReportCmd(out),
