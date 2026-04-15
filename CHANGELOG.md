@@ -1,7 +1,14 @@
 # Changelog
 
+## [0.25.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.24.0..v0.25.0)
+
+- 3ef0196 feat: Export merge request description
+- a577917 feat(clickhouse): Record merge request commits
+- 6295a3b feat(exporter): Export merge request commits
+
 ## [0.24.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.23.2..v0.24.0)
 
+- c139cb1 chore(release): v0.24.0
 - c549b45 feat(clickhouse-recorder): Add testcases table migration and tests
 - f9ebca4 feat(clickhouse-recorder): Support testcase's ReportCreatedAt field
 - dd8ac4b feat(exporter): Set RecordCreatedAt on testcases
