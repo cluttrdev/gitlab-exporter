@@ -1035,6 +1035,8 @@ type MergeRequestFieldsCore struct {
 	Name *string `json:"name"`
 	// Title of the merge request.
 	Title string `json:"title"`
+	// Description of the merge request (Markdown rendered as HTML for caching).
+	Description *string `json:"description"`
 	// Labels of the merge request.
 	Labels *MergeRequestFieldsCoreLabelsLabelConnection `json:"labels"`
 	// State of the merge request.
@@ -1070,6 +1072,9 @@ func (v *MergeRequestFieldsCore) GetName() *string { return v.Name }
 
 // GetTitle returns MergeRequestFieldsCore.Title, and is useful for accessing the field via an interface.
 func (v *MergeRequestFieldsCore) GetTitle() string { return v.Title }
+
+// GetDescription returns MergeRequestFieldsCore.Description, and is useful for accessing the field via an interface.
+func (v *MergeRequestFieldsCore) GetDescription() *string { return v.Description }
 
 // GetLabels returns MergeRequestFieldsCore.Labels, and is useful for accessing the field via an interface.
 func (v *MergeRequestFieldsCore) GetLabels() *MergeRequestFieldsCoreLabelsLabelConnection {
@@ -5184,6 +5189,11 @@ func (v *getProjectMergeRequestProjectMergeRequest) GetTitle() string {
 	return v.MergeRequestFieldsCore.Title
 }
 
+// GetDescription returns getProjectMergeRequestProjectMergeRequest.Description, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestProjectMergeRequest) GetDescription() *string {
+	return v.MergeRequestFieldsCore.Description
+}
+
 // GetLabels returns getProjectMergeRequestProjectMergeRequest.Labels, and is useful for accessing the field via an interface.
 func (v *getProjectMergeRequestProjectMergeRequest) GetLabels() *MergeRequestFieldsCoreLabelsLabelConnection {
 	return v.MergeRequestFieldsCore.Labels
@@ -5363,6 +5373,8 @@ type __premarshalgetProjectMergeRequestProjectMergeRequest struct {
 
 	Title string `json:"title"`
 
+	Description *string `json:"description"`
+
 	Labels *MergeRequestFieldsCoreLabelsLabelConnection `json:"labels"`
 
 	State MergeRequestState `json:"state"`
@@ -5432,6 +5444,7 @@ func (v *getProjectMergeRequestProjectMergeRequest) __premarshalJSON() (*__prema
 	retval.ClosedAt = v.MergeRequestFieldsCore.ClosedAt
 	retval.Name = v.MergeRequestFieldsCore.Name
 	retval.Title = v.MergeRequestFieldsCore.Title
+	retval.Description = v.MergeRequestFieldsCore.Description
 	retval.Labels = v.MergeRequestFieldsCore.Labels
 	retval.State = v.MergeRequestFieldsCore.State
 	retval.DetailedMergeStatus = v.MergeRequestFieldsCore.DetailedMergeStatus
@@ -6295,6 +6308,11 @@ func (v *getProjectMergeRequestsProjectMergeRequestsMergeRequestConnectionNodesM
 	return v.MergeRequestFieldsCore.Title
 }
 
+// GetDescription returns getProjectMergeRequestsProjectMergeRequestsMergeRequestConnectionNodesMergeRequest.Description, and is useful for accessing the field via an interface.
+func (v *getProjectMergeRequestsProjectMergeRequestsMergeRequestConnectionNodesMergeRequest) GetDescription() *string {
+	return v.MergeRequestFieldsCore.Description
+}
+
 // GetLabels returns getProjectMergeRequestsProjectMergeRequestsMergeRequestConnectionNodesMergeRequest.Labels, and is useful for accessing the field via an interface.
 func (v *getProjectMergeRequestsProjectMergeRequestsMergeRequestConnectionNodesMergeRequest) GetLabels() *MergeRequestFieldsCoreLabelsLabelConnection {
 	return v.MergeRequestFieldsCore.Labels
@@ -6474,6 +6492,8 @@ type __premarshalgetProjectMergeRequestsProjectMergeRequestsMergeRequestConnecti
 
 	Title string `json:"title"`
 
+	Description *string `json:"description"`
+
 	Labels *MergeRequestFieldsCoreLabelsLabelConnection `json:"labels"`
 
 	State MergeRequestState `json:"state"`
@@ -6543,6 +6563,7 @@ func (v *getProjectMergeRequestsProjectMergeRequestsMergeRequestConnectionNodesM
 	retval.ClosedAt = v.MergeRequestFieldsCore.ClosedAt
 	retval.Name = v.MergeRequestFieldsCore.Name
 	retval.Title = v.MergeRequestFieldsCore.Title
+	retval.Description = v.MergeRequestFieldsCore.Description
 	retval.Labels = v.MergeRequestFieldsCore.Labels
 	retval.State = v.MergeRequestFieldsCore.State
 	retval.DetailedMergeStatus = v.MergeRequestFieldsCore.DetailedMergeStatus
@@ -11519,6 +11540,11 @@ func (v *getProjectsMergeRequestsProjectsProjectConnectionNodesProjectMergeReque
 	return v.MergeRequestFieldsCore.Title
 }
 
+// GetDescription returns getProjectsMergeRequestsProjectsProjectConnectionNodesProjectMergeRequestsMergeRequestConnectionNodesMergeRequest.Description, and is useful for accessing the field via an interface.
+func (v *getProjectsMergeRequestsProjectsProjectConnectionNodesProjectMergeRequestsMergeRequestConnectionNodesMergeRequest) GetDescription() *string {
+	return v.MergeRequestFieldsCore.Description
+}
+
 // GetLabels returns getProjectsMergeRequestsProjectsProjectConnectionNodesProjectMergeRequestsMergeRequestConnectionNodesMergeRequest.Labels, and is useful for accessing the field via an interface.
 func (v *getProjectsMergeRequestsProjectsProjectConnectionNodesProjectMergeRequestsMergeRequestConnectionNodesMergeRequest) GetLabels() *MergeRequestFieldsCoreLabelsLabelConnection {
 	return v.MergeRequestFieldsCore.Labels
@@ -11698,6 +11724,8 @@ type __premarshalgetProjectsMergeRequestsProjectsProjectConnectionNodesProjectMe
 
 	Title string `json:"title"`
 
+	Description *string `json:"description"`
+
 	Labels *MergeRequestFieldsCoreLabelsLabelConnection `json:"labels"`
 
 	State MergeRequestState `json:"state"`
@@ -11767,6 +11795,7 @@ func (v *getProjectsMergeRequestsProjectsProjectConnectionNodesProjectMergeReque
 	retval.ClosedAt = v.MergeRequestFieldsCore.ClosedAt
 	retval.Name = v.MergeRequestFieldsCore.Name
 	retval.Title = v.MergeRequestFieldsCore.Title
+	retval.Description = v.MergeRequestFieldsCore.Description
 	retval.Labels = v.MergeRequestFieldsCore.Labels
 	retval.State = v.MergeRequestFieldsCore.State
 	retval.DetailedMergeStatus = v.MergeRequestFieldsCore.DetailedMergeStatus
@@ -14744,6 +14773,7 @@ fragment MergeRequestFieldsCore on MergeRequest {
 	closedAt
 	name
 	title
+	description
 	labels {
 		nodes {
 			title
@@ -15074,6 +15104,7 @@ fragment MergeRequestFieldsCore on MergeRequest {
 	closedAt
 	name
 	title
+	description
 	labels {
 		nodes {
 			title
@@ -16393,6 +16424,7 @@ fragment MergeRequestFieldsCore on MergeRequest {
 	closedAt
 	name
 	title
+	description
 	labels {
 		nodes {
 			title

@@ -22,36 +22,39 @@ message MergeRequest {
     string name = 5;
     // Title of the merge request.
     string title = 6;
-    repeated string labels = 7;
+    // Description of the merge request.
+    string description = 7;
+    // Labels attached to the merge request.
+    repeated string labels = 8;
 
     // State of the merge request. Can be opened, closed, merged or locked.
-    string state = 8;
+    string state = 9;
     // Detailed merge status of the merge request.
-    string merge_status = 9;
+    string merge_status = 10;
     // Error message shown when a merge has failed.
-    string merge_error = 10;
+    string merge_error = 11;
 
     // ID of the merge request source project.
-    int64 source_project_id = 11;
+    int64 source_project_id = 12;
     // Source branch of the merge request.
-    string source_branch = 12;
+    string source_branch = 13;
     // ID of the merge request target project.
-    int64 target_project_id = 13;
+    int64 target_project_id = 14;
     // Target branch of the merge request.
-    string target_branch = 14;
+    string target_branch = 15;
 
-    MergeRequestDiffStats diff_stats = 15;
+    MergeRequestDiffStats diff_stats = 16;
 
-    MergeRequestDiffRefs diff_refs = 16;
+    MergeRequestDiffRefs diff_refs = 17;
 
-    MergeRequestParticipants participants = 17;
+    MergeRequestParticipants participants = 18;
 
-    repeated string commit_shas = 20;
+    repeated string commit_shas = 21;
 
-    MergeRequestFlags flags = 18;
+    MergeRequestFlags flags = 19;
 
     // Milestone of the merge request.
-    MilestoneReference milestone = 19;
+    MilestoneReference milestone = 20;
 }
 
 message MergeRequestTimestamps {

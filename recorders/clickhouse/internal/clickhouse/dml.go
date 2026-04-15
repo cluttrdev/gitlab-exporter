@@ -578,9 +578,10 @@ func InsertMergeRequests(c *Client, ctx context.Context, mrs []*typespb.MergeReq
 			MergedAt:  convertTimestamp(mr.Timestamps.GetMergedAt()),
 			ClosedAt:  convertTimestamp(mr.Timestamps.GetClosedAt()),
 
-			Name:   mr.Name,
-			Title:  mr.Title,
-			Labels: mr.Labels,
+			Name:        mr.Name,
+			Title:       mr.Title,
+			Description: mr.Description,
+			Labels:      mr.Labels,
 
 			State:       mr.State,
 			MergeStatus: mr.MergeStatus,

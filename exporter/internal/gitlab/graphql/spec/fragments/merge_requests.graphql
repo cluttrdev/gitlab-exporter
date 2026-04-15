@@ -6,6 +6,7 @@ fragment MergeRequestFieldsCore on MergeRequest {
 
     name
     title
+    description
     labels {
         nodes {
             title
