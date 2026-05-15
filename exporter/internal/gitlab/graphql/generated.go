@@ -2771,8 +2771,6 @@ type ProjectFieldsCore struct {
 	Description *string `json:"description"`
 	// Timestamp of the project creation.
 	CreatedAt *time.Time `json:"createdAt"`
-	// Timestamp of when the project was last updated.
-	UpdatedAt *time.Time `json:"updatedAt"`
 	// Timestamp of the project last activity.
 	LastActivityAt *time.Time `json:"lastActivityAt"`
 	// Statistics of the project.
@@ -2803,9 +2801,6 @@ func (v *ProjectFieldsCore) GetDescription() *string { return v.Description }
 
 // GetCreatedAt returns ProjectFieldsCore.CreatedAt, and is useful for accessing the field via an interface.
 func (v *ProjectFieldsCore) GetCreatedAt() *time.Time { return v.CreatedAt }
-
-// GetUpdatedAt returns ProjectFieldsCore.UpdatedAt, and is useful for accessing the field via an interface.
-func (v *ProjectFieldsCore) GetUpdatedAt() *time.Time { return v.UpdatedAt }
 
 // GetLastActivityAt returns ProjectFieldsCore.LastActivityAt, and is useful for accessing the field via an interface.
 func (v *ProjectFieldsCore) GetLastActivityAt() *time.Time { return v.LastActivityAt }
@@ -3833,6 +3828,7 @@ type __getProjectsInput struct {
 	UpdatedAfter  *time.Time `json:"updatedAfter"`
 	UpdatedBefore *time.Time `json:"updatedBefore"`
 	EndCursor     *string    `json:"endCursor"`
+	UpdatedAt     *bool      `json:"_updatedAt"`
 }
 
 // GetIds returns __getProjectsInput.Ids, and is useful for accessing the field via an interface.
@@ -3846,6 +3842,9 @@ func (v *__getProjectsInput) GetUpdatedBefore() *time.Time { return v.UpdatedBef
 
 // GetEndCursor returns __getProjectsInput.EndCursor, and is useful for accessing the field via an interface.
 func (v *__getProjectsInput) GetEndCursor() *string { return v.EndCursor }
+
+// GetUpdatedAt returns __getProjectsInput.UpdatedAt, and is useful for accessing the field via an interface.
+func (v *__getProjectsInput) GetUpdatedAt() *bool { return v.UpdatedAt }
 
 // __getProjectsIssuesInput is used internally by genqlient
 type __getProjectsIssuesInput struct {
@@ -14031,6 +14030,8 @@ type getProjectsProjectsProjectConnectionNodesProject struct {
 	// Namespace of the project.
 	Namespace         *getProjectsProjectsProjectConnectionNodesProjectNamespace `json:"namespace"`
 	ProjectFieldsCore `json:"-"`
+	// Timestamp of when the project was last updated.
+	UpdatedAt *time.Time `json:"updatedAt"`
 	// Pipelines of the project.
 	Pipelines *getProjectsProjectsProjectConnectionNodesProjectPipelinesPipelineConnection `json:"pipelines"`
 	// Merge requests of the project.
@@ -14040,6 +14041,11 @@ type getProjectsProjectsProjectConnectionNodesProject struct {
 // GetNamespace returns getProjectsProjectsProjectConnectionNodesProject.Namespace, and is useful for accessing the field via an interface.
 func (v *getProjectsProjectsProjectConnectionNodesProject) GetNamespace() *getProjectsProjectsProjectConnectionNodesProjectNamespace {
 	return v.Namespace
+}
+
+// GetUpdatedAt returns getProjectsProjectsProjectConnectionNodesProject.UpdatedAt, and is useful for accessing the field via an interface.
+func (v *getProjectsProjectsProjectConnectionNodesProject) GetUpdatedAt() *time.Time {
+	return v.UpdatedAt
 }
 
 // GetPipelines returns getProjectsProjectsProjectConnectionNodesProject.Pipelines, and is useful for accessing the field via an interface.
@@ -14085,11 +14091,6 @@ func (v *getProjectsProjectsProjectConnectionNodesProject) GetDescription() *str
 // GetCreatedAt returns getProjectsProjectsProjectConnectionNodesProject.CreatedAt, and is useful for accessing the field via an interface.
 func (v *getProjectsProjectsProjectConnectionNodesProject) GetCreatedAt() *time.Time {
 	return v.ProjectFieldsCore.CreatedAt
-}
-
-// GetUpdatedAt returns getProjectsProjectsProjectConnectionNodesProject.UpdatedAt, and is useful for accessing the field via an interface.
-func (v *getProjectsProjectsProjectConnectionNodesProject) GetUpdatedAt() *time.Time {
-	return v.ProjectFieldsCore.UpdatedAt
 }
 
 // GetLastActivityAt returns getProjectsProjectsProjectConnectionNodesProject.LastActivityAt, and is useful for accessing the field via an interface.
@@ -14160,6 +14161,8 @@ func (v *getProjectsProjectsProjectConnectionNodesProject) UnmarshalJSON(b []byt
 type __premarshalgetProjectsProjectsProjectConnectionNodesProject struct {
 	Namespace *getProjectsProjectsProjectConnectionNodesProjectNamespace `json:"namespace"`
 
+	UpdatedAt *time.Time `json:"updatedAt"`
+
 	Pipelines *getProjectsProjectsProjectConnectionNodesProjectPipelinesPipelineConnection `json:"pipelines"`
 
 	MergeRequests *getProjectsProjectsProjectConnectionNodesProjectMergeRequestsMergeRequestConnection `json:"mergeRequests"`
@@ -14177,8 +14180,6 @@ type __premarshalgetProjectsProjectsProjectConnectionNodesProject struct {
 	Description *string `json:"description"`
 
 	CreatedAt *time.Time `json:"createdAt"`
-
-	UpdatedAt *time.Time `json:"updatedAt"`
 
 	LastActivityAt *time.Time `json:"lastActivityAt"`
 
@@ -14207,6 +14208,7 @@ func (v *getProjectsProjectsProjectConnectionNodesProject) __premarshalJSON() (*
 	var retval __premarshalgetProjectsProjectsProjectConnectionNodesProject
 
 	retval.Namespace = v.Namespace
+	retval.UpdatedAt = v.UpdatedAt
 	retval.Pipelines = v.Pipelines
 	retval.MergeRequests = v.MergeRequests
 	retval.Id = v.ProjectReferenceFields.Id
@@ -14216,7 +14218,6 @@ func (v *getProjectsProjectsProjectConnectionNodesProject) __premarshalJSON() (*
 	retval.Path = v.ProjectFieldsCore.Path
 	retval.Description = v.ProjectFieldsCore.Description
 	retval.CreatedAt = v.ProjectFieldsCore.CreatedAt
-	retval.UpdatedAt = v.ProjectFieldsCore.UpdatedAt
 	retval.LastActivityAt = v.ProjectFieldsCore.LastActivityAt
 	retval.Statistics = v.ProjectFieldsCore.Statistics
 	retval.StarCount = v.ProjectFieldsCore.StarCount
@@ -16106,7 +16107,7 @@ func getProjectPipelinesTestReportSummary(
 
 // The query executed by getProjects.
 const getProjects_Operation = `
-query getProjects ($ids: [ID!], $updatedAfter: Time, $updatedBefore: Time, $endCursor: String) {
+query getProjects ($ids: [ID!], $updatedAfter: Time, $updatedBefore: Time, $endCursor: String, $_updatedAt: Boolean = true) {
 	projects(ids: $ids, after: $endCursor) {
 		nodes {
 			... ProjectReferenceFields
@@ -16114,6 +16115,7 @@ query getProjects ($ids: [ID!], $updatedAfter: Time, $updatedBefore: Time, $endC
 				... NamespaceReferenceFields
 			}
 			... ProjectFieldsCore
+			updatedAt @include(if: $_updatedAt)
 			pipelines(scope: FINISHED, updatedAfter: $updatedAfter, updatedBefore: $updatedBefore) {
 				count
 			}
@@ -16140,7 +16142,6 @@ fragment ProjectFieldsCore on Project {
 	path
 	description
 	createdAt
-	updatedAt
 	lastActivityAt
 	statistics {
 		buildArtifactsSize
@@ -16176,6 +16177,7 @@ func getProjects(
 	updatedAfter *time.Time,
 	updatedBefore *time.Time,
 	endCursor *string,
+	_updatedAt *bool,
 ) (data_ *getProjectsResponse, err_ error) {
 	req_ := &graphql.Request{
 		OpName: "getProjects",
@@ -16185,6 +16187,7 @@ func getProjects(
 			UpdatedAfter:  updatedAfter,
 			UpdatedBefore: updatedBefore,
 			EndCursor:     endCursor,
+			UpdatedAt:     _updatedAt,
 		},
 	}
 

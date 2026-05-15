@@ -3,6 +3,8 @@ query getProjects(
     $updatedAfter: Time
     $updatedBefore: Time
     $endCursor: String
+    # updatedAt only available since 17.x
+    $_updatedAt: Boolean = true
 ) {
     projects(ids: $ids, after: $endCursor) {
         nodes {
@@ -12,6 +14,7 @@ query getProjects(
             }
 
             ...ProjectFieldsCore
+            updatedAt @include(if: $_updatedAt)
             
             pipelines(
                 scope: FINISHED

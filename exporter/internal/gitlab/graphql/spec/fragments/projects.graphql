@@ -5,7 +5,6 @@ fragment ProjectFieldsCore on Project {
     description
 
     createdAt
-    updatedAt
     lastActivityAt
 
     statistics {
