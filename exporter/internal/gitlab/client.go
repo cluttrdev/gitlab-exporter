@@ -4,16 +4,19 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"strings"
 
 	gitlab "gitlab.com/gitlab-org/api/client-go"
 	"golang.org/x/sync/semaphore"
 
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab/graphql"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab/rest"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab/version"
 )
 
 type Client struct {
-	URL string
+	URL     string
+	Version version.GitLabVersion
 
 	Rest    *rest.Client
 	GraphQL *graphql.Client
@@ -112,4 +115,24 @@ func (c *Client) CheckReadiness(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+// DetectVersion queries the GitLab instance for its version and parses it.
+func (c *Client) DetectVersion(ctx context.Context) (version.GitLabVersion, error) {
+	v, _, err := c.Rest.Client().Version.GetVersion(gitlab.WithContext(ctx))
+	if err != nil {
+		return version.GitLabVersion{}, fmt.Errorf("get version: %w", err)
+	}
+
+	ver := version.GitLabVersion{Raw: v.Version}
+	if _, err := fmt.Fscanf(strings.NewReader(v.Version), "%d.%d.%d", &ver.Major, &ver.Minor, &ver.Patch); err != nil {
+		return version.GitLabVersion{}, fmt.Errorf("parse version: %s: %w", v.Version, err)
+	}
+
+	return ver, nil
+}
+
+func (c *Client) SetVersion(v version.GitLabVersion) {
+	c.Version = v
+	c.GraphQL.Version = v
 }

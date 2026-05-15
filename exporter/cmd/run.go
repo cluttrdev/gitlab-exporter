@@ -28,6 +28,7 @@ import (
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/config"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/exporter"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab/version"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/healthz"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/subprocess"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/tasks"
@@ -400,6 +401,15 @@ func createGitLabClient(cfg config.Config) (*gitlab.Client, error) {
 		if err := glab.HTTP.CheckAuthed(); err != nil {
 			return nil, fmt.Errorf("check http auth: %w", err)
 		}
+	}
+
+	// detect gitlab version
+	ver, err := glab.DetectVersion(context.Background())
+	if err != nil {
+		slog.Warn("Failed to detect GitLab version, assuming 16.x", "error", err)
+		glab.SetVersion(version.GitLabVersion{Major: 16})
+	} else {
+		glab.SetVersion(ver)
 	}
 
 	return glab, err

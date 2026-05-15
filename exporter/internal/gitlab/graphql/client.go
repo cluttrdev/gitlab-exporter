@@ -6,13 +6,15 @@ import (
 
 	"github.com/Khan/genqlient/graphql"
 
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab/version"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/httpclient"
 )
 
 const apiPath string = "api/graphql/"
 
 type Client struct {
-	client graphql.Client
+	client  graphql.Client
+	Version version.GitLabVersion
 }
 
 func NewClient(url string, token string) *Client {
