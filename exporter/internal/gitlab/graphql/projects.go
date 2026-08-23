@@ -21,9 +21,6 @@ type ProjectFields struct {
 	Namespace NamespaceReferenceFields
 
 	ProjectFieldsCore
-	// Timestamp of when the project was last updated.
-	// (only available since GitLab 17.x)
-	UpdatedAt *time.Time `json:"updatedAt"`
 }
 
 func ConvertProject(pf ProjectFields) (types.Project, error) {
@@ -98,10 +95,8 @@ func (c *Client) ListProjects(
 ) error {
 	var endCursor *string
 
-	includeUpdatedAt := c.Version.Major >= 17
-
 	for {
-		resp, err := getProjects(ctx, c.client, ids, updatedAfter, updatedBefore, endCursor, &includeUpdatedAt)
+		resp, err := getProjects(ctx, c.client, ids, updatedAfter, updatedBefore, endCursor)
 		err = handleError(err, "getProjects", slog.Any("ids", ids))
 		if err != nil {
 			return err

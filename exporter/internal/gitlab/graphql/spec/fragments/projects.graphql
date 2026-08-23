@@ -5,6 +5,8 @@ fragment ProjectFieldsCore on Project {
     description
 
     createdAt
+    # @genqlient(pointer: true)
+    updatedAt @minVersion(v: "17.0")
     lastActivityAt
 
     statistics {

@@ -2,9 +2,10 @@ fragment MergeRequestFieldsCore on MergeRequest {
     createdAt
     updatedAt
     mergedAt
-    closedAt
+    # @genqlient(pointer: true)
+    closedAt @minVersion(v: "17.4")
 
-    name
+    name @minVersion(v: "17.4")
     title
     description
     labels {
@@ -47,7 +48,7 @@ fragment MergeRequestFieldsExtra on MergeRequest {
     commitCount
     userNotesCount
 
-    milestone {
+    milestone @minVersion(v: "16.11") {
         id
         iid
         project {
@@ -95,9 +96,9 @@ fragment MergeRequestCommitsFields on Commit {
     authorName
     authorEmail
 
-    committedDate
-    committerName
-    committerEmail
+    committedDate @minVersion(v: "16.3")
+    committerName @minVersion(v: "16.3")
+    committerEmail @minVersion(v: "16.3")
 }
 
 fragment MergeRequestNotesFieldsCore on Note {

@@ -13,6 +13,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab/graphql/doer"
 )
 
 // ComplexityResult contains the complexity metrics returned by GitLab
@@ -21,6 +23,12 @@ type ComplexityResult struct {
 	Limit     int
 	Variables map[string]interface{}
 	Error     error
+
+	// Errors holds every message GitLab returned, not just the first.
+	// Validation reports all offending fields at once, so a single run can
+	// list every field that needs a @minVersion annotation instead of
+	// revealing the next one only after the previous is fixed.
+	Errors []string
 }
 
 // graphqlResponse represents the structure of a GraphQL response
@@ -89,6 +97,8 @@ func TestQueryComplexity(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
 
+	gate, gateVersion, gateSource := resolveGate(ctx, t, endpoint, token)
+
 	// Common variables used by test queries
 	commonVars := map[string]interface{}{
 		"projectPath":     projectPath,
@@ -109,7 +119,7 @@ func TestQueryComplexity(t *testing.T) {
 
 	var tests []testCase
 
-	// Load all fragment definitions from spec/fragments
+	// Load all fragment definitions from the spec/fragments dir.
 	fragmentsDir := filepath.Join("fragments")
 	fragmentFiles, err := filepath.Glob(filepath.Join(fragmentsDir, "*.graphql"))
 	if err != nil {
@@ -160,7 +170,26 @@ func TestQueryComplexity(t *testing.T) {
 				fragmentDefs.WriteString(fragDef)
 			}
 
-			fullQuery := queryWithComplexity + fragmentDefs.String()
+			// Remove the version markers once, after assembly: this is the
+			// only place the combined operation + fragment text is produced,
+			// so a single call covers both.
+			//
+			// The two modes are mutually exclusive. Stripping the directives
+			// first would erase the information the gated rewrite needs, so
+			// when a gate is active it does all the work.
+			assembled := queryWithComplexity + fragmentDefs.String()
+
+			var fullQuery string
+			if gate != nil {
+				gated, err := doer.StripForVersion(assembled, gate)
+				if err != nil {
+					t.Errorf("gated rewrite of %s/%s failed: %v", fileNameWithoutExt, queryName, err)
+					continue
+				}
+				fullQuery = gated
+			} else {
+				fullQuery = stripVersionDirectives(assembled)
+			}
 
 			// Dynamically detect boolean flag parameters
 			boolFlags := extractBooleanParameters(queryText)
@@ -190,6 +219,11 @@ func TestQueryComplexity(t *testing.T) {
 	t.Log("Query Complexity Measurements")
 	t.Log("=============================")
 	t.Logf("Endpoint: %s", endpoint)
+	if gate != nil {
+		t.Logf("Gating: %s (%s) - gated fields excluded, as this server would receive them", gateVersion, gateSource)
+	} else {
+		t.Log("Gating: off - full query measured; unknown-field errors are expected on older servers")
+	}
 	commonVarsDump, _ := json.MarshalIndent(commonVars, "", "\t")
 	t.Logf("Variables:\n%v", string(commonVarsDump))
 	t.Log("")
@@ -210,7 +244,18 @@ func TestQueryComplexity(t *testing.T) {
 					return
 				default:
 					// t.Fatalf("❌: ERROR - %v", result.Error)
-					t.Logf("❌: ERROR - %v", result.Error)
+					//
+					// Report every message, not just the first. GitLab
+					// validates the whole document, so this lists all the
+					// fields needing annotation in one run.
+					if len(result.Errors) > 1 {
+						t.Logf("❌: ERROR - %d GraphQL errors:", len(result.Errors))
+						for _, msg := range result.Errors {
+							t.Logf("      - %s", msg)
+						}
+					} else {
+						t.Logf("❌: ERROR - %v", result.Error)
+					}
 					return
 				}
 			}
@@ -257,6 +302,81 @@ func TestInjectQueryComplexity(t *testing.T) {
 
 	if complexityIdx < queryIdx || complexityIdx > projectsIdx {
 		t.Errorf("queryComplexity not injected in the correct position")
+	}
+}
+
+// TestStripVersionDirectives covers the removal of @minVersion / @maxVersion
+// annotations, which a real GitLab server would reject as undefined.
+func TestStripVersionDirectives(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{
+			name:  "single minVersion on a field",
+			input: `    updatedAt @minVersion(v: "17.0")`,
+			want:  `    updatedAt`,
+		},
+		{
+			name:  "single maxVersion on a field",
+			input: `    legacyField @maxVersion(v: "17.0")`,
+			want:  `    legacyField`,
+		},
+		{
+			name:  "both bounds on one field",
+			input: `    middleField @minVersion(v: "16.0") @maxVersion(v: "18.0")`,
+			want:  `    middleField`,
+		},
+		{
+			name:  "no spaces around the argument",
+			input: `    nospace @minVersion(v:"17.0")`,
+			want:  `    nospace`,
+		},
+		{
+			name:  "extra spaces inside the directive",
+			input: `    spaced @minVersion( v : "17.0" )`,
+			want:  `    spaced`,
+		},
+		{
+			name:  "fragment spread",
+			input: `    ...ProjectFieldsCore @minVersion(v: "17.0")`,
+			want:  `    ...ProjectFieldsCore`,
+		},
+		{
+			name:  "inline fragment keeps its brace",
+			input: `    ... on Project @minVersion(v: "17.0") {`,
+			want:  `    ... on Project {`,
+		},
+		{
+			// The whole point of the narrow regex: @include drives the
+			// harness's boolean flag matrix and must survive.
+			name:  "include directive is preserved",
+			input: `    ...JobFieldsCore @include(if: $_core) @minVersion(v: "17.0")`,
+			want:  `    ...JobFieldsCore @include(if: $_core)`,
+		},
+		{
+			name:  "document without version directives is unchanged",
+			input: "query getProjects($ids: [ID!]) {\n\tprojects(ids: $ids) {\n\t\tid\n\t}\n}",
+			want:  "query getProjects($ids: [ID!]) {\n\tprojects(ids: $ids) {\n\t\tid\n\t}\n}",
+		},
+		{
+			name:  "multiple gated fields across lines",
+			input: "fragment F on Project {\n\tname\n\tupdatedAt @minVersion(v: \"17.0\")\n\texitCode @minVersion(v: \"17.7\")\n}",
+			want:  "fragment F on Project {\n\tname\n\tupdatedAt\n\texitCode\n}",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := stripVersionDirectives(tt.input)
+			if got != tt.want {
+				t.Errorf("stripVersionDirectives()\n got: %q\nwant: %q", got, tt.want)
+			}
+			if strings.Contains(got, "@minVersion") || strings.Contains(got, "@maxVersion") {
+				t.Errorf("version directive survived stripping: %q", got)
+			}
+		})
 	}
 }
 
@@ -626,8 +746,12 @@ func measureQueryComplexity(ctx context.Context, endpoint string, token string, 
 		return result
 	}
 
-	// Check for GraphQL errors
+	// Check for GraphQL errors. Error keeps the first message so the caller's
+	// category checks stay simple; Errors carries the full set for reporting.
 	if len(gqlResp.Errors) > 0 {
+		for _, e := range gqlResp.Errors {
+			result.Errors = append(result.Errors, e.Message)
+		}
 		result.Error = fmt.Errorf("GraphQL error: %s", gqlResp.Errors[0].Message)
 		return result
 	}
@@ -729,6 +853,129 @@ func extractBooleanParameters(queryText string) []string {
 	}
 
 	return params
+}
+
+// resolveGate interprets the GITLAB_VERSION_GATE environment variable:
+//
+//	unset      no gating (default). Queries keep every gated field and only
+//	           the directives are stripped, so the harness measures the full
+//	           query and surfaces schema mismatches as real errors.
+//	auto       detect the server version via { metadata { version } } and gate
+//	           to it, measuring what this server would actually receive.
+//	<version>  gate to an explicit version, e.g. "17.7". Useful for asking
+//	           "what would a newer server be sent?" without upgrading.
+//
+// Returns a nil gate when gating is disabled. The returned strings describe
+// the mode for the run banner.
+func resolveGate(ctx context.Context, t *testing.T, endpoint, token string) (*doer.Gate, string, string) {
+	t.Helper()
+
+	raw := strings.TrimSpace(os.Getenv("GITLAB_VERSION_GATE"))
+	if raw == "" {
+		return nil, "", "off"
+	}
+
+	source := "GITLAB_VERSION_GATE"
+	if strings.EqualFold(raw, "auto") {
+		detected, err := detectServerVersion(ctx, endpoint, token)
+		if err != nil {
+			t.Fatalf("GITLAB_VERSION_GATE=auto but the server version could not be detected: %v\n"+
+				"Set GITLAB_VERSION_GATE to an explicit version (e.g. 17.7) or unset it to disable gating.", err)
+		}
+		raw, source = detected, "auto-detected"
+	}
+
+	gate, err := doer.NewGate(raw)
+	if err != nil {
+		t.Fatalf("GITLAB_VERSION_GATE=%q is not a usable version: %v", raw, err)
+	}
+	return gate, raw, source
+}
+
+// detectServerVersion asks the instance for its own version. It deliberately
+// uses a plain client: this runs before any gate exists, and the metadata
+// query carries no version-gated fields.
+func detectServerVersion(ctx context.Context, endpoint, token string) (string, error) {
+	body, err := json.Marshal(map[string]interface{}{
+		"query": "{ metadata { version } }",
+	})
+	if err != nil {
+		return "", fmt.Errorf("marshal metadata query: %w", err)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", endpoint, bytes.NewReader(body))
+	if err != nil {
+		return "", fmt.Errorf("create metadata request: %w", err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
+	}
+
+	resp, err := (&http.Client{}).Do(req)
+	if err != nil {
+		return "", fmt.Errorf("execute metadata request: %w", err)
+	}
+	defer resp.Body.Close()
+
+	payload, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", fmt.Errorf("read metadata response: %w", err)
+	}
+	if resp.StatusCode >= 400 {
+		return "", fmt.Errorf("metadata request: HTTP %d: %s", resp.StatusCode, payload)
+	}
+
+	var parsed struct {
+		Data struct {
+			Metadata struct {
+				Version string `json:"version"`
+			} `json:"metadata"`
+		} `json:"data"`
+		Errors []struct {
+			Message string `json:"message"`
+		} `json:"errors"`
+	}
+	if err := json.Unmarshal(payload, &parsed); err != nil {
+		return "", fmt.Errorf("unmarshal metadata response: %w", err)
+	}
+	if len(parsed.Errors) > 0 {
+		return "", fmt.Errorf("metadata query: %s", parsed.Errors[0].Message)
+	}
+	if parsed.Data.Metadata.Version == "" {
+		return "", fmt.Errorf("metadata query returned no version")
+	}
+	return parsed.Data.Metadata.Version, nil
+}
+
+// versionDirectiveRe matches a @minVersion / @maxVersion annotation together
+// with the whitespace preceding it, so removing a match leaves no dangling
+// space behind. Deliberately narrow: @include and every other directive are
+// left untouched.
+var versionDirectiveRe = regexp.MustCompile(`\s*@(?:min|max)Version\s*\(\s*v\s*:\s*"[^"]*"\s*\)`)
+
+// stripVersionDirectives removes @minVersion / @maxVersion annotations from a
+// GraphQL document.
+//
+// These directives are declared only in spec/directives.graphql, which is a
+// local codegen-time schema input for genqlient. A real GitLab server has no
+// such directive and rejects the query outright:
+//
+//	Directive @minVersion is not defined
+//
+// At runtime the version-gating Doer removes them (along with the gated nodes
+// themselves) before anything is sent. This harness bypasses that Doer on
+// purpose: it talks to GitLab directly so that it measures the cost of the
+// full query and so that genuine schema mismatches surface as real errors.
+// For example, against a 17.4 instance a query containing exitCode reports:
+//
+//	Field 'exitCode' doesn't exist on type 'CiJob'
+//
+// That is the signal this harness exists to produce - it identifies which
+// fields need gating. Only the directive noise is stripped here; the gated
+// fields are intentionally left in place.
+func stripVersionDirectives(query string) string {
+	return versionDirectiveRe.ReplaceAllString(query, "")
 }
 
 // injectQueryComplexity injects "queryComplexity { score limit }" into a GraphQL query

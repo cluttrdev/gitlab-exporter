@@ -1,6 +1,7 @@
 # schema: "https://gitlab.com/api/graphql"
-schema: "spec/schema.graphql"
+schema:
+  - "spec/schema/schema.graphql"
+  - "spec/directives.graphql"
 documents:
   - "spec/fragments/*.graphql"
   - "spec/queries/*.graphql"
-  - "spec/queries.graphql"

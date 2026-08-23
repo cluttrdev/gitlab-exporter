@@ -10,7 +10,7 @@ help: ## Display this help page
 
 .PHONY: graphql-schema
 graphql-schema: ## Generate the GitLab GraphQL schema
-	go tool -modfile go.tool.mod gqlfetch --endpoint https://gitlab.com/api/graphql > internal/gitlab/graphql/spec/schema.graphql
+	go tool -modfile go.tool.mod gqlfetch --endpoint https://gitlab.com/api/graphql > internal/gitlab/graphql/spec/schema/schema.graphql
 
 .PHONY: graphql
 graphql: ## Generate the GitLab GraphQL API client code

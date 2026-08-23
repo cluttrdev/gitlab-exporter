@@ -1,9 +1,9 @@
 fragment PipelineFieldsCore on Pipeline {
-    name
+    name @minVersion(v: "16.6")
     ref
     refPath
     status
-    source
+    source @minVersion(v: "16.6")
     sha(format: LONG)
 
     committedAt
@@ -15,12 +15,12 @@ fragment PipelineFieldsCore on Pipeline {
     queuedDuration
     duration
     coverage
-    failureReason
+    failureReason @minVersion(v: "16.6")
 
     warnings
-    yamlErrors
+    yamlErrors @minVersion(v: "16.8")
 
-    mergeRequest {
+    mergeRequest @minVersion(v: "16.6") {
         ...MergeRequestReferenceFields
         project {
             ...ProjectReferenceFields
@@ -33,7 +33,7 @@ fragment PipelineFieldsCore on Pipeline {
 }
 
 fragment PipelineFieldsRelations on Pipeline {
-    child
+    child @minVersion(v: "16.6")
 
     upstream {
         ...PipelineReferenceFields

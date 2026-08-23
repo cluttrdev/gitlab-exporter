@@ -1,0 +1,19 @@
+# Custom directives used by the gitlab-exporter runtime query rewriter.
+#
+# Selection nodes annotated with @minVersion / @maxVersion are stripped from
+# outgoing queries by the rewriter (internal/gitlab/graphql/doer) based on the
+# connected GitLab server's version. The directives never reach the server
+# - they are removed by the rewriter before each request is sent.
+#
+# Adding new locations is straightforward; ARGUMENT_DEFINITION is intentionally
+# omitted today because no current annotation needs argument-level gating.
+
+directive @minVersion(v: String!) on
+  | FIELD
+  | FRAGMENT_SPREAD
+  | INLINE_FRAGMENT
+
+directive @maxVersion(v: String!) on
+  | FIELD
+  | FRAGMENT_SPREAD
+  | INLINE_FRAGMENT

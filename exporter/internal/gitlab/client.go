@@ -132,7 +132,12 @@ func (c *Client) DetectVersion(ctx context.Context) (version.GitLabVersion, erro
 	return ver, nil
 }
 
-func (c *Client) SetVersion(v version.GitLabVersion) {
+// SetVersion sets the given GitLab version and propagates it to the underlying
+// api clients.
+func (c *Client) SetVersion(v version.GitLabVersion) error {
+	if err := c.GraphQL.SetVersion(v); err != nil {
+		return err
+	}
 	c.Version = v
-	c.GraphQL.Version = v
+	return nil
 }

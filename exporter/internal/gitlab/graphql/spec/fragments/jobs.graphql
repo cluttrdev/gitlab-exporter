@@ -15,7 +15,7 @@ fragment JobFieldsCore on CiJob {
     coverage
 
     allowFailure
-    failureMessage
+    failureMessage @minVersion(v: "16.0")
 }
 
 fragment JobFieldsExtra on CiJob {
@@ -25,7 +25,8 @@ fragment JobFieldsExtra on CiJob {
 
     tags
 
-    exitCode
+    # @genqlient(pointer: true)
+    exitCode @minVersion(v: "17.7")
 
     manualJob
     retryable
@@ -39,7 +40,7 @@ fragment JobFieldsExtra on CiJob {
         }
     }
 
-    runner {
+    runner @minVersion(v: "16.0") {
       ...RunnerReferenceFields
     }
 }
