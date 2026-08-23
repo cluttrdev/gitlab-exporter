@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/cluttrdev/cli"
+	gitlab "gitlab.com/gitlab-org/api/client-go"
 
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/config"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/exporter"
@@ -126,9 +127,14 @@ func (c *ExportPipelineConfig) Exec(ctx context.Context, args []string) error {
 	}
 
 	projectGid := graphql.GlobalIdProjectPrefix + strconv.FormatInt(projectId, 10)
-	pipelineGid := graphql.GlobalIdPipelinePrefix + strconv.FormatInt(pipelineId, 10)
 
-	pipelineFields, err := glab.GraphQL.GetProjectPipeline(ctx, projectGid, pipelineGid)
+	// determine pipeline iid for graphql call
+	p, _, err := glab.Rest.Client().Pipelines.GetPipeline(projectId, int(pipelineId), gitlab.WithContext(ctx))
+	if err != nil {
+		return err
+	}
+	pipelineIid := strconv.FormatInt(int64(p.IID), 10)
+	pipelineFields, err := glab.GraphQL.GetProjectPipeline(ctx, projectGid, pipelineIid)
 	if err != nil {
 		return fmt.Errorf("get pipeline fields: %w", err)
 	}

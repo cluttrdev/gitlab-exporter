@@ -94,7 +94,7 @@ query getProjectPipelineDownstream(
 
 query getProjectPipeline(
     $projectId: ID!
-    $pipelineId: CiPipelineID!
+    $pipelineIid: ID!
     # field fragments
     $_core: Boolean!
     $_relations: Boolean!
@@ -103,7 +103,7 @@ query getProjectPipeline(
         nodes {
             ...ProjectReferenceFields
 
-            pipeline(id: $pipelineId) {
+            pipeline(iid: $pipelineIid) {
                 ...PipelineReferenceFields
 
                 ...PipelineFieldsCore @include(if: $_core)

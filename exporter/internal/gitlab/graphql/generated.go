@@ -3657,17 +3657,17 @@ func (v *__getProjectPipelineDownstreamInput) GetEndCursor() *string { return v.
 
 // __getProjectPipelineInput is used internally by genqlient
 type __getProjectPipelineInput struct {
-	ProjectId  string `json:"projectId"`
-	PipelineId string `json:"pipelineId"`
-	Core       bool   `json:"_core"`
-	Relations  bool   `json:"_relations"`
+	ProjectId   string `json:"projectId"`
+	PipelineIid string `json:"pipelineIid"`
+	Core        bool   `json:"_core"`
+	Relations   bool   `json:"_relations"`
 }
 
 // GetProjectId returns __getProjectPipelineInput.ProjectId, and is useful for accessing the field via an interface.
 func (v *__getProjectPipelineInput) GetProjectId() string { return v.ProjectId }
 
-// GetPipelineId returns __getProjectPipelineInput.PipelineId, and is useful for accessing the field via an interface.
-func (v *__getProjectPipelineInput) GetPipelineId() string { return v.PipelineId }
+// GetPipelineIid returns __getProjectPipelineInput.PipelineIid, and is useful for accessing the field via an interface.
+func (v *__getProjectPipelineInput) GetPipelineIid() string { return v.PipelineIid }
 
 // GetCore returns __getProjectPipelineInput.Core, and is useful for accessing the field via an interface.
 func (v *__getProjectPipelineInput) GetCore() bool { return v.Core }
@@ -15326,11 +15326,11 @@ func getProjectMergeRequestsNotes(
 
 // The query executed by getProjectPipeline.
 const getProjectPipeline_Operation = `
-query getProjectPipeline ($projectId: ID!, $pipelineId: CiPipelineID!, $_core: Boolean!, $_relations: Boolean!) {
+query getProjectPipeline ($projectId: ID!, $pipelineIid: ID!, $_core: Boolean!, $_relations: Boolean!) {
 	projects(ids: [$projectId]) {
 		nodes {
 			... ProjectReferenceFields
-			pipeline(id: $pipelineId) {
+			pipeline(iid: $pipelineIid) {
 				... PipelineReferenceFields
 				... PipelineFieldsCore @include(if: $_core)
 				... PipelineFieldsRelations @include(if: $_relations)
@@ -15413,7 +15413,7 @@ func getProjectPipeline(
 	ctx_ context.Context,
 	client_ graphql.Client,
 	projectId string,
-	pipelineId string,
+	pipelineIid string,
 	_core bool,
 	_relations bool,
 ) (data_ *getProjectPipelineResponse, err_ error) {
@@ -15421,10 +15421,10 @@ func getProjectPipeline(
 		OpName: "getProjectPipeline",
 		Query:  getProjectPipeline_Operation,
 		Variables: &__getProjectPipelineInput{
-			ProjectId:  projectId,
-			PipelineId: pipelineId,
-			Core:       _core,
-			Relations:  _relations,
+			ProjectId:   projectId,
+			PipelineIid: pipelineIid,
+			Core:        _core,
+			Relations:   _relations,
 		},
 	}
 

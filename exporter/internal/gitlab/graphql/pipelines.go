@@ -160,8 +160,8 @@ func (c *Client) GetProjectsPipelines(ctx context.Context, ids []string, opts Ge
 	return pipelines, err
 }
 
-func (c *Client) GetProjectPipeline(ctx context.Context, projectId string, pipelineId string) (PipelineFields, error) {
-	return c.getProjectPipeline(ctx, projectId, pipelineId)
+func (c *Client) GetProjectPipeline(ctx context.Context, projectId string, pipelineIid string) (PipelineFields, error) {
+	return c.getProjectPipeline(ctx, projectId, pipelineIid)
 }
 
 type getPipelinesOptions struct {
@@ -459,7 +459,7 @@ func (c *Client) getProjectPipelineDownstreamConnection(ctx context.Context, pro
 	return &dpconn, err
 }
 
-func (c *Client) getProjectPipeline(ctx context.Context, projectId string, pipelineId string) (PipelineFields, error) {
+func (c *Client) getProjectPipeline(ctx context.Context, projectId string, pipelineIid string) (PipelineFields, error) {
 	var (
 		pf PipelineFields
 
@@ -467,10 +467,10 @@ func (c *Client) getProjectPipeline(ctx context.Context, projectId string, pipel
 		err  error
 	)
 
-	data, err = getProjectPipeline(ctx, c.client, projectId, pipelineId, true, true)
+	data, err = getProjectPipeline(ctx, c.client, projectId, pipelineIid, true, true)
 	err = handleError(err, "getProjectPipeline",
 		slog.String("projectId", projectId),
-		slog.String("pipelineId", pipelineId),
+		slog.String("pipelineIid", pipelineIid),
 	)
 	if err != nil {
 		return PipelineFields{}, err
@@ -485,7 +485,7 @@ func (c *Client) getProjectPipeline(ctx context.Context, projectId string, pipel
 	}
 	pipeline_ := project_.Pipeline
 	if pipeline_ == nil {
-		return pf, fmt.Errorf("pipeline not found: %v", pipelineId)
+		return pf, fmt.Errorf("pipeline not found: %v", pipelineIid)
 	}
 
 	pf = PipelineFields{
