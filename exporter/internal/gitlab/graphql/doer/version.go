@@ -76,10 +76,38 @@ func compareServerVersion(a, b ServerVersion) int {
 	return cmpInt(a.Patch, b.Patch)
 }
 
+// complexityHonorsConditionalFragments is the first GitLab version whose
+// query-complexity analyzer respects @include / @skip on fragment spreads and
+// inline fragments.
+//
+// graphql-ruby's analysis visitor sets its "skipping" flag from a node's
+// directives, but until v2.3.0 it only did so in on_field. on_fragment_spread
+// and on_inline_fragment gained the same handling in 2.3.0, so on older
+// releases QueryComplexity charges for conditional fragments the server will
+// never resolve. GitLab 16.11 ships 2.2.5 (affected); 17.0 ships 2.3.2 (fixed).
+const complexityHonorsConditionalFragments = "17.0"
+
 // Gate carries a fixed server version against which @minVersion / @maxVersion
 // constraints are evaluated. Construct one via NewGate.
 type Gate struct {
 	server ServerVersion
+}
+
+// MaterializesConditionals reports whether the client must evaluate
+// @include / @skip itself before sending a query, because this server's
+// complexity analyzer would otherwise charge for conditional fragments it
+// does not resolve. See complexityHonorsConditionalFragments.
+func (g *Gate) MaterializesConditionals() bool {
+	if g == nil {
+		return false
+	}
+	honors, err := g.Allows(complexityHonorsConditionalFragments, "")
+	if err != nil {
+		// The bound is a compile-time constant, so a parse failure here is
+		// impossible. Fall back to leaving the directives for the server.
+		return false
+	}
+	return !honors
 }
 
 // NewGate parses a server version string and returns a Gate suitable for use

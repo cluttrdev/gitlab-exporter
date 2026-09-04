@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 )
@@ -16,9 +18,7 @@ import (
 // any Gate has been installed via SetGate.
 var ErrGateUnset = errors.New("versiongate: no version gate set")
 
-// HTTPDoer is the minimal interface VersionGatedDoer wraps. It is satisfied
-// by *http.Client. We use the interface form so callers can inject mocks
-// during tests.
+// HTTPDoer is the minimal interface VersionGatedDoer wraps.
 type HTTPDoer interface {
 	Do(req *http.Request) (*http.Response, error)
 }
@@ -32,15 +32,17 @@ type HTTPDoer interface {
 // Construct one with NewVersionGatedDoer. The gate may be installed later via
 // SetGate; requests before SetGate is called will fail with ErrGateUnset.
 //
-// The rewritten query strings are cached keyed by raw query string. The set
-// of distinct query strings is bounded by the number of genqlient operations,
-// so the cache is naturally small and stable. Resetting the gate (via a
-// follow-up SetGate call) clears the cache.
+// Rewritten queries are cached. The key is the raw query string, plus - on
+// servers where @include / @skip must be materialized client-side - the
+// request's boolean variables, since those change the result. Both the set of
+// distinct query strings and the set of flag combinations are bounded by the
+// generated code, so the cache stays small and stable. Resetting the gate (via
+// a follow-up SetGate call) clears it.
 type VersionGatedDoer struct {
 	inner HTTPDoer
 
 	gate  atomic.Pointer[Gate]
-	cache sync.Map // map[string]*rewriteCacheEntry, keyed by raw query string
+	cache sync.Map // map[string]*rewriteCacheEntry, keyed by rewriteCacheKey
 }
 
 type rewriteCacheEntry struct {
@@ -119,29 +121,31 @@ func (d *VersionGatedDoer) doGet(req *http.Request, gate *Gate) (*http.Response,
 		return d.inner.Do(req)
 	}
 
-	entry, err := d.rewrite(query, gate)
+	// Decode the variables before rewriting rather than after: the rewriter
+	// needs them to resolve @include / @skip conditions.
+	var vars map[string]interface{}
+	if varsRaw := q.Get("variables"); varsRaw != "" {
+		if err := json.Unmarshal([]byte(varsRaw), &vars); err != nil {
+			return nil, fmt.Errorf("versiongate: unmarshal GET variables: %w", err)
+		}
+	}
+
+	entry, err := d.rewrite(query, gate, vars)
 	if err != nil {
 		return nil, err
 	}
 
 	q.Set("query", entry.rewritten)
 
-	if len(entry.prunedVars) > 0 {
-		varsRaw := q.Get("variables")
-		if varsRaw != "" {
-			var vars map[string]interface{}
-			if err := json.Unmarshal([]byte(varsRaw), &vars); err != nil {
-				return nil, fmt.Errorf("versiongate: unmarshal GET variables: %w", err)
-			}
-			for name := range entry.prunedVars {
-				delete(vars, name)
-			}
-			newVarsRaw, err := json.Marshal(vars)
-			if err != nil {
-				return nil, fmt.Errorf("versiongate: marshal pruned GET variables: %w", err)
-			}
-			q.Set("variables", string(newVarsRaw))
+	if len(entry.prunedVars) > 0 && len(vars) > 0 {
+		for name := range entry.prunedVars {
+			delete(vars, name)
 		}
+		newVarsRaw, err := json.Marshal(vars)
+		if err != nil {
+			return nil, fmt.Errorf("versiongate: marshal pruned GET variables: %w", err)
+		}
+		q.Set("variables", string(newVarsRaw))
 	}
 
 	// Build a shallow copy of the URL so we don't mutate the caller's
@@ -178,7 +182,7 @@ func (d *VersionGatedDoer) doPost(req *http.Request, gate *Gate) (*http.Response
 		return d.forwardBody(req, raw)
 	}
 
-	entry, err := d.rewrite(p.Query, gate)
+	entry, err := d.rewrite(p.Query, gate, p.Variables)
 	if err != nil {
 		return nil, err
 	}
@@ -199,20 +203,54 @@ func (d *VersionGatedDoer) doPost(req *http.Request, gate *Gate) (*http.Response
 }
 
 // rewrite looks up or computes the cached rewrite for a given raw query
-// string. Cache entries are immutable; concurrent callers either find an
-// existing entry or both compute the same result and the last writer wins
-// (which is fine because the result is deterministic).
-func (d *VersionGatedDoer) rewrite(raw string, gate *Gate) (*rewriteCacheEntry, error) {
-	if cached, ok := d.cache.Load(raw); ok {
+// string and set of request variables. Cache entries are immutable;
+// concurrent callers either find an existing entry or both compute the same
+// result and the last writer wins (which is fine because the result is
+// deterministic).
+func (d *VersionGatedDoer) rewrite(raw string, gate *Gate, vars map[string]interface{}) (*rewriteCacheEntry, error) {
+	materialize := gate.MaterializesConditionals()
+
+	key := raw
+	if materialize {
+		key = rewriteCacheKey(raw, vars)
+	}
+	if cached, ok := d.cache.Load(key); ok {
 		return cached.(*rewriteCacheEntry), nil
 	}
-	rewritten, pruned, err := stripVersionedNodes(raw, gate)
+
+	rewritten, pruned, err := stripNodes(raw, rewriteOpts{
+		gate:        gate,
+		vars:        vars,
+		materialize: materialize,
+	})
 	if err != nil {
 		return nil, fmt.Errorf("versiongate: rewrite query: %w", err)
 	}
 	entry := &rewriteCacheEntry{rewritten: rewritten, prunedVars: pruned}
-	d.cache.Store(raw, entry)
+	d.cache.Store(key, entry)
 	return entry, nil
+}
+
+// rewriteCacheKey combines the query text with the request's boolean
+// variables, which are the only ones that can change a rewrite: an @include /
+// @skip condition is a boolean, so a variable of any other type cannot affect
+// the outcome and is left out to keep the key space small.
+func rewriteCacheKey(raw string, vars map[string]interface{}) string {
+	flags := make([]string, 0, len(vars))
+	for name, v := range vars {
+		b, ok := v.(bool)
+		if !ok {
+			continue
+		}
+		flags = append(flags, name+"="+strconv.FormatBool(b))
+	}
+	if len(flags) == 0 {
+		return raw
+	}
+	sort.Strings(flags)
+
+	// "\x00" cannot occur in a GraphQL document, so the join is unambiguous.
+	return raw + "\x00" + strings.Join(flags, "\x00")
 }
 
 // forwardBody installs body on req and delegates to the inner Doer. It sets

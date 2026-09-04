@@ -1,8 +1,8 @@
-# `internal/gitlab/graphql/doer` — runtime query rewriter
+# `internal/gitlab/graphql/doer` - runtime query rewriter
 
 This package adds runtime version gating to genqlient-generated GraphQL
 queries. It is wired in front of the HTTP transport used by the GraphQL
-client; on every outgoing request it parses the query, drops any selections
+client. On every outgoing request it parses the query, drops any selections
 whose `@minVersion` / `@maxVersion` directives exclude the connected GitLab
 server's version, prunes now-unused query variables, and forwards the
 rewritten request unchanged in every other respect.
@@ -53,10 +53,9 @@ field @minVersion(v: "16.0") @maxVersion(v: "18.0")
 The directives are declared in the schema input list of both
 `genqlient.yaml` (used by `make graphql`) and `.graphqlrc.yaml` (used by
 editor/LSP tooling), so misspellings (`@minVersio(...)`) are caught at
-`make graphql` time rather than becoming silent runtime no-ops. Keep the two
-files in sync.
+`make graphql` time rather than becoming silent runtime no-ops.
 
-The directives never reach the server; the rewriter strips them from
+The directives never reach the server, the rewriter strips them from
 every outgoing request.
 
 ## Pointer convention for gated fields
@@ -165,12 +164,43 @@ A startup-time failure to install the gate is fatal in `cmd/run.go` (the
 hardcoded fallback version is build-time configuration; a parse failure
 there is a code bug).
 
+## `@include` / `@skip` below GitLab 17.0
+
+Several operations split their field sets with conditional fragment spreads,
+so one generated operation can be issued cheaply for just the fields a given
+caller needs:
+
+```graphql
+...PipelineFieldsCore      @include(if: $_core)
+...PipelineFieldsRelations @include(if: $_relations)
+```
+
+That only reduces cost if the server's complexity analyzer honors the
+directive. Until **graphql-ruby 2.3.0** it did not. Its analysis visitor sets
+a "skipping" flag from a node's directives, but only inside `on_field`;
+`on_fragment_spread` and `on_inline_fragment` gained the same handling in
+2.3.0. Only GitLab 17.0 ships 2.3.2 so before this release `queryComplexity`
+charges for conditional fragments the server never resolves.
+
+So below `complexityHonorsConditionalFragments` (17.0) the rewriter evaluates
+`@include` / `@skip` itself: nodes whose condition excludes them are removed
+outright, and the directive is stripped from nodes that stay.
+
+From 17.0 up, nothing happens, the directives go out untouched and the server
+evaluates them, so its own accounting stays authoritative.
+
 ## Caching
 
 The Doer caches rewritten queries by raw query string. The set of distinct
 genqlient-emitted query strings is bounded by the number of operations, so the
 cache is naturally small and stable. Calling `SetGate` (e.g. because a new
 GitLab server version was detected) clears the cache.
+
+On servers that need conditional materialization the rewrite also depends on
+the request's variables, so the key gains the sorted set of **boolean**
+variables. An `if:` condition is a boolean, so no other variable type can
+change the result and none is included. The key space stays bounded by
+"operations times flag combinations".
 
 ## Argument-level gating (not supported)
 
@@ -180,32 +210,6 @@ needs argument-level gating. If a future change requires it, declare the
 additional location in `spec/directives.graphql`, regenerate genqlient,
 and extend `rewrite.go` to walk `ast.Argument` directives.
 
-## Layout
-
-```
-exporter/internal/gitlab/graphql/
-├── client.go                 # NewClient wraps the HTTP transport with
-│                             # VersionGatedDoer and exposes SetVersion.
-├── generated.go              # genqlient output (unchanged interface).
-├── version_gating_test.go    # End-to-end: the real getProjects operation
-│                             # against servers simulating several versions.
-├── doer/
-│   ├── doc.go                # Package overview.
-│   ├── version.go            # ServerVersion + Gate + Allows.
-│   ├── rewrite.go            # stripVersionedNodes (AST walker, var pruning).
-│   ├── doer.go               # VersionGatedDoer (HTTP-level integration).
-│   └── README.md             # This file.
-└── spec/
-    ├── directives.graphql        # @minVersion / @maxVersion declarations.
-    ├── fragments/*.graphql       # Reusable fragment definitions; annotated
-    │                             # with @minVersion / @maxVersion as needed.
-    ├── queries/*.graphql         # Operation definitions; may also carry
-    │                             # the directives on fields, spreads, and
-    │                             # inline fragments.
-    ├── schema/schema.graphql     # GitLab GraphQL schema (CI-only).
-    └── complexity_test.{go,sh}   # Live complexity-measurement harness.
-```
-
 ## Workflow for adding new gated fields
 
 1. Edit the `.graphql` file under `spec/fragments/` or `spec/queries/`,
@@ -214,12 +218,10 @@ exporter/internal/gitlab/graphql/
    above any newly gated field unless it is already nullable.
 2. Run `make graphql` from `exporter/`. Genqlient validates the directives
    against `spec/directives.graphql` and regenerates `generated.go`.
-3. Update any caller that previously had Go-side version dispatch for the
-   same field (e.g. the pattern in `projects.go` was: `includeUpdatedAt := c.Version.Major >= 17`).
-4. Add a unit test in `doer/rewrite_test.go` (or a Doer-level test in
+3. Add a unit test in `doer/rewrite_test.go` (or a Doer-level test in
    `doer/doer_test.go`) that exercises the new gating.
-5. If the field is version-sensitive on the wire, add its name and
+4. If the field is version-sensitive on the wire, add its name and
    introducing major version to `fieldsUnknownBefore` in
    `version_gating_test.go`. The simulated server then rejects any request
    that fails to strip it, so a gating regression fails the build.
-6. Confirm `go test ./...` is green.
+5. Confirm `go test ./...` is green.

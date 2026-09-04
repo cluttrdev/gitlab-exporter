@@ -442,3 +442,174 @@ func TestDoer_AgainstHTTPServer(t *testing.T) {
 		t.Errorf("expected 'kept' field present, server saw:\n%s", p.Query)
 	}
 }
+
+// TestDoer_MaterializesConditionalsOnOldServer covers the end-to-end POST
+// path: below 17.0 the excluded fragment must never leave the process, and
+// its flag variables must be dropped from the payload alongside it.
+func TestDoer_MaterializesConditionalsOnOldServer(t *testing.T) {
+	cap := &captureDoer{}
+	d := NewVersionGatedDoer(cap)
+	g, err := NewGate("16.0.0-ee")
+	if err != nil {
+		t.Fatal(err)
+	}
+	d.SetGate(g)
+
+	body, err := json.Marshal(payload{
+		Query:         splitQuery,
+		Variables:     map[string]interface{}{"id": "gid://gitlab/Project/1", "_core": true, "_extra": false},
+		OperationName: "Q",
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := d.Do(newRequest(t, string(body))); err != nil {
+		t.Fatalf("Do: %v", err)
+	}
+
+	var sent payload
+	if err := json.Unmarshal([]byte(cap.bodies[0]), &sent); err != nil {
+		t.Fatalf("unmarshal forwarded body: %v", err)
+	}
+
+	if strings.Contains(sent.Query, "Extra") {
+		t.Errorf("excluded fragment was still sent\nquery:\n%s", sent.Query)
+	}
+	if !strings.Contains(sent.Query, "Core") {
+		t.Errorf("included fragment was dropped\nquery:\n%s", sent.Query)
+	}
+	for _, gone := range []string{"_core", "_extra"} {
+		if _, ok := sent.Variables[gone]; ok {
+			t.Errorf("variable %q should have been pruned, got %v", gone, sent.Variables)
+		}
+	}
+	if _, ok := sent.Variables["id"]; !ok {
+		t.Errorf("still-referenced variable $id was pruned, got %v", sent.Variables)
+	}
+}
+
+// TestDoer_LeavesConditionalsToModernServer is the other half: from 17.0 the
+// server's own complexity analyzer handles @include, so the query goes out
+// exactly as generated.
+func TestDoer_LeavesConditionalsToModernServer(t *testing.T) {
+	cap := &captureDoer{}
+	d := NewVersionGatedDoer(cap)
+	g, err := NewGate("17.7.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	d.SetGate(g)
+
+	body, err := json.Marshal(payload{
+		Query:     splitQuery,
+		Variables: map[string]interface{}{"id": "x", "_core": true, "_extra": false},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := d.Do(newRequest(t, string(body))); err != nil {
+		t.Fatalf("Do: %v", err)
+	}
+
+	var sent payload
+	if err := json.Unmarshal([]byte(cap.bodies[0]), &sent); err != nil {
+		t.Fatalf("unmarshal forwarded body: %v", err)
+	}
+	if !strings.Contains(sent.Query, "@include(if: $_extra)") {
+		t.Errorf("@include should have been left for the server\nquery:\n%s", sent.Query)
+	}
+	if len(sent.Variables) != 3 {
+		t.Errorf("no variable should have been pruned, got %v", sent.Variables)
+	}
+}
+
+// TestDoer_CacheKeyIncludesFlags guards the subtlety that makes the cache
+// correct once rewrites depend on variables: two requests sharing a query
+// string but differing in a flag must not share a cache entry.
+func TestDoer_CacheKeyIncludesFlags(t *testing.T) {
+	cap := &captureDoer{}
+	d := NewVersionGatedDoer(cap)
+	g, err := NewGate("16.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	d.SetGate(g)
+
+	send := func(core, extra bool) string {
+		t.Helper()
+		body, err := json.Marshal(payload{
+			Query:     splitQuery,
+			Variables: map[string]interface{}{"id": "x", "_core": core, "_extra": extra},
+		})
+		if err != nil {
+			t.Fatal(err)
+		}
+		if _, err := d.Do(newRequest(t, string(body))); err != nil {
+			t.Fatalf("Do: %v", err)
+		}
+		var sent payload
+		if err := json.Unmarshal([]byte(cap.bodies[len(cap.bodies)-1]), &sent); err != nil {
+			t.Fatal(err)
+		}
+		return sent.Query
+	}
+
+	coreOnly := send(true, false)
+	extraOnly := send(false, true)
+	if coreOnly == extraOnly {
+		t.Fatalf("flag combinations collided in the cache; both produced:\n%s", coreOnly)
+	}
+	if strings.Contains(coreOnly, "Extra") {
+		t.Errorf("core-only request carried the Extra fragment\n%s", coreOnly)
+	}
+	if strings.Contains(extraOnly, "Core") {
+		t.Errorf("extra-only request carried the Core fragment\n%s", extraOnly)
+	}
+
+	// The repeat must be served from cache rather than recomputed.
+	if again := send(true, false); again != coreOnly {
+		t.Errorf("cached rewrite is not stable:\n%s\nvs\n%s", coreOnly, again)
+	}
+}
+
+// TestDoer_MaterializesConditionalsOnGET covers the URL-parameter transport
+// genqlient's NewClientUsingGet emits, where variables arrive as a JSON blob
+// that now has to be decoded before the rewrite rather than after.
+func TestDoer_MaterializesConditionalsOnGET(t *testing.T) {
+	cap := &captureDoer{}
+	d := NewVersionGatedDoer(cap)
+	g, err := NewGate("16.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	d.SetGate(g)
+
+	req, err := http.NewRequest(http.MethodGet, "http://example/graphql", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	q := req.URL.Query()
+	q.Set("query", splitQuery)
+	q.Set("variables", `{"id":"x","_core":true,"_extra":false}`)
+	req.URL.RawQuery = q.Encode()
+
+	if _, err := d.Do(req); err != nil {
+		t.Fatalf("Do: %v", err)
+	}
+
+	sent := cap.requests[0].URL.Query()
+	if strings.Contains(sent.Get("query"), "Extra") {
+		t.Errorf("excluded fragment was still sent\nquery:\n%s", sent.Get("query"))
+	}
+
+	var vars map[string]interface{}
+	if err := json.Unmarshal([]byte(sent.Get("variables")), &vars); err != nil {
+		t.Fatalf("unmarshal forwarded variables: %v", err)
+	}
+	if _, ok := vars["_extra"]; ok {
+		t.Errorf("pruned variable still present: %v", vars)
+	}
+	if _, ok := vars["id"]; !ok {
+		t.Errorf("live variable was dropped: %v", vars)
+	}
+}

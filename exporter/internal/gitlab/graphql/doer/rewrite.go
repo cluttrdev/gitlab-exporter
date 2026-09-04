@@ -18,10 +18,22 @@ const (
 	directiveVersionArg = "v"
 )
 
+// Names of the standard conditional directives. On servers whose complexity
+// analyzer ignores them on fragment spreads and inline fragments, the rewriter
+// evaluates them itself and removes the excluded nodes outright.
+const (
+	directiveInclude      = "include"
+	directiveSkip         = "skip"
+	directiveConditionArg = "if"
+)
+
 // StripForVersion rewrites query as the VersionGatedDoer would for the given
 // gate: every selection node excluded by its @minVersion / @maxVersion
 // directives is removed, and the marker directives are stripped from the nodes
 // that remain.
+//
+// @include / @skip are left untouched. Use StripForVersionWithVariables to
+// also materialize those against a concrete set of variables.
 //
 // This function performs no variable pruning, so a variable left unreferenced
 // by the rewrite stays in the caller's variables map. That is harmless for
@@ -32,6 +44,54 @@ func StripForVersion(query string, gate *Gate) (string, error) {
 		return "", err
 	}
 	return rewritten, nil
+}
+
+// StripForVersionWithVariables rewrites query exactly as the VersionGatedDoer
+// would for the given gate and request variables. In addition to the
+// @minVersion / @maxVersion pruning StripForVersion performs, it materializes
+// @include / @skip when the gate's server needs it
+// (see Gate.MaterializesConditionals): every node whose condition resolves to
+// "excluded" is removed, and the directive is stripped from nodes that stay.
+//
+// Callers measuring query cost should prefer this over StripForVersion: below
+// GitLab 17.0 it is the difference between the query the server is charged for
+// and the query it actually resolves.
+func StripForVersionWithVariables(query string, gate *Gate, vars map[string]any) (string, error) {
+	rewritten, _, err := stripNodes(query, rewriteOpts{
+		gate:        gate,
+		vars:        vars,
+		materialize: gate.MaterializesConditionals(),
+	})
+	if err != nil {
+		return "", err
+	}
+	return rewritten, nil
+}
+
+// rewriteOpts configures a single rewrite pass.
+type rewriteOpts struct {
+	gate *Gate
+
+	// vars carries the request's GraphQL variables, used to resolve the
+	// `if:` argument of @include / @skip. Only consulted when materialize
+	// is set.
+	vars map[string]any
+
+	// materialize enables client-side evaluation of @include / @skip. When
+	// false the rewriter leaves those directives alone and the server decides.
+	materialize bool
+}
+
+// pruneCtx is the resolved, per-document form of rewriteOpts handed to the
+// selection walk.
+type pruneCtx struct {
+	gate *Gate
+
+	// conditionals maps variable name to the boolean value the request
+	// supplies for it. A nil map disables conditional materialization
+	// entirely; a name missing from a non-nil map is unresolvable and makes
+	// the rewriter leave the node - and its directive - in place.
+	conditionals map[string]bool
 }
 
 // stripVersionedNodes parses raw, prunes any selection node whose
@@ -51,15 +111,28 @@ func StripForVersion(query string, gate *Gate) (string, error) {
 // error and no rewritten string. The caller MUST NOT forward the original
 // query in that case.
 func stripVersionedNodes(raw string, gate *Gate) (string, map[string]struct{}, error) {
+	return stripNodes(raw, rewriteOpts{gate: gate})
+}
+
+// stripNodes is the full rewrite pass behind stripVersionedNodes and
+// StripForVersionWithVariables. See stripVersionedNodes for the contract; the
+// only addition here is the optional @include / @skip materialization
+// configured by opts.
+func stripNodes(raw string, opts rewriteOpts) (string, map[string]struct{}, error) {
 	doc, perr := parser.ParseQuery(&ast.Source{Name: "request", Input: raw})
 	if perr != nil {
 		return "", nil, fmt.Errorf("parse query: %w", perr)
 	}
 
+	pc := pruneCtx{
+		gate:         opts.gate,
+		conditionals: resolveConditionals(doc, opts),
+	}
+
 	candidateVars := make(map[string]struct{})
 
 	for _, frag := range doc.Fragments {
-		pruned, err := pruneSelectionSet(gate, frag.SelectionSet, candidateVars)
+		pruned, err := pruneSelectionSet(pc, frag.SelectionSet, candidateVars)
 		if err != nil {
 			return "", nil, fmt.Errorf("fragment %s: %w", frag.Name, err)
 		}
@@ -70,7 +143,7 @@ func stripVersionedNodes(raw string, gate *Gate) (string, map[string]struct{}, e
 	}
 
 	for _, op := range doc.Operations {
-		pruned, err := pruneSelectionSet(gate, op.SelectionSet, candidateVars)
+		pruned, err := pruneSelectionSet(pc, op.SelectionSet, candidateVars)
 		if err != nil {
 			return "", nil, fmt.Errorf("operation %s: %w", op.Name, err)
 		}
@@ -157,11 +230,45 @@ func stripVersionedNodes(raw string, gate *Gate) (string, map[string]struct{}, e
 	return out, prunedVars, nil
 }
 
+// resolveConditionals builds the variable -> boolean map used to materialize
+// @include / @skip, or returns nil to leave those directives to the server.
+//
+// Values come from the request variables, falling back to the default in the
+// operation's variable definition. A variable that resolves to neither is
+// omitted, which makes keepFor leave its node untouched.
+//
+// Materialization is restricted to single-operation documents. Fragment
+// definitions are shared across every operation in a document, so with more
+// than one there is no single correct value to prune a fragment body against.
+// Every genqlient-issued request carries exactly one operation.
+func resolveConditionals(doc *ast.QueryDocument, opts rewriteOpts) map[string]bool {
+	if !opts.materialize || len(doc.Operations) != 1 {
+		return nil
+	}
+
+	out := make(map[string]bool)
+	for _, vd := range doc.Operations[0].VariableDefinitions {
+		if v, ok := opts.vars[vd.Variable]; ok {
+			if b, ok := v.(bool); ok {
+				out[vd.Variable] = b
+			}
+			// A non-boolean value for a variable used in an `if:` position is
+			// a caller error; leaving it unresolved makes the server say so.
+			continue
+		}
+		if vd.DefaultValue != nil && vd.DefaultValue.Kind == ast.BooleanValue {
+			out[vd.Variable] = vd.DefaultValue.Raw == "true"
+		}
+	}
+	return out
+}
+
 // pruneSelectionSet walks a selection set and returns a new SelectionSet with
-// nodes dropped according to @minVersion / @maxVersion directives. Dropped
+// nodes dropped according to their @minVersion / @maxVersion directives and,
+// when pc.conditionals is set, their @include / @skip directives. Dropped
 // subtrees contribute variable references to candidateVars so the second
 // pass can decide which variable definitions are truly unused.
-func pruneSelectionSet(gate *Gate, in ast.SelectionSet, candidateVars map[string]struct{}) (ast.SelectionSet, error) {
+func pruneSelectionSet(pc pruneCtx, in ast.SelectionSet, candidateVars map[string]struct{}) (ast.SelectionSet, error) {
 	if len(in) == 0 {
 		return nil, nil
 	}
@@ -169,7 +276,7 @@ func pruneSelectionSet(gate *Gate, in ast.SelectionSet, candidateVars map[string
 	for _, sel := range in {
 		switch n := sel.(type) {
 		case *ast.Field:
-			keep, stripped, err := keepFor(gate, n.Directives)
+			keep, stripped, err := keepFor(pc, n.Directives, candidateVars)
 			if err != nil {
 				return nil, fmt.Errorf("field %q: %w", n.Name, err)
 			}
@@ -177,7 +284,7 @@ func pruneSelectionSet(gate *Gate, in ast.SelectionSet, candidateVars map[string
 				collectVariableReferencesField(n, candidateVars)
 				continue
 			}
-			child, err := pruneSelectionSet(gate, n.SelectionSet, candidateVars)
+			child, err := pruneSelectionSet(pc, n.SelectionSet, candidateVars)
 			if err != nil {
 				return nil, fmt.Errorf("field %q: %w", n.Name, err)
 			}
@@ -191,29 +298,34 @@ func pruneSelectionSet(gate *Gate, in ast.SelectionSet, candidateVars map[string
 			out = append(out, n)
 
 		case *ast.FragmentSpread:
-			keep, stripped, err := keepFor(gate, n.Directives)
+			keep, stripped, err := keepFor(pc, n.Directives, candidateVars)
 			if err != nil {
 				return nil, fmt.Errorf("spread %q: %w", n.Name, err)
 			}
 			if !keep {
-				// Spreads carry no arguments / sub-selections; the fragment
-				// definition the spread targets stays in the document and
-				// its variable references stay live.
+				// A spread has no arguments or sub-selections of its own, so
+				// the only variables it can strand are the ones in its
+				// directives - the `if:` of an @include, typically. The
+				// fragment definition stays in the document for now;
+				// reachableFragments removes it, and harvests its variables,
+				// if this was its last spread.
+				collectVariableReferencesDirectives(n.Directives, candidateVars)
 				continue
 			}
 			n.Directives = stripped
 			out = append(out, n)
 
 		case *ast.InlineFragment:
-			keep, stripped, err := keepFor(gate, n.Directives)
+			keep, stripped, err := keepFor(pc, n.Directives, candidateVars)
 			if err != nil {
 				return nil, fmt.Errorf("inline fragment on %q: %w", n.TypeCondition, err)
 			}
 			if !keep {
+				collectVariableReferencesDirectives(n.Directives, candidateVars)
 				collectVariableReferences(n.SelectionSet, candidateVars)
 				continue
 			}
-			child, err := pruneSelectionSet(gate, n.SelectionSet, candidateVars)
+			child, err := pruneSelectionSet(pc, n.SelectionSet, candidateVars)
 			if err != nil {
 				return nil, fmt.Errorf("inline fragment on %q: %w", n.TypeCondition, err)
 			}
@@ -228,22 +340,34 @@ func pruneSelectionSet(gate *Gate, in ast.SelectionSet, candidateVars map[string
 	return out, nil
 }
 
-// keepFor evaluates @minVersion / @maxVersion directives on a node and
-// reports whether the node should be kept for the gate's server version.
-// The returned DirectiveList carries the original directives with the
-// matched marker directives removed; other directives (e.g. @include) are
-// preserved unchanged.
+// keepFor evaluates a node's directives and reports whether the node should
+// be kept. Two independent decisions are folded in:
+//
+//   - @minVersion / @maxVersion against the gate's server version;
+//   - @include / @skip against pc.conditionals, but only when that map is
+//     non-nil (see resolveConditionals).
+//
+// Either one excluding the node drops it. The returned DirectiveList carries
+// the original directives with every directive the rewriter consumed removed;
+// anything it did not act on is preserved unchanged - including @include and
+// @skip whose condition it could not resolve, which the server then evaluates
+// as usual.
+//
+// Consuming a resolved @include / @skip can leave its `if:` variable
+// unreferenced, so those names are added to candidateVars for the caller's
+// variable-pruning pass to intersect.
 //
 // Multiple @minVersion or @maxVersion markers on the same node are an
 // authoring error.
-func keepFor(gate *Gate, in ast.DirectiveList) (bool, ast.DirectiveList, error) {
+func keepFor(pc pruneCtx, in ast.DirectiveList, candidateVars map[string]struct{}) (bool, ast.DirectiveList, error) {
 	if len(in) == 0 {
 		return true, in, nil
 	}
 
 	var (
-		minV, maxV     string
-		hasMin, hasMax bool
+		minV, maxV        string
+		hasMin, hasMax    bool
+		conditionExcludes bool
 	)
 	stripped := make(ast.DirectiveList, 0, len(in))
 
@@ -269,20 +393,65 @@ func keepFor(gate *Gate, in ast.DirectiveList) (bool, ast.DirectiveList, error) 
 			}
 			hasMax = true
 			maxV = v
+		case directiveInclude, directiveSkip:
+			cond, ok := readConditionArg(d, pc.conditionals)
+			if !ok {
+				// Unresolvable: no conditionals map, no `if:` argument, or a
+				// variable the request did not supply a boolean for. Leave the
+				// directive in place and let the server decide - pruning a node
+				// the server would have kept silently loses data.
+				stripped = append(stripped, d)
+				continue
+			}
+			// @skip(if: true) and @include(if: false) both exclude.
+			if (d.Name == directiveSkip) == cond {
+				conditionExcludes = true
+			}
+			collectVariableReferencesDirectives(ast.DirectiveList{d}, candidateVars)
 		default:
 			stripped = append(stripped, d)
 		}
+	}
+
+	if conditionExcludes {
+		return false, nil, nil
 	}
 
 	if !hasMin && !hasMax {
 		return true, stripped, nil
 	}
 
-	keep, err := gate.Allows(minV, maxV)
+	keep, err := pc.gate.Allows(minV, maxV)
 	if err != nil {
 		return false, nil, err
 	}
 	return keep, stripped, nil
+}
+
+// readConditionArg resolves the `if:` argument of an @include / @skip
+// directive to a concrete boolean. It reports false as its second result when
+// the condition cannot be resolved statically, which is the signal to leave
+// the directive alone: a literal of the wrong kind, a missing argument, a
+// variable absent from conditionals, or a nil conditionals map (materialization
+// disabled).
+func readConditionArg(d *ast.Directive, conditionals map[string]bool) (bool, bool) {
+	if conditionals == nil {
+		return false, false
+	}
+	for _, arg := range d.Arguments {
+		if arg.Name != directiveConditionArg || arg.Value == nil {
+			continue
+		}
+		switch arg.Value.Kind {
+		case ast.BooleanValue:
+			return arg.Value.Raw == "true", true
+		case ast.Variable:
+			v, ok := conditionals[arg.Value.Raw]
+			return v, ok
+		}
+		return false, false
+	}
+	return false, false
 }
 
 // readVersionArg extracts the v: "..." argument from a @minVersion or
