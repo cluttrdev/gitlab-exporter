@@ -1,0 +1,28 @@
+# Custom directives used by the gitlab-exporter runtime query rewriter.
+#
+# Selection nodes annotated with @minVersion / @maxVersion are stripped from
+# outgoing queries by the rewriter (internal/gitlab/graphql/doer) based on the
+# connected GitLab server's version. The directives never reach the server
+# - they are removed by the rewriter before each request is sent.
+#
+# @minVersionArgs / @maxVersionArgs gate individual *arguments* of a field
+# rather than the field itself: when the server is out of range, the named
+# arguments are removed from the field while the field (and its selection set)
+# is kept. This handles fields that exist on older servers but gained an
+# argument later, e.g. notes(filter: ONLY_ACTIVITY). GraphQL forbids directives
+# on argument usages, so the affected argument names are listed in `args`.
+# Like the other markers, these never reach the server.
+
+directive @minVersion(v: String!) on
+  | FIELD
+  | FRAGMENT_SPREAD
+  | INLINE_FRAGMENT
+
+directive @maxVersion(v: String!) on
+  | FIELD
+  | FRAGMENT_SPREAD
+  | INLINE_FRAGMENT
+
+directive @minVersionArgs(v: String!, args: [String!]!) on FIELD
+
+directive @maxVersionArgs(v: String!, args: [String!]!) on FIELD

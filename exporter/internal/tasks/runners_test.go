@@ -10,8 +10,19 @@ import (
 	"time"
 
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab/version"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
 )
+
+// setTestVersion installs a default GitLab version on the test client so the
+// GraphQL Doer has a Gate. Tests that need to exercise specific version
+// behavior should call SetVersion explicitly themselves.
+func setTestVersion(t *testing.T, c *gitlab.Client) {
+	t.Helper()
+	if err := c.SetVersion(version.GitLabVersion{Major: 17, Raw: "17.0.0"}); err != nil {
+		t.Fatalf("set version: %v", err)
+	}
+}
 
 func TestFetchRunners_Success(t *testing.T) {
 	// Create a test server that mocks the GitLab GraphQL API
@@ -83,6 +94,7 @@ func TestFetchRunners_Success(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create client: %v", err)
 	}
+	setTestVersion(t, client)
 
 	// Test FetchRunners
 	ctx := context.Background()
@@ -160,6 +172,7 @@ func TestFetchRunners_EmptyList(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create client: %v", err)
 	}
+	setTestVersion(t, client)
 
 	ctx := context.Background()
 	runners, err := FetchRunners(ctx, client)
@@ -256,6 +269,7 @@ func TestFetchRunners_WithPagination(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create client: %v", err)
 	}
+	setTestVersion(t, client)
 
 	ctx := context.Background()
 	runners, err := FetchRunners(ctx, client)
@@ -301,6 +315,7 @@ func TestFetchRunners_ContextCancellation(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create client: %v", err)
 	}
+	setTestVersion(t, client)
 
 	// Create a context that will be cancelled immediately
 	ctx, cancel := context.WithCancel(context.Background())
@@ -358,6 +373,7 @@ func TestFetchRunners_InvalidRunnerId(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to create client: %v", err)
 	}
+	setTestVersion(t, client)
 
 	ctx := context.Background()
 	runners, err := FetchRunners(ctx, client)

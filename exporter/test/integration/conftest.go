@@ -10,6 +10,7 @@ import (
 
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/exporter"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab/version"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/test/bufconn"
@@ -29,6 +30,13 @@ func setupGitLab(t *testing.T) (*http.ServeMux, *gitlab.Client) {
 	})
 	if err != nil {
 		t.Fatalf("failed to create client: %v", err)
+	}
+
+	// Install a default version so the GraphQL Doer has a Gate. Without this
+	// every request would fail with doer.ErrGateUnset. Tests that care about
+	// specific version-gating behavior can call SetVersion themselves.
+	if err := client.SetVersion(version.GitLabVersion{Major: 17, Raw: "17.0.0"}); err != nil {
+		t.Fatalf("failed to set version: %v", err)
 	}
 
 	return mux, client

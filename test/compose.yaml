@@ -1,0 +1,53 @@
+services:
+  gitlab:
+    image: gitlab/gitlab-ee:15.11.13-ee.0
+    hostname: gitlab.local
+    ports:
+      - "8080:80"
+      - "8443:443"
+      - "2222:22"
+    # volumes:
+    #   - gitlab_config:/etc/gitlab
+    #   - gitlab_logs:/var/log/gitlab
+    #   - gitlab_data:/var/opt/gitlab
+    volumes:
+      - ./create-root-token.sh:/opt/create-root-token.sh:ro
+    shm_size: "256m"
+    deploy:
+      resources:
+        limits:
+          cpus: 4
+          memory: 8G
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost/-/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 60
+    environment:
+      GITLAB_POST_RECONFIGURE_SCRIPT: "/opt/create-root-token.sh"
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url 'http://localhost'
+        gitlab_rails['initial_root_password'] = 'password1234!'
+
+        # Just 2 workers
+        puma['worker_processes'] = 2
+
+        # 10 jobs is still quite a lot
+        #sidekiq['max_concurrency'] = 10
+
+        # Disable monitoring
+        alertmanager['enable'] = false
+        gitlab_exporter['enable'] = false
+        gitlab_kas['enable'] = false
+        node_exporter['enable'] = false
+        postgres_exporter['enable'] = false
+        prometheus_monitoring['enable'] = false
+        prometheus['enable'] = false
+        puma['exporter_enabled'] = false
+
+        redis_exporter['enable'] = false
+        sidekiq['metrics_enabled'] = false
+# volumes:
+#   gitlab_config:
+#   gitlab_logs:
+#   gitlab_data:

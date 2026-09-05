@@ -147,7 +147,7 @@ query getProjectsMergeRequestNotes(
                 nodes {
                     ...MergeRequestReferenceFields
 
-                    notes(filter: ONLY_ACTIVITY) {
+                    notes(filter: ONLY_ACTIVITY) @minVersionArgs(v: "16.5", args: ["filter"]) {
                         nodes {
                             ...MergeRequestNotesFieldsCore
                         }
@@ -180,7 +180,7 @@ query getProjectMergeRequestsNotes(
             nodes {
                 ...MergeRequestReferenceFields
 
-                notes(filter: ONLY_ACTIVITY) {
+                notes(filter: ONLY_ACTIVITY) @minVersionArgs(v: "16.5", args: ["filter"]) {
                     nodes {
                         ...MergeRequestNotesFieldsCore
                     }
@@ -207,7 +207,7 @@ query getProjectMergeRequestNotes(
         mergeRequest(iid: $mergeRequestIid) {
             ...MergeRequestReferenceFields
 
-            notes(filter: ONLY_ACTIVITY, after: $endCursor) {
+            notes(filter: ONLY_ACTIVITY, after: $endCursor) @minVersionArgs(v: "16.5", args: ["filter"]) {
                 nodes {
                     ...MergeRequestNotesFieldsCore
                 }

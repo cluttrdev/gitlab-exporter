@@ -407,9 +407,15 @@ func createGitLabClient(cfg config.Config) (*gitlab.Client, error) {
 	ver, err := glab.DetectVersion(context.Background())
 	if err != nil {
 		slog.Warn("Failed to detect GitLab version, assuming 16.x", "error", err)
-		glab.SetVersion(version.GitLabVersion{Major: 16})
-	} else {
-		glab.SetVersion(ver)
+		ver = version.GitLabVersion{Major: 16, Raw: "16.0.0"}
+		if vErr := glab.SetVersion(ver); vErr != nil {
+			// The hardcoded fallback failing to install is a code bug, not a
+			// runtime condition; crash loudly rather than limp into an
+			// unusable GraphQL client.
+			panic(fmt.Sprintf("set fallback GitLab version: %v", vErr))
+		}
+	} else if vErr := glab.SetVersion(ver); vErr != nil {
+		return nil, fmt.Errorf("set detected GitLab version: %w", vErr)
 	}
 
 	return glab, err

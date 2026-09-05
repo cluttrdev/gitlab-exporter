@@ -1,11 +1,12 @@
 # Default genqlient config; for full documentation see:
 # https://github.com/Khan/genqlient/blob/main/docs/genqlient.yaml
-schema: spec/schema.graphql
+schema:
+  - spec/schema/schema.graphql
+  - spec/directives.graphql
 
 operations:
   - spec/fragments/*.graphql
   - spec/queries/*.graphql
-  - spec/testreports.graphql
 
 generated: generated.go
 
