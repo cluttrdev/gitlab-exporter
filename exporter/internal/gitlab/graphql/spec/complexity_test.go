@@ -48,6 +48,7 @@ const (
 	defaultProjectId       = "gid://gitlab/Project/50817395"
 	defaultProjectPath     = "gitlab-exporter/gitlab-exporter"
 	defaultPipelineIid     = "1"
+	defaultJobId           = "gid://gitlab/Ci::Build/1"
 	defaultMergeRequestIid = "1"
 )
 
@@ -84,6 +85,10 @@ func TestQueryComplexity(t *testing.T) {
 	if pipelineIid == "" {
 		pipelineIid = defaultPipelineIid
 	}
+	jobId := os.Getenv("GITLAB_JOB_ID")
+	if jobId == "" {
+		jobId = defaultJobId
+	}
 	mergeRequestIid := os.Getenv("GITLAB_MERGE_REQUEST_IID")
 	if mergeRequestIid == "" {
 		mergeRequestIid = defaultMergeRequestIid
@@ -101,9 +106,11 @@ func TestQueryComplexity(t *testing.T) {
 
 	// Common variables used by test queries
 	commonVars := map[string]interface{}{
+		"projectId":       projectId,
 		"projectPath":     projectPath,
 		"ids":             []string{projectId},
 		"pipelineIid":     pipelineIid,
+		"jobId":           jobId,
 		"mergeRequestIid": mergeRequestIid,
 		"updatedAfter":    time.Now().Add(-7 * 24 * time.Hour).Format(time.RFC3339),
 		"updatedBefore":   time.Now().Format(time.RFC3339),
@@ -179,38 +186,46 @@ func TestQueryComplexity(t *testing.T) {
 			// when a gate is active it does all the work.
 			assembled := queryWithComplexity + fragmentDefs.String()
 
-			var fullQuery string
-			if gate != nil {
-				gated, err := doer.StripForVersion(assembled, gate)
-				if err != nil {
-					t.Errorf("gated rewrite of %s/%s failed: %v", fileNameWithoutExt, queryName, err)
-					continue
+			// The gated rewrite is variable-dependent: below GitLab 17.0 the
+			// runtime Doer materializes @include itself, because the server's
+			// complexity analyzer ignores it on fragment spreads. So the
+			// rewrite happens per flag combination, not once per query, or the
+			// harness would measure a query nobody sends.
+			buildQuery := func(vars map[string]interface{}) (string, error) {
+				if gate == nil {
+					return stripVersionDirectives(assembled), nil
 				}
-				fullQuery = gated
-			} else {
-				fullQuery = stripVersionDirectives(assembled)
+				return doer.StripForVersionWithVariables(assembled, gate, vars)
 			}
 
 			// Dynamically detect boolean flag parameters
 			boolFlags := extractBooleanParameters(queryText)
 
+			var variants map[string]map[string]interface{}
 			if len(boolFlags) > 0 {
-				// Generate all combinations for boolean flags
-				combinations := generateFlagCombinations(boolFlags)
-
-				for variantName, flagVars := range combinations {
-					tests = append(tests, testCase{
-						name:      fmt.Sprintf("%s/%s (%s)", fileNameWithoutExt, queryName, variantName),
-						query:     fullQuery,
-						variables: mergeVars(commonVars, flagVars),
-					})
-				}
+				variants = generateFlagCombinations(boolFlags)
 			} else {
-				// No boolean flags, just add the query as-is
+				variants = map[string]map[string]interface{}{"": nil}
+			}
+
+			for variantName, flagVars := range variants {
+				vars := mergeVars(commonVars, flagVars)
+
+				query, err := buildQuery(vars)
+				if err != nil {
+					t.Errorf("gated rewrite of %s/%s failed: %v", fileNameWithoutExt, queryName, err)
+					continue
+				}
+
+				name := fmt.Sprintf("%s/%s", fileNameWithoutExt, queryName)
+				if variantName != "" {
+					name = fmt.Sprintf("%s (%s)", name, variantName)
+				}
+
 				tests = append(tests, testCase{
-					name:      fmt.Sprintf("%s/%s", fileNameWithoutExt, queryName),
-					query:     fullQuery,
-					variables: commonVars,
+					name:      name,
+					query:     query,
+					variables: vars,
 				})
 			}
 		}

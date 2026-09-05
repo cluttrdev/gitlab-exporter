@@ -1,12 +1,13 @@
 #!/bin/sh
 
 export GITLAB_URL="http://localhost:8080"
-export GITLAB_TOKEN="glpat-bVjg-tBGfd4YRwjX9UsC"
+# export GITLAB_TOKEN=""
 
 export GITLAB_PROJECT_ID="gid://gitlab/Project/2"
 export GITLAB_PROJECT_PATH="project-alpha"
-export GITLAB_PIPELINE_IID=""
-export GITLAB_MERGE_REQUEST_IID=""
+export GITLAB_PIPELINE_IID="" # default: 1
+export GITLAB_JOB_ID="" # default: gid://gitlab/Ci::Build/1
+export GITLAB_MERGE_REQUEST_IID="" # default: 1
 
 # Version gating. Unset (the default) measures the full query, so fields that
 # do not exist yet on this server show up as "Field 'x' doesn't exist" - which

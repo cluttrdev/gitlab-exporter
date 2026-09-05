@@ -1,8 +1,6 @@
 services:
   gitlab:
-    # image: gitlab/gitlab-ee:16.11.9-ee.0
-    # image: gitlab/gitlab-ee:17.0.0-ee.0
-    image: gitlab/gitlab-ee:17.7.0-ee.0
+    image: gitlab/gitlab-ee:15.11.13-ee.0
     hostname: gitlab.local
     ports:
       - "8080:80"
@@ -15,6 +13,11 @@ services:
     volumes:
       - ./create-root-token.sh:/opt/create-root-token.sh:ro
     shm_size: "256m"
+    deploy:
+      resources:
+        limits:
+          cpus: 4
+          memory: 8G
     healthcheck:
       test: ["CMD", "curl", "-sf", "http://localhost/-/health"]
       interval: 10s
