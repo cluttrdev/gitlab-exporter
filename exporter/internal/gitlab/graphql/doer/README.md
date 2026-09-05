@@ -202,20 +202,65 @@ variables. An `if:` condition is a boolean, so no other variable type can
 change the result and none is included. The key space stays bounded by
 "operations times flag combinations".
 
-## Argument-level gating (not supported)
+## Argument-level gating
 
-The directives are declared on FIELD, FRAGMENT_SPREAD, and INLINE_FRAGMENT.
-ARGUMENT_DEFINITION is intentionally omitted because no current annotation
-needs argument-level gating. If a future change requires it, declare the
-additional location in `spec/directives.graphql`, regenerate genqlient,
-and extend `rewrite.go` to walk `ast.Argument` directives.
+`@minVersion` / `@maxVersion` drop a whole selection node. Sometimes a field
+exists on older servers but one of its *arguments* was added later - for
+example `MergeRequest.notes` accepts `filter:` only from 16.5. Dropping the
+whole field would lose the notes entirely; dropping just the argument returns
+all notes instead of activity-only, a graceful degradation.
+
+GraphQL forbids directives on argument usages (there is no executable
+`DirectiveLocation` for them, so `notes(filter: X @minVersion(...))` is a
+syntax error). Two `on FIELD` directives express argument gating instead, with
+the affected arguments listed by name:
+
+```graphql
+directive @minVersionArgs(v: String!, args: [String!]!) on FIELD
+directive @maxVersionArgs(v: String!, args: [String!]!) on FIELD
+```
+
+```graphql
+notes(filter: ONLY_ACTIVITY) @minVersionArgs(v: "16.5", args: ["filter"])
+```
+
+When the server version is out of range, the named arguments are removed from
+the field while the field and its selection set stay. Any variable referenced
+only by a removed argument is pruned by the same machinery that prunes
+variables of dropped fields. The markers are stripped before the request is
+sent. The check runs only after the field survives its own `@minVersion` /
+`@maxVersion` - a dropped field makes its argument gating moot. Works
+identically for literal and variable argument values.
+
+Two rules that will otherwise cause issues:
+
+- **Only gate additive/optional arguments.** The rewriter has no runtime schema
+  and cannot tell a refinement (`filter:`) from a semantically required
+  selector. Removing a required argument produces a query that fails or, worse,
+  silently changes meaning.
+- **One marker per field.** A single version covers every name in `args`. Two
+  arguments on one field needing *different* versions is not expressible: a
+  second marker of the same kind is rejected as an authoring error, and
+  gqlparser's uniqueness rule
+  (`validator/rules/unique_directives_per_location.go`) would reject it at
+  codegen even if the directive were declared `repeatable`, because it compares
+  the directive name against the literal string `"repeatable"` rather than
+  consulting `IsRepeatable`.
+
+The rewriter reports an authoring error for: an `args` name not present on the
+field (caught on every server, since `args` entries are otherwise unvalidated
+strings), an empty `args` list, a duplicate marker of the same kind, a
+malformed or missing version, or a non-string list item.
 
 ## Workflow for adding new gated fields
 
 1. Edit the `.graphql` file under `spec/fragments/` or `spec/queries/`,
    adding `@minVersion(v: "X.Y")` / `@maxVersion(v: "X.Y")` to the field,
    spread, or inline fragment. Add a `# @genqlient(pointer: true)` comment
-   above any newly gated field unless it is already nullable.
+   above any newly gated field unless it is already nullable. To gate only
+   an argument of a field that itself exists on older servers, use
+   `@minVersionArgs(v: "X.Y", args: ["argName"])` /
+   `@maxVersionArgs(...)` instead (see "Argument-level gating").
 2. Run `make graphql` from `exporter/`. Genqlient validates the directives
    against `spec/directives.graphql` and regenerates `generated.go`.
 3. Add a unit test in `doer/rewrite_test.go` (or a Doer-level test in

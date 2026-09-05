@@ -3,6 +3,10 @@ package doer
 import (
 	"strings"
 	"testing"
+
+	"github.com/vektah/gqlparser/v2/ast"
+	"github.com/vektah/gqlparser/v2/formatter"
+	"github.com/vektah/gqlparser/v2/parser"
 )
 
 // rewriteTest exercises stripVersionedNodes against a fixed input query at a
@@ -415,6 +419,153 @@ fragment Legacy on Project {
 			wantContains:    []string{"kept"},
 			wantNotContains: []string{"... Legacy", "@maxVersion"},
 		},
+
+		// --- argument-level gating (@minVersionArgs / @maxVersionArgs) ---
+		{
+			name:   "minVersionArgs drops literal argument below range, keeps field",
+			server: "16.0",
+			input: `query Q {
+  project {
+    notes(filter: ONLY_ACTIVITY) @minVersionArgs(v: "17.0", args: ["filter"]) {
+      body
+    }
+  }
+}`,
+			wantContains:    []string{"notes", "body"},
+			wantNotContains: []string{"filter", "ONLY_ACTIVITY", "@minVersionArgs"},
+		},
+		{
+			name:   "minVersionArgs keeps argument in range",
+			server: "17.0",
+			input: `query Q {
+  project {
+    notes(filter: ONLY_ACTIVITY) @minVersionArgs(v: "17.0", args: ["filter"]) {
+      body
+    }
+  }
+}`,
+			wantContains:    []string{"notes", "filter", "ONLY_ACTIVITY", "body"},
+			wantNotContains: []string{"@minVersionArgs"},
+		},
+		{
+			name:   "minVersionArgs drops variable argument and prunes its variable",
+			server: "16.0",
+			input: `query Q($f: NotesFilter) {
+  project {
+    notes(filter: $f) @minVersionArgs(v: "17.0", args: ["filter"]) {
+      body
+    }
+  }
+}`,
+			wantContains:    []string{"notes", "body"},
+			wantNotContains: []string{"filter", "$f", "@minVersionArgs"},
+			wantPruned:      []string{"f"},
+		},
+		{
+			name:   "minVersionArgs keeps variable still referenced elsewhere",
+			server: "16.0",
+			input: `query Q($f: NotesFilter) {
+  project {
+    notes(filter: $f) @minVersionArgs(v: "17.0", args: ["filter"]) {
+      body
+    }
+    other(filter: $f) {
+      body
+    }
+  }
+}`,
+			wantContains:    []string{"other", "$f"},
+			wantNotContains: []string{"@minVersionArgs"},
+			wantPruned:      []string{},
+		},
+		{
+			name:   "maxVersionArgs drops argument above range",
+			server: "18.0",
+			input: `query Q {
+  project {
+    notes(legacy: true) @maxVersionArgs(v: "17.0", args: ["legacy"]) {
+      body
+    }
+  }
+}`,
+			wantContains:    []string{"notes", "body"},
+			wantNotContains: []string{"legacy", "@maxVersionArgs"},
+		},
+		{
+			name:   "minVersionArgs drops multiple named arguments",
+			server: "16.0",
+			input: `query Q {
+  project {
+    notes(filter: ONLY_ACTIVITY, sort: DESC, first: 5) @minVersionArgs(v: "17.0", args: ["filter", "sort"]) {
+      body
+    }
+  }
+}`,
+			wantContains:    []string{"notes", "first", "body"},
+			wantNotContains: []string{"filter", "sort", "ONLY_ACTIVITY", "DESC", "@minVersionArgs"},
+		},
+		{
+			name:   "field dropped by minVersion makes arg gating moot",
+			server: "16.0",
+			input: `query Q {
+  project {
+    notes(filter: ONLY_ACTIVITY) @minVersion(v: "17.5") @minVersionArgs(v: "17.0", args: ["filter"]) {
+      body
+    }
+    sibling
+  }
+}`,
+			wantContains:    []string{"sibling"},
+			wantNotContains: []string{"notes", "filter", "@minVersion"},
+		},
+		{
+			name:   "minVersionArgs with unknown argument name errors out",
+			server: "16.0",
+			input: `query Q {
+  project {
+    notes(filter: ONLY_ACTIVITY) @minVersionArgs(v: "17.0", args: ["nosuchargument"]) {
+      body
+    }
+  }
+}`,
+			wantErr: true,
+		},
+		{
+			name:   "minVersionArgs with empty args list errors out",
+			server: "16.0",
+			input: `query Q {
+  project {
+    notes(filter: ONLY_ACTIVITY) @minVersionArgs(v: "17.0", args: []) {
+      body
+    }
+  }
+}`,
+			wantErr: true,
+		},
+		{
+			name:   "minVersionArgs with malformed version errors out",
+			server: "16.0",
+			input: `query Q {
+  project {
+    notes(filter: ONLY_ACTIVITY) @minVersionArgs(v: "not-a-version", args: ["filter"]) {
+      body
+    }
+  }
+}`,
+			wantErr: true,
+		},
+		{
+			name:   "duplicate minVersionArgs errors out",
+			server: "16.0",
+			input: `query Q {
+  project {
+    notes(filter: ONLY_ACTIVITY) @minVersionArgs(v: "17.0", args: ["filter"]) @minVersionArgs(v: "18.0", args: ["filter"]) {
+      body
+    }
+  }
+}`,
+			wantErr: true,
+		},
 	}
 
 	for _, tt := range tests {
@@ -461,6 +612,39 @@ func keysOf(m map[string]struct{}) []string {
 		out = append(out, k)
 	}
 	return out
+}
+
+// TestFieldDirectiveWithListArgSurvivesFormatter guards the assumption the
+// argument-gating design rests on: a FIELD directive carrying a *list* argument
+// survives a parse -> FormatQueryDocument round trip. genqlient renders queries
+// through this same formatter path, so a directive the formatter dropped here
+// would silently vanish at codegen and never reach the rewriter - the failure
+// mode that has bitten annotation-eating attempts before (query comments,
+// VARIABLE_DEFINITION directives). Scalar directive args are proven elsewhere;
+// list args take the same FormatDirective path but are not assumed.
+func TestFieldDirectiveWithListArgSurvivesFormatter(t *testing.T) {
+	const query = `query Q {
+  project {
+    notes(filter: ONLY_ACTIVITY) @minVersionArgs(v: "17.0", args: ["filter", "sort"]) {
+      body
+    }
+  }
+}`
+
+	doc, perr := parser.ParseQuery(&ast.Source{Name: "test", Input: query})
+	if perr != nil {
+		t.Fatalf("parse: %v", perr)
+	}
+
+	var sb strings.Builder
+	formatter.NewFormatter(&sb).FormatQueryDocument(doc)
+	out := sb.String()
+
+	for _, want := range []string{`@minVersionArgs`, `v: "17.0"`, `args: ["filter","sort"]`} {
+		if !strings.Contains(out, want) {
+			t.Errorf("formatter dropped %q\nfull output:\n%s", want, out)
+		}
+	}
 }
 
 // TestStripVersionedNodes_OrphanedFragmentTakesItsVariables covers the cascade

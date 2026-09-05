@@ -18,6 +18,17 @@ const (
 	directiveVersionArg = "v"
 )
 
+// Names of the argument-gating directives. Unlike @minVersion / @maxVersion,
+// which drop a whole selection node, these drop individual arguments named in
+// their `args` list from a field the server still accepts. They are declared
+// in spec/directives.graphql (on FIELD) and stripped before any request is
+// sent.
+const (
+	directiveMinVersionArgs = "minVersionArgs"
+	directiveMaxVersionArgs = "maxVersionArgs"
+	directiveArgsArg        = "args"
+)
+
 // Names of the standard conditional directives. On servers whose complexity
 // analyzer ignores them on fragment spreads and inline fragments, the rewriter
 // evaluates them itself and removes the excluded nodes outright.
@@ -284,6 +295,13 @@ func pruneSelectionSet(pc pruneCtx, in ast.SelectionSet, candidateVars map[strin
 				collectVariableReferencesField(n, candidateVars)
 				continue
 			}
+			// The field itself survives; now evaluate any argument-level
+			// gating markers, which may remove arguments (and strand their
+			// variables) while leaving the field in place.
+			stripped, err = applyArgGating(pc, n, stripped, candidateVars)
+			if err != nil {
+				return nil, fmt.Errorf("field %q: %w", n.Name, err)
+			}
 			child, err := pruneSelectionSet(pc, n.SelectionSet, candidateVars)
 			if err != nil {
 				return nil, fmt.Errorf("field %q: %w", n.Name, err)
@@ -426,6 +444,136 @@ func keepFor(pc pruneCtx, in ast.DirectiveList, candidateVars map[string]struct{
 		return false, nil, err
 	}
 	return keep, stripped, nil
+}
+
+// applyArgGating evaluates @minVersionArgs / @maxVersionArgs markers on a
+// field that has already survived its own @minVersion / @maxVersion check.
+// Each marker names a set of arguments in its `args` list; when the gate's
+// server is out of the marker's range, those arguments are removed from the
+// field while the field and its selection set stay. This gracefully degrades
+// fields that gained an argument in a later GitLab version.
+//
+// in is the field's directive list with the whole-field markers already
+// consumed (as returned by keepFor). The returned list additionally has the
+// argument-gating markers removed, so nothing leaks to the server.
+//
+// Variables referenced only by removed arguments are added to candidateVars so
+// the caller's pruning pass can drop them if nothing else references them.
+//
+// Authoring errors are reported loudly: a duplicate marker of the same kind, a
+// malformed or missing version, a missing or empty `args` list, a non-string
+// list item, or an `args` entry naming an argument the field does not carry.
+func applyArgGating(pc pruneCtx, f *ast.Field, in ast.DirectiveList, candidateVars map[string]struct{}) (ast.DirectiveList, error) {
+	if len(in) == 0 {
+		return in, nil
+	}
+
+	var seenMin, seenMax bool
+	out := make(ast.DirectiveList, 0, len(in))
+
+	for _, d := range in {
+		var minV, maxV string
+		switch d.Name {
+		case directiveMinVersionArgs:
+			if seenMin {
+				return nil, fmt.Errorf("duplicate @%s directive", directiveMinVersionArgs)
+			}
+			seenMin = true
+			v, err := readVersionArg(d)
+			if err != nil {
+				return nil, err
+			}
+			minV = v
+		case directiveMaxVersionArgs:
+			if seenMax {
+				return nil, fmt.Errorf("duplicate @%s directive", directiveMaxVersionArgs)
+			}
+			seenMax = true
+			v, err := readVersionArg(d)
+			if err != nil {
+				return nil, err
+			}
+			maxV = v
+		default:
+			// Not an argument-gating marker; preserve it untouched.
+			out = append(out, d)
+			continue
+		}
+
+		names, err := readArgsArg(d)
+		if err != nil {
+			return nil, err
+		}
+		// Validate the named arguments exist regardless of the version
+		// outcome, so a typo is caught on every server rather than only on
+		// the ones that would have dropped the argument.
+		if err := checkFieldArgs(f, names); err != nil {
+			return nil, fmt.Errorf("directive @%s: %w", d.Name, err)
+		}
+
+		keep, err := pc.gate.Allows(minV, maxV)
+		if err != nil {
+			return nil, err
+		}
+		if !keep {
+			removeFieldArgs(f, names, candidateVars)
+		}
+	}
+
+	return out, nil
+}
+
+// checkFieldArgs verifies every name is an argument the field carries. It
+// catches typos in an @minVersionArgs / @maxVersionArgs `args` list, whose
+// entries are otherwise unvalidated strings.
+func checkFieldArgs(f *ast.Field, names []string) error {
+	for _, name := range names {
+		if f.Arguments.ForName(name) == nil {
+			return fmt.Errorf("argument %q not present on field %q", name, f.Name)
+		}
+	}
+	return nil
+}
+
+// removeFieldArgs deletes the named arguments from f, collecting any variables
+// they reference into candidateVars so the caller's pruning pass can drop the
+// ones nothing else uses. Names are assumed present (see checkFieldArgs).
+func removeFieldArgs(f *ast.Field, names []string, candidateVars map[string]struct{}) {
+	for _, name := range names {
+		for i, arg := range f.Arguments {
+			if arg.Name == name {
+				collectVariableReferencesValue(arg.Value, candidateVars)
+				f.Arguments = append(f.Arguments[:i], f.Arguments[i+1:]...)
+				break
+			}
+		}
+	}
+}
+
+// readArgsArg extracts the args: ["..."] list from an @minVersionArgs /
+// @maxVersionArgs directive. The list must be present, non-empty, and contain
+// only string literals.
+func readArgsArg(d *ast.Directive) ([]string, error) {
+	for _, arg := range d.Arguments {
+		if arg.Name != directiveArgsArg {
+			continue
+		}
+		if arg.Value == nil || arg.Value.Kind != ast.ListValue {
+			return nil, fmt.Errorf("directive @%s: argument %q must be a list of strings", d.Name, directiveArgsArg)
+		}
+		if len(arg.Value.Children) == 0 {
+			return nil, fmt.Errorf("directive @%s: argument %q must not be empty", d.Name, directiveArgsArg)
+		}
+		names := make([]string, 0, len(arg.Value.Children))
+		for _, child := range arg.Value.Children {
+			if child.Value == nil || child.Value.Kind != ast.StringValue {
+				return nil, fmt.Errorf("directive @%s: argument %q must contain only strings", d.Name, directiveArgsArg)
+			}
+			names = append(names, child.Value.Raw)
+		}
+		return names, nil
+	}
+	return nil, fmt.Errorf("directive @%s: missing required argument %q", d.Name, directiveArgsArg)
 }
 
 // readConditionArg resolves the `if:` argument of an @include / @skip
