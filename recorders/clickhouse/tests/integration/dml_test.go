@@ -2,6 +2,7 @@ package integration_tests
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	v1 "go.opentelemetry.io/proto/otlp/common/v1"
@@ -463,4 +464,288 @@ func TestIntegration_InsertRunners_Deduplication(t *testing.T) {
 	if results[0].FetchedAt != expectedFetchedAt {
 		t.Errorf("Expected _fetched_at %f, got: %f", expectedFetchedAt, results[0].FetchedAt)
 	}
+}
+
+// ts is a small helper to build a protobuf timestamp from whole seconds.
+func ts(seconds int64) *timestamppb.Timestamp {
+	return &timestamppb.Timestamp{Seconds: seconds}
+}
+
+// assertDedup verifies that the deduplicating materialized view for a table kept
+// exactly one row for the given id after out-of-order inserts, and that the
+// surviving row carries the expected (latest) version value.
+//
+// It exercises the block-substitution assumption behind the bounded-JOIN views
+// (migration 000035): the `<table>_in` reference inside the MV subquery must
+// resolve to the inserted block, otherwise deduplication silently stops working.
+func assertDedup(t *testing.T, client *clickhouse.Client, table, versionCol string, id int64, wantVersion float64) {
+	t.Helper()
+
+	ctx := context.Background()
+	if err := client.Exec(ctx, "SYSTEM FLUSH LOGS"); err != nil {
+		t.Fatalf("[%s] failed to flush logs: %v", table, err)
+	}
+
+	// FINAL collapses the ReplacingMergeTree so we assert on the deduplicated
+	// state: exactly one row must survive with the latest version.
+	var results []struct {
+		Version float64 `ch:"v"`
+	}
+	query := fmt.Sprintf("SELECT %s AS v FROM %s FINAL WHERE id = %d", versionCol, table, id)
+	if err := client.Select(ctx, &results, query); err != nil {
+		t.Fatalf("[%s] failed to query table: %v", table, err)
+	}
+
+	if len(results) != 1 {
+		t.Fatalf("[%s] expected 1 row after deduplication, got: %d", table, len(results))
+	}
+	if results[0].Version != wantVersion {
+		t.Errorf("[%s] expected %s=%f, got: %f", table, versionCol, wantVersion, results[0].Version)
+	}
+}
+
+func TestIntegration_InsertPipelines_Deduplication(t *testing.T) {
+	client, err := GetTestClient(testSet)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	const id int64 = 900000001
+	base := int64(2000000000)
+
+	mk := func(updatedAt int64) []*typespb.Pipeline {
+		return []*typespb.Pipeline{{
+			Id:      id,
+			Project: &typespb.ProjectReference{Id: 1},
+			Timestamps: &typespb.PipelineTimestamps{
+				CreatedAt: ts(base),
+				UpdatedAt: ts(updatedAt),
+			},
+		}}
+	}
+
+	if _, err := clickhouse.InsertPipelines(client, context.Background(), mk(base)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := clickhouse.InsertPipelines(client, context.Background(), mk(base-10)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := clickhouse.InsertPipelines(client, context.Background(), mk(base+10)); err != nil {
+		t.Fatal(err)
+	}
+
+	assertDedup(t, client, "pipelines", "updated_at", id, float64(base+10))
+}
+
+func TestIntegration_InsertProjects_Deduplication(t *testing.T) {
+	client, err := GetTestClient(testSet)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	const id int64 = 900000002
+	base := int64(2000000000)
+
+	mk := func(lastActivityAt int64) []*typespb.Project {
+		return []*typespb.Project{{
+			Id:   id,
+			Name: "dedup-project",
+			Timestamps: &typespb.ProjectTimestamps{
+				CreatedAt:      ts(base),
+				UpdatedAt:      ts(base),
+				LastActivityAt: ts(lastActivityAt),
+			},
+		}}
+	}
+
+	if _, err := clickhouse.InsertProjects(client, context.Background(), mk(base)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := clickhouse.InsertProjects(client, context.Background(), mk(base-10)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := clickhouse.InsertProjects(client, context.Background(), mk(base+10)); err != nil {
+		t.Fatal(err)
+	}
+
+	assertDedup(t, client, "projects", "last_activity_at", id, float64(base+10))
+}
+
+func TestIntegration_InsertMergeRequests_Deduplication(t *testing.T) {
+	client, err := GetTestClient(testSet)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	const id int64 = 900000003
+	base := int64(2000000000)
+
+	mk := func(updatedAt int64) []*typespb.MergeRequest {
+		return []*typespb.MergeRequest{{
+			Id:      id,
+			Project: &typespb.ProjectReference{Id: 1},
+			Timestamps: &typespb.MergeRequestTimestamps{
+				CreatedAt: ts(base),
+				UpdatedAt: ts(updatedAt),
+			},
+		}}
+	}
+
+	if _, err := clickhouse.InsertMergeRequests(client, context.Background(), mk(base)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := clickhouse.InsertMergeRequests(client, context.Background(), mk(base-10)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := clickhouse.InsertMergeRequests(client, context.Background(), mk(base+10)); err != nil {
+		t.Fatal(err)
+	}
+
+	assertDedup(t, client, "mergerequests", "updated_at", id, float64(base+10))
+}
+
+func TestIntegration_InsertMergeRequestNoteEvents_Deduplication(t *testing.T) {
+	client, err := GetTestClient(testSet)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	const id int64 = 900000004
+	base := int64(2000000000)
+
+	mk := func(updatedAt int64) []*typespb.MergeRequestNoteEvent {
+		return []*typespb.MergeRequestNoteEvent{{
+			Id: id,
+			MergeRequest: &typespb.MergeRequestReference{
+				Id:      1,
+				Iid:     1,
+				Project: &typespb.ProjectReference{Id: 1},
+			},
+			CreatedAt: ts(base),
+			UpdatedAt: ts(updatedAt),
+			Type:      "DiscussionNote",
+		}}
+	}
+
+	if _, err := clickhouse.InsertMergeRequestNoteEvents(client, context.Background(), mk(base)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := clickhouse.InsertMergeRequestNoteEvents(client, context.Background(), mk(base-10)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := clickhouse.InsertMergeRequestNoteEvents(client, context.Background(), mk(base+10)); err != nil {
+		t.Fatal(err)
+	}
+
+	assertDedup(t, client, "mergerequest_noteevents", "updated_at", id, float64(base+10))
+}
+
+func TestIntegration_InsertIssues_Deduplication(t *testing.T) {
+	client, err := GetTestClient(testSet)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// issues is ORDER BY (project_id, id); the bounded view filters on both key
+	// columns, so this covers the two-column filter variant.
+	const id int64 = 900000005
+	base := int64(2000000000)
+
+	mk := func(updatedAt int64) []*typespb.Issue {
+		return []*typespb.Issue{{
+			Id:      id,
+			Iid:     1,
+			Project: &typespb.ProjectReference{Id: 42},
+			Timestamps: &typespb.IssueTimestamps{
+				CreatedAt: ts(base),
+				UpdatedAt: ts(updatedAt),
+			},
+			Title: "dedup-issue",
+		}}
+	}
+
+	if _, err := clickhouse.InsertIssues(client, context.Background(), mk(base)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := clickhouse.InsertIssues(client, context.Background(), mk(base-10)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := clickhouse.InsertIssues(client, context.Background(), mk(base+10)); err != nil {
+		t.Fatal(err)
+	}
+
+	assertDedup(t, client, "issues", "updated_at", id, float64(base+10))
+}
+
+func TestIntegration_InsertDeployments_Deduplication(t *testing.T) {
+	client, err := GetTestClient(testSet)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// deployments is ORDER BY (project_id, id); covers the two-column filter.
+	const id int64 = 900000006
+	base := int64(2000000000)
+
+	mk := func(updatedAt int64) []*typespb.Deployment {
+		return []*typespb.Deployment{{
+			Id:  id,
+			Iid: 1,
+			Environment: &typespb.EnvironmentReference{
+				Id:      1,
+				Name:    "production",
+				Project: &typespb.ProjectReference{Id: 42},
+			},
+			Timestamps: &typespb.DeploymentTimestamps{
+				CreatedAt: ts(base),
+				UpdatedAt: ts(updatedAt),
+			},
+		}}
+	}
+
+	if _, err := clickhouse.InsertDeployments(client, context.Background(), mk(base)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := clickhouse.InsertDeployments(client, context.Background(), mk(base-10)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := clickhouse.InsertDeployments(client, context.Background(), mk(base+10)); err != nil {
+		t.Fatal(err)
+	}
+
+	assertDedup(t, client, "deployments", "updated_at", id, float64(base+10))
+}
+
+func TestIntegration_InsertRunners_BoundedDeduplication(t *testing.T) {
+	client, err := GetTestClient(testSet)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	const id int64 = 900000007
+	base := int64(2000000000)
+
+	mk := func(fetchedAt int64) ([]*typespb.Runner, *servicepb.RecordRequestMetadata) {
+		return []*typespb.Runner{{
+				Id:          id,
+				Description: "dedup-runner",
+			}}, &servicepb.RecordRequestMetadata{
+				FetchedAt: ts(fetchedAt),
+			}
+	}
+
+	r1, m1 := mk(base)
+	if _, err := clickhouse.InsertRunners(client, context.Background(), r1, m1); err != nil {
+		t.Fatal(err)
+	}
+	r2, m2 := mk(base - 10)
+	if _, err := clickhouse.InsertRunners(client, context.Background(), r2, m2); err != nil {
+		t.Fatal(err)
+	}
+	r3, m3 := mk(base + 10)
+	if _, err := clickhouse.InsertRunners(client, context.Background(), r3, m3); err != nil {
+		t.Fatal(err)
+	}
+
+	assertDedup(t, client, "runners", "_fetched_at", id, float64(base+10))
 }
