@@ -161,7 +161,7 @@ func fetchProjectJobJunitReportsAPI(ctx context.Context, glab *gitlab.Client, pr
 	var reports []junitxml.TestReport
 
 	for _, path := range artifactPaths {
-		reader, err := glab.Rest.GetProjectJobArtifact(ctx, projectPath, jobId, path)
+		reader, err := glab.Rest.DownloadProjectJobArtifactsFile(ctx, projectPath, jobId, path)
 		if errors.Is(err, context.Canceled) {
 			return nil, err
 		} else if errors.Is(err, gitlab.ErrNotFound) {
@@ -355,7 +355,7 @@ func FetchProjectPipelineCoberturaReports(ctx context.Context, glab *gitlab.Clie
 }
 
 func fetchProjectJobCoberturaReportAPI(ctx context.Context, glab *gitlab.Client, projectPath string, jobId int64, artifactPath string) (cobertura.CoverageReport, error) {
-	reader, err := glab.Rest.GetProjectJobArtifact(ctx, projectPath, jobId, artifactPath)
+	reader, err := glab.Rest.DownloadProjectJobArtifactsFile(ctx, projectPath, jobId, artifactPath)
 	if err != nil {
 		return cobertura.CoverageReport{}, fmt.Errorf("download file: %w", err)
 	}

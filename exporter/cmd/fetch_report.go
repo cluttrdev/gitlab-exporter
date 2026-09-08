@@ -123,7 +123,7 @@ func (c *FetchReportConfig) fetchJunitReports(ctx context.Context, glab *gitlab.
 	var results []result
 
 	for _, path := range c.artifactPaths {
-		reader, err := glab.Rest.GetProjectJobArtifact(ctx, c.projectPath, c.jobId, path)
+		reader, err := glab.Rest.DownloadProjectJobArtifactsFile(ctx, c.projectPath, c.jobId, path)
 		if errors.Is(err, gitlab.ErrNotFound) {
 			continue
 		} else if err != nil {
@@ -170,7 +170,7 @@ func (c *FetchReportConfig) fetchCoberturaReport(ctx context.Context, glab *gitl
 
 	reportCounter := 0
 	for _, path := range c.artifactPaths {
-		reader, err := glab.Rest.GetProjectJobArtifact(ctx, c.projectPath, c.jobId, path)
+		reader, err := glab.Rest.DownloadProjectJobArtifactsFile(ctx, c.projectPath, c.jobId, path)
 		if errors.Is(err, gitlab.ErrNotFound) {
 			continue
 		} else if err != nil {
