@@ -397,12 +397,6 @@ func createGitLabClient(cfg config.Config) (*gitlab.Client, error) {
 		return nil, err
 	}
 
-	if config.IsAuthedHTTPRequired(cfg) {
-		if err := glab.HTTP.CheckAuthed(); err != nil {
-			return nil, fmt.Errorf("check http auth: %w", err)
-		}
-	}
-
 	// detect gitlab version
 	ver, err := glab.DetectVersion(context.Background())
 	if err != nil {
@@ -418,5 +412,11 @@ func createGitLabClient(cfg config.Config) (*gitlab.Client, error) {
 		return nil, fmt.Errorf("set detected GitLab version: %w", vErr)
 	}
 
-	return glab, err
+	if version.Compare(ver, version.GitLabVersion{Major: 19, Minor: 4}) < 0 && config.IsAuthedHTTPRequired(cfg) {
+		if err := glab.HTTP.CheckAuthed(); err != nil {
+			return nil, fmt.Errorf("check http auth: %w", err)
+		}
+	}
+
+	return glab, nil
 }

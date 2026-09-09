@@ -213,27 +213,24 @@ func ValidateRecorderMode(mode RecorderMode) error {
 }
 
 func IsAuthedHTTPRequired(cfg Config) bool {
-	if !cfg.ProjectDefaults.Export.Reports.Enabled {
+	for _, p := range cfg.Projects {
+		if reportsNeedAuthedHTTP(p.Export.Reports) {
+			return true
+		}
+	}
+	for _, n := range cfg.Namespaces {
+		if reportsNeedAuthedHTTP(n.Export.Reports) {
+			return true
+		}
+	}
+	return false
+}
+
+func reportsNeedAuthedHTTP(r ProjectExportReports) bool {
+	if !r.Enabled {
 		return false
 	}
-
-	for _, p := range cfg.Projects {
-		if !p.Export.Reports.Enabled {
-			continue
-		}
-		if p.Export.Reports.Junit.Enabled && len(p.Export.Reports.Junit.Paths) == 0 {
-			return true
-		}
-	}
-
-	for _, n := range cfg.Namespaces {
-		if !n.Export.Reports.Enabled {
-			continue
-		}
-		if n.Export.Reports.Junit.Enabled && len(n.Export.Reports.Junit.Paths) == 0 {
-			return true
-		}
-	}
-
-	return false
+	junit := r.Junit.Enabled && len(r.Junit.Paths) == 0
+	coverage := r.Coverage.Enabled && len(r.Coverage.Paths) == 0
+	return junit || coverage
 }
