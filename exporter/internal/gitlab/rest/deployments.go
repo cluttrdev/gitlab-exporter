@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 	"time"
 
@@ -271,17 +270,4 @@ func listProjectDeployments(client *gitlab.Client, pid interface{}, opts *gitlab
 	}
 
 	return ds, resp, nil
-}
-
-// Helper function to accept and format both the project ID or name as project
-// identifier for all API calls.
-func parseID(id interface{}) (string, error) {
-	switch v := id.(type) {
-	case int:
-		return strconv.Itoa(v), nil
-	case string:
-		return v, nil
-	default:
-		return "", fmt.Errorf("invalid ID type %#v, the ID must be an int or a string", id)
-	}
 }
