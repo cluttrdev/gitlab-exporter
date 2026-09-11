@@ -2,9 +2,7 @@ package tasks
 
 import (
 	"context"
-	"errors"
-	"log/slog"
-	"sync"
+	"slices"
 	"time"
 
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab"
@@ -13,63 +11,15 @@ import (
 )
 
 func FetchProjectsDeployments(ctx context.Context, glab *gitlab.Client, projectIds []int64, updatedAfter *time.Time, updatedBefore *time.Time) ([]types.Deployment, error) {
-	type result struct {
-		deployments []types.Deployment
-		err         error
-	}
-
-	var (
-		deployments []types.Deployment
-
-		wg      sync.WaitGroup
-		results = make(chan result)
+	bundles, err := fanOut(ctx, glab, projectIds,
+		func(ctx context.Context, glab *gitlab.Client, pid int64) ([]types.Deployment, error) {
+			return FetchProjectDeployments(ctx, glab, pid, updatedAfter, updatedBefore)
+		},
+		fanOutOptions{},
 	)
 
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		for _, projectId := range projectIds {
-			if err := glab.Acquire(ctx, 1); err != nil {
-				slog.Error("failed to acquire gitlab client", "error", err)
-				continue
-			}
-			wg.Add(1)
-			go func() {
-				defer glab.Release(1)
-				defer wg.Done()
-
-				ds, err := FetchProjectDeployments(ctx, glab, projectId, updatedAfter, updatedBefore)
-				results <- result{
-					deployments: ds,
-					err:         err,
-				}
-			}()
-		}
-	}()
-
-	done := make(chan struct{})
-	go func() {
-		defer close(done)
-		wg.Wait()
-	}()
-
-	var errs error
-loop:
-	for {
-		select {
-		case <-done:
-			break loop
-		case r := <-results:
-			if r.err != nil {
-				errs = errors.Join(errs, r.err)
-			} else {
-				deployments = append(deployments, r.deployments...)
-			}
-		}
-	}
-
-	return deployments, errs
+	// Flatten per-project slices returned by fanOut into a single slice.
+	return slices.Concat(bundles...), err
 }
 
 func FetchProjectDeployments(ctx context.Context, glab *gitlab.Client, projectId int64, updatedAfter *time.Time, updatedBefore *time.Time) ([]types.Deployment, error) {

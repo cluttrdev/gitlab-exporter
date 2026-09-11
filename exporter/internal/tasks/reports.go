@@ -5,8 +5,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"log/slog"
-	"sync"
 
 	"go.cluttr.dev/junitxml"
 
@@ -17,82 +17,81 @@ import (
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
 )
 
+// projectPipelineUnit is one unit of fan-out work: a single pipeline of a single
+// project, plus that project's configured artifact paths.
+// Flattening the two input maps into a slice lets fanOut iterate a flat []T
+// instead of a nested project→pipelines loop.
+type projectPipelineUnit struct {
+	projectPath   string
+	pipelineIid   string
+	artifactPaths []string
+}
+
+// flattenProjectPipelines expands the projectPath→pipelineIids map into one entry
+// per (project, pipeline), attaching each project's artifact paths.
+func flattenProjectPipelines(projectPipelines, projectArtifactPaths map[string][]string) []projectPipelineUnit {
+	var out []projectPipelineUnit
+	for projectPath, pipelineIids := range projectPipelines {
+		artifactPaths := projectArtifactPaths[projectPath]
+		for _, pipelineIid := range pipelineIids {
+			out = append(out, projectPipelineUnit{
+				projectPath:   projectPath,
+				pipelineIid:   pipelineIid,
+				artifactPaths: artifactPaths,
+			})
+		}
+	}
+	return out
+}
+
+// parseGzipped decompresses r and runs parse over the decompressed stream.
+func parseGzipped[T any](r io.Reader, parse func(io.Reader) (T, error)) (T, error) {
+	var zero T
+
+	gz, err := gzip.NewReader(r)
+	if err != nil {
+		return zero, fmt.Errorf("read report: %w", err)
+	}
+
+	v, err := parse(gz)
+	if err != nil {
+		return zero, fmt.Errorf("parse report: %w", err)
+	}
+	return v, nil
+}
+
 // ############################################################################
 // # Test Reports (JUnit)
 // ############################################################################
 
 func FetchProjectsPipelinesJunitReports(ctx context.Context, glab *gitlab.Client, projectPipelines map[string][]string, projectArtifactPaths map[string][]string) ([]types.TestReport, []types.TestSuite, []types.TestCase, error) {
+	type junitBundle struct {
+		reports []types.TestReport
+		suites  []types.TestSuite
+		cases   []types.TestCase
+	}
+
+	units := flattenProjectPipelines(projectPipelines, projectArtifactPaths)
+
+	bundles, err := fanOut(ctx, glab, units,
+		func(ctx context.Context, glab *gitlab.Client, u projectPipelineUnit) (junitBundle, error) {
+			tr, ts, tc, err := FetchProjectPipelineJunitReports(ctx, glab, u.projectPath, u.pipelineIid, u.artifactPaths)
+			return junitBundle{reports: tr, suites: ts, cases: tc}, err
+		},
+		fanOutOptions{},
+	)
+
 	var (
 		testReports []types.TestReport
 		testSuites  []types.TestSuite
 		testCases   []types.TestCase
 	)
-
-	type result struct {
-		testReports []types.TestReport
-		testSuites  []types.TestSuite
-		testCases   []types.TestCase
-
-		err error
+	for _, b := range bundles {
+		testReports = append(testReports, b.reports...)
+		testSuites = append(testSuites, b.suites...)
+		testCases = append(testCases, b.cases...)
 	}
-
-	var (
-		wg      sync.WaitGroup
-		results = make(chan result)
-	)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		for projectPath, pipelineIids := range projectPipelines {
-			artifactPaths := projectArtifactPaths[projectPath]
-			for _, pipelineIid := range pipelineIids {
-				if err := glab.Acquire(ctx, 1); err != nil {
-					slog.Error("failed to acquire gitlab client", "error", err)
-					continue
-				}
-				wg.Add(1)
-				go func(projectPath string, pipelineIid string, artifactPaths []string) {
-					defer glab.Release(1)
-					defer wg.Done()
-
-					tr, ts, tc, err := FetchProjectPipelineJunitReports(ctx, glab, projectPath, pipelineIid, artifactPaths)
-
-					results <- result{
-						testReports: tr,
-						testSuites:  ts,
-						testCases:   tc,
-						err:         err,
-					}
-				}(projectPath, pipelineIid, artifactPaths)
-			}
-		}
-	}()
-
-	done := make(chan struct{})
-	go func() {
-		defer close(done)
-		wg.Wait()
-	}()
-
-	var errs error
-loop:
-	for {
-		select {
-		case <-done:
-			break loop
-		case r := <-results:
-			if r.err != nil {
-				errs = errors.Join(errs, r.err)
-			} else {
-				testReports = append(testReports, r.testReports...)
-				testSuites = append(testSuites, r.testSuites...)
-				testCases = append(testCases, r.testCases...)
-			}
-		}
-	}
-
-	return testReports, testSuites, testCases, errs
+	return testReports, testSuites, testCases, err
 }
 
 func FetchProjectPipelineJunitReports(ctx context.Context, glab *gitlab.Client, projectPath string, pipelineIid string, artifactPaths []string) ([]types.TestReport, []types.TestSuite, []types.TestCase, error) {
@@ -176,19 +175,7 @@ func fetchProjectJobJunitReportAPI(ctx context.Context, glab *gitlab.Client, pro
 	if err != nil {
 		return nil, fmt.Errorf("get job artifacts: junit: %w", err)
 	}
-
-	// junit.xml.gz
-	reader, err := gzip.NewReader(in)
-	if err != nil {
-		return nil, fmt.Errorf("read report: %w", err)
-	}
-
-	reports, err := junitxml.ParseMany(reader)
-	if err != nil {
-		return nil, fmt.Errorf("parse report: %w", err)
-	}
-
-	return reports, nil
+	return parseGzipped(in, junitxml.ParseMany) // junit.xml.gz
 }
 
 func fetchProjectJobJunitReportAPIFiles(ctx context.Context, glab *gitlab.Client, projectPath string, jobId int64, artifactPaths []string) ([]junitxml.TestReport, error) {
@@ -220,19 +207,7 @@ func fetchProjectJobJunitReportHTTP(ctx context.Context, glab *gitlab.Client, do
 	if err != nil {
 		return nil, fmt.Errorf("download report: %w", err)
 	}
-
-	// junit.xml.gz
-	reader, err := gzip.NewReader(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("read report: %w", err)
-	}
-
-	reports, err := junitxml.ParseMany(reader)
-	if err != nil {
-		return nil, fmt.Errorf("parse report: %w", err)
-	}
-
-	return reports, nil
+	return parseGzipped(resp.Body, junitxml.ParseMany) // junit.xml.gz
 }
 
 // ############################################################################
@@ -240,81 +215,38 @@ func fetchProjectJobJunitReportHTTP(ctx context.Context, glab *gitlab.Client, do
 // ############################################################################
 
 func FetchProjectsPipelinesCoberturaReports(ctx context.Context, glab *gitlab.Client, projectPipelines map[string][]string, projectArtifactPaths map[string][]string) ([]types.CoverageReport, []types.CoveragePackage, []types.CoverageClass, []types.CoverageMethod, error) {
+	type coberturaBundle struct {
+		reports  []types.CoverageReport
+		packages []types.CoveragePackage
+		classes  []types.CoverageClass
+		methods  []types.CoverageMethod
+	}
+
+	units := flattenProjectPipelines(projectPipelines, projectArtifactPaths)
+
+	// No options: success-only, as the original. FetchProjectPipelineCoberturaReports
+	// only returns errors with nil data, so nothing partial is lost on error.
+	bundles, err := fanOut(ctx, glab, units,
+		func(ctx context.Context, glab *gitlab.Client, u projectPipelineUnit) (coberturaBundle, error) {
+			cr, cp, cc, cm, err := FetchProjectPipelineCoberturaReports(ctx, glab, u.projectPath, u.pipelineIid, u.artifactPaths)
+			return coberturaBundle{reports: cr, packages: cp, classes: cc, methods: cm}, err
+		},
+		fanOutOptions{},
+	)
+
 	var (
 		covReports  []types.CoverageReport
 		covPackages []types.CoveragePackage
 		covClasses  []types.CoverageClass
 		covMethods  []types.CoverageMethod
 	)
-
-	type result struct {
-		covReports  []types.CoverageReport
-		covPackages []types.CoveragePackage
-		covClasses  []types.CoverageClass
-		covMethods  []types.CoverageMethod
-
-		err error
+	for _, b := range bundles {
+		covReports = append(covReports, b.reports...)
+		covPackages = append(covPackages, b.packages...)
+		covClasses = append(covClasses, b.classes...)
+		covMethods = append(covMethods, b.methods...)
 	}
-
-	var (
-		wg      sync.WaitGroup
-		results = make(chan result)
-	)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-
-		for projectPath, pipelineIids := range projectPipelines {
-			artifactPaths := projectArtifactPaths[projectPath]
-			for _, pipelineIid := range pipelineIids {
-				if err := glab.Acquire(ctx, 1); err != nil {
-					slog.Error("failed to acquire gitlab client", "error", err)
-					continue
-				}
-				wg.Add(1)
-				go func(projectPath string, pipelineIid string, artifactPaths []string) {
-					defer glab.Release(1)
-					defer wg.Done()
-
-					cr, cp, cc, cm, err := FetchProjectPipelineCoberturaReports(ctx, glab, projectPath, pipelineIid, artifactPaths)
-
-					results <- result{
-						covReports:  cr,
-						covPackages: cp,
-						covClasses:  cc,
-						covMethods:  cm,
-						err:         err,
-					}
-				}(projectPath, pipelineIid, artifactPaths)
-			}
-		}
-	}()
-
-	done := make(chan struct{})
-	go func() {
-		defer close(done)
-		wg.Wait()
-	}()
-
-	var errs error
-loop:
-	for {
-		select {
-		case <-done:
-			break loop
-		case r := <-results:
-			if r.err != nil {
-				errs = errors.Join(errs, r.err)
-			} else {
-				covReports = append(covReports, r.covReports...)
-				covPackages = append(covPackages, r.covPackages...)
-				covClasses = append(covClasses, r.covClasses...)
-				covMethods = append(covMethods, r.covMethods...)
-			}
-		}
-	}
-
-	return covReports, covPackages, covClasses, covMethods, errs
+	return covReports, covPackages, covClasses, covMethods, err
 }
 
 func FetchProjectPipelineCoberturaReports(ctx context.Context, glab *gitlab.Client, projectPath string, pipelineIid string, artifactPaths []string) ([]types.CoverageReport, []types.CoveragePackage, []types.CoverageClass, []types.CoverageMethod, error) {
@@ -324,6 +256,14 @@ func FetchProjectPipelineCoberturaReports(ctx context.Context, glab *gitlab.Clie
 		covClasses  []types.CoverageClass
 		covMethods  []types.CoverageMethod
 	)
+
+	appendReport := func(index int, report cobertura.CoverageReport, jobRef types.JobReference) {
+		cr, cp, cc, cm := cobertura.ConvertCoverageReport(index, report, jobRef)
+		covReports = append(covReports, cr)
+		covPackages = append(covPackages, cp...)
+		covClasses = append(covClasses, cc...)
+		covMethods = append(covMethods, cm...)
+	}
 
 	artifacts, err := glab.GraphQL.GetProjectPipelineJobsArtifacts(ctx, projectPath, pipelineIid)
 	if err != nil {
@@ -362,13 +302,8 @@ artifactsLoop:
 					}
 					continue artifactsLoop
 				}
-				cr, cp, cc, cm := cobertura.ConvertCoverageReport(reportCounter, report, jobRef)
+				appendReport(reportCounter, report, jobRef)
 				reportCounter++
-
-				covReports = append(covReports, cr)
-				covPackages = append(covPackages, cp...)
-				covClasses = append(covClasses, cc...)
-				covMethods = append(covMethods, cm...)
 			}
 		case version.Compare(glab.Version, version.GitLabVersion{Major: 19, Minor: 4}) >= 0:
 			report, err = fetchProjectJobCoberturaReportAPI(ctx, glab, projectPath, jobRef.Id)
@@ -382,11 +317,7 @@ artifactsLoop:
 				)
 				continue artifactsLoop
 			}
-			cr, cp, cc, cm := cobertura.ConvertCoverageReport(0, report, jobRef)
-			covReports = append(covReports, cr)
-			covPackages = append(covPackages, cp...)
-			covClasses = append(covClasses, cc...)
-			covMethods = append(covMethods, cm...)
+			appendReport(0, report, jobRef)
 		case artifact.DownloadPath != nil:
 			report, err = fetchProjectJobCoberturaReportHTTP(ctx, glab, *artifact.DownloadPath)
 			if errors.Is(err, context.Canceled) {
@@ -398,11 +329,7 @@ artifactsLoop:
 				)
 				continue artifactsLoop
 			}
-			cr, cp, cc, cm := cobertura.ConvertCoverageReport(0, report, jobRef)
-			covReports = append(covReports, cr)
-			covPackages = append(covPackages, cp...)
-			covClasses = append(covClasses, cc...)
-			covMethods = append(covMethods, cm...)
+			appendReport(0, report, jobRef)
 		default:
 			continue
 		}
@@ -416,19 +343,7 @@ func fetchProjectJobCoberturaReportAPI(ctx context.Context, glab *gitlab.Client,
 	if err != nil {
 		return cobertura.CoverageReport{}, fmt.Errorf("get job artifacts: cobertura: %w", err)
 	}
-
-	// cobertura-coverage.xml.gz
-	reader, err := gzip.NewReader(in)
-	if err != nil {
-		return cobertura.CoverageReport{}, fmt.Errorf("read report: %w", err)
-	}
-
-	report, err := cobertura.Parse(reader)
-	if err != nil {
-		return cobertura.CoverageReport{}, fmt.Errorf("parse report: %w", err)
-	}
-
-	return report, nil
+	return parseGzipped(in, cobertura.Parse) // cobertura-coverage.xml.gz
 }
 
 func fetchProjectJobCoberturaReportAPIFiles(ctx context.Context, glab *gitlab.Client, projectPath string, jobId int64, artifactPath string) (cobertura.CoverageReport, error) {
@@ -450,17 +365,5 @@ func fetchProjectJobCoberturaReportHTTP(ctx context.Context, glab *gitlab.Client
 	if err != nil {
 		return cobertura.CoverageReport{}, fmt.Errorf("download report: %w", err)
 	}
-
-	// cobertura-coverage.xml.gz
-	reader, err := gzip.NewReader(resp.Body)
-	if err != nil {
-		return cobertura.CoverageReport{}, fmt.Errorf("read report: %w", err)
-	}
-
-	report, err := cobertura.Parse(reader)
-	if err != nil {
-		return cobertura.CoverageReport{}, fmt.Errorf("parse report: %w", err)
-	}
-
-	return report, nil
+	return parseGzipped(resp.Body, cobertura.Parse) // cobertura-coverage.xml.gz
 }

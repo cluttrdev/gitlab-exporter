@@ -14,7 +14,6 @@ func (c *Client) DownloadProjectJobArtifactsFile(ctx context.Context, projectPat
 	if err != nil {
 		return nil, err
 	}
-
 	return r, nil
 }
 
