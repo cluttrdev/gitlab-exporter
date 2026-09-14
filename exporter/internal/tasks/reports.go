@@ -60,6 +60,8 @@ func parseGzipped[T any](r io.Reader, parse func(io.Reader) (T, error)) (T, erro
 	return v, nil
 }
 
+var ErrNoDownloadRoute = errors.New("no available download route")
+
 // ############################################################################
 // # Test Reports (JUnit)
 // ############################################################################
@@ -113,31 +115,7 @@ func FetchProjectPipelineJunitReports(ctx context.Context, glab *gitlab.Client, 
 			continue
 		}
 
-		jobRef, err := graphql.ConvertJobReference(artifact.Job, artifact.Pipeline, artifact.Project)
-		if err != nil {
-			slog.Error("error converting job reference",
-				slog.String("jobId", *artifact.Job.Id),
-				slog.String("error", err.Error()),
-			)
-			continue
-		}
-		jobFinishedAt := artifact.JobFinishedAt
-
-		var reports []junitxml.TestReport
-		switch {
-		case len(artifactPaths) > 0:
-			// If explicit artifact archive paths are configured, use them.
-			reports, err = fetchProjectJobJunitReportAPIFiles(ctx, glab, projectPath, jobRef.Id, artifactPaths)
-		case version.Compare(glab.Version, version.GitLabVersion{Major: 19, Minor: 4}) >= 0:
-			// If the gitlab server version is at least 19.4 (even pre-release on gitlab.com)
-			// we can make use of the job artifacts API `file_type` attribute.
-			reports, err = fetchProjectJobJunitReportAPI(ctx, glab, projectPath, jobRef.Id)
-		case artifact.DownloadPath != nil:
-			// Lastly, try downloading the report via session-authed http route.
-			reports, err = fetchProjectJobJunitReportHTTP(ctx, glab, *artifact.DownloadPath)
-		default:
-			continue
-		}
+		tr, ts, tc, err := FetchProjectJobArtifactJunitReports(ctx, glab, artifact, artifactPaths)
 		if errors.Is(err, context.Canceled) {
 			return nil, nil, nil, err
 		} else if err != nil {
@@ -145,26 +123,69 @@ func FetchProjectPipelineJunitReports(ctx context.Context, glab *gitlab.Client, 
 			if artifact.DownloadPath != nil {
 				downloadPath = *artifact.DownloadPath
 			}
-			slog.Error("error fetching junit report",
-				slog.String("projectPath", projectPath),
-				slog.Int64("jobId", jobRef.Id),
+			var jobId string
+			if artifact.Job.Id != nil {
+				jobId = *artifact.Job.Id
+			}
+			slog.Error("error fetching job artifact report",
+				slog.String("projectPath", artifact.Project.FullPath),
+				slog.String("jobId", jobId),
 				slog.String("downloadPath", downloadPath),
 				slog.String("error", err.Error()),
 			)
 			continue
 		}
 
-		for _, report := range reports {
-			tr, ts, tc := types.ConvertTestReport(report, jobRef)
-			// set testcase's report_created_at to job.finished_at
-			for i := range len(tc) {
-				tc[i].ReportCreatedAt = jobFinishedAt
-			}
+		testReports = append(testReports, tr...)
+		testSuites = append(testSuites, ts...)
+		testCases = append(testCases, tc...)
+	}
 
-			testReports = append(testReports, tr)
-			testSuites = append(testSuites, ts...)
-			testCases = append(testCases, tc...)
+	return testReports, testSuites, testCases, nil
+}
+
+func FetchProjectJobArtifactJunitReports(ctx context.Context, glab *gitlab.Client, artifact graphql.JobArtifactFields, artifactPaths []string) ([]types.TestReport, []types.TestSuite, []types.TestCase, error) {
+	jobRef, err := graphql.ConvertJobReference(artifact.Job, artifact.Pipeline, artifact.Project)
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("convert job reference: %w", err)
+	}
+	jobFinishedAt := artifact.JobFinishedAt
+
+	var (
+		testReports []types.TestReport
+		testSuites  []types.TestSuite
+		testCases   []types.TestCase
+	)
+
+	var reports []junitxml.TestReport
+	switch {
+	case len(artifactPaths) > 0:
+		// If explicit artifact archive paths are configured, use them.
+		reports, err = fetchProjectJobJunitReportAPIFiles(ctx, glab, artifact.Project.FullPath, jobRef.Id, artifactPaths)
+	case version.Compare(glab.Version, version.GitLabVersion{Major: 19, Minor: 4}) >= 0:
+		// If the gitlab server version is at least 19.4 (even pre-release on gitlab.com)
+		// we can make use of the job artifacts API `file_type` attribute.
+		reports, err = fetchProjectJobJunitReportAPI(ctx, glab, artifact.Project.FullPath, jobRef.Id)
+	case artifact.DownloadPath != nil:
+		// Lastly, try downloading the report via session-authed http route.
+		reports, err = fetchProjectJobJunitReportHTTP(ctx, glab, *artifact.DownloadPath)
+	default:
+		err = ErrNoDownloadRoute
+	}
+	if err != nil {
+		return nil, nil, nil, fmt.Errorf("fetch report: %w", err)
+	}
+
+	for _, report := range reports {
+		tr, ts, tc := types.ConvertTestReport(report, jobRef)
+		// set testcase's report_created_at to job.finished_at
+		for i := range len(tc) {
+			tc[i].ReportCreatedAt = jobFinishedAt
 		}
+
+		testReports = append(testReports, tr)
+		testSuites = append(testSuites, ts...)
+		testCases = append(testCases, tc...)
 	}
 
 	return testReports, testSuites, testCases, nil
@@ -257,6 +278,59 @@ func FetchProjectPipelineCoberturaReports(ctx context.Context, glab *gitlab.Clie
 		covMethods  []types.CoverageMethod
 	)
 
+	artifacts, err := glab.GraphQL.GetProjectPipelineJobsArtifacts(ctx, projectPath, pipelineIid)
+	if err != nil {
+		return nil, nil, nil, nil, fmt.Errorf("get project pipeline job artifacts: %w", err)
+	}
+
+	for _, artifact := range artifacts {
+		if artifact.FileType == nil || *artifact.FileType != graphql.JobArtifactFileTypeCobertura {
+			continue
+		}
+
+		cr, cp, cc, cm, err := FetchProjectJobArtifactCoberturaReports(ctx, glab, artifact, artifactPaths)
+		if errors.Is(err, context.Canceled) {
+			return nil, nil, nil, nil, err
+		} else if err != nil {
+			var downloadPath string
+			if artifact.DownloadPath != nil {
+				downloadPath = *artifact.DownloadPath
+			}
+			var jobId string
+			if artifact.Job.Id != nil {
+				jobId = *artifact.Job.Id
+			}
+			slog.Error("error fetching job artifact report",
+				slog.String("projectPath", artifact.Project.FullPath),
+				slog.String("jobId", jobId),
+				slog.String("downloadPath", downloadPath),
+				slog.String("error", err.Error()),
+			)
+			continue
+		}
+
+		covReports = append(covReports, cr...)
+		covPackages = append(covPackages, cp...)
+		covClasses = append(covClasses, cc...)
+		covMethods = append(covMethods, cm...)
+	}
+
+	return covReports, covPackages, covClasses, covMethods, nil
+}
+
+func FetchProjectJobArtifactCoberturaReports(ctx context.Context, glab *gitlab.Client, artifact graphql.JobArtifactFields, artifactPaths []string) ([]types.CoverageReport, []types.CoveragePackage, []types.CoverageClass, []types.CoverageMethod, error) {
+	jobRef, err := graphql.ConvertJobReference(artifact.Job, artifact.Pipeline, artifact.Project)
+	if err != nil {
+		return nil, nil, nil, nil, fmt.Errorf("convert job reference: %w", err)
+	}
+
+	var (
+		covReports  []types.CoverageReport
+		covPackages []types.CoveragePackage
+		covClasses  []types.CoverageClass
+		covMethods  []types.CoverageMethod
+	)
+
 	appendReport := func(index int, report cobertura.CoverageReport, jobRef types.JobReference) {
 		cr, cp, cc, cm := cobertura.ConvertCoverageReport(index, report, jobRef)
 		covReports = append(covReports, cr)
@@ -265,74 +339,37 @@ func FetchProjectPipelineCoberturaReports(ctx context.Context, glab *gitlab.Clie
 		covMethods = append(covMethods, cm...)
 	}
 
-	artifacts, err := glab.GraphQL.GetProjectPipelineJobsArtifacts(ctx, projectPath, pipelineIid)
-	if err != nil {
-		return nil, nil, nil, nil, fmt.Errorf("get project pipeline job artifacts: %w", err)
+	var report cobertura.CoverageReport
+	switch {
+	case len(artifactPaths) > 0:
+		reportCounter := 0
+		for _, path := range artifactPaths {
+			report, err = fetchProjectJobCoberturaReportAPIFiles(ctx, glab, artifact.Project.FullPath, jobRef.Id, path)
+			if errors.Is(err, context.Canceled) {
+				return nil, nil, nil, nil, err
+			} else if errors.Is(err, gitlab.ErrNotFound) { // 404 is fine
+				continue
+			} else if err != nil {
+				break
+			}
+			appendReport(reportCounter, report, jobRef)
+			reportCounter++
+		}
+	case version.Compare(glab.Version, version.GitLabVersion{Major: 19, Minor: 4}) >= 0:
+		report, err = fetchProjectJobCoberturaReportAPI(ctx, glab, artifact.Project.FullPath, jobRef.Id)
+		if err == nil {
+			appendReport(0, report, jobRef)
+		}
+	case artifact.DownloadPath != nil:
+		report, err = fetchProjectJobCoberturaReportHTTP(ctx, glab, *artifact.DownloadPath)
+		if err == nil {
+			appendReport(0, report, jobRef)
+		}
+	default:
+		err = ErrNoDownloadRoute
 	}
-
-artifactsLoop:
-	for _, artifact := range artifacts {
-		if artifact.FileType == nil || *artifact.FileType != graphql.JobArtifactFileTypeCobertura {
-			continue
-		}
-
-		jobRef, err := graphql.ConvertJobReference(artifact.Job, artifact.Pipeline, artifact.Project)
-		if err != nil {
-			slog.Error("error converting job reference",
-				slog.String("jobId", *artifact.Job.Id),
-				slog.String("error", err.Error()),
-			)
-			continue
-		}
-
-		var report cobertura.CoverageReport
-		switch {
-		case len(artifactPaths) > 0:
-			reportCounter := 0
-			for _, path := range artifactPaths {
-				report, err = fetchProjectJobCoberturaReportAPIFiles(ctx, glab, projectPath, jobRef.Id, path)
-				if errors.Is(err, context.Canceled) {
-					return nil, nil, nil, nil, err
-				} else if err != nil {
-					if !errors.Is(err, gitlab.ErrNotFound) { // 404 is fine
-						slog.Error("error fetching cobertura report",
-							slog.String("downloadPath", path),
-							slog.String("error", err.Error()),
-						)
-					}
-					continue artifactsLoop
-				}
-				appendReport(reportCounter, report, jobRef)
-				reportCounter++
-			}
-		case version.Compare(glab.Version, version.GitLabVersion{Major: 19, Minor: 4}) >= 0:
-			report, err = fetchProjectJobCoberturaReportAPI(ctx, glab, projectPath, jobRef.Id)
-			if errors.Is(err, context.Canceled) {
-				return nil, nil, nil, nil, err
-			} else if err != nil {
-				slog.Error("error fetching cobertura report",
-					slog.String("projectPath", projectPath),
-					slog.Int64("jobId", jobRef.Id),
-					slog.String("error", err.Error()),
-				)
-				continue artifactsLoop
-			}
-			appendReport(0, report, jobRef)
-		case artifact.DownloadPath != nil:
-			report, err = fetchProjectJobCoberturaReportHTTP(ctx, glab, *artifact.DownloadPath)
-			if errors.Is(err, context.Canceled) {
-				return nil, nil, nil, nil, err
-			} else if err != nil {
-				slog.Error("error fetching cobertura report",
-					slog.String("downloadPath", *artifact.DownloadPath),
-					slog.String("error", err.Error()),
-				)
-				continue artifactsLoop
-			}
-			appendReport(0, report, jobRef)
-		default:
-			continue
-		}
+	if err != nil {
+		return nil, nil, nil, nil, fmt.Errorf("fetch report: %w", err)
 	}
 
 	return covReports, covPackages, covClasses, covMethods, nil

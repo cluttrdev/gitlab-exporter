@@ -3,19 +3,19 @@ package cmd
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"flag"
 	"fmt"
 	"io"
+	"slices"
+	"strconv"
 	"strings"
 
 	"github.com/cluttrdev/cli"
-	"go.cluttr.dev/junitxml"
 
-	"go.cluttr.dev/gitlab-exporter/exporter/internal/cobertura"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/config"
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab"
-	"go.cluttr.dev/gitlab-exporter/exporter/internal/types"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab/graphql"
+	"go.cluttr.dev/gitlab-exporter/exporter/internal/tasks"
 )
 
 type FetchReportConfig struct {
@@ -80,9 +80,6 @@ func (c *FetchReportConfig) Exec(ctx context.Context, args []string) error {
 	if c.jobId == 0 {
 		return fmt.Errorf("missing required option: --job-id")
 	}
-	if len(c.artifactPaths) == 0 {
-		return fmt.Errorf("missing report artifact paths")
-	}
 
 	cfg := config.Default()
 	if err := loadConfig(c.FetchConfig.RootConfig.filename, c.flags, &cfg); err != nil {
@@ -95,118 +92,64 @@ func (c *FetchReportConfig) Exec(ctx context.Context, args []string) error {
 		return fmt.Errorf("create gitlab client: %w", err)
 	}
 
-	var b []byte
+	jobId := "gid://gitlab/Ci::Build/" + strconv.FormatInt(c.jobId, 10)
+
+	artifacts, err := glab.GraphQL.GetProjectJobArtifacts(ctx, c.projectPath, jobId)
+	if err != nil {
+		return fmt.Errorf("get job artifacts list: %w", err)
+	}
+
+	i := slices.IndexFunc(artifacts, func(a graphql.JobArtifactFields) bool {
+		return a.FileType != nil && strings.EqualFold(string(*a.FileType), c.fileType)
+	})
+	if i == -1 {
+		return fmt.Errorf("file type not found: %s", c.fileType)
+	}
+
+	var data any
 	switch c.fileType {
 	case "junit":
-		b, err = c.fetchJunitReports(ctx, glab)
+		data, err = c.fetchJunitReport(ctx, glab, artifacts[i], c.artifactPaths)
 	case "cobertura":
-		b, err = c.fetchCoberturaReport(ctx, glab)
+		data, err = c.fetchCoberturaReport(ctx, glab, artifacts[i], c.artifactPaths)
 	default:
 		return fmt.Errorf("unsupported file type: %s", c.fileType)
 	}
+
+	out, err := json.Marshal(data)
+	if err != nil {
+		return fmt.Errorf("marshal data: %w", err)
+	}
+
+	_, err = fmt.Fprint(c.FetchConfig.RootConfig.out, string(out))
 	if err != nil {
 		return err
 	}
 
-	fmt.Fprint(c.FetchConfig.RootConfig.out, string(b))
-
 	return nil
 }
 
-func (c *FetchReportConfig) fetchJunitReports(ctx context.Context, glab *gitlab.Client) ([]byte, error) {
-	type result struct {
-		TestReport types.TestReport  `json:"testreport"`
-		TestSuites []types.TestSuite `json:"testsuites"`
-		TestCases  []types.TestCase  `json:"testcases"`
-	}
-
-	var results []result
-
-	for _, path := range c.artifactPaths {
-		reader, err := glab.Rest.DownloadProjectJobArtifactsFile(ctx, c.projectPath, c.jobId, path)
-		if errors.Is(err, gitlab.ErrNotFound) {
-			continue
-		} else if err != nil {
-			return nil, fmt.Errorf("download file: %w", err)
-		}
-
-		reports, err := junitxml.ParseMany(reader)
-		if err != nil {
-			return nil, fmt.Errorf("parse file: %w", err)
-		}
-
-		for _, report := range reports {
-			tr, ts, tc := types.ConvertTestReport(report, types.JobReference{
-				Id: c.jobId,
-				Pipeline: types.PipelineReference{
-					Project: types.ProjectReference{
-						FullPath: c.projectPath,
-					},
-				},
-			})
-			results = append(results, result{
-				TestReport: tr,
-				TestSuites: ts,
-				TestCases:  tc,
-			})
-		}
-	}
-
-	b, err := json.Marshal(results)
+func (c *FetchReportConfig) fetchJunitReport(ctx context.Context, glab *gitlab.Client, artifact graphql.JobArtifactFields, artifactPaths []string) (any, error) {
+	tr, ts, tc, err := tasks.FetchProjectJobArtifactJunitReports(ctx, glab, artifact, artifactPaths)
 	if err != nil {
-		return nil, fmt.Errorf("error marshalling pipeline testreport: %w", err)
+		return nil, fmt.Errorf("fetch report: junit: %w", err)
 	}
-
-	return b, nil
+	return map[string]any{
+		"reports": tr,
+		"suites":  ts,
+		"cases":   tc,
+	}, nil
 }
 
-func (c *FetchReportConfig) fetchCoberturaReport(ctx context.Context, glab *gitlab.Client) ([]byte, error) {
-	var (
-		reports  []types.CoverageReport
-		packages []types.CoveragePackage
-		classes  []types.CoverageClass
-		methods  []types.CoverageMethod
-	)
-
-	reportCounter := 0
-	for _, path := range c.artifactPaths {
-		reader, err := glab.Rest.DownloadProjectJobArtifactsFile(ctx, c.projectPath, c.jobId, path)
-		if errors.Is(err, gitlab.ErrNotFound) {
-			continue
-		} else if err != nil {
-			return nil, fmt.Errorf("download file: %w", err)
-		}
-
-		report, err := cobertura.Parse(reader)
-		if err != nil {
-			return nil, fmt.Errorf("parse file: %w", err)
-		}
-
-		cr, cp, cc, cm := cobertura.ConvertCoverageReport(reportCounter, report, types.JobReference{
-			Id: c.jobId,
-			Pipeline: types.PipelineReference{
-				Project: types.ProjectReference{
-					FullPath: c.projectPath,
-				},
-			},
-		})
-		reports = append(reports, cr)
-		packages = append(packages, cp...)
-		classes = append(classes, cc...)
-		methods = append(methods, cm...)
-
-		reportCounter++
-	}
-
-	b, err := json.Marshal(map[string]any{
-		"reports":  reports,
-		"packages": packages,
-		"classes":  classes,
-		"methods":  methods,
-	})
+func (c *FetchReportConfig) fetchCoberturaReport(ctx context.Context, glab *gitlab.Client, artifact graphql.JobArtifactFields, artifactPaths []string) (any, error) {
+	cr, cp, cc, cm, err := tasks.FetchProjectJobArtifactCoberturaReports(ctx, glab, artifact, artifactPaths)
 	if err != nil {
-		return nil, fmt.Errorf("error marshalling cobertura reports: %w", err)
+		return nil, fmt.Errorf("fetch report: cobertura: %w", err)
 	}
-
-	return b, nil
+	return map[string]any{
+		"reports":  cr,
+		"packages": cp,
+		"classes":  cc,
+		"methods":  cm,
+	}, nil
 }

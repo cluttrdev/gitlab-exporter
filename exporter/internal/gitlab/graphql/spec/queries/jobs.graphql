@@ -173,3 +173,31 @@ query getProjectPipelineJobArtifacts(
         }
     }
 }
+
+query getProjectJobArtifacts(
+  $projectPath: ID!
+  $jobId: JobID!
+  $endCursor: String
+){
+  project(fullPath: $projectPath) {
+    ...ProjectReferenceFields
+
+    job(id: $jobId) {
+      ...JobReferenceFields
+      finishedAt # for testcases report_created_at
+
+      pipeline {
+        ...PipelineReferenceFields
+      }
+
+      artifacts(after: $endCursor) {
+        nodes {
+          ...JobArtifactFieldsCore
+        }
+        pageInfo {
+          ...pageFields
+        }
+      }
+    }
+  }
+}
