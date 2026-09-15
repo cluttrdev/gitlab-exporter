@@ -1,7 +1,15 @@
 # Changelog
 
+## [0.26.0](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.25.1..v0.26.0)
+
+- 44989d6 feat(exporter): Use new job artifacts file_type attribute
+- 2d01e9c fix(clickhouse): Bound deduplicating insertion joins
+- c4bfdf7 feat(exporter): Gate gitlab graphql queries by server version
+- b7a4dc5 chore: Add gitlab version parsing and comparison
+
 ## [0.25.1](https://gitlab.com/gitlab-exporter/gitlab-exporter/-/compare/v0.25.0..v0.25.1)
 
+- cecc7a6 chore(release): v0.25.1
 - fc3661e fix: Only fetch project.updatedAt if gitlab version >=17
 - f0b5fa3 fix: Add gitlab server version detection
 
