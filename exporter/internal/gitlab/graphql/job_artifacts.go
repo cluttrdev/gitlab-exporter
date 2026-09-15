@@ -212,3 +212,79 @@ func (c *Client) getProjectPipelineJobArtifacts(ctx context.Context, projectPath
 
 	return jobArtifacts, err
 }
+
+func (c *Client) GetProjectJobArtifacts(ctx context.Context, projectPath string, jobId string) ([]JobArtifactFields, error) {
+	return c.getProjectJobArtifacts(ctx, projectPath, jobId, nil)
+}
+
+func (c *Client) getProjectJobArtifacts(ctx context.Context, projectPath string, jobId string, endCursor *string) ([]JobArtifactFields, error) {
+	var (
+		jobArtifacts []JobArtifactFields
+
+		data *getProjectJobArtifactsResponse
+		err  error
+	)
+
+	for {
+		data, err = getProjectJobArtifacts(
+			ctx,
+			c.client,
+			projectPath,
+			jobId,
+			endCursor,
+		)
+		err = handleError(err, "getProjectJobArtifacts",
+			slog.String("projectPath", projectPath),
+			slog.String("jobId", jobId),
+		)
+		if err != nil {
+			break
+		}
+
+		project_ := data.Project
+		if project_ == nil {
+			err = fmt.Errorf("project not found: %s", projectPath)
+			break
+		}
+		job_ := project_.Job
+		if job_ == nil {
+			err = fmt.Errorf("project job not found: %s (%s)", jobId, projectPath)
+			break
+		}
+		if job_.Artifacts == nil {
+			break
+		}
+
+		if job_.Pipeline == nil {
+			err = fmt.Errorf("project job has no pipeline: %s (%s)", jobId, projectPath)
+			break
+		}
+		pipeline_, ok := (*job_.Pipeline).(*getProjectJobArtifactsProjectJobCiJobPipeline)
+		if !ok {
+			err = fmt.Errorf("project job pipeline assertion failed: %s (%s)", jobId, projectPath)
+			break
+		}
+
+		for _, artifact_ := range job_.Artifacts.Nodes {
+			jobArtifact := JobArtifactFields{
+				Job:      job_.JobReferenceFields,
+				Pipeline: pipeline_.PipelineReferenceFields,
+				Project:  project_.ProjectReferenceFields,
+
+				JobArtifactFieldsCore: artifact_.JobArtifactFieldsCore,
+
+				JobFinishedAt: job_.FinishedAt,
+			}
+
+			jobArtifacts = append(jobArtifacts, jobArtifact)
+		}
+
+		if !job_.Artifacts.PageInfo.HasNextPage {
+			break
+		}
+
+		endCursor = job_.Artifacts.PageInfo.EndCursor
+	}
+
+	return jobArtifacts, err
+}

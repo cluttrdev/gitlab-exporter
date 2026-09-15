@@ -1,6 +1,8 @@
 package rest
 
 import (
+	"fmt"
+	"strconv"
 	"strings"
 
 	"golang.org/x/time/rate"
@@ -46,4 +48,17 @@ func NewClient(url string, token string, rateLimit float64) (*Client, error) {
 
 func (c *Client) Client() *gitlab.Client {
 	return c.client
+}
+
+// Helper function to accept and format both the project ID or name as project
+// identifier for all API calls.
+func parseID(id any) (string, error) {
+	switch v := id.(type) {
+	case int:
+		return strconv.Itoa(v), nil
+	case string:
+		return v, nil
+	default:
+		return "", fmt.Errorf("invalid ID type %#v, the ID must be an int or a string", id)
+	}
 }

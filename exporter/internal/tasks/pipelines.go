@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"sync"
 	"time"
 
 	"go.cluttr.dev/gitlab-exporter/exporter/internal/gitlab"
@@ -96,74 +95,48 @@ type FetchProjectsJobsLogDataOptions struct {
 }
 
 func FetchProjectsJobsLogData(ctx context.Context, glab *gitlab.Client, jobs []types.Job, opts FetchProjectsJobsLogDataOptions) ([]types.Section, []types.Metric, map[int64][]types.JobLogProperty, error) {
+	// jobLogBundle groups one job's fan-out results.
+	// jobId is carried explicitly so the reduce step can rebuild the per-job
+	// properties map, including for errored jobs.
+	type jobLogBundle struct {
+		jobId      int64
+		sections   []types.Section
+		metrics    []types.Metric
+		properties []types.JobLogProperty
+	}
+
+	bundles, err := fanOut(ctx, glab, jobs,
+		func(ctx context.Context, glab *gitlab.Client, job types.Job) (jobLogBundle, error) {
+			opt := FetchProjectJobLogDataOptions{
+				Queries: opts.ProjectJobLogQueries[job.Pipeline.Project.Id],
+			}
+
+			sections, metrics, properties, err := FetchProjectJobLogData(ctx, glab, job, opt)
+			return jobLogBundle{
+				jobId:      job.Id,
+				sections:   sections,
+				metrics:    metrics,
+				properties: properties,
+			}, err
+		},
+		// collectOnError: FetchProjectJobLogData can return populated
+		// sections/metrics/properties *with* an error (rewind + logql-query
+		// paths).
+		fanOutOptions{CollectOnError: true},
+	)
+
 	var (
 		sections   []types.Section
 		metrics    []types.Metric
 		properties = make(map[int64][]types.JobLogProperty)
 	)
-
-	type result struct {
-		jobId int64
-
-		sections   []types.Section
-		metrics    []types.Metric
-		properties []types.JobLogProperty
-
-		err error
+	for _, b := range bundles {
+		sections = append(sections, b.sections...)
+		metrics = append(metrics, b.metrics...)
+		properties[b.jobId] = append(properties[b.jobId], b.properties...)
 	}
 
-	var (
-		wg      sync.WaitGroup
-		results = make(chan result, len(jobs))
-	)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, job := range jobs {
-			if err := glab.Acquire(ctx, 1); err != nil {
-				slog.Error("failed to acquire gitlab client", "error", err)
-				break
-			}
-			wg.Add(1)
-			go func() {
-				defer glab.Release(1)
-				defer wg.Done()
-
-				var opt = FetchProjectJobLogDataOptions{
-					Queries: opts.ProjectJobLogQueries[job.Pipeline.Project.Id],
-				}
-
-				var r result
-				r.jobId = job.Id
-				r.sections, r.metrics, r.properties, r.err = FetchProjectJobLogData(ctx, glab, job, opt)
-				results <- r
-			}()
-		}
-	}()
-
-	done := make(chan struct{})
-	go func() {
-		defer close(done)
-		wg.Wait()
-	}()
-
-	var errs error
-loop:
-	for {
-		select {
-		case <-done:
-			break loop
-		case r := <-results:
-			if r.err != nil {
-				errs = errors.Join(errs, r.err)
-			}
-			sections = append(sections, r.sections...)
-			metrics = append(metrics, r.metrics...)
-			properties[r.jobId] = append(properties[r.jobId], r.properties...)
-		}
-	}
-
-	return sections, metrics, properties, errs
+	return sections, metrics, properties, err
 }
 
 type FetchProjectJobLogDataOptions struct {
@@ -325,80 +298,39 @@ func queryJobLogQLMetrics(log *bytes.Reader, queries []logql.MetricQuery, job ty
 }
 
 func FetchProjectsPipelinesTestReports(ctx context.Context, glab *gitlab.Client, pipelines []types.Pipeline) ([]types.TestReport, []types.TestSuite, []types.TestCase, error) {
+	type testReportBundle struct {
+		report types.TestReport
+		suites []types.TestSuite
+		cases  []types.TestCase
+	}
+
+	bundles, err := fanOut(ctx, glab, pipelines,
+		func(ctx context.Context, glab *gitlab.Client, pipeline types.Pipeline) (testReportBundle, error) {
+			report, summary, err := glab.Rest.GetPipelineTestReport(ctx, pipeline.Project.Id, pipeline.Id)
+			if err != nil {
+				return testReportBundle{}, fmt.Errorf("get project pipeline test report: %w", err)
+			}
+
+			tr, ts, tc, err := rest.ConvertTestReport(report, summary, pipeline)
+			if err != nil {
+				return testReportBundle{}, fmt.Errorf("convert project pipeline test report: %w", err)
+			}
+
+			return testReportBundle{report: tr, suites: ts, cases: tc}, nil
+		},
+		fanOutOptions{},
+	)
+
+	// Reduce: concatenate each pipeline's bundle back into the three flat slices.
 	var (
 		testReports []types.TestReport
 		testSuites  []types.TestSuite
 		testCases   []types.TestCase
 	)
-
-	type result struct {
-		testReport types.TestReport
-		testSuites []types.TestSuite
-		testCases  []types.TestCase
-
-		err error
+	for _, b := range bundles {
+		testReports = append(testReports, b.report)
+		testSuites = append(testSuites, b.suites...)
+		testCases = append(testCases, b.cases...)
 	}
-
-	var (
-		wg      sync.WaitGroup
-		results = make(chan result, len(pipelines))
-	)
-	wg.Add(1)
-	go func() {
-		defer wg.Done()
-		for _, p := range pipelines {
-			if err := glab.Acquire(ctx, 1); err != nil {
-				slog.Error("failed to acquire gitlab client", "error", err)
-				break
-			}
-			wg.Add(1)
-			go func(pipeline types.Pipeline) {
-				defer glab.Release(1)
-				defer wg.Done()
-
-				var (
-					r   result
-					err error
-				)
-
-				report, summary, err := glab.Rest.GetPipelineTestReport(ctx, pipeline.Project.Id, pipeline.Id)
-				if err != nil {
-					r.err = fmt.Errorf("get project pipeline test report: %w", err)
-					results <- r
-					return
-				}
-
-				r.testReport, r.testSuites, r.testCases, err = rest.ConvertTestReport(report, summary, pipeline)
-				if err != nil {
-					r.err = fmt.Errorf("convert project pipeline test report: %w", err)
-				}
-				results <- r
-			}(p)
-		}
-	}()
-
-	done := make(chan struct{})
-	go func() {
-		defer close(done)
-		wg.Wait()
-	}()
-
-	var errs error
-loop:
-	for {
-		select {
-		case <-done:
-			break loop
-		case r := <-results:
-			if r.err != nil {
-				errs = errors.Join(errs, r.err)
-			} else {
-				testReports = append(testReports, r.testReport)
-				testSuites = append(testSuites, r.testSuites...)
-				testCases = append(testCases, r.testCases...)
-			}
-		}
-	}
-
-	return testReports, testSuites, testCases, errs
+	return testReports, testSuites, testCases, err
 }
